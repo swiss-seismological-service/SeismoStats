@@ -19,10 +19,10 @@ pip install -e .[dev]
 tox
 ```
 
-### Use this repository inside another repository
+### Use this repository inside another environment/code
 ```
 # use it locally, being able to switch back and forth doing changes
-# enter this in your other repository
+# enter this in your other environment
 pip install -e ../path/to/catalogue-tools
 
 # if you don't need to do live changes in catalogue-tools you can install it "from source"
