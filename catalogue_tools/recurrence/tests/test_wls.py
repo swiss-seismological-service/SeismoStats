@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
 from catalogue_tools.recurrence.wls import weighted_least_squares
 
@@ -11,8 +12,8 @@ def test_wls():
                                   'data')
 
     catalogue = np.genfromtxt(
-        f"{PATH_RESOURCES}/test_completeness_catalogue.csv",
-        delimiter=",",
+        f'{PATH_RESOURCES}/test_completeness_catalogue.csv',
+        delimiter=',',
         skip_header=1)
 
     # Sort into it's magnitudes and years
@@ -24,12 +25,12 @@ def test_wls():
                                   [1975, 4.0],
                                    [1960, 5.0],
                                    [1900, 6.0]])
+
     als, als_u, bls, bls_u = weighted_least_squares(
         years, magnitudes, completeness_table)
 
-    print("a = %.4f (+/- %.4f)  b = %.4f (+/- %.4f)" %
+    print('a = %.4f (+/- %.4f)  b = %.4f (+/- %.4f)' %
           (als, als_u, bls, bls_u))
 
-
-if __name__ == '__main__':
-    test_wls()
+    assert_array_almost_equal([als, als_u, bls, bls_u],
+                              [5.1076, 0.1304, 0.9796, 0.0254], 4)
