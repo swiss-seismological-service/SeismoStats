@@ -3,8 +3,8 @@
 ### Start developing:
 
 ```
-# no need to use anaconda or something similar
-python3 -m venv env # install virtual environment
+# just use a basic virtual environment
+python3 -m venv env
 
 # activate it
 source env/bin/activate 
