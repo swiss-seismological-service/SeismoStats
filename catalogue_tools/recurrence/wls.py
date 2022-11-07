@@ -1,9 +1,23 @@
 import math
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 
-def weighted_least_squares(years, magnitudes, completeness_table):
+def weighted_least_squares(years: ArrayLike,
+                           magnitudes: ArrayLike,
+                           completeness_table: ArrayLike) -> tuple:
+    """
+    Calculates the a and b values of a catalogue using weighted last squares.
+
+    :param years:               The years when the earthquakes occurred.
+    :param magnitudes:          Magnitudes of the earthquakes.
+    :param completeness_table:  Table with years and respective Mc's for the
+                                catalogue provided.
+
+    :returns: Tuple with (a value, std of a, b value, std of b)
+    """
+
     # end year of catalogue
     end_year = years.max()
 
@@ -11,8 +25,10 @@ def weighted_least_squares(years, magnitudes, completeness_table):
     minmag = math.floor(magnitudes.min())
     maxmag = math.ceil(magnitudes.max())
 
+    # create the bins
     bins = np.arange(minmag, maxmag, bin_width)
 
+    # prepare arrays for results
     nbins = len(bins)
     n_mags = np.zeros(nbins)
     rates = np.zeros_like(n_mags)
