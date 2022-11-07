@@ -7,7 +7,7 @@ def plot_magnitude_time_density(magnitudes, years, mbins, time_bins,
                                 completeness_table=[],
                                 filename=None) -> plt:
     '''
-    Create a magnitude density plot
+    Create a magnitude density plot. Example method only.
     :param magnitudes:
         Vector of magnitudes
     :param years:

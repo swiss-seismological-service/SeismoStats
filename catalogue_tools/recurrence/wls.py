@@ -10,6 +10,8 @@ def weighted_least_squares(years: ArrayLike,
     """
     Calculates the a and b values of a catalogue using weighted last squares.
 
+    Example method only.
+
     :param years:               The years when the earthquakes occurred.
     :param magnitudes:          Magnitudes of the earthquakes.
     :param completeness_table:  Table with years and respective Mc's for the
