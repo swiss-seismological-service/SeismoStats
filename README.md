@@ -13,7 +13,7 @@ source env/bin/activate
 pip install -U pip wheel setuptools
 
 # install this package + requirements + development requirements ([dev])
-pip install -e .[dev] 
+pip install -e '.[dev]' 
 
 # run tests
 tox
