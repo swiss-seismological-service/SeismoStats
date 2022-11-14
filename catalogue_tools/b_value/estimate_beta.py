@@ -30,7 +30,8 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
     return beta
 
 
-def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) -> float:
+def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
+        -> float:
     """ returns the maximum likelihood beta
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University, vol 13, pp
