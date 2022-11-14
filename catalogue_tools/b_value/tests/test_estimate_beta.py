@@ -3,14 +3,12 @@ from catalogue_tools.utils.simulate_distributions import simulate_magnitudes
 from catalogue_tools.b_value.estimate_beta import estimate_beta_tinti
 from catalogue_tools.b_value.estimate_beta import estimate_beta_utsu
 
+
 def test_estimate_beta_tinti():
     n = 1000000
     beta = 1 / np.log10(np.e)
     mc = 2.0
     precision = 0.005
-    
-    # generate synthetic magnitudes
-    mags = simulate_magnitudes(n, beta, mc)
 
     # generate synthetic magnitudes
     mags = simulate_magnitudes(n, beta, mc)
@@ -39,4 +37,3 @@ def test_estimate_beta_utsu():
 if __name__ == '__main__':
     test_estimate_beta_tinti()
     test_estimate_beta_utsu()
-
