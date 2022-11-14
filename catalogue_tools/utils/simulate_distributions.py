@@ -7,15 +7,14 @@ def simulate_magnitudes(n: int, beta: float, mc: float) -> np.ndarray:
 
     Args:
         n:      number of sample magnitudes
-        beta:   scale factor of the 
+        beta:   scale factor of the exponential distribution
         mc:     completion magnitude
 
     Returns:
         mags:   vector of length n of magnitudes drawn from an exponential
         distribution
-
     """
 
-    mags = np.random.exponential(1/beta, n) + mc
-    
+    mags = np.random.exponential(1 / beta, n) + mc
+
     return mags

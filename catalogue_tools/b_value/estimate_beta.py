@@ -10,23 +10,22 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
             America, 77(6), 2125-2134.)
 
     Args:
-        magnitudes: vector of magnitudes, unsorted, already cutoff (no 
+        magnitudes: vector of magnitudes, unsorted, already cutoff (no
                     magnitudes below mc present)
-        mc
+        mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
         weights: weights of each magnitude can be specified here
-    
+
     Returns:
         beta:       maximum likelihood b-value
-
     """
-    
+
     if delta_m > 0:
         p = (1 + (delta_m / (np.average(magnitudes - mc, weights=weights))))
         beta = 1 / delta_m * np.log(p)
     else:
         beta = 1 / np.average((magnitudes - mc), weights=weights)
-   
+
     return beta
 
 
@@ -35,19 +34,18 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
     """ returns the maximum likelihood beta
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University, vol 13, pp
-            99-103)
+        99-103)
 
     Args:
-        magnitudes: vector of magnitudes, unsorted, already cutoff (no 
+        magnitudes: vector of magnitudes, unsorted, already cutoff (no
                     magnitudes below mc present)
         mc
         delta_m:    discretization of magnitudes. default is no discretization
     
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
-
     """
-    
-    beta = 1 / (np.mean(magnitudes) - mc - delta_m/2) 
+
+    beta = 1 / (np.mean(magnitudes) - mc - delta_m / 2)
     
     return beta
