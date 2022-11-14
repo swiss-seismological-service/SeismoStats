@@ -17,7 +17,7 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
         weights: weights of each magnitude can be specified here
 
     Returns:
-        beta:       maximum likelihood b-value
+        beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
 
     if delta_m > 0:
@@ -39,7 +39,7 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
     Args:
         magnitudes: vector of magnitudes, unsorted, already cutoff (no
                     magnitudes below mc present)
-        mc
+        mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
 
     Returns:
@@ -49,3 +49,31 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
     beta = 1 / (np.mean(magnitudes) - mc - delta_m / 2)
 
     return beta
+
+
+def estimate_beta_elst(magnitudes: np.ndarray) -> float:
+    """ returns the b-value estimation using the positive differences of the
+    Magnitudes
+
+    Source:
+        Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
+        2)
+
+    Args:
+        magnitudes: vector of magnitudes differences, sorted in time (first
+                    entry is the earliest earthquake)
+
+    Returns:
+        beta:       maximum likelihood beta (b_value = beta * log10(e))
+    """
+    temp_mags1 = np.append([0], magnitudes)
+    temp_mags2 = np.append(magnitudes, [0])
+    mag_diffs = temp_mags1 - temp_mags2
+    mag_diffs = mag_diffs[1:-1]
+
+    # only take the values where the next earthquake is larger
+    mag_diffs = abs(mag_diffs[mag_diffs < 0])
+
+    b_value = estimate_beta_utsu(mag_diffs, mc=0.0, delta_m=0.0)
+
+    return b_value
