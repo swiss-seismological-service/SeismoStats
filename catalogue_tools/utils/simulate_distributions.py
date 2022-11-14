@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def simulate_magnitudes(n: int, beta: float, mc: float) -> np.ndarray:
     """ Generates a vector of n elements drawn from an exponential distribution exp(-beta*M)
 
