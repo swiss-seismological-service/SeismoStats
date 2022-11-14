@@ -41,11 +41,11 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
                     magnitudes below mc present)
         mc
         delta_m:    discretization of magnitudes. default is no discretization
-    
+
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
 
     beta = 1 / (np.mean(magnitudes) - mc - delta_m / 2)
-    
+
     return beta

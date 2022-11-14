@@ -12,7 +12,7 @@ def test_estimate_beta_tinti():
 
     # generate synthetic magnitudes
     mags = simulate_magnitudes(n, beta, mc)
-    
+
     # without binning
     delta_m = 0.0
     beta_estimate = estimate_beta_tinti(mags, mc, delta_m)
@@ -24,9 +24,9 @@ def test_estimate_beta_utsu():
     beta = 1 / np.log10(np.e)
     mc = 2.0
     precision = 0.005
-    
+
     # generate synthetic magnitudes
-    mags = simulate_magnitudes(n, beta, mc) 
+    mags = simulate_magnitudes(n, beta, mc)
 
     # without binning
     delta_m = 0.0
