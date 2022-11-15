@@ -29,8 +29,5 @@ def test_wls():
     als, als_u, bls, bls_u = weighted_least_squares(
         years, magnitudes, completeness_table)
 
-    print('a = %.4f (+/- %.4f)  b = %.4f (+/- %.4f)' %
-          (als, als_u, bls, bls_u))
-
     assert_array_almost_equal([als, als_u, bls, bls_u],
                               [5.1076, 0.1304, 0.9796, 0.0254], 4)

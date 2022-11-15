@@ -1,11 +1,28 @@
 import datetime as dt
-from numpy.testing import assert_equal
+import os
+from unittest import mock
+
 import numpy as np
+from numpy.testing import assert_equal
 
 from catalogue_tools.download.download_catalogues import download_catalog_sed
 
+PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'data')
 
-def test_download_catalogue_sed():
+
+def mocked_requests_get(*args, **kwargs):
+    response = mock.MagicMock()
+    response.getcode.return_value = 200
+
+    with open(f'{PATH_RESOURCES}/catalog.csv', 'rb') as f:
+        response.read.return_value = f.read()
+
+    return response
+
+
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
+def test_download_catalogue_sed(mock_get):
     min_mag = 3.0
     start_time = dt.datetime(1900, 1, 1)
     end_time = dt.datetime(2022, 1, 1)
@@ -28,7 +45,3 @@ def test_download_catalogue_sed():
         (['MLh', 'MLhc', 'Ml', 'Mw'],
          [93, 15, 32, 1134])
     )
-
-
-if __name__ == '__main__':
-    test_download_catalogue_sed()
