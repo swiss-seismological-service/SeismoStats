@@ -5,7 +5,7 @@ from unittest import mock
 from numpy.testing import assert_equal
 
 from catalog_tools.download.download_catalogs import (apply_edwards,
-                                                        download_catalog_sed)
+                                                      download_catalog_sed)
 
 
 def test_apply_edwards():
