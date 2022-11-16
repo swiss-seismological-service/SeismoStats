@@ -4,8 +4,8 @@ from unittest import mock
 
 from numpy.testing import assert_equal
 
-from catalogue_tools.download.download_catalogues import (apply_edwards,
-                                                          download_catalog_sed)
+from catalog_tools.download.download_catalogs import (apply_edwards,
+                                                        download_catalog_sed)
 
 
 def test_apply_edwards():
@@ -33,7 +33,7 @@ def mocked_requests_get(*args, **kwargs):
 
 
 @mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
-def test_download_catalogue_sed(mock_get):
+def test_download_catalog_sed(mock_get):
     min_mag = 3.0
     start_time = dt.datetime(1900, 1, 1)
     end_time = dt.datetime(2022, 1, 1)

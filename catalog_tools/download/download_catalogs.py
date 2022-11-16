@@ -28,16 +28,16 @@ def download_catalog_sed(
         delta_m: float = 0.1, only_earthquakes: bool = True,
         convert_to_Mw: bool = True
 ) -> pd.DataFrame:
-    """Downloads the Swiss earthquake catalogue.
+    """Downloads the Swiss earthquake catalog.
 
     Args:
-      start_time: start time of the catalogue.
-      end_time: end time of the catalogue. defaults to current time.
-      min_latitude: minimum latitude of catalogue.
-      max_latitude: maximum latitude of catalogue.
-      min_longitude: minimum longitude of catalogue.
-      max_longitude: maximum longitude of catalogue.
-      min_magnitude: minimum magnitude of catalogue.
+      start_time: start time of the catalog.
+      end_time: end time of the catalog. defaults to current time.
+      min_latitude: minimum latitude of catalog.
+      max_latitude: maximum latitude of catalog.
+      min_longitude: minimum longitude of catalog.
+      max_longitude: maximum longitude of catalog.
+      min_magnitude: minimum magnitude of catalog.
       delta_m: magnitude bin size. if >0, then
         events of magnitude >= (min_magnitude - delta_m/2) will be downloaded.
       only_earthquakes: if True, only events of type earthquake are returned.
