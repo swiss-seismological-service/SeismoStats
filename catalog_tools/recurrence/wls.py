@@ -8,19 +8,19 @@ def weighted_least_squares(years: ArrayLike,
                            magnitudes: ArrayLike,
                            completeness_table: ArrayLike) -> tuple:
     """
-    Calculates the a and b values of a catalogue using weighted last squares.
+    Calculates the a and b values of a catalog using weighted last squares.
 
     Example method only.
 
     :param years:               The years when the earthquakes occurred.
     :param magnitudes:          Magnitudes of the earthquakes.
     :param completeness_table:  Table with years and respective Mc's for the
-                                catalogue provided.
+                                catalog provided.
 
     :returns: Tuple with (a value, std of a, b value, std of b)
     """
 
-    # end year of catalogue
+    # end year of catalog
     end_year = years.max()
 
     bin_width = 0.5
@@ -44,7 +44,7 @@ def weighted_least_squares(years: ArrayLike,
         start_years[i] = \
             completeness_table[:, 0][completeness_table[:, 1] <= row].min()
 
-        # Duration is the time between the end of the catalogue and
+        # Duration is the time between the end of the catalog and
         # and the year of completeness
         duration[i] = end_year - start_years[i] + 1
 

@@ -3,7 +3,7 @@ import os
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from catalogue_tools.recurrence.wls import weighted_least_squares
+from catalog_tools.recurrence.wls import weighted_least_squares
 
 
 def test_wls():
