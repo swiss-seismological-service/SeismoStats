@@ -20,12 +20,14 @@ def apply_edwards(mag_type: str, mag: float) -> pd.Series:
         return pd.Series([mag_type, mag])
 
 
-def download_catalog_sed(start_time: dt.datetime = dt.datetime(1970, 1, 1),
+def download_catalog_sed(
+        start_time: dt.datetime = dt.datetime(1970, 1, 1),
         end_time: dt.datetime = dt.datetime.now(), min_latitude: float = None,
         max_latitude: float = None, min_longitude: float = None,
         max_longitude: float = None, min_magnitude: float = 0.01,
         delta_m: float = 0.1, only_earthquakes: bool = True,
-        convert_to_Mw: bool = True) -> pd.DataFrame:
+        convert_to_Mw: bool = True
+) -> pd.DataFrame:
     """Downloads the Swiss earthquake catalogue.
 
     Args:
@@ -66,9 +68,14 @@ def download_catalog_sed(start_time: dt.datetime = dt.datetime(1970, 1, 1),
 
     df = pd.read_csv(BytesIO(data), delimiter="|")
 
-    df.rename({"Magnitude": "magnitude", "Latitude": "latitude",
-        "Longitude": "longitude", "Time": "time", "Depth/km": "depth",
-        "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
+    df.rename({
+        "Magnitude": "magnitude",
+        "Latitude": "latitude",
+        "Longitude": "longitude",
+        "Time": "time",
+        "Depth/km": "depth",
+        "EventType": 'event_type',
+        "MagType": 'mag_type'}, axis=1,
         inplace=True)
 
     if convert_to_Mw:
