@@ -74,6 +74,6 @@ def estimate_beta_elst(magnitudes: np.ndarray) -> float:
     # only take the values where the next earthquake is larger
     mag_diffs = abs(mag_diffs[mag_diffs < 0])
 
-    b_value = estimate_beta_utsu(mag_diffs, mc=0.0, delta_m=0.0)
+    b_value = estimate_beta_utsu(mag_diffs, 0.0)
 
     return b_value

@@ -39,9 +39,3 @@ def test_estimate_beta_elst():
     # without binning
     beta_estimate = estimate_beta_elst(mags)
     assert abs(beta - beta_estimate) / beta <= precision
-
-
-if __name__ == '__main__':
-    test_estimate_beta_tinti()
-    test_estimate_beta_utsu()
-    test_estimate_beta_elst()
