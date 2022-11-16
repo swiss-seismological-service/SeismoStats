@@ -1,8 +1,18 @@
 import datetime as dt
 from numpy.testing import assert_equal
-import numpy as np
 
-from catalogue_tools.download.download_catalogues import download_catalog_sed
+from catalogue_tools.download.download_catalogues import download_catalog_sed,\
+    apply_edwards
+
+
+def test_apply_edwards():
+    mag_types = ['MLh', 'MLhc', 'Ml', 'Mw']
+    mags = [2.5, 3.5, 4.5, 5.5]
+
+    assert_equal(
+        [list(apply_edwards(typ, mag)) for (typ, mag) in zip(mag_types, mags)],
+        [['Mw_converted', 2.506875], ['Mw_converted', 3.2734749999999995],
+         ['Mw_converted', 4.138274999999999], ['Mw', 5.5]])
 
 
 def test_download_catalogue_sed():
@@ -11,24 +21,16 @@ def test_download_catalogue_sed():
     end_time = dt.datetime(2022, 1, 1)
 
     # download the CH catalog
-    ch_cat = download_catalog_sed(
-        start_time=start_time,
-        end_time=end_time,
-        min_magnitude=min_mag,
-        only_earthquakes=False
-    )
+    ch_cat = download_catalog_sed(start_time=start_time, end_time=end_time,
+                                  min_magnitude=min_mag,
+                                  only_earthquakes=False)
 
     # check that the downloaded catalog is correct
-    assert_equal([
-        len(ch_cat), len(ch_cat.query("event_type != 'earthquake'"))
-    ], [1274, 18])
-
     assert_equal(
-        np.unique(ch_cat["MagType"], return_counts=True),
-        (['MLh', 'MLhc', 'Ml', 'Mw'],
-         [93, 15, 32, 1134])
-    )
+        [len(ch_cat), len(ch_cat.query("event_type != 'earthquake'"))],
+        [1274, 18])
 
 
 if __name__ == '__main__':
+    test_apply_edwards()
     test_download_catalogue_sed()
