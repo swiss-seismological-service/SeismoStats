@@ -1,5 +1,5 @@
-from catalog_tools.binning import normal_round_to_int, normal_round
-from catalog_tools.binning import bin_to_precision, bin_magnitudes
+from catalog_tools.utils.binning import normal_round_to_int, normal_round
+from catalog_tools.utils.binning import bin_to_precision, bin_magnitudes
 
 import pytest
 
