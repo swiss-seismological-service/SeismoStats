@@ -13,15 +13,14 @@ def normal_round_to_int(x: float) -> int:
         Rounded value of the given number.
     """
 
-    sign = 1 if (x >= 0) else -1
-    x = abs(x)
+    sign = np.sign(x)
+    y = abs(x)
+    y = np.floor(y + 0.5)
 
-    if x - np.floor(x) < 0.5:
-        return int(sign * np.floor(x))
-    return int(sign * np.ceil(x))
+    return sign * y
 
 
-def normal_round(x: float, n: int) -> float:
+def normal_round(x: float, n: int = 0) -> float:
     """
     Rounds a float number x to n number of decimals. If the number
     of decimals is not given, we round to an integer.
@@ -69,5 +68,6 @@ def bin_magnitudes(mags: list, delta_m: float = 0.1) -> list:
         List of values rounded to the given precision.
     """
 
-    rounded_list = [bin_to_precision(m, delta_m) for m in mags]
-    return rounded_list
+    mags_array = np.array(mags)
+    rounded_array = bin_to_precision(mags_array, delta_m)
+    return list(rounded_array)
