@@ -1,4 +1,5 @@
 import numpy as np
+import decimal
 
 
 def normal_round_to_int(x: float) -> int:
@@ -7,7 +8,7 @@ def normal_round_to_int(x: float) -> int:
 
     Args:
         x: decimal number that needs to be rounded
-    
+
     Returns:
         Rounded value of the given number.
     """
@@ -28,15 +29,15 @@ def normal_round(x: float, n: int) -> float:
     Args:
         x: decimal number that needs to be rounded
         n: number of decimals, optional
-    
+
     Returns:
         Value rounded to the given number of decimals.
     """
 
     power = 10**n
     return normal_round_to_int(x * power) / power
-    
-    
+
+
 def bin_to_precision(x: float, delta_m: float = 0.1) -> float:
     """
     Rounds a float number x to a given precision. If precision not given,
@@ -45,23 +46,25 @@ def bin_to_precision(x: float, delta_m: float = 0.1) -> float:
     Args:
         x: decimal number that needs to be rounded
         delta_m: size of the bin, optional
-    
+
     Returns:
         Value rounded to the given precision.
     """
 
-    return normal_round_to_int(x / delta_m) * delta_m
+    d = decimal.Decimal(str(delta_m))
+    decimal_places = abs(d.as_tuple().exponent)
+    return np.round(normal_round_to_int(x / delta_m) * delta_m, decimal_places)
 
 
 def bin_magnitudes(mags: list, delta_m: float = 0.1) -> list:
     """
-    Rounds a list of float numbers to a given precision. 
+    Rounds a list of float numbers to a given precision.
     If precision not given, assumes 0.1 bin size.
 
     Args:
         mags: list of values that need rounding
         delta_m: size of the bin, optional
-   
+
     Returns:
         List of values rounded to the given precision.
     """
