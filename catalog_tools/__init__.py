@@ -1,1 +1,1 @@
-from . import estimate_beta
+from . import estimate_beta     # noqa

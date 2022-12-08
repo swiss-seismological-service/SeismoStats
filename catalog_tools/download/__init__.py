@@ -1,1 +1,1 @@
-from . import download_catalogs
+from . import download_catalogs     # noqa
