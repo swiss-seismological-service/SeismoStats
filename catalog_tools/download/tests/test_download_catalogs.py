@@ -45,7 +45,7 @@ def test_download_catalog_sed(mock_get):
 
     # check that the downloaded catalog is correct
     assert_equal(
-        [len(ch_cat), len(ch_cat.query("event_type != 'earthquake'"))],
+        [len(ch_cat), len(ch_cat.query("EventType != 'earthquake'"))],
         [1274, 18])
 
 
