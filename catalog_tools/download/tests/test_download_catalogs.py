@@ -79,5 +79,3 @@ def test_prepare_sed_catalog(mock_get):
 
     assert_allclose([delta_m], [min_mag_diff], rtol=1e-07)
     assert_array_less([0], [min_conv_diff])
-
-
