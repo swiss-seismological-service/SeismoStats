@@ -44,7 +44,7 @@ def bin_to_precision(x: float, delta_x: float = 0.1) -> float:
 
     Args:
         x: decimal number that needs to be rounded
-        delta_m: size of the bin, optional
+        delta_x: size of the bin, optional
 
     Returns:
         Value rounded to the given precision.
