@@ -71,7 +71,7 @@ def download_catalog_sed(start_time: dt.datetime = dt.datetime(1970, 1, 1),
 
 
 def prepare_sed_catalog(
-        df: obspy.core.event.Catalog,
+        df: pd.DataFrame,
         delta_m: float = 0.1,
         only_earthquakes: bool = True,
         convert_to_Mw: bool = True
