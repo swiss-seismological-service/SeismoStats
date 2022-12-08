@@ -4,9 +4,9 @@ import numpy as np
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
 
 # import functions to be tested
-from catalog_tools.b_value.estimate_beta import estimate_beta_tinti
-from catalog_tools.b_value.estimate_beta import estimate_beta_utsu
-from catalog_tools.b_value.estimate_beta import estimate_beta_elst
+from catalog_tools.estimate_beta import estimate_beta_tinti
+from catalog_tools.estimate_beta import estimate_beta_utsu
+from catalog_tools.estimate_beta import estimate_beta_elst
 
 # parameters for testing
 n = 1000000
