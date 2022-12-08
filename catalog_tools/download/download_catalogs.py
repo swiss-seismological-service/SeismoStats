@@ -2,7 +2,6 @@ from io import BytesIO
 import urllib.request
 import datetime as dt
 import pandas as pd
-import obspy
 from catalog_tools.utils.binning import bin_to_precision
 
 
