@@ -1,11 +1,12 @@
 import datetime as dt
 import os
 from unittest import mock
+import numpy as np
 
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose, assert_array_less
 
-from catalog_tools.download.download_catalogs import (apply_edwards,
-                                                      download_catalog_sed)
+from catalog_tools.download.download_catalogs import apply_edwards, \
+    download_catalog_sed, prepare_sed_catalog
 
 
 def test_apply_edwards():
@@ -40,10 +41,43 @@ def test_download_catalog_sed(mock_get):
 
     # download the CH catalog
     ch_cat = download_catalog_sed(start_time=start_time, end_time=end_time,
-                                  min_magnitude=min_mag,
-                                  only_earthquakes=False)
+                                  min_magnitude=min_mag)
 
     # check that the downloaded catalog is correct
     assert_equal(
         [len(ch_cat), len(ch_cat.query("event_type != 'earthquake'"))],
         [1274, 18])
+
+
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
+def test_prepare_sed_catalog(mock_get):
+    min_mag = 3.0
+    start_time = dt.datetime(1900, 1, 1)
+    end_time = dt.datetime(2022, 1, 1)
+    delta_m = 0.1
+
+    ch_cat = download_catalog_sed(start_time=start_time, end_time=end_time,
+                                  min_magnitude=min_mag)
+
+    df = prepare_sed_catalog(
+        ch_cat,
+        delta_m=delta_m,
+        only_earthquakes=True,
+        convert_to_Mw=True
+    )
+
+    unique_mags = np.unique(df["magnitude"])
+    min_mag_diff = np.min(np.abs(np.diff(unique_mags)))
+
+    converted_mags = df.query("mag_type == 'Mw_converted'")['magnitude']
+    conv_diffs = ch_cat.loc[converted_mags.index, 'Magnitude'] - converted_mags
+    min_conv_diff = np.min(np.abs(conv_diffs))
+
+    assert_equal(
+        [len(df), len(converted_mags)],
+        [1256, 139])
+
+    assert_allclose([delta_m], [min_mag_diff], rtol=1e-07)
+    assert_array_less([0], [min_conv_diff])
+
+
