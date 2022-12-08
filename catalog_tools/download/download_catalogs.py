@@ -91,9 +91,9 @@ def prepare_sed_catalog(
     """
     cat = df.copy()
     cat.rename({"Magnitude": "magnitude", "Latitude": "latitude",
-        "Longitude": "longitude", "Time": "time", "Depth/km": "depth",
-        "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
-        inplace=True)
+                "Longitude": "longitude", "Time": "time", "Depth/km": "depth",
+                "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
+               inplace=True)
 
     if convert_to_Mw:
         cat[['mag_type', 'magnitude']] = cat.apply(
