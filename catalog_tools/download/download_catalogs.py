@@ -21,14 +21,16 @@ def apply_edwards(mag_type: str, mag: float) -> pd.Series:
         return pd.Series([mag_type, mag])
 
 
-def download_catalog_sed(start_time: dt.datetime = dt.datetime(1970, 1, 1),
-                         end_time: dt.datetime = dt.datetime.now(),
-                         min_latitude: float = None,
-                         max_latitude: float = None,
-                         min_longitude: float = None,
-                         max_longitude: float = None,
-                         min_magnitude: float = 0.01,
-                         delta_m: float = 0.1) -> pd.DataFrame:
+def download_catalog_sed(
+        start_time: dt.datetime = dt.datetime(1970, 1, 1),
+        end_time: dt.datetime = dt.datetime.now(),
+        min_latitude: float | None = None,
+        max_latitude: float | None = None,
+        min_longitude: float | None = None,
+        max_longitude: float | None = None,
+        min_magnitude: float = 0.01,
+        delta_m: float = 0.1
+) -> pd.DataFrame:
     """Downloads the Swiss earthquake catalog.
 
     Args:
@@ -74,7 +76,7 @@ def prepare_sed_catalog(
         df: pd.DataFrame,
         delta_m: float = 0.1,
         only_earthquakes: bool = True,
-        convert_to_Mw: bool = True
+        convert_to_mw: bool = True
 ) -> pd.DataFrame:
     """Does standard treatment of the SED catalog after it has been downloaded.
 
@@ -83,7 +85,7 @@ def prepare_sed_catalog(
         delta_m: magnitude bin size to be applied.
         only_earthquakes: if True, only
             events of event_type earthquake are kept.
-        convert_to_Mw: if True, local magnitudes are converted to Mw
+        convert_to_mw: if True, local magnitudes are converted to Mw
             using Edwards et al.
 
     Returns:
@@ -95,7 +97,7 @@ def prepare_sed_catalog(
                 "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
                inplace=True)
 
-    if convert_to_Mw:
+    if convert_to_mw:
         cat[['mag_type', 'magnitude']] = cat.apply(
             lambda x: apply_edwards(x['mag_type'], x['magnitude']), axis=1)
 
