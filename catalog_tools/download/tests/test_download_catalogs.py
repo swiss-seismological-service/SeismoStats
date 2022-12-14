@@ -63,7 +63,7 @@ def test_prepare_sed_catalog(mock_get):
         ch_cat,
         delta_m=delta_m,
         only_earthquakes=True,
-        convert_to_Mw=True
+        convert_to_mw=True
     )
 
     unique_mags = np.unique(df["magnitude"])
