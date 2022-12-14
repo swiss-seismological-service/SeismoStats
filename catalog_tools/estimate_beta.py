@@ -1,3 +1,6 @@
+"""This module contains functions for the estimation of beta and the b-value.
+"""
+
 import numpy as np
 
 
@@ -21,7 +24,7 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
     """
 
     if delta_m > 0:
-        p = (1 + (delta_m / (np.average(magnitudes - mc, weights=weights))))
+        p = 1 + (delta_m / (np.average(magnitudes - mc, weights=weights)))
         beta = 1 / delta_m * np.log(p)
     else:
         beta = 1 / np.average((magnitudes - mc), weights=weights)
@@ -29,8 +32,8 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
     return beta
 
 
-def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
-        -> float:
+def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0
+                       ) -> float:
     """ returns the maximum likelihood beta
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University, vol 13, pp
@@ -45,8 +48,7 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0) \
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
-
-    beta = 1 / (np.mean(magnitudes) - mc - delta_m / 2)
+    beta = 1 / (np.mean(magnitudes) - mc + delta_m / 2)
 
     return beta
 
