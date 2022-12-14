@@ -2,6 +2,9 @@ from io import BytesIO
 import urllib.request
 import datetime as dt
 import pandas as pd
+from typing import Optional
+
+# catalog tools
 from catalog_tools.utils.binning import bin_to_precision
 
 
@@ -24,10 +27,10 @@ def apply_edwards(mag_type: str, mag: float) -> pd.Series:
 def download_catalog_sed(
         start_time: dt.datetime = dt.datetime(1970, 1, 1),
         end_time: dt.datetime = dt.datetime.now(),
-        min_latitude: float | None = None,
-        max_latitude: float | None = None,
-        min_longitude: float | None = None,
-        max_longitude: float | None = None,
+        min_latitude: Optional[float] = None,
+        max_latitude: Optional[float] = None,
+        min_longitude: Optional[float] = None,
+        max_longitude: Optional[float] = None,
         min_magnitude: float = 0.01,
         delta_m: float = 0.1
 ) -> pd.DataFrame:
