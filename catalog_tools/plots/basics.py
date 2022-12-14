@@ -6,7 +6,7 @@ from typing import Union
 from catalog_tools.utils.binning import bin_magnitudes
 
 
-def plot_cum_fmd(ax:  plt.Axes, mags: np.ndarray, color: str = 'blue',
+def plot_cum_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
                  b_value: Union[float, None] = None,
                  mc: Union[float, None] = None, delta_m: float = 0):
     """ Plots cumulative frequency magnitude distribution, optionally with a
@@ -28,14 +28,14 @@ def plot_cum_fmd(ax:  plt.Axes, mags: np.ndarray, color: str = 'blue',
     mags_unique = mags_unique[idx[::-1]]
     counts = counts[idx[::-1]]
 
-    ax.scatter(mags_unique - delta_m/2, np.cumsum(counts), 5, color=color)
+    ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), 5, color=color)
 
     if b_value is not None:
         if mc is None:
             mc = min(mags)
         x = mags[mags >= mc]
-        y = len(x)*10**(-b_value*(x-mc))
-        ax.plot(x - delta_m/2, y, color=color)
+        y = len(x) * 10 ** (-b_value * (x - mc))
+        ax.plot(x - delta_m / 2, y, color=color)
 
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
