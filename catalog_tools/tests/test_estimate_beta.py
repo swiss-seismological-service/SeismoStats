@@ -14,7 +14,7 @@ def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
                                  delta_m: float) -> np.ndarray:
     """ This function simulates the magnitudes with the correct offset"""
     mags = simulate_magnitudes(n, beta, mc - delta_m / 2)
-    if delta_m >0:
+    if delta_m > 0:
         mags = bin_magnitudes(mags, delta_m)
     return mags
 
