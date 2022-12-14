@@ -2,6 +2,10 @@ from io import BytesIO
 import urllib.request
 import datetime as dt
 import pandas as pd
+from typing import Optional
+
+# catalog tools
+from catalog_tools.utils.binning import bin_to_precision
 
 
 def apply_edwards(mag_type: str, mag: float) -> pd.Series:
@@ -22,11 +26,13 @@ def apply_edwards(mag_type: str, mag: float) -> pd.Series:
 
 def download_catalog_sed(
         start_time: dt.datetime = dt.datetime(1970, 1, 1),
-        end_time: dt.datetime = dt.datetime.now(), min_latitude: float = None,
-        max_latitude: float = None, min_longitude: float = None,
-        max_longitude: float = None, min_magnitude: float = 0.01,
-        delta_m: float = 0.1, only_earthquakes: bool = True,
-        convert_to_Mw: bool = True
+        end_time: dt.datetime = dt.datetime.now(),
+        min_latitude: Optional[float] = None,
+        max_latitude: Optional[float] = None,
+        min_longitude: Optional[float] = None,
+        max_longitude: Optional[float] = None,
+        min_magnitude: float = 0.01,
+        delta_m: float = 0.1
 ) -> pd.DataFrame:
     """Downloads the Swiss earthquake catalog.
 
@@ -40,8 +46,6 @@ def download_catalog_sed(
       min_magnitude: minimum magnitude of catalog.
       delta_m: magnitude bin size. if >0, then
         events of magnitude >= (min_magnitude - delta_m/2) will be downloaded.
-      only_earthquakes: if True, only events of type earthquake are returned.
-      convert_to_Mw: if True, converts local magnitudes to moment magnitudes
 
     Returns:
       The catalog as a pandas DataFrame.
@@ -68,23 +72,45 @@ def download_catalog_sed(
 
     df = pd.read_csv(BytesIO(data), delimiter="|")
 
-    df.rename({
-        "Magnitude": "magnitude",
-        "Latitude": "latitude",
-        "Longitude": "longitude",
-        "Time": "time",
-        "Depth/km": "depth",
-        "EventType": 'event_type',
-        "MagType": 'mag_type'}, axis=1,
-        inplace=True)
+    return df
 
-    if convert_to_Mw:
-        df[['mag_type', 'magnitude']] = df.apply(
+
+def prepare_sed_catalog(
+        df: pd.DataFrame,
+        delta_m: float = 0.1,
+        only_earthquakes: bool = True,
+        convert_to_mw: bool = True
+) -> pd.DataFrame:
+    """Does standard treatment of the SED catalog after it has been downloaded.
+
+    Args:
+        df: downloaded catalog
+        delta_m: magnitude bin size to be applied.
+        only_earthquakes: if True, only
+            events of event_type earthquake are kept.
+        convert_to_mw: if True, local magnitudes are converted to Mw
+            using Edwards et al.
+
+    Returns:
+        the catalog as a DataFrame
+    """
+    cat = df.copy()
+    cat.rename({"Magnitude": "magnitude", "Latitude": "latitude",
+                "Longitude": "longitude", "Time": "time", "Depth/km": "depth",
+                "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
+               inplace=True)
+
+    if convert_to_mw:
+        cat[['mag_type', 'magnitude']] = cat.apply(
             lambda x: apply_edwards(x['mag_type'], x['magnitude']), axis=1)
-    df["time"] = pd.to_datetime(df["time"])
-    df.sort_values(by="time", inplace=True)
+
+    cat["time"] = pd.to_datetime(cat["time"])
+    cat.sort_values(by="time", inplace=True)
 
     if only_earthquakes:
-        df.query('event_type == "earthquake"', inplace=True)
+        cat.query('event_type == "earthquake"', inplace=True)
 
-    return df
+    if delta_m > 0:
+        cat["magnitude"] = bin_to_precision(cat["magnitude"], delta_m)
+
+    return cat
