@@ -37,7 +37,7 @@ def normal_round(x: float, n: int = 0) -> float:
     return normal_round_to_int(x * power) / power
 
 
-def bin_to_precision(x: float, delta_x: float = 0.1) -> float:
+def bin_to_precision(x: np.ndarray, delta_x: float = 0.1) -> np.ndarray:
     """
     Rounds a float number x to a given precision. If precision not given,
     assumes 0.1 bin size
@@ -55,7 +55,7 @@ def bin_to_precision(x: float, delta_x: float = 0.1) -> float:
     return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
 
 
-def bin_magnitudes(mags: list, delta_x: float = 0.1) -> list:
+def bin_magnitudes(mags: np.ndarray, delta_m: float = 0.1) -> np.ndarray:
     """
     Rounds a list of float numbers to a given precision.
     If precision not given, assumes 0.1 bin size.
@@ -68,6 +68,5 @@ def bin_magnitudes(mags: list, delta_x: float = 0.1) -> list:
         List of values rounded to the given precision.
     """
 
-    mags_array = np.array(mags)
-    rounded_array = bin_to_precision(mags_array, delta_x)
-    return list(rounded_array)
+    rounded_array = bin_to_precision(mags, delta_m)
+    return rounded_array
