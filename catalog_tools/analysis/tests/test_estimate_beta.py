@@ -5,9 +5,9 @@ import numpy as np
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
 from catalog_tools.utils.binning import bin_magnitudes
 # import functions to be tested
-from catalog_tools.estimate_beta import estimate_beta_tinti
-from catalog_tools.estimate_beta import estimate_beta_utsu
-from catalog_tools.estimate_beta import estimate_beta_elst
+from catalog_tools.analysis.estimate_beta import estimate_beta_tinti
+from catalog_tools.analysis.estimate_beta import estimate_beta_utsu
+from catalog_tools.analysis.estimate_beta import estimate_beta_elst
 
 
 def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
