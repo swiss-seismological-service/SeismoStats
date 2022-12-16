@@ -53,7 +53,40 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0
     return beta
 
 
-def estimate_beta_elst(magnitudes: np.ndarray) -> float:
+def differences(magnitudes: np.ndarray) -> np.ndarray:
+    """returns all the differences between the magnitudes.
+
+    Args:
+        magnitudes: vector of magnitudes differences, sorted in time (first
+                    entry is the earliest earthquake)
+
+    Returns: array of positive differences of the input
+    """
+    mag_diffs = np.array([])
+    for mag in magnitudes:
+        mag_diffs = np.append(mag_diffs, magnitudes - mag)
+    return mag_diffs
+
+
+def differences_successive(magnitudes: np.ndarray) -> np.ndarray:
+    """returns the differences of successive magnitudes.
+
+    Args:
+        magnitudes: vector of magnitudes, sorted in time (first
+                    entry is the earliest earthquake)
+
+    Returns: array of positive differences of the input
+    """
+    temp_mags1 = np.append([0], magnitudes)
+    temp_mags2 = np.append(magnitudes, [0])
+    mag_diffs = temp_mags1 - temp_mags2
+    mag_diffs = mag_diffs[1:-1]
+
+    return mag_diffs
+
+
+def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
+                       ) -> [float, float]:
     """ returns the b-value estimation using the positive differences of the
     Magnitudes
 
@@ -64,18 +97,48 @@ def estimate_beta_elst(magnitudes: np.ndarray) -> float:
     Args:
         magnitudes: vector of magnitudes differences, sorted in time (first
                     entry is the earliest earthquake)
+        delta_m:    discretization of magnitudes. default is no discretization
 
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
-    temp_mags1 = np.append([0], magnitudes)
-    temp_mags2 = np.append(magnitudes, [0])
-    mag_diffs = temp_mags1 - temp_mags2
-    mag_diffs = mag_diffs[1:-1]
-
+    mag_diffs = differences_successive(magnitudes)
     # only take the values where the next earthquake is larger
     mag_diffs = abs(mag_diffs[mag_diffs < 0])
+    beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
 
-    b_value = estimate_beta_utsu(mag_diffs, 0.0)
+    return beta
 
-    return b_value
+
+def estimate_beta_laplace(
+        magnitudes: np.ndarray,
+        delta_m: float = 0
+) -> float:
+    """ returns the b-value estimation using the all the  differences of the
+    Magnitudes (this has a little less variance than the estimate_beta_elst
+    method)
+
+    Source:
+        Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
+        2)
+
+    Args:
+        magnitudes: vector of magnitudes differences, sorted in time (first
+                    entry is the earliest earthquake)
+        delta_m:    discretization of magnitudes. default is no discretization
+
+    Returns:
+        beta:       maximum likelihood beta (b_value = beta * log10(e))
+    """
+    mag_diffs = differences(magnitudes)
+    mag_diffs = abs(mag_diffs)
+
+    if delta_m > 0:
+        a = np.average(mag_diffs) / delta_m
+        p = (1 + np.sqrt(a ** 2 + 1)) / a
+        beta = 1 / delta_m * np.log(p)
+
+    else:
+        beta = 1 / np.average(magnitudes)
+
+    return beta
