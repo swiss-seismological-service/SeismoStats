@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Union
+from typing import Optional
 
 # Own functions
 from catalog_tools.utils.binning import bin_to_precision
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
-                               mc: float, n_mc: int) -> np.ndarray:
+                      mc: float, n_mc: int) -> np.ndarray:
     """ gives the number of the cumulative gutenberg-richter law for a given
     magnitude vector. GR-law: N(M) = 10 ** (a-b(M-mc)), here we set
     n_mc = 10 ** a
@@ -26,8 +26,8 @@ def plot_cum_fmd(
         ax: plt.Axes,
         mags: np.ndarray,
         color: str = 'blue',
-        b_value: Union[float, None] = None,
-        mc: Union[float, None] = None,
+        b_value: Optional[float] = None,
+        mc: Optional[float] = None,
         delta_m: float = 0):
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
