@@ -15,5 +15,5 @@ from catalog_tools.plots.basics import plot_cum_fmd
 from catalog_tools.plots.basics import plot_fmd
 
 # utils
-from catalog_tools.utils.binning import bin_magnitudes
+from catalog_tools.utils.binning import bin_to_precision
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
