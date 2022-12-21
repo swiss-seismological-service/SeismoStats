@@ -1,5 +1,5 @@
 from catalog_tools.utils.binning import normal_round_to_int, normal_round
-from catalog_tools.utils.binning import bin_to_precision, bin_magnitudes
+from catalog_tools.utils.binning import bin_to_precision
 
 import pytest
 import numpy as np
@@ -32,27 +32,13 @@ def test_normal_round(x: float, n: int, rounded_value: float):
          np.array([0.2, -0.2, 4.5, 4.5, 6, 0.1, 1.6])),
         (np.array([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6]),
          0.2,
-         np.array([0.2, -0.2, 4.4, 5.6, 6, 0.2, 1.6]))
+         np.array([0.2, -0.2, 4.4, 5.6, 6, 0.2, 1.6])),
+        ([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6],
+         0.2,
+         [0.2, -0.2, 4.4, 5.6, 6, 0.2, 1.6])
     ]
 )
 def test_bin_to_precision(x: np.ndarray, delta_x: float,
                           rounded_value: np.ndarray):
     y = bin_to_precision(x, delta_x)
     assert (y == rounded_value).all()
-
-
-@pytest.mark.parametrize(
-    "mags, delta_m, rounded_list",
-    [
-        (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
-         0.1,
-         np.array([0.2, -0.2, 4.5, 4.5, 6, 0.1, 1.6])),
-        (np.array([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6]),
-         0.2,
-         np.array([0.2, -0.2, 4.4, 5.6, 6, 0.2, 1.6]))
-    ]
-)
-def test_bin_magnitudes(mags: np.ndarray, delta_m: float,
-                        rounded_list: np.ndarray):
-    y = bin_magnitudes(mags, delta_m)
-    assert (y == rounded_list).all()

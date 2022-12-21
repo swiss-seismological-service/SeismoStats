@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from typing import Union
 
 # Own functions
-from catalog_tools.utils.binning import bin_magnitudes
+from catalog_tools.utils.binning import bin_to_precision
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
@@ -75,7 +75,7 @@ def plot_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
     """
 
     if delta_m == 0:
-        mags = bin_magnitudes(mags, 0.1)
+        mags = bin_to_precision(mags, 0.1)
         mags = np.array(mags)
 
     mags_unique, counts = np.unique(mags, return_counts=True)
