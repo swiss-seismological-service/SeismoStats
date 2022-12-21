@@ -1,5 +1,6 @@
 import numpy as np
 import decimal
+from typing import Union
 
 
 def normal_round_to_int(x: float) -> int:
@@ -37,7 +38,8 @@ def normal_round(x: float, n: int = 0) -> float:
     return normal_round_to_int(x * power) / power
 
 
-def bin_to_precision(x: float, delta_x: float = 0.1) -> float:
+def bin_to_precision(x: Union[np.ndarray, list], delta_x: float = 0.1
+                     ) -> np.ndarray:
     """
     Rounds a float number x to a given precision. If precision not given,
     assumes 0.1 bin size
@@ -49,25 +51,8 @@ def bin_to_precision(x: float, delta_x: float = 0.1) -> float:
     Returns:
         Value rounded to the given precision.
     """
-
+    if type(x) == list:
+        x = np.array(x)
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
     return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
-
-
-def bin_magnitudes(mags: list, delta_x: float = 0.1) -> list:
-    """
-    Rounds a list of float numbers to a given precision.
-    If precision not given, assumes 0.1 bin size.
-
-    Args:
-        mags: list of values that need rounding
-        delta_m: size of the bin, optional
-
-    Returns:
-        List of values rounded to the given precision.
-    """
-
-    mags_array = np.array(mags)
-    rounded_array = bin_to_precision(mags_array, delta_x)
-    return list(rounded_array)
