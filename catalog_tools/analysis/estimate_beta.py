@@ -63,8 +63,9 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
     Returns: array of positive differences of the input
     """
     mag_diffs = np.array([])
-    for mag in magnitudes:
-        mag_diffs = np.append(mag_diffs, magnitudes - mag)
+    for ii, mag in enumerate(magnitudes):
+        loop_mag = np.delete(magnitudes, [ii], axis=0)
+        mag_diffs = np.append(mag_diffs, loop_mag - mag)
     return mag_diffs
 
 

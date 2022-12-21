@@ -6,9 +6,29 @@ from typing import Union
 from catalog_tools.utils.binning import bin_magnitudes
 
 
-def plot_cum_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
-                 b_value: Union[float, None] = None,
-                 mc: Union[float, None] = None, delta_m: float = 0):
+def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
+                               mc: float, n_mc: int) -> np.ndarray:
+    """ gives the number of the cumulative gutenberg-richter law for a given
+    magnitude vector. GR-law: N(M) = 10 ** (a-b(M-mc)), here we set
+    n_mc = 10 ** a
+
+    Args:
+        magnitudes: vector of magnitudes
+        b_value: theoretical b_value
+        mc: completeness magnitude
+        n_mc: cumulative number of events until mc (starting from the largest
+            magnitudes
+    """
+    return n_mc * 10 ** (-b_value * (magnitudes - mc))
+
+
+def plot_cum_fmd(
+        ax: plt.Axes,
+        mags: np.ndarray,
+        color: str = 'blue',
+        b_value: Union[float, None] = None,
+        mc: Union[float, None] = None,
+        delta_m: float = 0):
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
     provided b-value)
@@ -34,7 +54,7 @@ def plot_cum_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
         if mc is None:
             mc = min(mags)
         x = mags[mags >= mc]
-        y = len(x) * 10 ** (-b_value * (x - mc))
+        y = gutenberg_richter(x, b_value, mc, len(x))
         ax.plot(x - delta_m / 2, y, color=color)
 
     ax.set_yscale('log')
