@@ -4,8 +4,8 @@
 import numpy as np
 
 
-def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
-                        weights: list = None) -> float:
+def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0
+                        ) -> float:
     """ returns the maximum likelihood beta
     Source:
         Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
@@ -24,10 +24,10 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
     """
 
     if delta_m > 0:
-        p = 1 + (delta_m / (np.average(magnitudes - mc, weights=weights)))
+        p = 1 + delta_m / np.average(magnitudes - mc)
         beta = 1 / delta_m * np.log(p)
     else:
-        beta = 1 / np.average((magnitudes - mc), weights=weights)
+        beta = 1 / np.average(magnitudes - mc)
 
     return beta
 
@@ -138,8 +138,7 @@ def estimate_beta_laplace(
         a = np.average(mag_diffs) / delta_m
         p = (1 + np.sqrt(a ** 2 + 1)) / a
         beta = 1 / delta_m * np.log(p)
-
     else:
-        beta = 1 / np.average(magnitudes)
+        beta = 1 / np.average(mag_diffs)
 
     return beta
