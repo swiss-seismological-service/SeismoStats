@@ -3,7 +3,7 @@ import numpy as np
 
 # import functions from other modules
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
-from catalog_tools.utils.binning import bin_magnitudes
+from catalog_tools.utils.binning import bin_to_precision
 # import functions to be tested
 from catalog_tools.estimate_beta import estimate_beta_tinti
 from catalog_tools.estimate_beta import estimate_beta_utsu
@@ -15,7 +15,7 @@ def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
     """ This function simulates the magnitudes with the correct offset"""
     mags = simulate_magnitudes(n, beta, mc - delta_m / 2)
     if delta_m > 0:
-        mags = bin_magnitudes(mags, delta_m)
+        mags = bin_to_precision(mags, delta_m)
     return mags
 
 
