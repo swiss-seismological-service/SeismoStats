@@ -1,11 +1,11 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
-
 import numpy as np
+from typing import Optional
 
 
-def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0
-                        ) -> float:
+def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0,
+                        weights: Optional[list] = None) -> float:
     """ returns the maximum likelihood beta
     Source:
         Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
@@ -17,17 +17,17 @@ def estimate_beta_tinti(magnitudes: np.ndarray, mc: float, delta_m: float = 0
                     magnitudes below mc present)
         mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
-        weights: weights of each magnitude can be specified here
+        weights:    weights of each magnitude can be specified here
 
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
 
     if delta_m > 0:
-        p = 1 + delta_m / np.average(magnitudes - mc)
+        p = 1 + delta_m / np.average(magnitudes - mc, weights=weights)
         beta = 1 / delta_m * np.log(p)
     else:
-        beta = 1 / np.average(magnitudes - mc)
+        beta = 1 / np.average(magnitudes - mc, weights=weights)
 
     return beta
 
@@ -48,7 +48,7 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
-    beta = 1 / (np.mean(magnitudes) - mc + delta_m / 2)
+    beta = 1 / np.mean(magnitudes - mc + delta_m / 2)
 
     return beta
 
@@ -60,7 +60,7 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
         magnitudes: vector of magnitudes differences, sorted in time (first
                     entry is the earliest earthquake)
 
-    Returns: array of positive differences of the input
+    Returns: array of all differences of the elements of the input
     """
     mag_diffs = np.array([])
     for ii, mag in enumerate(magnitudes):
@@ -76,11 +76,11 @@ def differences_successive(magnitudes: np.ndarray) -> np.ndarray:
         magnitudes: vector of magnitudes, sorted in time (first
                     entry is the earliest earthquake)
 
-    Returns: array of positive differences of the input
+    Returns: array of successive differences of the input
     """
     temp_mags1 = np.append([0], magnitudes)
     temp_mags2 = np.append(magnitudes, [0])
-    mag_diffs = temp_mags1 - temp_mags2
+    mag_diffs = temp_mags2 - temp_mags1
     mag_diffs = mag_diffs[1:-1]
 
     return mag_diffs
@@ -105,7 +105,7 @@ def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
     """
     mag_diffs = differences_successive(magnitudes)
     # only take the values where the next earthquake is larger
-    mag_diffs = abs(mag_diffs[mag_diffs < 0])
+    mag_diffs = abs(mag_diffs[mag_diffs > 0])
     beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
 
     return beta
