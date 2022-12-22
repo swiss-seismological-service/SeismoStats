@@ -61,7 +61,7 @@ def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
 @pytest.mark.parametrize(
     "magnitudes,mag_diffs",
     [(np.array([1, -2, 3, 20, 4, 5]),
-      np.array([3, -5, -17, 16, -1]))]
+      np.array([-3, 5, 17, -16, 1]))]
 )
 def test_differences_successive(magnitudes: np.ndarray, mag_diffs: np.ndarray):
     y = differences_successive(magnitudes)
