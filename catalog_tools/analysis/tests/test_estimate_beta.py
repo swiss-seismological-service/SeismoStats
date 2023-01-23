@@ -10,8 +10,7 @@ from catalog_tools.analysis.estimate_beta import\
     estimate_beta_utsu,\
     estimate_beta_elst,\
     estimate_beta_laplace,\
-    differences,\
-    differences_successive
+    differences
 
 
 def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
@@ -55,16 +54,6 @@ def test_estimate_beta_utsu(n: int, beta: float, mc: float, delta_m: float,
 )
 def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
     y = differences(magnitudes)
-    assert (y == mag_diffs).all()
-
-
-@pytest.mark.parametrize(
-    "magnitudes,mag_diffs",
-    [(np.array([1, -2, 3, 20, 4, 5]),
-      np.array([-3, 5, 17, -16, 1]))]
-)
-def test_differences_successive(magnitudes: np.ndarray, mag_diffs: np.ndarray):
-    y = differences_successive(magnitudes)
     assert (y == mag_diffs).all()
 
 
