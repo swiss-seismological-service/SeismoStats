@@ -69,23 +69,6 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
     return mag_diffs
 
 
-def differences_successive(magnitudes: np.ndarray) -> np.ndarray:
-    """returns the differences of successive magnitudes.
-
-    Args:
-        magnitudes: vector of magnitudes, sorted in time (first
-                    entry is the earliest earthquake)
-
-    Returns: array of successive differences of the input
-    """
-    temp_mags1 = np.append([0], magnitudes)
-    temp_mags2 = np.append(magnitudes, [0])
-    mag_diffs = temp_mags2 - temp_mags1
-    mag_diffs = mag_diffs[1:-1]
-
-    return mag_diffs
-
-
 def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
                        ) -> [float, float]:
     """ returns the b-value estimation using the positive differences of the
@@ -103,7 +86,7 @@ def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
     Returns:
         beta:       maximum likelihood beta (b_value = beta * log10(e))
     """
-    mag_diffs = differences_successive(magnitudes)
+    mag_diffs = np.diff(magnitudes)
     # only take the values where the next earthquake is larger
     mag_diffs = abs(mag_diffs[mag_diffs > 0])
     beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
