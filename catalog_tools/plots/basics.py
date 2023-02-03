@@ -100,7 +100,7 @@ def plot_cum_count(
         ax: axis where figure should be plotted
         cat: catalog given as a pandas dataframe, should contain the column
              "magnitude" and  either "time" or "year"
-        mcs: the list of completeness magnitudes for which we show lines 
+        mcs: the list of completeness magnitudes for which we show lines
              on the plot
         delta_m: binning precision of the magnitudes
     """
@@ -135,7 +135,7 @@ def plot_mags_in_time(
 ):
     """
     Creates a scatter plot, each dot is an event. Time shown on x-axis,
-    magnitude shown on y-axis, but also in size of the dot. 
+    magnitude shown on y-axis, but also in size of the dot.
 
     Optionally, adds lines that represent the change in completeness magnitude.
     For example, year_bins = [2000, 2005] and mcs = [3.5, 3.0] means that
@@ -188,8 +188,8 @@ def plot_in_space(
     max_lon = max(cat["longitude"])
 
     # TODO: improve this part
-    step_lat = 1 if (max_lat-min_lat) / 20 < 1 else 10
-    step_lon = 1 if (max_lon-min_lon) / 20 < 1 else 10
+    step_lat = 1 if (max_lat - min_lat) / 20 < 1 else 10
+    step_lon = 1 if (max_lon - min_lon) / 20 < 1 else 10
 
     from mpl_toolkits.basemap import Basemap
     m = Basemap(resolution='i',
@@ -205,7 +205,7 @@ def plot_in_space(
     m.drawmeridians(np.arange(np.ceil(min_lon), np.ceil(max_lon), step_lon),
                     labels=[0, 0, 0, 1])
 
-    m.scatter(cat["longitude"], cat["latitude"], 
+    m.scatter(cat["longitude"], cat["latitude"],
               np.exp(cat["magnitude"]) / 10, c=cat["magnitude"])
 
     plt.colorbar(orientation='horizontal', label="magnitude")
