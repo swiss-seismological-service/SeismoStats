@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Optional
 
@@ -88,18 +89,19 @@ def plot_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
 def plot_cum_count(
     ax: plt.Axes,
     cat: pd.DataFrame,
-    mcs: Optional[np.ndarray]=np.array([0]),
-    delta_m: Optional[float]=0.1
+    mcs: Optional[np.ndarray] = np.array([0]),
+    delta_m: Optional[float] = 0.1
 ):
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
     through time. Plots a line for each given Mc.
-    
+
     Args:
         ax: axis where figure should be plotted
         cat: catalog given as a pandas dataframe, should contain the column
              "magnitude" and  either "time" or "year"
-        mcs: the list of completeness magnitudes for which we show lines on the plot
+        mcs: the list of completeness magnitudes for which we show lines 
+             on the plot
         delta_m: binning precision of the magnitudes
     """
 
@@ -108,14 +110,14 @@ def plot_cum_count(
 
         try:
             years = pd.to_datetime(cat_above_mc["time"]).dt.year
-        except:
+        except KeyError:
             try:
                 years = cat_above_mc["year"]
-            except:
-                raise Exception("Dataframe should contain 'year' or 'time' column.")
+            except KeyError:
+                raise Exception("Dataframe needs a 'year' or 'time' column.")
 
-        counts, bin_edges = np.histogram(years, 
-                                         bins=np.arange(np.min(years), np.max(years), 1))
+        counts, bin_edges = np.histogram(
+            years, bins=np.arange(np.min(years), np.max(years), 1))
         cumulative_counts = np.cumsum(counts) / np.sum(counts)
         bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
         ax.plot(bin_centres, cumulative_counts, label=f"Mc={mc}")
@@ -128,8 +130,8 @@ def plot_cum_count(
 def plot_mags_in_time(
     ax: plt.Axes,
     cat: pd.DataFrame,
-    years: Optional[list]=None,
-    mcs: Optional[list]=None
+    years: Optional[list] = None,
+    mcs: Optional[list] = None
 ):
     """
     Creates a scatter plot, each dot is an event. Time shown on x-axis,
@@ -149,11 +151,11 @@ def plot_mags_in_time(
 
     try:
         cat_years = pd.to_datetime(cat["time"]).dt.year
-    except:
+    except KeyError:
         try:
-            cat_years = cat_above_mc["year"]
-        except:
-            raise Exception("Dataframe should contain 'year' or 'time' column.")
+            cat_years = cat["year"]
+        except KeyError:
+            raise Exception("Dataframe needs a 'year' or 'time' column.")
 
     ax.scatter(cat_years, cat["magnitude"], cat["magnitude"]**2)
 
@@ -164,8 +166,8 @@ def plot_mags_in_time(
 
     ax.set_xlabel("time")
     ax.set_ylabel("magnitude")
-    
-    
+
+
 def plot_in_space(
     ax: plt.Axes,
     cat: pd.DataFrame
@@ -185,9 +187,9 @@ def plot_in_space(
     min_lon = min(cat["longitude"])
     max_lon = max(cat["longitude"])
 
-    #TODO: improve this part
-    step_lat = 1 if (max_lat-min_lat)/20 < 1 else 10
-    step_lon = 1 if (max_lon-min_lon)/20 < 1 else 10
+    # TODO: improve this part
+    step_lat = 1 if (max_lat-min_lat) / 20 < 1 else 10
+    step_lon = 1 if (max_lon-min_lon) / 20 < 1 else 10
 
     from mpl_toolkits.basemap import Basemap
     m = Basemap(resolution='i',
@@ -203,6 +205,7 @@ def plot_in_space(
     m.drawmeridians(np.arange(np.ceil(min_lon), np.ceil(max_lon), step_lon),
                     labels=[0, 0, 0, 1])
 
-    m.scatter(cat["longitude"], cat["latitude"], np.exp(cat["magnitude"])/10, c=cat["magnitude"])
+    m.scatter(cat["longitude"], cat["latitude"], 
+              np.exp(cat["magnitude"]) / 10, c=cat["magnitude"])
 
-    plt.colorbar(orientation = 'horizontal', label="magnitude")
+    plt.colorbar(orientation='horizontal', label="magnitude")
