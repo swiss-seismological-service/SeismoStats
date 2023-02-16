@@ -3,6 +3,8 @@ import urllib.request
 import datetime as dt
 import pandas as pd
 from typing import Optional
+from obspy.clients.fdsn.client import Client
+import numpy
 
 # catalog tools
 from catalog_tools.utils.binning import bin_to_precision
@@ -112,5 +114,79 @@ def prepare_sed_catalog(
 
     if delta_m > 0:
         cat["magnitude"] = bin_to_precision(cat["magnitude"], delta_m)
+
+    return cat
+
+
+def download_catalog(
+        client_name='EMSC',
+        starttime=dt.datetime(2023, 1, 1),
+        endtime=dt.datetime.now(),
+        minlatitude=None,
+        maxlatitude=None,
+        minlongitude=None,
+        maxlongitude=None,
+        minmagnitude=0,
+) -> pd.DataFrame:
+
+    client = Client(base_url=client_name)
+
+    try:
+        events = client.get_events(
+            starttime=starttime,
+            endtime=endtime,
+            minlatitude=minlatitude,
+            maxlatitude=maxlatitude,
+            minlongitude=minlongitude,
+            maxlongitude=maxlongitude,
+            minmagnitude=minmagnitude,
+        )
+    except:
+
+        start_1 = starttime
+        mid_1 = starttime + (endtime - starttime)/2
+        end_1 = endtime
+
+        half_1 = client.get_events(
+            starttime=start_1,
+            endtime=mid_1,
+            minlatitude=minlatitude,
+            maxlatitude=maxlatitude,
+            minlongitude=minlongitude,
+            maxlongitude=maxlongitude,
+            minmagnitude=minmagnitude,
+        )
+        half_2 = client.get_events(
+            starttime=mid_1,
+            endtime=end_1,
+            minlatitude=minlatitude,
+            maxlatitude=maxlatitude,
+            minlongitude=minlongitude,
+            maxlongitude=maxlongitude,
+            minmagnitude=minmagnitude,
+        )
+
+        half_1.extend(half_2)
+
+        events = half_1
+
+    evs = []
+
+    for event in events:
+        lat = event.origins[0].latitude
+        lon = event.origins[0].longitude
+        depth = event.origins[0].depth / 1000
+        time = event.origins[0].time
+        time = dt.datetime(time.year, time.month, time.day, time.hour, time.minute, time.second)
+        mag = event.magnitudes[0].mag
+        mag_type = event.magnitudes[0].magnitude_type
+
+        evs.append(pd.Series([time, lat, lon, depth, mag, mag_type]))
+
+    cat = pd.DataFrame(evs)
+    cat.columns = [
+        'time', 'latitude', 'longitude', 'depth', 'magnitude', 'mag_type']
+    cat.sort_values(by="time", inplace=True)
+    cat.index = np.arange(len(cat))
 
     return cat
