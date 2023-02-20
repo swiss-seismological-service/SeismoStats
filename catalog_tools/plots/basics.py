@@ -127,7 +127,7 @@ def plot_cum_count(
             bins=bin_edges)
         cumulative_counts = np.cumsum(counts) / np.sum(counts)
         bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
-        bin_centres = [first_time + dt.timedelta(seconds=centre) 
+        bin_centres = [first_time + dt.timedelta(seconds=centre)
                        for centre in bin_centres]
         ax.plot(bin_centres, cumulative_counts, label=f"Mc={np.round(mc,2)}")
 
