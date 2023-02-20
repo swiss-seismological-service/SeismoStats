@@ -123,11 +123,12 @@ def plot_cum_count(
         deltas_numeric = [delta.total_seconds() for delta in time_deltas]
 
         counts, bin_edges = np.histogram(
-            deltas_numeric, 
+            deltas_numeric,
             bins=bin_edges)
         cumulative_counts = np.cumsum(counts) / np.sum(counts)
         bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
-        bin_centres = [first_time + dt.timedelta(seconds=centre) for centre in bin_centres]
+        bin_centres = [first_time + dt.timedelta(seconds=centre) 
+                       for centre in bin_centres]
         ax.plot(bin_centres, cumulative_counts, label=f"Mc={np.round(mc,2)}")
 
     ax.set_xlabel("time")
