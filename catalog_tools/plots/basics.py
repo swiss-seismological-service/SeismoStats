@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Optional
-import datetime as dt
 
 # Own functions
 from catalog_tools.utils.binning import bin_to_precision
@@ -119,8 +118,8 @@ def plot_cum_count(
         times = sorted(cat_above_mc["time"])
         times_adjusted = [first_time, *times, last_time]
 
-        ax.plot(times_adjusted, 
-                np.arange(len(times_adjusted)) / (len(times_adjusted) - 1), 
+        ax.plot(times_adjusted,
+                np.arange(len(times_adjusted)) / (len(times_adjusted) - 1),
                 label=f"Mc={np.round(mc, 2)}")
 
     ax.set_xlabel("time")
