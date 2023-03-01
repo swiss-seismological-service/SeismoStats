@@ -76,7 +76,7 @@ def plot_in_space(
 
     # gridlines
     gl = ax.gridlines(crs=ll_proj, draw_labels=True,
-                      linewidth=2, color='gray', alpha=0.5, linestyle='--')
+                      linewidth=1, color='gray', alpha=0.5, linestyle='--')
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
     gl.bottom_labels = False
