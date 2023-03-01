@@ -29,7 +29,7 @@ def plot_cum_fmd(
         mc: Optional[float] = None,
         delta_m: float = 0,
         color: str = 'blue'
-):
+) -> plt.Axes:
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
     provided b-value)
@@ -42,6 +42,9 @@ def plot_cum_fmd(
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
         color   : color of the data
+
+    Returns:
+        ax that was plotted on
     """
     mags_unique, counts = np.unique(mags, return_counts=True)
     idx = np.argsort(mags_unique)
@@ -62,6 +65,7 @@ def plot_cum_fmd(
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
+    return ax
 
 
 def plot_fmd(
@@ -69,7 +73,7 @@ def plot_fmd(
         delta_m: float = 0,
         ax: Optional[plt.Axes] = None,
         color: str = 'blue'
-):
+) -> plt.Axes:
     """ Plots frequency magnitude distribution (non cumulative)
 
     Args:
@@ -78,6 +82,9 @@ def plot_fmd(
                 visualization of the data
         ax      : axis where figure should be plotted
         color   : color of the data
+
+    Returns:
+        ax that was plotted on
     """
 
     if delta_m == 0:
@@ -94,15 +101,16 @@ def plot_fmd(
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
+    return ax
 
 
 def plot_cum_count(
-    ax: plt.Axes,
     cat: pd.DataFrame,
+    ax: Optional[plt.Axes] = None,
     mcs: Optional[np.ndarray] = np.array([0]),
     delta_m: Optional[float] = 0.1,
     step: Optional[float] = 86400
-):
+) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
     through time. Plots a line for each given Mc.
@@ -115,14 +123,20 @@ def plot_cum_count(
              on the plot
         delta_m: binning precision of the magnitudes
         step: histogram bin size, expressed in seconds, default: 1 day
-    """
 
+    Returns:
+        ax that was plotted on
+    """
     try:
         times_list = cat["time"]
     except KeyError:
         raise Exception("Dataframe needs a 'time' column.")
 
     first_time, last_time = min(times_list), max(times_list)
+
+    if ax is None:
+        ax = plt.subplots()[1]
+
     for mc in mcs:
         cat_above_mc = cat.query(f"magnitude>={mc-delta_m/2}")
         times = sorted(cat_above_mc["time"])
@@ -135,14 +149,15 @@ def plot_cum_count(
     ax.set_xlabel("time")
     ax.set_ylabel("count - cumulative")
     ax.legend()
+    return ax
 
 
 def plot_mags_in_time(
-    ax: plt.Axes,
     cat: pd.DataFrame,
+    ax: Optional[plt.Axes] = None,
     years: Optional[list] = None,
     mcs: Optional[list] = None
-):
+) -> plt.Axes:
     """
     Creates a scatter plot, each dot is an event. Time shown on x-axis,
     magnitude shown on y-axis, but also in size of the dot.
@@ -157,8 +172,10 @@ def plot_mags_in_time(
              "magnitude" and  either "time" or "year"
         years: list of years when Mc changes, sorted in increasing order
         mcs: changed values of Mc at times given in 'years'
-    """
 
+    Returns:
+        ax that was plotted on
+    """
     try:
         cat_years = pd.to_datetime(cat["time"])
     except KeyError:
@@ -167,6 +184,8 @@ def plot_mags_in_time(
         except KeyError:
             raise Exception("Dataframe needs a 'year' or 'time' column.")
 
+    if ax is None:
+        ax = plt.subplots()[1]
     ax.scatter(cat_years, cat["magnitude"], cat["magnitude"]**2)
 
     if years is not None and mcs is not None:
@@ -176,3 +195,4 @@ def plot_mags_in_time(
 
     ax.set_xlabel("time")
     ax.set_ylabel("magnitude")
+    return ax
