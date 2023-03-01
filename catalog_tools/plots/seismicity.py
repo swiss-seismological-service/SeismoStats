@@ -83,8 +83,8 @@ def plot_in_space(
     gl.right_labels = False
 
     ax.scatter(
-        cat["latitude"],
         cat["longitude"],
+        cat["latitude"],
         c='blue',
         edgecolor='k',
         s=np.array(cat["magnitude"]),
