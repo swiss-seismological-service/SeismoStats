@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Optional
-import datetime as dt
 
 # Own functions
 from catalog_tools.utils.binning import bin_to_precision
@@ -124,22 +123,14 @@ def plot_cum_count(
         raise Exception("Dataframe needs a 'time' column.")
 
     first_time, last_time = min(times_list), max(times_list)
-    time_diff = (last_time - first_time).total_seconds()
-    bin_edges = np.arange(-1, time_diff + 1, step)
-
     for mc in mcs:
         cat_above_mc = cat.query(f"magnitude>={mc-delta_m/2}")
-        time_deltas = [(time - first_time) for time in cat_above_mc["time"]]
-        deltas_numeric = [delta.total_seconds() for delta in time_deltas]
+        times = sorted(cat_above_mc["time"])
+        times_adjusted = [first_time, *times, last_time]
 
-        counts, bin_edges = np.histogram(
-            deltas_numeric,
-            bins=bin_edges)
-        cumulative_counts = np.cumsum(counts) / np.sum(counts)
-        bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
-        bin_centres = [first_time + dt.timedelta(seconds=centre)
-                       for centre in bin_centres]
-        ax.plot(bin_centres, cumulative_counts, label=f"Mc={np.round(mc,2)}")
+        ax.plot(times_adjusted,
+                np.arange(len(times_adjusted)) / (len(times_adjusted) - 1),
+                label=f"Mc={np.round(mc, 2)}")
 
     ax.set_xlabel("time")
     ax.set_ylabel("count - cumulative")
