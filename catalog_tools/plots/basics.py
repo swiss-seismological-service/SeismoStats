@@ -24,31 +24,33 @@ def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
 
 
 def plot_cum_fmd(
-        ax: plt.Axes,
         mags: np.ndarray,
-        color: str = 'blue',
+        ax: Optional[plt.Axes] = None,
         b_value: Optional[float] = None,
         mc: Optional[float] = None,
-        delta_m: float = 0):
+        delta_m: float = 0,
+        color: str = 'blue'
+):
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
     provided b-value)
 
     Args:
         mags    : array of magnitudes
-        delta_m : discretization of the magnitudes, important for the correct
-                visualization of the data
         ax      : axis where figure should be plotted
-        color   : color of the data
-
         b_value : b-value of the theoretical GR distribution to plot
         mc      : completeness magnitude of the theoretical GR distribution
+        delta_m : discretization of the magnitudes, important for the correct
+                visualization of the data
+        color   : color of the data
     """
     mags_unique, counts = np.unique(mags, return_counts=True)
     idx = np.argsort(mags_unique)
     mags_unique = mags_unique[idx[::-1]]
     counts = counts[idx[::-1]]
 
+    if ax is None:
+        ax = plt.subplots()[1]
     ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), 5, color=color)
 
     if b_value is not None:
@@ -63,8 +65,12 @@ def plot_cum_fmd(
     ax.set_ylabel('N')
 
 
-def plot_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
-             delta_m: float = 0):
+def plot_fmd(
+        mags: np.ndarray,
+        delta_m: float = 0,
+        ax: Optional[plt.Axes] = None,
+        color: str = 'blue'
+):
     """ Plots frequency magnitude distribution (non cumulative)
 
     Args:
@@ -79,7 +85,11 @@ def plot_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
         mags = bin_to_precision(mags, 0.1)
         mags = np.array(mags)
 
+    if ax is None:
+        ax = plt.subplots()[1]
+
     mags_unique, counts = np.unique(mags, return_counts=True)
+
     ax.scatter(mags_unique, counts, 5, color=color)
 
     ax.set_yscale('log')
