@@ -83,3 +83,44 @@ def plot_fmd(ax: plt.Axes, mags: np.ndarray, color: str = 'blue',
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
+
+
+def dot_size(magnitudes, smallest=10, largest=200, interpolation_power=1):
+    """Compute dot sizes proportional to a given array of magnitudes.
+
+    The dot sizes are computed using a power interpolation between the smallest
+    and largest size, with the given interpolation power.
+
+    Args
+    ----------
+    magnitudes : array-like of float, shape (n_samples,)
+        The magnitudes of the dots.
+    smallest : float, optional (default=10)
+        The size of the smallest dot, in pixels.
+    largest : float, optional (default=200)
+        The size of the largest dot, in pixels.
+    interpolation_power : float, optional (default=1)
+        The power used to interpolate between the smallest and largest size.
+        A value of 1 results in a linear interpolation, while larger values
+        result in a more "concave" curve.
+
+    Returns
+    -------
+    sizes : ndarray of float, shape (n_samples,)
+        The sizes of the dots, proportional to their magnitudes.
+        The returned sizes are between `smallest` and `largest`.
+    """
+    
+    if largest <= smallest:
+        print(
+            "largest value is not larger than smallest, "
+            "setting it to whatever I think is better")
+        largest = 50 * max(smallest, 2)
+    smallest_mag = np.min(magnitudes)
+    largest_mag = np.max(magnitudes)
+
+    mag_norm = (magnitudes - smallest_mag) / (largest_mag - smallest_mag)
+    mag_powered = np.power(mag_norm, interpolation_power)
+    sizes = mag_powered * (largest - smallest) + smallest
+
+    return sizes
