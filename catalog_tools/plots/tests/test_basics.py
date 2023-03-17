@@ -12,7 +12,7 @@ def test_dot_size():
     interpolation_power = 2
 
     # Expected output based on input data
-    expected_sizes = np.array([ 10.   ,  21.875,  57.5  , 116.875, 200.   ])
+    expected_sizes = np.array([10., 21.875, 57.5, 116.875, 200.])
 
     # Compute dot sizes using the function
     sizes = dot_size(magnitudes, smallest=smallest, largest=largest,
