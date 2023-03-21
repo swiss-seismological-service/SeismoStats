@@ -116,12 +116,7 @@ def estimate_beta_laplace(
     """
     mag_diffs = differences(magnitudes)
     mag_diffs = abs(mag_diffs)
-
-    if delta_m > 0:
-        a = np.average(mag_diffs) / delta_m
-        p = (1 + np.sqrt(a ** 2 + 1)) / a
-        beta = 1 / delta_m * np.log(p)
-    else:
-        beta = 1 / np.average(mag_diffs)
+    mag_diffs = mag_diffs[mag_diffs > 0]
+    beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
 
     return beta
