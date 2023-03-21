@@ -195,6 +195,7 @@ def plot_mags_in_time(
     ax.set_ylabel("magnitude")
     return ax
 
+
 def dot_size(magnitudes, smallest=10, largest=200, interpolation_power=1):
     """Compute dot sizes proportional to a given array of magnitudes.
 

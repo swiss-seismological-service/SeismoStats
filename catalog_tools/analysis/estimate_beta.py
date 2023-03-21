@@ -118,5 +118,4 @@ def estimate_beta_laplace(
     mag_diffs = abs(mag_diffs)
     mag_diffs = mag_diffs[mag_diffs > 0]
     beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
-
     return beta
