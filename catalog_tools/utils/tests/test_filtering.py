@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from catalog_tools.utils.filtering import df_intersect_polygon
 
 
