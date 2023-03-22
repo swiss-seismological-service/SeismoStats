@@ -24,3 +24,4 @@ from catalog_tools.plots.seismicity import plot_in_space
 # utils
 from catalog_tools.utils.binning import bin_to_precision
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
+from catalog_tools.utils.filtering import cat_intersect_polygon
