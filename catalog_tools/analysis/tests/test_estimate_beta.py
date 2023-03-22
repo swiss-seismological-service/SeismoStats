@@ -4,6 +4,7 @@ import numpy as np
 # import functions from other modules
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
 from catalog_tools.utils.binning import bin_to_precision
+
 # import functions to be tested
 from catalog_tools.analysis.estimate_beta import\
     estimate_beta_tinti,\
