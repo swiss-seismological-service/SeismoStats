@@ -1,7 +1,5 @@
 # standard
-import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 # for map plotting
@@ -14,8 +12,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import geopandas
 
 # typing
-from typing import Optional, List, Union
-
+from typing import Optional, List
 
 # Own functions
 from catalog_tools.plots.basics import dot_size
