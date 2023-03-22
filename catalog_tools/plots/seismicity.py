@@ -29,8 +29,8 @@ def plot_in_space(
         colors: Optional[str] = None,
         dot_smallest: int = 10,
         dot_largest: int = 200,
-        dot_interpolation_power: int = 2
-) -> Union[cartopy.mpl.geoaxes.GeoAxes, plt.Axes]:
+        dot_interpolation_power: int = 2,
+) -> cartopy.mpl.geoaxes.GeoAxes:
     """
      Function plots seismicity on the surface. If include_map is chosen True,
     a nice natural earth map is used, otherwise the seismicity is just
@@ -51,82 +51,15 @@ def plot_in_space(
         dot_interpolation_power: interpolation power for scaling
 
     Returns:
-        GeoAxis object or normal axis object
-    """
-
-    if include_map is True:
-        ax = plot_in_space_w_map(
-            cat, resolution=resolution, country=country, colors=colors,
-            dot_smallest=dot_smallest, dot_largest=dot_largest,
-            dot_interpolation_power=dot_interpolation_power)
-    else:
-        ax = plot_in_space_wo_map(
-            cat, resolution=resolution, country=country,
-            dot_smallest=dot_smallest, dot_largest=dot_largest,
-            dot_interpolation_power=dot_interpolation_power)
-
-    return ax
-
-
-def plot_in_space_wo_map(
-        cat: pd.DataFrame,
-        resolution: str = '110m',
-        country: Optional[str] = None,
-        colors: Optional[str] = None,
-        dot_smallest: int = 10,
-        dot_largest: int = 200,
-        dot_interpolation_power: int = 2,
-) -> plt.Axes:
-    """
-    Function plots seismicity on blanc grid
-Args:
-    cat: dataframe- needs to have latitude, longitude and depth as
-        entries
-    resolution: resolution of map, '10m', '50m' and '110m' available
-    country: name of country, if None map will fit to data points
-    colors: color of background. if None is chosen, is will be either
-        white or standard natural earth colors.
-    dot_smallest: smallest dot size for magnitude scaling
-    dot_largest:largest dot size for magnitude scaling
-    dot_interpolation_power: interpolation power for scaling
-
-Returns:
-    GeoAxis object
-    """
-    pass
-
-
-def plot_in_space_w_map(
-        cat: pd.DataFrame,
-        resolution: str = '110m',
-        country: Optional[str] = None,
-        colors: Optional[str] = None,
-        dot_smallest: int = 10,
-        dot_largest: int = 200,
-        dot_interpolation_power: int = 2,
-) -> cartopy.mpl.geoaxes.GeoAxes:
-    """
-    Function plots seismicity on natural earth map
-
-    Args:
-        cat: dataframe- needs to have latitude, longitude and depth as
-            entries
-        resolution: resolution of map, '10m', '50m' and '110m' available
-        country: name of country, if None map will fit to data points
-        colors: color of background. if None is chosen, is will be either
-            white or standard natural earth colors.
-        dot_smallest: smallest dot size for magnitude scaling
-        dot_largest:largest dot size for magnitude scaling
-        dot_interpolation_power: interpolation power for scaling
-
-    Returns:
         GeoAxis object
     """
     # request data for use by geopandas
-    category: str = 'cultural'
-    name: str = 'admin_0_countries'
-    shpfilename = shapereader.natural_earth(resolution, category, name)
-    df = geopandas.read_file(shpfilename)
+    if include_map is True:
+        category: str = 'cultural'
+        name: str = 'admin_0_countries'
+        shpfilename = shapereader.natural_earth(resolution, category, name)
+        df = geopandas.read_file(shpfilename)
+
     if colors is not None:
         stamen_terrain = cimgt.Stamen('terrain-background',
                                       desired_tile_form="L")
@@ -140,17 +73,18 @@ def plot_in_space_w_map(
 
     ax = plt.subplot(projection=st_proj)
 
-    if country is not None:
+    if include_map is True and country is not None:
         # create box around country
         poly = [df.loc[df['ADMIN'] == country]['geometry'].values[0]]
         pad_lat = abs(poly[0].bounds[0] - poly[0].bounds[2]) * 0.05
         pad_lon = abs(poly[0].bounds[1] - poly[0].bounds[3]) * 0.05
         exts = [poly[0].bounds[0] - pad_lat, poly[0].bounds[2] + pad_lat,
                 poly[0].bounds[1] - pad_lon, poly[0].bounds[3] + pad_lon]
-        msk = Polygon(rect_from_bound(*exts)).difference(poly[0].simplify(0.01))
+        msk = Polygon(rect_from_bound(*exts)).difference(
+            poly[0].simplify(0.01))
         msk_stm = st_proj.project_geometry(msk, ll_proj)
-        ax.add_geometries(msk_stm, st_proj, facecolor='white', edgecolor='grey',
-                          alpha=0.6)
+        ax.add_geometries(msk_stm, st_proj, facecolor='white',
+                          edgecolor='grey', alpha=0.6)
     else:
         # create box around the data points
         pad_lat = abs(max(cat['latitude']) - min(cat['latitude'])) * 0.05
@@ -161,7 +95,9 @@ def plot_in_space_w_map(
                 max(cat['latitude']) + pad_lat]
 
     ax.set_extent(exts, crs=ll_proj)
-    ax.add_image(stamen_terrain, 8, alpha=0.6)
+
+    if include_map is True:
+        ax.add_image(stamen_terrain, 8, alpha=0.6)
 
     # gridlines
     gl = ax.gridlines(crs=ll_proj, draw_labels=True,

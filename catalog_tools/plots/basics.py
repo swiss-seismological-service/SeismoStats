@@ -196,7 +196,10 @@ def plot_mags_in_time(
     return ax
 
 
-def dot_size(magnitudes, smallest=10, largest=200, interpolation_power=1):
+def dot_size(
+        magnitudes: np.array, smallest: int = 10, largest: int = 200,
+        interpolation_power: int = 1
+) -> np.array:
     """Compute dot sizes proportional to a given array of magnitudes.
 
     The dot sizes are computed using a power interpolation between the smallest
@@ -221,7 +224,6 @@ def dot_size(magnitudes, smallest=10, largest=200, interpolation_power=1):
         The sizes of the dots, proportional to their magnitudes.
         The returned sizes are between `smallest` and `largest`.
     """
-
     if largest <= smallest:
         print(
             "largest value is not larger than smallest, "
