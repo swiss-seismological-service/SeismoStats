@@ -16,7 +16,10 @@ from catalog_tools.download.download_catalogs import\
 # plots
 from catalog_tools.plots.basics import\
     plot_cum_fmd,\
-    plot_fmd
+    plot_fmd,\
+    plot_cum_count,\
+    plot_mags_in_time
+from catalog_tools.plots.seismicity import plot_in_space
 
 # utils
 from catalog_tools.utils.binning import bin_to_precision
