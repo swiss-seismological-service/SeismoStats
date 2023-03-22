@@ -108,6 +108,6 @@ def rect_from_bound(xmin: float, xmax: float, ymin: float, ymax: float
     Returns:
         list of (x,y)'s for a rectangle
     """
-    xs = [xmax, xmin, xmin, xmax, xmax]
-    ys = [ymax, ymax, ymin, ymin, ymax]
+    xs = [xmax, xmin, xmin, xmax]
+    ys = [ymax, ymax, ymin, ymin]
     return [(x, y) for x, y in zip(xs, ys)]
