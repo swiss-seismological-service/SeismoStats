@@ -21,15 +21,17 @@ def df_intersect_polygon(df, polygon_vertices):
         DataFrame containing only the rows with points inside the polygon.
 
     """
+    # Make a copy of the DataFrame
+    df_copy = df.copy()
     # Add a new column to the DataFrame
     # indicating whether each point is inside the polygon
-    df['inside_polygon'] = df.apply(
-        lambda row: Polygon(polygon_vertices).contains(
+    df_copy['inside_polygon'] = df_copy.apply(
+        lambda row: Polygon(polygon_vertices).intersects(
             Point(row['latitude'], row['longitude'])), axis=1)
 
     # Filter the DataFrame to only include rows where
     # the point is inside the polygon
-    filtered_df = df.query('inside_polygon').drop(
+    filtered_df = df_copy.query('inside_polygon').drop(
         'inside_polygon', axis=True).copy()
 
     return filtered_df
