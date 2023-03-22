@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def cat_intersect_polygon(cat: pd.DataFrame, polygon_vertices: List[tuple]
-                         ) -> pd.DataFrame:
+                          ) -> pd.DataFrame:
     """Returns a DataFrame containing
     only the rows with points inside a given polygon.
 
