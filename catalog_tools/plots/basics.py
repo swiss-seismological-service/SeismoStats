@@ -46,6 +46,9 @@ def plot_cum_fmd(
     Returns:
         ax that was plotted on
     """
+
+    mags = mags[~np.isnan(mags)]
+
     mags_unique, counts = np.unique(mags, return_counts=True)
     idx = np.argsort(mags_unique)
     mags_unique = mags_unique[idx[::-1]]
