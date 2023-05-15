@@ -70,10 +70,10 @@ def plot_cum_fmd(
         if type(color) is not list:
             color = [color, color]
         ax.plot(x - delta_m / 2, y, color=color[1])
-        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), size,
+        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
                    color=color[0], marker='s')
     else:
-        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), size,
+        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
                    color=color, marker='s')
 
     ax.set_yscale('log')
@@ -120,7 +120,7 @@ def plot_fmd(
 
     mags_unique, counts = np.unique(mags, return_counts=True)
 
-    ax.scatter(mags_unique, counts, size, color=color, marker='^')
+    ax.scatter(mags_unique, counts, s=size, color=color, marker='^')
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
