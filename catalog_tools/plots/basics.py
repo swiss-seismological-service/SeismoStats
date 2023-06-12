@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from typing import Optional
+from typing import Optional, Union
 
 # Own functions
 from catalog_tools.utils.binning import bin_to_precision
@@ -28,7 +28,9 @@ def plot_cum_fmd(
         b_value: Optional[float] = None,
         mc: Optional[float] = None,
         delta_m: float = 0,
-        color: str = 'blue'
+        color: Union[str, list] = 'blue',
+        size: int = 3,
+        grid: bool = False
 ) -> plt.Axes:
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
@@ -41,7 +43,10 @@ def plot_cum_fmd(
         mc      : completeness magnitude of the theoretical GR distribution
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
-        color   : color of the data
+        color   : color of the data. If theoretical GR distribution should be
+            colored differently this should be a list with two entries
+        size    : size of scattered data
+        grid    : bool, include grid lines or not
 
     Returns:
         ax that was plotted on
@@ -56,18 +61,29 @@ def plot_cum_fmd(
 
     if ax is None:
         ax = plt.subplots()[1]
-    ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), 5, color=color)
 
     if b_value is not None:
         if mc is None:
             mc = min(mags)
         x = mags[mags >= mc]
         y = gutenberg_richter(x, b_value, mc, len(x))
-        ax.plot(x - delta_m / 2, y, color=color)
+        if type(color) is not list:
+            color = [color, color]
+        ax.plot(x - delta_m / 2, y, color=color[1])
+        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
+                   color=color[0], marker='s')
+    else:
+        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
+                   color=color, marker='s')
 
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
+
+    if grid is True:
+        ax.grid(True)
+        ax.grid(which='minor', alpha=0.3)
+
     return ax
 
 
@@ -75,7 +91,9 @@ def plot_fmd(
         mags: np.ndarray,
         delta_m: float = 0,
         ax: Optional[plt.Axes] = None,
-        color: str = 'blue'
+        color: str = 'blue',
+        size: int = 5,
+        grid: bool = False
 ) -> plt.Axes:
     """ Plots frequency magnitude distribution (non cumulative)
 
@@ -85,25 +103,32 @@ def plot_fmd(
                 visualization of the data
         ax      : axis where figure should be plotted
         color   : color of the data
+        size    : size of scattered data
+        grid    : bool, include grid lines or not
 
     Returns:
         ax that was plotted on
     """
 
     if delta_m == 0:
-        mags = bin_to_precision(mags, 0.1)
-        mags = np.array(mags)
+        delta_m = 0.1
+    mags = bin_to_precision(mags, delta_m)
+    mags = np.array(mags)
 
     if ax is None:
         ax = plt.subplots()[1]
 
     mags_unique, counts = np.unique(mags, return_counts=True)
 
-    ax.scatter(mags_unique, counts, 5, color=color)
-
+    ax.scatter(mags_unique, counts, s=size, color=color, marker='^')
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
+
+    if grid is True:
+        ax.grid(True)
+        ax.grid(which='minor', alpha=0.3)
+
     return ax
 
 
