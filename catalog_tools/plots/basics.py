@@ -92,9 +92,9 @@ def get_cum_fmd(
         delta_m: float,
         left: bool = False
 ) -> [np.ndarray, np.ndarray]:
-    """ Calculates cumulative event counts across all magnitude units 
+    """ Calculates cumulative event counts across all magnitude units
     (summed from the right). Note that the returned bins array contains
-    the center point of each bin unless left is True. Moreover, note 
+    the center point of each bin unless left is True. Moreover, note
     that all bins except for the last are half-open in np.histogram
     (right edge not included).
 
@@ -172,7 +172,10 @@ def plot_cum_fmd_classic(
         y = gutenberg_richter(x, b_value, mc, len(x))
         if type(color) is not list:
             color = [color, color]
-        ax.plot(x - delta_m / 2, y, color=color[1])
+	if left:
+            ax.plot(x - delta_m / 2, y, color=color[1])
+	else:
+	    ax.plot(x, y, color=color[1])
         ax.scatter(bins, c_counts, s=size,
                    color=color[0], marker='s')
     else:
