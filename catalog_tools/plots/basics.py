@@ -172,10 +172,10 @@ def plot_cum_fmd_classic(
         y = gutenberg_richter(x, b_value, mc, len(x))
         if type(color) is not list:
             color = [color, color]
-	if left:
+        if left:
             ax.plot(x - delta_m / 2, y, color=color[1])
-	else:
-	    ax.plot(x, y, color=color[1])
+        else:
+            ax.plot(x, y, color=color[1])
         ax.scatter(bins, c_counts, s=size,
                    color=color[0], marker='s')
     else:
