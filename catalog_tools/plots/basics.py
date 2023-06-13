@@ -109,7 +109,7 @@ def get_cum_fmd(
         c_counts: cumulative counts for each bin
     """
     bins = bin_to_precision(np.arange((np.min(mags)) * 1000,
-                                      (np.max(mags) + 2 * delta_m) * 1000,
+                                      (np.max(mags) + delta_m) * 1000,
                                       delta_m * 1000) / 1000, delta_m)
     counts = np.histogram(mags, bins)[0][::-1]
     bins = bins[:-1][::-1]
