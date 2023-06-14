@@ -91,12 +91,10 @@ def get_cum_fmd(
         mags: np.ndarray,
         delta_m: float,
         left: bool = False
-) -> [np.ndarray, np.ndarray]:
+) -> [np.ndarray, np.ndarray, np.ndarray]:
     """ Calculates cumulative event counts across all magnitude units
     (summed from the right). Note that the returned bins array contains
-    the center point of each bin unless left is True. Moreover, note
-    that all bins except for the last are half-open in np.histogram
-    (right edge not included).
+    the center point of each bin unless left is True.
 
     Args:
         mags    : array of magnitudes
@@ -105,22 +103,26 @@ def get_cum_fmd(
                 center points are returned.
 
     Returns:
-        bins    : array of bin centers
-        c_counts: cumulative counts for each bin
+        bins    : array of bin centers (right to left)
+        c_counts: cumulative counts for each bin ("")
+        mags    : array of magnitudes binned to delta_m
     """
+    
+    mags = bin_to_precision(mags, delta_m)
+    mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
+    mags_i = mags_i.astype(int)
+    counts = np.bincount(mags_i)
     bins = bin_to_precision(np.arange((np.min(mags)) * 1000,
-                                      (np.max(mags) + delta_m) * 1000,
+                                      (np.max(mags) + delta_m / 2) * 1000,
                                       delta_m * 1000) / 1000, delta_m)
-    counts = np.histogram(mags, bins)[0][::-1]
-    bins = bins[:-1][::-1]
-    c_counts = np.cumsum(counts)
+
+    bins = bins[::-1]
+    c_counts = np.cumsum(counts[::-1])
 
     if left:
-        pass
-    else:
-        bins = bins + delta_m / 2
+        bins = bins - delta_m / 2
 
-    return bins, c_counts
+    return bins, c_counts, mags
 
 
 def plot_cum_fmd_classic(
@@ -158,9 +160,8 @@ def plot_cum_fmd_classic(
     """
 
     mags = mags[~np.isnan(mags)]
-    mags = bin_to_precision(mags, delta_m)
 
-    bins, c_counts = get_cum_fmd(mags, delta_m, left=left)
+    bins, c_counts, mags = get_cum_fmd(mags, delta_m, left=left)
 
     if ax is None:
         ax = plt.subplots()[1]
