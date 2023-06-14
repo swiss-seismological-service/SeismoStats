@@ -107,7 +107,6 @@ def get_cum_fmd(
         c_counts: cumulative counts for each bin ("")
         mags    : array of magnitudes binned to delta_m
     """
-    
     mags = bin_to_precision(mags, delta_m)
     mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
     mags_i = mags_i.astype(int)
