@@ -33,9 +33,30 @@ def download_catalog_sed(
         max_latitude: Optional[float] = None,
         min_longitude: Optional[float] = None,
         max_longitude: Optional[float] = None,
-        min_magnitude: float = 0.01,
-        delta_m: float = 0.1
+        min_magnitude: float = 0.0,
+        delta_m: float = 0.0,
+        only_earthquakes: bool = True
 ) -> pd.DataFrame:
+    """Downloads the Swiss earthquake catalog and converts it to the
+        catalog-tools standard format
+
+    Args:
+        start_time:     start time of the catalog.
+        end_time:       end time of the catalog. defaults to current time.
+        min_latitude:   minimum latitude of catalog.
+        max_latitude:   maximum latitude of catalog.
+        min_longitude:  minimum longitude of catalog.
+        max_longitude:  maximum longitude of catalog.
+        min_magnitude:  minimum magnitude of catalog.
+        delta_m:        magnitude bin size. if >0, then events of
+            magnitude >= (min_magnitude - delta_m/2) will be downloaded.
+        only_earthquakes: if True, only events of event_type earthquake are
+            kept.
+
+    Returns:
+        The catalog as a pandas DataFrame.
+
+    """
     base_query = 'http://arclink.ethz.ch/fdsnws/event/1/query?'
     df = download_catalog_1(
         base_query=base_query,
@@ -49,7 +70,8 @@ def download_catalog_sed(
         delta_m=delta_m)
 
     # prepare the catalog to the standard form
-    df = prepare_sed_catalog(df)
+    df = prepare_sed_catalog(
+        df, delta_m=delta_m, only_earthquakes=only_earthquakes)
 
     return df
 
@@ -61,9 +83,30 @@ def download_catalog_scedc(
         max_latitude: Optional[float] = None,
         min_longitude: Optional[float] = None,
         max_longitude: Optional[float] = None,
-        min_magnitude: float = 0.01,
-        delta_m: float = 0.1
+        min_magnitude: float = 0.0,
+        delta_m: float = 0.0,
+        only_earthquakes: bool = True
 ) -> pd.DataFrame:
+    """Downloads the SCEDC earthquake catalog and converts it to the
+        catalog-tools standard format
+
+    Args:
+        start_time:     start time of the catalog.
+        end_time:       end time of the catalog. defaults to current time.
+        min_latitude:   minimum latitude of catalog.
+        max_latitude:   maximum latitude of catalog.
+        min_longitude:  minimum longitude of catalog.
+        max_longitude:  maximum longitude of catalog.
+        min_magnitude:  minimum magnitude of catalog.
+        delta_m:        magnitude bin size. if >0, then events of
+            magnitude >= (min_magnitude - delta_m/2) will be downloaded.
+        only_earthquakes: if True, only events of event_type earthquake are
+            kept.
+
+    Returns:
+        The catalog as a pandas DataFrame.
+
+    """
     base_query = 'https://service.scedc.caltech.edu/fdsnws/event/1/query?'
     df = download_catalog_1(
         base_query=base_query,
@@ -77,7 +120,8 @@ def download_catalog_scedc(
         delta_m=delta_m)
 
     # prepare the catalog to the standard form
-    df = prepare_scedc_catalog(df)
+    df = prepare_scedc_catalog(
+        df, delta_m=delta_m, only_earthquakes=only_earthquakes)
 
     return df
 
@@ -93,7 +137,7 @@ def download_catalog_1(
         min_magnitude: float = 0.01,
         delta_m: float = 0.1
 ) -> pd.DataFrame:
-    """Downloads the Swiss earthquake catalog.
+    """Downloads an earthquake catalog based on a URL.
 
     Args:
         base_query:     base query url ()
@@ -137,17 +181,17 @@ def download_catalog_1(
 
 def prepare_sed_catalog(
         df: pd.DataFrame,
-        delta_m: float = 0.1,
+        delta_m: float = 0.0,
         only_earthquakes: bool = True,
-        convert_to_mw: bool = True
+        convert_to_mw: bool = False
 ) -> pd.DataFrame:
     """Does standard treatment of the SED catalog after it has been downloaded.
 
     Args:
         df: downloaded catalog
         delta_m: magnitude bin size to be applied.
-        only_earthquakes: if True, only
-            events of event_type earthquake are kept.
+        only_earthquakes: if True, only events of event_type earthquake are
+            kept.
         convert_to_mw: if True, local magnitudes are converted to Mw
             using Edwards et al.
 
@@ -178,7 +222,7 @@ def prepare_sed_catalog(
 
 def prepare_scedc_catalog(
         df: pd.DataFrame,
-        delta_m: float = 0.1,
+        delta_m: float = 0.0,
         only_earthquakes: bool = True,
 ) -> pd.DataFrame:
     """Does standard treatment of the SED catalog after it has been downloaded.
@@ -215,50 +259,68 @@ def prepare_scedc_catalog(
 
 def download_catalog(
         client_name='EMSC',
-        starttime=dt.datetime(2023, 1, 1),
-        endtime=dt.datetime.now(),
-        minlatitude=None,
-        maxlatitude=None,
-        minlongitude=None,
-        maxlongitude=None,
-        minmagnitude=0,
+        start_time=dt.datetime(2023, 1, 1),
+        end_time=dt.datetime.now(),
+        min_latitude=None,
+        max_latitude=None,
+        min_longitude=None,
+        max_longitude=None,
+        min_magnitude=0,
 ) -> pd.DataFrame:
+    """Downloads an earthquake catalog based on a client.
+
+    Args:
+        client_name:    client which catalog should be retrieved from
+        start_time:     start time of the catalog.
+        end_time:       end time of the catalog. defaults to current time.
+        min_latitude:   minimum latitude of catalog.
+        max_latitude:   maximum latitude of catalog.
+        min_longitude:  minimum longitude of catalog.
+        max_longitude:  maximum longitude of catalog.
+        min_magnitude:  minimum magnitude of catalog.
+        delta_m:        magnitude bin size. if >0, then events of
+            magnitude >= (min_magnitude - delta_m/2) will be downloaded.
+
+    Returns:
+        The catalog as a pandas DataFrame.
+
+    """
 
     client = Client(base_url=client_name)
 
     try:
         events = client.get_events(
-            starttime=starttime,
-            endtime=endtime,
-            minlatitude=minlatitude,
-            maxlatitude=maxlatitude,
-            minlongitude=minlongitude,
-            maxlongitude=maxlongitude,
-            minmagnitude=minmagnitude,
+            starttime=start_time,
+            endtime=end_time,
+            minlatitude=min_latitude,
+            maxlatitude=max_latitude,
+            minlongitude=min_longitude,
+            maxlongitude=max_longitude,
+            minmagnitude=min_magnitude,
         )
     except:
 
-        start_1 = starttime
-        mid_1 = starttime + (endtime - starttime)/2
-        end_1 = endtime
+        start_1 = start_time
+        mid_1 = start_time + (end_time - start_time)/2
+        end_1 = end_time
 
         half_1 = client.get_events(
             starttime=start_1,
             endtime=mid_1,
-            minlatitude=minlatitude,
-            maxlatitude=maxlatitude,
-            minlongitude=minlongitude,
-            maxlongitude=maxlongitude,
-            minmagnitude=minmagnitude,
+            minlatitude=min_latitude,
+            maxlatitude=max_latitude,
+            minlongitude=min_longitude,
+            maxlongitude=max_longitude,
+            minmagnitude=min_magnitude,
         )
         half_2 = client.get_events(
             starttime=mid_1,
             endtime=end_1,
-            minlatitude=minlatitude,
-            maxlatitude=maxlatitude,
-            minlongitude=minlongitude,
-            maxlongitude=maxlongitude,
-            minmagnitude=minmagnitude,
+            minlatitude=min_latitude,
+            maxlatitude=max_latitude,
+            minlongitude=min_longitude,
+            maxlongitude=max_longitude,
+            minmagnitude=min_magnitude,
         )
 
         half_1.extend(half_2)
@@ -266,7 +328,6 @@ def download_catalog(
         events = half_1
 
     evs = []
-
     for event in events:
         lat = event.origins[0].latitude
         lon = event.origins[0].longitude
