@@ -81,3 +81,8 @@ def test_estimate_beta_laplace(n: int, beta: float, mc: float, delta_m: float,
     mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
     beta_estimate = estimate_beta_laplace(mags, delta_m=delta_m)
     assert abs(beta - beta_estimate) / beta <= precision
+
+
+def test_shi_bolt_confidence():
+    shi_bolt_confidence(np.array([1, 1, 1, 1]), 1)
+    pass
