@@ -170,7 +170,9 @@ def download_catalog_1(
     link = base_query + st_tm + end_tm + min_mag + ''.join(
         [part for part in [min_lat, min_lon, max_lat, max_lon] if
          part is not None]) + '&format=text'
+
     print(link)
+
     response = urllib.request.urlopen(link)
     data = response.read()
 
@@ -299,7 +301,6 @@ def download_catalog(
             minmagnitude=min_magnitude,
         )
     except:
-
         start_1 = start_time
         mid_1 = start_time + (end_time - start_time)/2
         end_1 = end_time

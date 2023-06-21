@@ -34,18 +34,34 @@ def mocked_requests_get(*args, **kwargs):
 
 
 @mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
-def test_download_catalog_sed(mock_get):
+def test_download_catalog_1(mock_get):
+    # download the CH catalog (mocked)
+    base_query = 'http://its_mocked'
     min_mag = 3.0
     start_time = dt.datetime(1900, 1, 1)
     end_time = dt.datetime(2022, 1, 1)
+    ch_cat = download_catalog_1(
+        base_query='http://its_mocked',
+        start_time=start_time,
+        end_time=end_time,
+        min_magnitude=min_mag)
 
-    # download the CH catalog
-    ch_cat = download_catalog_sed(start_time=start_time, end_time=end_time,
-                                  min_magnitude=min_mag)
+    # check that the catalog is a dataframe
+    assert_equal(str(type(ch_cat)), "<class 'pandas.core.frame.DataFrame'>")
 
-    # check that the downloaded catalog is correct
+
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
+def test_download_catalog_sed(mock_get):
+    # download the CH catalog (mocked)
+    min_mag = 3.0
+    start_time = dt.datetime(1900, 1, 1)
+    end_time = dt.datetime(2022, 1, 1)
+    ch_cat = download_catalog_sed(
+        start_time=start_time, end_time=end_time, min_magnitude=min_mag)
+
+    # check that the catalog was processed correctly
     assert_equal(
-        [len(ch_cat), len(ch_cat.query("EventType != 'earthquake'"))],
+        [len(ch_cat), len(ch_cat.query("event_type != 'earthquake'"))],
         [1256, 0])
 
 
@@ -56,7 +72,7 @@ def test_prepare_sed_catalog(mock_get):
     end_time = dt.datetime(2022, 1, 1)
     delta_m = 0.1
 
-    base_query = 'http://arclink.ethz.ch/fdsnws/event/1/query?'
+    base_query = 'http://its_mocked'
     ch_cat = download_catalog_1(
         base_query=base_query,
         start_time=start_time,
