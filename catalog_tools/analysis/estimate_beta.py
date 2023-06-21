@@ -119,3 +119,24 @@ def estimate_beta_laplace(
     mag_diffs = mag_diffs[mag_diffs > 0]
     beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
     return beta
+
+
+def shi_bolt_confidence(magnitudes: np.ndarray, b_value: float):
+    """ calculates the confidence limit according to shi and bolt 1982
+
+    Source:
+        Shi and Bolt, BSSA, Vol. 72, No. 5, pp. 1677-1687, October 1982
+
+    Args:
+        magnitudes: numpy array of magnitudes
+        b_value:    b-value of the magnitudes
+
+    Returns:
+        sig_b:  confidence limit of the b-value
+    """
+    # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)),
+    # which is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
+    std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
+    sig_b = np.log(10) * b_value ** 2 * std_m
+
+    return sig_b

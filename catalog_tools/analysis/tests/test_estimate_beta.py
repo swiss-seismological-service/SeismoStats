@@ -11,7 +11,8 @@ from catalog_tools.analysis.estimate_beta import\
     estimate_beta_utsu,\
     estimate_beta_elst,\
     estimate_beta_laplace,\
-    differences
+    differences,\
+    shi_bolt_confidence
 
 
 def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
