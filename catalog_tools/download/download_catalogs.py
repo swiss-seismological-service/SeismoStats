@@ -286,6 +286,38 @@ def download_catalog(
     Returns:
         The catalog as a pandas DataFrame.
 
+    List of clients:
+        AUSPASS     http://auspass.edu.au
+        BGR         http://eida.bgr.de
+        EIDA        http://eida-federator.ethz.ch
+        EMSC        http://www.seismicportal.eu
+        ETH         http://eida.ethz.ch
+        GEOFON      http://geofon.gfz-potsdam.de
+        GEONET      http://service.geonet.org.nz
+        GFZ         http://geofon.gfz-potsdam.de
+        ICGC        http://ws.icgc.cat
+        IESDMC      http://batsws.earth.sinica.edu.tw
+        INGV        http://webservices.ingv.it
+        IPGP        http://ws.ipgp.fr
+        IRIS        http://service.iris.edu
+        IRISPH5     http://service.iris.edu
+        ISC         http://isc-mirror.iris.washington.edu
+        KNMI        http://rdsa.knmi.nl
+        KOERI       http://eida.koeri.boun.edu.tr
+        LMU         http://erde.geophysik.uni-muenchen.de
+        NCEDC       http://service.ncedc.org
+        NIEP        http://eida-sc3.infp.ro
+        NOA         http://eida.gein.noa.gr
+        ODC         http://www.orfeus-eu.org
+        ORFEUS      http://www.orfeus-eu.org
+        RASPISHAKE  https://fdsnws.raspberryshakedata.com
+        RESIF       http://ws.resif.fr
+        RESIFPH5    http://ph5ws.resif.fr
+        SCEDC       http://service.scedc.caltech.edu
+        TEXNET      http://rtserve.beg.utexas.edu
+        UIB-NORSAR  http://eida.geo.uib.no
+        USGS        http://earthquake.usgs.gov
+        USP         http://sismo.iag.usp.br
     """
 
     client = Client(base_url=client_name)
@@ -300,9 +332,9 @@ def download_catalog(
             maxlongitude=max_longitude,
             minmagnitude=min_magnitude,
         )
-    except:
+    except: # noqa
         start_1 = start_time
-        mid_1 = start_time + (end_time - start_time)/2
+        mid_1 = start_time + (end_time - start_time) / 2
         end_1 = end_time
 
         half_1 = client.get_events(
@@ -334,7 +366,8 @@ def download_catalog(
         lon = event.origins[0].longitude
         depth = event.origins[0].depth / 1000
         time = event.origins[0].time
-        time = dt.datetime(time.year, time.month, time.day, time.hour, time.minute, time.second)
+        time = dt.datetime(time.year, time.month, time.day, time.hour,
+                           time.minute, time.second)
         mag = event.magnitudes[0].mag
         mag_type = event.magnitudes[0].magnitude_type
 

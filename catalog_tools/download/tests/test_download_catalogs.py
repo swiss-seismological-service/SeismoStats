@@ -41,7 +41,7 @@ def test_download_catalog_1(mock_get):
     start_time = dt.datetime(1900, 1, 1)
     end_time = dt.datetime(2022, 1, 1)
     ch_cat = download_catalog_1(
-        base_query='http://its_mocked',
+        base_query=base_query,
         start_time=start_time,
         end_time=end_time,
         min_magnitude=min_mag)
