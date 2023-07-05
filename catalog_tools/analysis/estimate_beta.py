@@ -134,8 +134,8 @@ def shi_bolt_confidence(magnitudes: np.ndarray, b_value: float):
     Returns:
         sig_b:  confidence limit of the b-value
     """
-    # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)),
-    # which is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
+    # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
+    # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
     std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
     sig_b = np.log(10) * b_value ** 2 * std_m
 
