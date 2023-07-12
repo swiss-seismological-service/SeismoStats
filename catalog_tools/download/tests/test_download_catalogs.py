@@ -6,7 +6,8 @@ import numpy as np
 from numpy.testing import assert_equal, assert_allclose, assert_array_less
 
 from catalog_tools.download.download_catalogs import apply_edwards, \
-    download_catalog_sed, prepare_sed_catalog, download_catalog_1
+    download_catalog_sed, prepare_sed_catalog, download_catalog_1,\
+    download_catalog_scedc, prepare_scedc_catalog
 
 
 def test_apply_edwards():
@@ -23,17 +24,17 @@ PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'data')
 
 
-def mocked_requests_get(*args, **kwargs):
+def mocked_requests_get_sed(*args, **kwargs):
     response = mock.MagicMock()
     response.getcode.return_value = 200
 
-    with open(f'{PATH_RESOURCES}/catalog.csv', 'rb') as f:
+    with open(f'{PATH_RESOURCES}/catalog_sed.csv', 'rb') as f:
         response.read.return_value = f.read()
 
     return response
 
 
-@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get_sed)
 def test_download_catalog_1(mock_get):
     # download the CH catalog (mocked)
     base_query = 'http://its_mocked'
@@ -49,8 +50,11 @@ def test_download_catalog_1(mock_get):
     # check that the catalog is a dataframe
     assert_equal(str(type(ch_cat)), "<class 'pandas.core.frame.DataFrame'>")
 
+    # check that the first entry is the one we now it is
+    assert_equal(ch_cat['Latitude'][0], 47.371755)
 
-@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
+
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get_sed)
 def test_download_catalog_sed(mock_get):
     # download the CH catalog (mocked)
     min_mag = 3.0
@@ -65,7 +69,7 @@ def test_download_catalog_sed(mock_get):
         [1256, 0])
 
 
-@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get)
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get_sed)
 def test_prepare_sed_catalog(mock_get):
     min_mag = 3.0
     start_time = dt.datetime(1900, 1, 1)
@@ -99,3 +103,59 @@ def test_prepare_sed_catalog(mock_get):
 
     assert_allclose([delta_m], [min_mag_diff], rtol=1e-07)
     assert_array_less([0], [min_conv_diff])
+
+
+def mocked_requests_get_scedc(*args, **kwargs):
+    response = mock.MagicMock()
+    response.getcode.return_value = 200
+
+    with open(f'{PATH_RESOURCES}/catalog_scedc.bin', 'rb') as f:
+        response.read.return_value = f.read()
+
+    return response
+
+
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get_scedc)
+def test_download_catalog_scedc(mock_get):
+    pass
+    # download the CH catalog (mocked)
+    min_mag = 4.0
+    start_time = dt.datetime(2020, 1, 1)
+    end_time = dt.datetime(2023, 7, 1)
+    ch_cat = download_catalog_scedc(
+        start_time=start_time, end_time=end_time, min_magnitude=min_mag)
+
+    # check that the catalog was processed correctly
+    assert_equal(
+        [len(ch_cat), len(ch_cat.query("event_type != 'earthquake'"))],
+        [177, 177])
+
+
+@mock.patch('urllib.request.urlopen', side_effect=mocked_requests_get_scedc)
+def test_prepare_scedc_catalog(mock_get):
+    min_mag = 4.0
+    start_time = dt.datetime(2020, 1, 1)
+    end_time = dt.datetime(2023, 7, 1)
+    delta_m = 0.1
+
+    base_query = 'http://its_mocked'
+    cat = download_catalog_1(
+        base_query=base_query,
+        start_time=start_time,
+        end_time=end_time,
+        min_magnitude=min_mag)
+
+    df = prepare_scedc_catalog(
+        cat,
+        delta_m=delta_m,
+        only_earthquakes=True
+    )
+
+    unique_mags = np.unique(df["magnitude"])
+    min_mag_diff = np.min(np.abs(np.diff(unique_mags)))
+
+    assert_equal(
+        [len(df), len(df.query("event_type != 'earthquake'"))],
+        [177, 177])
+
+    assert_allclose([delta_m], [min_mag_diff], rtol=1e-07)

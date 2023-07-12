@@ -135,7 +135,8 @@ def download_catalog_1(
         min_longitude: Optional[float] = None,
         max_longitude: Optional[float] = None,
         min_magnitude: float = 0.01,
-        delta_m: float = 0.1
+        delta_m: float = 0.1,
+        delimiter = '|'
 ) -> pd.DataFrame:
     """Downloads an earthquake catalog based on a URL.
 
@@ -175,9 +176,13 @@ def download_catalog_1(
 
     response = urllib.request.urlopen(link)
     data = response.read()
+    df = pd.read_csv(BytesIO(data), delimiter=delimiter)
 
-    df = pd.read_csv(BytesIO(data), delimiter="|")
-
+    # for saving the byte file
+    #with open(
+    #        '/Users/aron/polybox/Projects/catalog-tools/catalog_tools/download/tests/data/catalog_scedc.bin',
+    #        'wb') as f:
+    #    f.write(data)
     return df
 
 
@@ -242,6 +247,7 @@ def prepare_scedc_catalog(
     """
     cat = df.copy()
     cat.columns = cat.columns.str.replace(' ', '')
+
     cat.rename({"Magnitude": "magnitude", "Latitude": "latitude",
                 "Longtitude": "longitude", "Time": "time", "Depth/km": "depth",
                 "ET": 'event_type', "MagType": 'mag_type'}, axis=1,
@@ -255,6 +261,9 @@ def prepare_scedc_catalog(
 
     if delta_m > 0:
         cat["magnitude"] = bin_to_precision(cat["magnitude"], delta_m)
+
+    cat.sort_values(by="time", inplace=True)
+    cat.index = np.arange(len(cat))
 
     return cat
 
@@ -374,9 +383,13 @@ def download_catalog(
         evs.append(pd.Series([time, lat, lon, depth, mag, mag_type]))
 
     cat = pd.DataFrame(evs)
+    # cat.to_csv('/Users/aron/polybox/Projects/catalog-tools/catalog_tools/download/tests/data/catalog.csv')
+
     cat.columns = [
         'time', 'latitude', 'longitude', 'depth', 'magnitude', 'mag_type']
     cat.sort_values(by="time", inplace=True)
     cat.index = np.arange(len(cat))
 
     return cat
+
+
