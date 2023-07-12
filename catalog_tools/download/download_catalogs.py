@@ -136,7 +136,7 @@ def download_catalog_1(
         max_longitude: Optional[float] = None,
         min_magnitude: float = 0.01,
         delta_m: float = 0.1,
-        delimiter = '|'
+        delimiter: str = '|'
 ) -> pd.DataFrame:
     """Downloads an earthquake catalog based on a URL.
 
@@ -151,6 +151,7 @@ def download_catalog_1(
         min_magnitude:  minimum magnitude of catalog.
         delta_m:        magnitude bin size. if >0, then events of
             magnitude >= (min_magnitude - delta_m/2) will be downloaded.
+        delimiter:      type of delimiter expected (| is standard)
 
     Returns:
         The catalog as a pandas DataFrame.
@@ -178,11 +179,12 @@ def download_catalog_1(
     data = response.read()
     df = pd.read_csv(BytesIO(data), delimiter=delimiter)
 
-    # for saving the byte file
-    #with open(
-    #        '/Users/aron/polybox/Projects/catalog-tools/catalog_tools/download/tests/data/catalog_scedc.bin',
-    #        'wb') as f:
-    #    f.write(data)
+    # for saving the byte file:
+    # with open(
+    #         '/Users/aron/polybox/Projects/catalog-tools/catalog_tools/
+    #         download/tests/data/catalog_scedc.bin',
+    #         'wb') as f:
+    #     f.write(data)
     return df
 
 
@@ -269,14 +271,14 @@ def prepare_scedc_catalog(
 
 
 def download_catalog(
-        client_name='EMSC',
-        start_time=dt.datetime(2023, 1, 1),
-        end_time=dt.datetime.now(),
-        min_latitude=None,
-        max_latitude=None,
-        min_longitude=None,
-        max_longitude=None,
-        min_magnitude=0,
+        client_name: str = 'EMSC',
+        start_time: dt.datetime = dt.datetime(2023, 1, 1),
+        end_time: dt.datetime = dt.datetime.now(),
+        min_latitude: Optional[float] = None,
+        max_latitude: Optional[float] = None,
+        min_longitude: Optional[float] = None,
+        max_longitude: Optional[float] = None,
+        min_magnitude: float = 0
 ) -> pd.DataFrame:
     """Downloads an earthquake catalog based on a client.
 
@@ -391,5 +393,3 @@ def download_catalog(
     cat.index = np.arange(len(cat))
 
     return cat
-
-
