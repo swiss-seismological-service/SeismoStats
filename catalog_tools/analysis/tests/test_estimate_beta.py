@@ -115,9 +115,9 @@ def test_shi_bolt_confidence(
         b_value: float,
         std_b_value: float,
         std_beta: float):
-    precicion = 1e-10
+    precision = 1e-10
     beta = b_value * np.log(10)
 
     assert shi_bolt_confidence(
-        magnitudes, b_value=b_value) - std_b_value < precicion
-    assert shi_bolt_confidence(magnitudes, beta=beta) - std_beta < precicion
+        magnitudes, b_value=b_value) - std_b_value < precision
+    assert shi_bolt_confidence(magnitudes, beta=beta) - std_beta < precision
