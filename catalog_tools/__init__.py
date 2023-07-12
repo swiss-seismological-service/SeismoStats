@@ -6,7 +6,8 @@ from catalog_tools.analysis.estimate_beta import\
     estimate_beta_elst,\
     estimate_beta_utsu,\
     estimate_beta_tinti,\
-    estimate_beta_laplace
+    estimate_beta_laplace,\
+    shi_bolt_confidence
 
 # download
 from catalog_tools.download.download_catalogs import\

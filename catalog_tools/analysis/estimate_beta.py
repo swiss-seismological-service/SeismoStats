@@ -121,7 +121,10 @@ def estimate_beta_laplace(
     return beta
 
 
-def shi_bolt_confidence(magnitudes: np.ndarray, b_value: float):
+def shi_bolt_confidence(
+        magnitudes: np.ndarray,
+        b_value: Optional[float] = None,
+        beta: Optional[float] = None):
     """ calculates the confidence limit according to shi and bolt 1982
 
     Source:
@@ -130,13 +133,22 @@ def shi_bolt_confidence(magnitudes: np.ndarray, b_value: float):
     Args:
         magnitudes: numpy array of magnitudes
         b_value:    b-value of the magnitudes
+        beta:       beta value (difference to b-value is factor of np.log(10)).
+                    -> provide either b_value or beta, not both
 
     Returns:
-        sig_b:  confidence limit of the b-value
+        sig_b:  confidence limit of the b-value/beta value (depending on input)
     """
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
-    std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
-    sig_b = np.log(10) * b_value ** 2 * std_m
+    if b_value is not None:
+        std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
+        sig_b = np.log(10) * b_value ** 2 * std_m
+    elif beta is not None:
+        std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
+        sig_b = beta ** 2 * std_m
+    else:
+        print('input missing: b_value or beta')
+        sig_b = None
 
     return sig_b
