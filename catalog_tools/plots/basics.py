@@ -109,7 +109,6 @@ def plot_cum_count(
     ax: Optional[plt.Axes] = None,
     mcs: Optional[np.ndarray] = np.array([0]),
     delta_m: Optional[float] = 0.1,
-    step: Optional[float] = 86400
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -122,7 +121,6 @@ def plot_cum_count(
         mcs: the list of completeness magnitudes for which we show lines
              on the plot
         delta_m: binning precision of the magnitudes
-        step: histogram bin size, expressed in seconds, default: 1 day
 
     Returns:
         ax that was plotted on
@@ -196,3 +194,46 @@ def plot_mags_in_time(
     ax.set_xlabel("time")
     ax.set_ylabel("magnitude")
     return ax
+
+
+def dot_size(
+        magnitudes: np.array, smallest: int = 10, largest: int = 200,
+        interpolation_power: int = 1
+) -> np.array:
+    """Compute dot sizes proportional to a given array of magnitudes.
+
+    The dot sizes are computed using a power interpolation between the smallest
+    and largest size, with the given interpolation power.
+
+    Args
+    ----------
+    magnitudes : array-like of float, shape (n_samples,)
+        The magnitudes of the dots.
+    smallest : float, optional (default=10)
+        The size of the smallest dot, in pixels.
+    largest : float, optional (default=200)
+        The size of the largest dot, in pixels.
+    interpolation_power : float, optional (default=1)
+        The power used to interpolate between the smallest and largest size.
+        A value of 1 results in a linear interpolation, while larger values
+        result in a more "concave" curve.
+
+    Returns
+    -------
+    sizes : ndarray of float, shape (n_samples,)
+        The sizes of the dots, proportional to their magnitudes.
+        The returned sizes are between `smallest` and `largest`.
+    """
+    if largest <= smallest:
+        print(
+            "largest value is not larger than smallest, "
+            "setting it to whatever I think is better")
+        largest = 50 * max(smallest, 2)
+    smallest_mag = np.min(magnitudes)
+    largest_mag = np.max(magnitudes)
+
+    mag_norm = (magnitudes - smallest_mag) / (largest_mag - smallest_mag)
+    mag_powered = np.power(mag_norm, interpolation_power)
+    sizes = mag_powered * (largest - smallest) + smallest
+
+    return sizes
