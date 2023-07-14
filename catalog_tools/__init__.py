@@ -12,7 +12,8 @@ from catalog_tools.analysis.estimate_beta import\
 # download
 from catalog_tools.download.download_catalogs import\
     download_catalog_sed,\
-    prepare_sed_catalog
+    download_catalog_scedc,\
+    download_catalog
 
 # plots
 from catalog_tools.plots.basics import\
