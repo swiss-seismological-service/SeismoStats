@@ -206,7 +206,7 @@ def plot_fmd_classic(
         ax: Optional[plt.Axes] = None,
         delta_m: float = 0.1,
         color: str = 'blue',
-        size: int = 3,
+        size: int = 5,
         grid: bool = False,
         left: bool = False
 ) -> plt.Axes:

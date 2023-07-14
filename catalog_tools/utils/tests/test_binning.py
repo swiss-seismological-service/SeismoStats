@@ -1,5 +1,7 @@
-from catalog_tools.utils.binning import normal_round_to_int, normal_round, get_fmd, get_cum_fmd
+from catalog_tools.utils.binning import normal_round_to_int, normal_round
 from catalog_tools.utils.binning import bin_to_precision
+from catalog_tools.utils.binning import get_fmd, get_cum_fmd
+
 
 import pytest
 import numpy as np
