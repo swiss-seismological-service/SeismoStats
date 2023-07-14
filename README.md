@@ -35,3 +35,18 @@ pip install git+ssh://git@github.com/swiss-seismological-service/catalog-tools.g
 # update it once the repo has changed:
 pip install --force-reinstall git+ssh://git@github.com/swiss-seismological-service/catalog-tools.git
 ```
+
+### Problems with cartopy / geos
+
+```
+1. geos_c.h not found
+Solutions (Mac):
+brew install geos
+Solutions (Linux, not tested yet):
+sudo apt-get libgeos-dev
+
+2. Cartopy failed to build wheel x86_64_linux-gnu-gcc
+Solution: use conda to install cartopy
+Linux/Ubuntu 64bit:
+conda install -c conda-forge cartopy
+```

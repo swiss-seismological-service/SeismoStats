@@ -34,24 +34,75 @@ def download_catalog_sed(
         min_magnitude: float = 0.01,
         delta_m: float = 0.1
 ) -> pd.DataFrame:
+    base_query = 'http://arclink.ethz.ch/fdsnws/event/1/query?'
+    df = download_catalog(
+        base_query=base_query,
+        start_time=start_time,
+        end_time=end_time,
+        min_latitude=min_latitude,
+        max_latitude=max_latitude,
+        min_longitude=min_longitude,
+        max_longitude=max_longitude,
+        min_magnitude=min_magnitude,
+        delta_m=delta_m)
+
+    return df
+
+
+def download_catalog_scedc(
+        start_time: dt.datetime = dt.datetime(1970, 1, 1),
+        end_time: dt.datetime = dt.datetime.now(),
+        min_latitude: Optional[float] = None,
+        max_latitude: Optional[float] = None,
+        min_longitude: Optional[float] = None,
+        max_longitude: Optional[float] = None,
+        min_magnitude: float = 0.01,
+        delta_m: float = 0.1
+) -> pd.DataFrame:
+    base_query = 'https://service.scedc.caltech.edu/fdsnws/event/1/query?'
+    df = download_catalog(
+        base_query=base_query,
+        start_time=start_time,
+        end_time=end_time,
+        min_latitude=min_latitude,
+        max_latitude=max_latitude,
+        min_longitude=min_longitude,
+        max_longitude=max_longitude,
+        min_magnitude=min_magnitude,
+        delta_m=delta_m)
+
+    return df
+
+
+def download_catalog(
+        base_query: str,
+        start_time: dt.datetime = dt.datetime(1970, 1, 1),
+        end_time: dt.datetime = dt.datetime.now(),
+        min_latitude: Optional[float] = None,
+        max_latitude: Optional[float] = None,
+        min_longitude: Optional[float] = None,
+        max_longitude: Optional[float] = None,
+        min_magnitude: float = 0.01,
+        delta_m: float = 0.1
+) -> pd.DataFrame:
     """Downloads the Swiss earthquake catalog.
 
     Args:
-      start_time: start time of the catalog.
-      end_time: end time of the catalog. defaults to current time.
-      min_latitude: minimum latitude of catalog.
-      max_latitude: maximum latitude of catalog.
-      min_longitude: minimum longitude of catalog.
-      max_longitude: maximum longitude of catalog.
-      min_magnitude: minimum magnitude of catalog.
-      delta_m: magnitude bin size. if >0, then
-        events of magnitude >= (min_magnitude - delta_m/2) will be downloaded.
+        base_query:     base query url ()
+        start_time:     start time of the catalog.
+        end_time:       end time of the catalog. defaults to current time.
+        min_latitude:   minimum latitude of catalog.
+        max_latitude:   maximum latitude of catalog.
+        min_longitude:  minimum longitude of catalog.
+        max_longitude:  maximum longitude of catalog.
+        min_magnitude:  minimum magnitude of catalog.
+        delta_m:        magnitude bin size. if >0, then events of
+            magnitude >= (min_magnitude - delta_m/2) will be downloaded.
 
     Returns:
-      The catalog as a pandas DataFrame.
+        The catalog as a pandas DataFrame.
 
     """
-    base_query = 'http://arclink.ethz.ch/fdsnws/event/1/query?'
     st_tm = 'starttime=' + start_time.strftime("%Y-%m-%dT%H:%M:%S")
     end_tm = '&endtime=' + end_time.strftime("%Y-%m-%dT%H:%M:%S")
     min_mag = '&minmagnitude=' + str(min_magnitude - delta_m / 2)
@@ -67,6 +118,7 @@ def download_catalog_sed(
     link = base_query + st_tm + end_tm + min_mag + ''.join(
         [part for part in [min_lat, min_lon, max_lat, max_lon] if
          part is not None]) + '&format=text'
+    print(link)
     response = urllib.request.urlopen(link)
     data = response.read()
 
@@ -95,6 +147,48 @@ def prepare_sed_catalog(
         the catalog as a DataFrame
     """
     cat = df.copy()
+    cat.rename({"Magnitude": "magnitude", "Latitude": "latitude",
+                "Longitude": "longitude", "Time": "time", "Depth/km": "depth",
+                "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
+               inplace=True)
+
+    if convert_to_mw:
+        cat[['mag_type', 'magnitude']] = cat.apply(
+            lambda x: apply_edwards(x['mag_type'], x['magnitude']), axis=1)
+
+    cat["time"] = pd.to_datetime(cat["time"])
+    cat.sort_values(by="time", inplace=True)
+
+    if only_earthquakes:
+        cat.query('event_type == "earthquake"', inplace=True)
+
+    if delta_m > 0:
+        cat["magnitude"] = bin_to_precision(cat["magnitude"], delta_m)
+
+    return cat
+
+
+def prepare_scedc_catalog(
+        df: pd.DataFrame,
+        delta_m: float = 0.1,
+        only_earthquakes: bool = True,
+        convert_to_mw: bool = True
+) -> pd.DataFrame:
+    """Does standard treatment of the SED catalog after it has been downloaded.
+
+    Args:
+        df: downloaded catalog
+        delta_m: magnitude bin size to be applied.
+        only_earthquakes: if True, only
+            events of event_type earthquake are kept.
+        convert_to_mw: if True, local magnitudes are converted to Mw
+            using Edwards et al.
+
+    Returns:
+        the catalog as a DataFrame
+    """
+    cat = df.copy()
+
     cat.rename({"Magnitude": "magnitude", "Latitude": "latitude",
                 "Longitude": "longitude", "Time": "time", "Depth/km": "depth",
                 "EventType": 'event_type', "MagType": 'mag_type'}, axis=1,
