@@ -196,7 +196,7 @@ def plot_mags_in_time(
         ax: axis where figure should be plotted
         cat: catalog given as a pandas dataframe, should contain the column
              "magnitude" and  either "time" or "year"
-        mc_change_times: list of points in time when Mc changes, sorted in 
+        mc_change_times: list of points in time when Mc changes, sorted in
             increasing order, can be given as a list of datetimes or ints (yrs).
         mcs: changed values of Mc at times given in 'mc_change_times'
 
