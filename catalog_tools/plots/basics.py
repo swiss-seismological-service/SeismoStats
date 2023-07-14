@@ -182,7 +182,10 @@ def plot_mags_in_time(
     cat: pd.DataFrame,
     ax: Optional[plt.Axes] = None,
     mc_change_times: Optional[list] = None,
-    mcs: Optional[list] = None
+    mcs: Optional[list] = None,
+    dot_smallest: int = 10,
+    dot_largest: int = 200,
+    dot_interpolation_power: int = 2
 ) -> plt.Axes:
     """
     Creates a scatter plot, each dot is an event. Time shown on x-axis,
@@ -199,6 +202,9 @@ def plot_mags_in_time(
         mc_change_times: list of points in time when Mc changes, sorted in
             increasing order, can be given as a list of datetimes or ints (yrs).
         mcs: changed values of Mc at times given in 'mc_change_times'
+        dot_smallest: smallest dot size for magnitude scaling
+        dot_largest:largest dot size for magnitude scaling
+        dot_interpolation_power: interpolation power for scaling
 
     Returns:
         ax that was plotted on
@@ -217,7 +223,14 @@ def plot_mags_in_time(
 
     if ax is None:
         ax = plt.subplots()[1]
-    ax.scatter(times, cat["magnitude"], cat["magnitude"]**2)
+    ax.scatter(times,
+               cat["magnitude"],
+               s=dot_size(cat["magnitude"],
+                          smallest=dot_smallest,
+                          largest=dot_largest,
+                          interpolation_power=dot_interpolation_power),
+               c="b", linewidth=0.5, alpha=0.8, edgecolor='k'
+              )
 
     if mc_change_times is not None and mcs is not None:
         if not year_only and type(mc_change_times[0]) == int:
@@ -227,7 +240,7 @@ def plot_mags_in_time(
 
         mc_change_times.append(np.max(times))
         mcs.append(mcs[-1])
-        ax.step(mc_change_times, mcs, where="post", c="black")
+        ax.step(mc_change_times, mcs, where="post", c="#eb4034")
 
     ax.set_xlabel("time")
     ax.set_ylabel("magnitude")
