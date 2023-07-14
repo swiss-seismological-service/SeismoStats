@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, Union
 
 # Own functions
-from catalog_tools.utils.binning import bin_to_precision
+from catalog_tools.utils.binning import bin_to_precision, get_cum_fmd, get_fmd
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
@@ -85,43 +85,6 @@ def plot_cum_fmd(
         ax.grid(which='minor', alpha=0.3)
 
     return ax
-
-
-def get_cum_fmd(
-        mags: np.ndarray,
-        delta_m: float,
-        left: bool = False
-) -> [np.ndarray, np.ndarray, np.ndarray]:
-    """ Calculates cumulative event counts across all magnitude units
-    (summed from the right). Note that the returned bins array contains
-    the center point of each bin unless left is True.
-
-    Args:
-        mags    : array of magnitudes
-        delta_m : discretization of the magnitudes
-        left    : When True, left edges of bins are returned. When false,
-                center points are returned.
-
-    Returns:
-        bins    : array of bin centers (right to left)
-        c_counts: cumulative counts for each bin ("")
-        mags    : array of magnitudes binned to delta_m
-    """
-    mags = bin_to_precision(mags, delta_m)
-    mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
-    mags_i = mags_i.astype(int)
-    counts = np.bincount(mags_i)
-    bins = bin_to_precision(np.arange((np.min(mags)) * 10000,
-                                      (np.max(mags) + delta_m / 2) * 10000,
-                                      delta_m * 10000) / 10000, delta_m)
-
-    bins = bins[::-1]
-    c_counts = np.cumsum(counts[::-1])
-
-    if left:
-        bins = bins - delta_m / 2
-
-    return bins, c_counts, mags
 
 
 def plot_cum_fmd_classic(
@@ -238,11 +201,61 @@ def plot_fmd(
     return ax
 
 
+def plot_fmd_classic(
+        mags: np.ndarray,
+        ax: Optional[plt.Axes] = None,
+        delta_m: float = 0.1,
+        color: str = 'blue',
+        size: int = 3,
+        grid: bool = False,
+        left: bool = False
+) -> plt.Axes:
+    """ Plots frequency magnitude distribution. Unlike plot_fmd,
+    plots values for all bins and requires binning.
+
+    Args:
+        mags    : array of magnitudes
+        ax      : axis where figure should be plotted
+        delta_m : discretization of the magnitudes, important for the correct
+                visualization of the data
+        color   : color of the data.
+        size    : size of scattered data
+        grid    : bool, include grid lines or not
+        left    : When True, left edges of bins are returned. When false,
+                center points are returned.
+
+    Returns:
+        ax that was plotted on
+    """
+
+    mags = mags[~np.isnan(mags)]
+
+    if delta_m == 0:
+        delta_m = 0.1
+
+    bins, counts, mags = get_fmd(mags, delta_m, left=left)
+
+    if ax is None:
+        ax = plt.subplots()[1]
+
+    ax.scatter(bins, counts, s=size,
+               color=color, marker='^')
+    ax.set_yscale('log')
+    ax.set_xlabel('Magnitude')
+    ax.set_ylabel('N')
+
+    if grid is True:
+        ax.grid(True)
+        ax.grid(which='minor', alpha=0.3)
+
+    return ax
+
+
 def plot_cum_count(
-    cat: pd.DataFrame,
-    ax: Optional[plt.Axes] = None,
-    mcs: Optional[np.ndarray] = np.array([0]),
-    delta_m: Optional[float] = 0.1,
+        cat: pd.DataFrame,
+        ax: Optional[plt.Axes] = None,
+        mcs: Optional[np.ndarray] = np.array([0]),
+        delta_m: Optional[float] = 0.1,
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -270,7 +283,7 @@ def plot_cum_count(
         ax = plt.subplots()[1]
 
     for mc in mcs:
-        cat_above_mc = cat.query(f"magnitude>={mc-delta_m/2}")
+        cat_above_mc = cat.query(f"magnitude>={mc - delta_m / 2}")
         times = sorted(cat_above_mc["time"])
         times_adjusted = [first_time, *times, last_time]
 
@@ -285,10 +298,10 @@ def plot_cum_count(
 
 
 def plot_mags_in_time(
-    cat: pd.DataFrame,
-    ax: Optional[plt.Axes] = None,
-    years: Optional[list] = None,
-    mcs: Optional[list] = None
+        cat: pd.DataFrame,
+        ax: Optional[plt.Axes] = None,
+        years: Optional[list] = None,
+        mcs: Optional[list] = None
 ) -> plt.Axes:
     """
     Creates a scatter plot, each dot is an event. Time shown on x-axis,
@@ -318,7 +331,7 @@ def plot_mags_in_time(
 
     if ax is None:
         ax = plt.subplots()[1]
-    ax.scatter(cat_years, cat["magnitude"], cat["magnitude"]**2)
+    ax.scatter(cat_years, cat["magnitude"], cat["magnitude"] ** 2)
 
     if years is not None and mcs is not None:
         years.append(np.max(cat_years) + 1)
