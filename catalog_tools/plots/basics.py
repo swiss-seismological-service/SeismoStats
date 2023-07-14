@@ -229,8 +229,7 @@ def plot_mags_in_time(
                           smallest=dot_smallest,
                           largest=dot_largest,
                           interpolation_power=dot_interpolation_power),
-               c="b", linewidth=0.5, alpha=0.8, edgecolor='k'
-              )
+               c="b", linewidth=0.5, alpha=0.8, edgecolor='k')
 
     if mc_change_times is not None and mcs is not None:
         if not year_only and type(mc_change_times[0]) == int:
