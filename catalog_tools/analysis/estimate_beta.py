@@ -125,7 +125,8 @@ def shi_bolt_confidence(
         magnitudes: np.ndarray,
         b_value: Optional[float] = None,
         beta: Optional[float] = None):
-    """ calculates the confidence limit according to shi and bolt 1982
+    """ calculates the confidence limit of the b_value or beta (depending on
+        which parameter is given) according to shi and bolt 1982
 
     Source:
         Shi and Bolt, BSSA, Vol. 72, No. 5, pp. 1677-1687, October 1982
