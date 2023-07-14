@@ -111,9 +111,9 @@ def get_cum_fmd(
     mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
     mags_i = mags_i.astype(int)
     counts = np.bincount(mags_i)
-    bins = bin_to_precision(np.arange((np.min(mags)) * 1000,
-                                      (np.max(mags) + delta_m / 2) * 1000,
-                                      delta_m * 1000) / 1000, delta_m)
+    bins = bin_to_precision(np.arange((np.min(mags)) * 10000,
+                                      (np.max(mags) + delta_m / 2) * 10000,
+                                      delta_m * 10000) / 10000, delta_m)
 
     bins = bins[::-1]
     c_counts = np.cumsum(counts[::-1])
