@@ -72,6 +72,7 @@ def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
     y = differences(magnitudes)
     assert (y == mag_diffs).all()
 
+
 @pytest.mark.parametrize(
     "n,b,mc,delta_m,b_parameter,precision",
     [(1000000, 1.2 * np.log(10), 3, 0, 'beta', 0.005),
@@ -83,13 +84,14 @@ def test_estimate_b_elst(n: int, b: float, mc: float, delta_m: float,
     b_estimate = estimate_b_elst(mags, delta_m=delta_m, b_parameter=b_parameter)
     assert abs(b - b_estimate) / b <= precision
 
+
 @pytest.mark.parametrize(
     "n,b,mc,delta_m,b_parameter,precision",
     [(1000, 1.2 * np.log(10), 3, 0, 'beta', 0.15),
      (1000, np.log(10), 3, 0.1, 'beta', 0.2)]
 )
 def test_estimate_b_laplace(n: int, b: float, mc: float, delta_m: float,
-                            b_parameter:str, precision: float):
+                            b_parameter: str, precision: float):
     mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
     b_estimate = estimate_b_laplace(mags, delta_m=delta_m,
                                     b_parameter=b_parameter)
