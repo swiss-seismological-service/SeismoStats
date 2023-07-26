@@ -1,7 +1,7 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
+from typing import Optional, Tuple, Union
 import numpy as np
-from typing import Optional, Union, Tuple
 
 
 def estimate_b_tinti(magnitudes: np.ndarray,
