@@ -298,45 +298,68 @@ def plot_cum_count(
 
 
 def plot_mags_in_time(
-        cat: pd.DataFrame,
-        ax: Optional[plt.Axes] = None,
-        years: Optional[list] = None,
-        mcs: Optional[list] = None
+    cat: pd.DataFrame,
+    ax: Optional[plt.Axes] = None,
+    mc_change_times: Optional[list] = None,
+    mcs: Optional[list] = None,
+    dot_smallest: int = 10,
+    dot_largest: int = 200,
+    dot_interpolation_power: int = 2
 ) -> plt.Axes:
     """
     Creates a scatter plot, each dot is an event. Time shown on x-axis,
     magnitude shown on y-axis, but also in size of the dot.
 
     Optionally, adds lines that represent the change in completeness magnitude.
-    For example, year_bins = [2000, 2005] and mcs = [3.5, 3.0] means that
+    For example, mc_change_times = [2000, 2005] and mcs = [3.5, 3.0] means that
     between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
 
     Args:
         ax: axis where figure should be plotted
         cat: catalog given as a pandas dataframe, should contain the column
              "magnitude" and  either "time" or "year"
-        years: list of years when Mc changes, sorted in increasing order
-        mcs: changed values of Mc at times given in 'years'
+        mc_change_times: list of points in time when Mc changes, sorted in
+            increasing order, can be given as a list of datetimes or ints (yrs).
+        mcs: changed values of Mc at times given in 'mc_change_times'
+        dot_smallest: smallest dot size for magnitude scaling
+        dot_largest:largest dot size for magnitude scaling
+        dot_interpolation_power: interpolation power for scaling
 
     Returns:
         ax that was plotted on
     """
+    year_only = False
+    import datetime as dt
+
     try:
-        cat_years = pd.to_datetime(cat["time"])
+        times = pd.to_datetime(cat["time"])
     except KeyError:
         try:
-            cat_years = cat["year"]
+            times = cat["year"]
+            year_only = True
         except KeyError:
             raise Exception("Dataframe needs a 'year' or 'time' column.")
 
     if ax is None:
         ax = plt.subplots()[1]
-    ax.scatter(cat_years, cat["magnitude"], cat["magnitude"] ** 2)
 
-    if years is not None and mcs is not None:
-        years.append(np.max(cat_years) + 1)
+    ax.scatter(times,
+               cat["magnitude"],
+               s=dot_size(cat["magnitude"],
+                          smallest=dot_smallest,
+                          largest=dot_largest,
+                          interpolation_power=dot_interpolation_power),
+               c="b", linewidth=0.5, alpha=0.8, edgecolor='k')
+
+    if mc_change_times is not None and mcs is not None:
+        if not year_only and type(mc_change_times[0]) == int:
+            mc_change_times = [dt.datetime(x, 1, 1) for x in mc_change_times]
+        if year_only and type(mc_change_times[0]) != int:
+            mc_change_times = [x.year for x in mc_change_times]
+
+        mc_change_times.append(np.max(times))
         mcs.append(mcs[-1])
-        ax.step(years, mcs, where="post", c="black")
+        ax.step(mc_change_times, mcs, where="post", c="#eb4034")
 
     ax.set_xlabel("time")
     ax.set_ylabel("magnitude")

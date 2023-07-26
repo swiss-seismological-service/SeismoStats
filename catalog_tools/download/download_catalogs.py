@@ -179,12 +179,6 @@ def download_catalog_1(
     data = response.read()
     df = pd.read_csv(BytesIO(data), delimiter=delimiter)
 
-    # for saving the byte file:
-    # with open(
-    #         '/Users/aron/polybox/Projects/catalog-tools/catalog_tools/
-    #         download/tests/data/catalog_scedc.bin',
-    #         'wb') as f:
-    #     f.write(data)
     return df
 
 
@@ -241,8 +235,6 @@ def prepare_scedc_catalog(
         delta_m: magnitude bin size to be applied.
         only_earthquakes: if True, only
             events of event_type earthquake are kept.
-        convert_to_mw: if True, local magnitudes are converted to Mw
-            using Edwards et al.
 
     Returns:
         the catalog as a DataFrame
@@ -291,8 +283,8 @@ def download_catalog(
         min_longitude:  minimum longitude of catalog.
         max_longitude:  maximum longitude of catalog.
         min_magnitude:  minimum magnitude of catalog.
-        delta_m:        magnitude bin size. if >0, then events of
-            magnitude >= (min_magnitude - delta_m/2) will be downloaded.
+
+    TODO: include delta_m in parameters?
 
     Returns:
         The catalog as a pandas DataFrame.
@@ -385,7 +377,6 @@ def download_catalog(
         evs.append(pd.Series([time, lat, lon, depth, mag, mag_type]))
 
     cat = pd.DataFrame(evs)
-    # cat.to_csv('/Users/aron/polybox/Projects/catalog-tools/catalog_tools/download/tests/data/catalog.csv')
 
     cat.columns = [
         'time', 'latitude', 'longitude', 'depth', 'magnitude', 'mag_type']
