@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, Union
 
 # Own functions
-from catalog_tools.utils.binning import get_cum_fmd, get_fmd
+from catalog_tools.utils.binning import get_cum_fmd, get_fmd, bin_to_precision
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
@@ -27,7 +27,7 @@ def plot_cum_fmd(
         ax: Optional[plt.Axes] = None,
         b_value: Optional[float] = None,
         mc: Optional[float] = None,
-        delta_m: float = 0.1,
+        delta_m: float = 0,
         color: Union[str, list] = 'blue',
         size: int = 3,
         grid: bool = False,
@@ -58,7 +58,6 @@ def plot_cum_fmd(
     """
 
     mags = mags[~np.isnan(mags)]
-
     bins, c_counts, mags = get_cum_fmd(mags, delta_m, bin_position=bin_position)
 
     if ax is None:
@@ -67,17 +66,17 @@ def plot_cum_fmd(
     if b_value is not None:
         if mc is None:
             mc = min(mags)
-        x = mags[mags >= mc]
-        y = gutenberg_richter(x, b_value, mc, len(x))
+        if bin_position == 'left':
+            mc -= delta_m / 2
+
+        n_mc = len(mags[mags >= mc])
+        x = bins[bins >= mc]
+        y = gutenberg_richter(x, b_value, min(x), n_mc)
+
         if type(color) is not list:
             color = [color, color]
 
-        assert bin_position == 'left' or bin_position == 'center',\
-            "bin_position needs to be 'left'  of 'center'"
-        if bin_position == 'left':
-            ax.plot(x - delta_m / 2, y, color=color[1])
-        else:
-            ax.plot(x, y, color=color[1])
+        ax.plot(x, y, color=color[1])
         ax.scatter(bins, c_counts, s=size,
                    color=color[0], marker='s')
     else:
