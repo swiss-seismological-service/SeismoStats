@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, Union
 
 # Own functions
-from catalog_tools.utils.binning import bin_to_precision, get_cum_fmd, get_fmd
+from catalog_tools.utils.binning import get_cum_fmd, get_fmd
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
@@ -27,76 +27,11 @@ def plot_cum_fmd(
         ax: Optional[plt.Axes] = None,
         b_value: Optional[float] = None,
         mc: Optional[float] = None,
-        delta_m: float = 0,
-        color: Union[str, list] = 'blue',
-        size: int = 3,
-        grid: bool = False
-) -> plt.Axes:
-    """ Plots cumulative frequency magnitude distribution, optionally with a
-    corresponding theoretical Gutenberg-Richter (GR) distribution (using the
-    provided b-value)
-
-    Args:
-        mags    : array of magnitudes
-        ax      : axis where figure should be plotted
-        b_value : b-value of the theoretical GR distribution to plot
-        mc      : completeness magnitude of the theoretical GR distribution
-        delta_m : discretization of the magnitudes, important for the correct
-                visualization of the data
-        color   : color of the data. If theoretical GR distribution should be
-            colored differently this should be a list with two entries
-        size    : size of scattered data
-        grid    : bool, include grid lines or not
-
-    Returns:
-        ax that was plotted on
-    """
-
-    mags = mags[~np.isnan(mags)]
-
-    mags_unique, counts = np.unique(mags, return_counts=True)
-    idx = np.argsort(mags_unique)
-    mags_unique = mags_unique[idx[::-1]]
-    counts = counts[idx[::-1]]
-
-    if ax is None:
-        ax = plt.subplots()[1]
-
-    if b_value is not None:
-        if mc is None:
-            mc = min(mags)
-        x = mags[mags >= mc]
-        y = gutenberg_richter(x, b_value, mc, len(x))
-        if type(color) is not list:
-            color = [color, color]
-        ax.plot(x - delta_m / 2, y, color=color[1])
-        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
-                   color=color[0], marker='s')
-    else:
-        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
-                   color=color, marker='s')
-
-    ax.set_yscale('log')
-    ax.set_xlabel('Magnitude')
-    ax.set_ylabel('N')
-
-    if grid is True:
-        ax.grid(True)
-        ax.grid(which='minor', alpha=0.3)
-
-    return ax
-
-
-def plot_cum_fmd_classic(
-        mags: np.ndarray,
-        ax: Optional[plt.Axes] = None,
-        b_value: Optional[float] = None,
-        mc: Optional[float] = None,
         delta_m: float = 0.1,
         color: Union[str, list] = 'blue',
         size: int = 3,
         grid: bool = False,
-        left: bool = False
+        bin_position: str = 'center'
 ) -> plt.Axes:
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
@@ -114,8 +49,9 @@ def plot_cum_fmd_classic(
             colored differently this should be a list with two entries
         size    : size of scattered data
         grid    : bool, include grid lines or not
-        left    : When True, left edges of bins are returned. When false,
-                center points are returned.
+        bin_position    : position of the bin, options are  'center' and 'left'
+                        accordingly, left edges of bins or center points are
+                        returned.
 
     Returns:
         ax that was plotted on
@@ -123,7 +59,7 @@ def plot_cum_fmd_classic(
 
     mags = mags[~np.isnan(mags)]
 
-    bins, c_counts, mags = get_cum_fmd(mags, delta_m, left=left)
+    bins, c_counts, mags = get_cum_fmd(mags, delta_m, bin_position=bin_position)
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -135,7 +71,10 @@ def plot_cum_fmd_classic(
         y = gutenberg_richter(x, b_value, mc, len(x))
         if type(color) is not list:
             color = [color, color]
-        if left:
+
+        assert bin_position == 'left' or bin_position == 'center',\
+            "bin_position needs to be 'left'  of 'center'"
+        if bin_position == 'left':
             ax.plot(x - delta_m / 2, y, color=color[1])
         else:
             ax.plot(x, y, color=color[1])
@@ -158,57 +97,12 @@ def plot_cum_fmd_classic(
 
 def plot_fmd(
         mags: np.ndarray,
-        delta_m: float = 0,
-        ax: Optional[plt.Axes] = None,
-        color: str = 'blue',
-        size: int = 5,
-        grid: bool = False
-) -> plt.Axes:
-    """ Plots frequency magnitude distribution (non cumulative)
-
-    Args:
-        mags    : array of magnitudes
-        delta_m : discretization of the magnitudes, important for the correct
-                visualization of the data
-        ax      : axis where figure should be plotted
-        color   : color of the data
-        size    : size of scattered data
-        grid    : bool, include grid lines or not
-
-    Returns:
-        ax that was plotted on
-    """
-
-    if delta_m == 0:
-        delta_m = 0.1
-    mags = bin_to_precision(mags, delta_m)
-    mags = np.array(mags)
-
-    if ax is None:
-        ax = plt.subplots()[1]
-
-    mags_unique, counts = np.unique(mags, return_counts=True)
-
-    ax.scatter(mags_unique, counts, s=size, color=color, marker='^')
-    ax.set_yscale('log')
-    ax.set_xlabel('Magnitude')
-    ax.set_ylabel('N')
-
-    if grid is True:
-        ax.grid(True)
-        ax.grid(which='minor', alpha=0.3)
-
-    return ax
-
-
-def plot_fmd_classic(
-        mags: np.ndarray,
         ax: Optional[plt.Axes] = None,
         delta_m: float = 0.1,
         color: str = 'blue',
         size: int = 5,
         grid: bool = False,
-        left: bool = False
+        bin_position: str = 'center'
 ) -> plt.Axes:
     """ Plots frequency magnitude distribution. Unlike plot_fmd,
     plots values for all bins and requires binning.
@@ -221,8 +115,9 @@ def plot_fmd_classic(
         color   : color of the data.
         size    : size of scattered data
         grid    : bool, include grid lines or not
-        left    : When True, left edges of bins are returned. When false,
-                center points are returned.
+        bin_position    : position of the bin, options are  'center' and 'left'
+                        accordingly, left edges of bins or center points are
+                        returned.
 
     Returns:
         ax that was plotted on
@@ -233,7 +128,7 @@ def plot_fmd_classic(
     if delta_m == 0:
         delta_m = 0.1
 
-    bins, counts, mags = get_fmd(mags, delta_m, left=left)
+    bins, counts, mags = get_fmd(mags, delta_m, bin_position=bin_position)
 
     if ax is None:
         ax = plt.subplots()[1]
