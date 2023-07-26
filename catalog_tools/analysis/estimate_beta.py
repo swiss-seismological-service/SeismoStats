@@ -1,7 +1,8 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
+from typing import Optional, Tuple, Union
+
 import numpy as np
-from typing import Optional
 
 
 def estimate_beta_tinti(magnitudes: np.ndarray,
@@ -93,7 +94,7 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
 
 
 def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
-                       ) -> [float, float]:
+                       ) -> Union[float, Tuple[float, float]]:
     """ returns the b-value estimation using the positive differences of the
     Magnitudes
 
