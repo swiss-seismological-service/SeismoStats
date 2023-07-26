@@ -8,9 +8,10 @@ from catalog_tools.utils.binning import bin_to_precision
 # import functions to be tested
 from catalog_tools.analysis.estimate_beta import\
     estimate_beta_tinti,\
-    estimate_beta_utsu,\
-    estimate_beta_elst,\
-    estimate_beta_laplace,\
+    estimate_b_tinti,\
+    estimate_b_utsu,\
+    estimate_b_elst,\
+    estimate_b_laplace,\
     differences,\
     shi_bolt_confidence
 
@@ -38,15 +39,28 @@ def test_estimate_beta_tinti(n: int, beta: float, mc: float, delta_m: float,
 
 
 @pytest.mark.parametrize(
-    "n,beta,mc,delta_m,precision",
-    [(1000000, np.log(10), 3, 0, 0.005),
-     (1000000, np.log(10), 3, 0.1, 0.01)]
+    "n,b,mc,delta_m,b_parameter,precision",
+    [(1000000, 1.2 * np.log(10), 3, 0, 'beta', 0.005),
+     (1000000, np.log(10), 3, 0.1, 'beta', 0.01)]
 )
-def test_estimate_beta_utsu(n: int, beta: float, mc: float, delta_m: float,
-                            precision: float):
-    mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
-    beta_estimate = estimate_beta_utsu(mags, mc, delta_m)
-    assert abs(beta - beta_estimate) / beta <= precision
+def test_estimate_b_tinti(n: int, b: float, mc: float, delta_m: float,
+                          b_parameter: str, precision: float):
+    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    b_estimate = estimate_b_tinti(mags, mc, delta_m, b_parameter=b_parameter)
+    print((b_estimate - b) / b)
+    assert abs(b - b_estimate) / b <= precision
+
+
+@pytest.mark.parametrize(
+    "n,b,mc,delta_m,b_parameter,precision",
+    [(1000000, 1.2 * np.log(10), 3, 0, 'beta', 0.005),
+     (1000000, np.log(10), 3, 0.1, 'beta', 0.01)]
+)
+def test_estimate_b_utsu(n: int, b: float, mc: float, delta_m: float,
+                         b_parameter: str, precision: float):
+    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
+    assert abs(b - b_estimate) / b <= precision
 
 
 @pytest.mark.parametrize(
@@ -58,29 +72,28 @@ def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
     y = differences(magnitudes)
     assert (y == mag_diffs).all()
 
+@pytest.mark.parametrize(
+    "n,b,mc,delta_m,b_parameter,precision",
+    [(1000000, 1.2 * np.log(10), 3, 0, 'beta', 0.005),
+     (1000000, np.log(10), 3, 0.1, 'beta', 0.01)]
+)
+def test_estimate_b_elst(n: int, b: float, mc: float, delta_m: float,
+                         b_parameter: str, precision: float):
+    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    b_estimate = estimate_b_elst(mags, delta_m=delta_m, b_parameter=b_parameter)
+    assert abs(b - b_estimate) / b <= precision
 
 @pytest.mark.parametrize(
-    "n,beta,mc,delta_m,precision",
-    [(1000000, np.log(10), 3, 0, 0.005),
-     (1000000, np.log(10), 3, 0.1, 0.01)]
+    "n,b,mc,delta_m,b_parameter,precision",
+    [(1000, 1.2 * np.log(10), 3, 0, 'beta', 0.15),
+     (1000, np.log(10), 3, 0.1, 'beta', 0.2)]
 )
-def test_estimate_beta_elst(n: int, beta: float, mc: float, delta_m: float,
-                            precision: float):
-    mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
-    beta_estimate = estimate_beta_elst(mags, delta_m=delta_m)
-    assert abs(beta - beta_estimate) / beta <= precision
-
-
-@pytest.mark.parametrize(
-    "n,beta,mc,delta_m,precision",
-    [(1000, np.log(10), 3, 0, 0.15),
-     (1000, np.log(10), 3, 0.1, 0.2)]
-)
-def test_estimate_beta_laplace(n: int, beta: float, mc: float, delta_m: float,
-                               precision: float):
-    mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
-    beta_estimate = estimate_beta_laplace(mags, delta_m=delta_m)
-    assert abs(beta - beta_estimate) / beta <= precision
+def test_estimate_b_laplace(n: int, b: float, mc: float, delta_m: float,
+                            b_parameter:str, precision: float):
+    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    b_estimate = estimate_b_laplace(mags, delta_m=delta_m,
+                                    b_parameter=b_parameter)
+    assert abs(b - b_estimate) / b <= precision
 
 
 @pytest.mark.parametrize(

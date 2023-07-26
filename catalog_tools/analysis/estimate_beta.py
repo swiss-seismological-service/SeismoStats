@@ -1,16 +1,16 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
 import numpy as np
-from typing import Optional
+from typing import Optional, Union, Tuple
 
 
-def estimate_beta_tinti(magnitudes: np.ndarray,
-                        mc: float,
-                        delta_m: float = 0,
-                        weights: Optional[list] = None,
-                        gutenberg: bool = False,
-                        error: bool = False
-                        ) -> (float, float):
+def estimate_b_tinti(magnitudes: np.ndarray,
+                     mc: float,
+                     delta_m: float = 0,
+                     weights: Optional[list] = None,
+                     b_parameter: str = 'b_value',
+                     error: bool = False
+                     ) -> Union[float, Tuple[float, float]]:
     """ returns the maximum likelihood beta
     Source:
         Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
@@ -23,9 +23,9 @@ def estimate_beta_tinti(magnitudes: np.ndarray,
         mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
         weights:    weights of each magnitude can be specified here
-        gutenberg:  if True the b-value of the Gutenberg-Richter law is
-                    returned, otherwise the beta value of the exponential
-                    distribution [p(M) = exp(-beta*(M-mc))] is returned
+        b_parameter:either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta'
+                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
         error:      if True the error of beta/b-value (see above) is returned
 
     Returns:
@@ -41,7 +41,9 @@ def estimate_beta_tinti(magnitudes: np.ndarray,
     else:
         beta = 1 / np.average(magnitudes - mc, weights=weights)
 
-    if gutenberg is True:
+    assert b_parameter == 'b_value' or b_parameter == 'beta', \
+        "please choose either 'b_value' or 'beta' as b_parameter"
+    if b_parameter == 'b_value':
         factor = 1 / np.log(10)
     else:
         factor = 1
@@ -55,8 +57,50 @@ def estimate_beta_tinti(magnitudes: np.ndarray,
         return b
 
 
-def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0
-                       ) -> float:
+def estimate_beta_tinti(magnitudes: np.ndarray,
+                        mc: float,
+                        delta_m: float = 0,
+                        weights: Optional[list] = None,
+                        error: bool = False
+                        ) -> Union[float, Tuple[float, float]]:
+    """ returns the maximum likelihood beta
+    Source:
+        Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
+        Tinti and Mulargia 1987 (Bulletin of the Seismological Society of
+            America, 77(6), 2125-2134.)
+
+    Args:
+        magnitudes: vector of magnitudes, unsorted, already cutoff (no
+                    magnitudes below mc present)
+        mc:         completeness magnitude
+        delta_m:    discretization of magnitudes. default is no discretization
+        weights:    weights of each magnitude can be specified here
+        error:      if True the error of beta/b-value (see above) is returned
+
+    Returns:
+        beta:       maximum likelihood beta
+        std_beta:   Shi and Bolt estimate of the beta estimate
+    """
+
+    if delta_m > 0:
+        p = 1 + delta_m / np.average(magnitudes - mc, weights=weights)
+        beta = 1 / delta_m * np.log(p)
+    else:
+        beta = 1 / np.average(magnitudes - mc, weights=weights)
+
+    if error is True:
+        std_beta = shi_bolt_confidence(magnitudes, beta=beta)
+        return beta, std_beta
+    else:
+        return beta
+
+
+def estimate_b_utsu(magnitudes: np.ndarray,
+                    mc: float,
+                    delta_m: float = 0,
+                    b_parameter: str = 'b_value',
+                    error: bool = False
+                    ) -> Union[float, Tuple[float, float]]:
     """ returns the maximum likelihood beta
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University, vol 13, pp
@@ -67,13 +111,33 @@ def estimate_beta_utsu(magnitudes: np.ndarray, mc: float, delta_m: float = 0
                     magnitudes below mc present)
         mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
+        b_parameter:either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta'
+                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+        error:      if True the error of beta/b-value (see above) is returned
 
     Returns:
-        beta:       maximum likelihood beta (b_value = beta * log10(e))
+        b:          maximum likelihood beta or b-value, depending on value of
+                    input variable 'gutenberg'. Note that the difference
+                    is just a factor [b_value = beta * log10(e)]
+        std_b:      Shi and Bolt estimate of the beta/b-value estimate
     """
     beta = 1 / np.mean(magnitudes - mc + delta_m / 2)
 
-    return beta
+    assert b_parameter == 'b_value' or b_parameter == 'beta', \
+        "please choose either 'b_value' or 'beta' as b_parameter"
+    if b_parameter == 'b_value':
+        factor = 1 / np.log(10)
+    else:
+        factor = 1
+
+    if error is True:
+        std_b = shi_bolt_confidence(magnitudes, beta=beta) * factor
+        b = beta * factor
+        return b, std_b
+    else:
+        b = beta * factor
+        return b
 
 
 def differences(magnitudes: np.ndarray) -> np.ndarray:
@@ -92,8 +156,11 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
     return mag_diffs
 
 
-def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
-                       ) -> [float, float]:
+def estimate_b_elst(magnitudes: np.ndarray,
+                    delta_m: float = 0,
+                    b_parameter: str = 'b_value',
+                    error: bool = False
+                    ) -> Union[float, Tuple[float, float]]:
     """ returns the b-value estimation using the positive differences of the
     Magnitudes
 
@@ -105,22 +172,33 @@ def estimate_beta_elst(magnitudes: np.ndarray, delta_m: float = 0
         magnitudes: vector of magnitudes differences, sorted in time (first
                     entry is the earliest earthquake)
         delta_m:    discretization of magnitudes. default is no discretization
+        b_parameter:either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta'
+                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+        error:      if True the error of beta/b-value (see above) is returned
 
     Returns:
-        beta:       maximum likelihood beta (b_value = beta * log10(e))
+        b:          maximum likelihood beta or b-value, depending on value of
+                    input variable 'gutenberg'. Note that the difference
+                    is just a factor [b_value = beta * log10(e)]
+        std_b:      Shi and Bolt estimate of the beta/b-value estimate
     """
+
     mag_diffs = np.diff(magnitudes)
     # only take the values where the next earthquake is larger
     mag_diffs = abs(mag_diffs[mag_diffs > 0])
-    beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
 
-    return beta
+    return estimate_b_tinti(
+        mag_diffs, mc=delta_m, delta_m=delta_m, b_parameter=b_parameter,
+        error=error)
 
 
-def estimate_beta_laplace(
+def estimate_b_laplace(
         magnitudes: np.ndarray,
-        delta_m: float = 0
-) -> float:
+        delta_m: float = 0,
+        b_parameter: str = 'b_value',
+        error: bool = False
+) -> Union[float, Tuple[float, float]]:
     """ returns the b-value estimation using the all the  differences of the
     Magnitudes (this has a little less variance than the estimate_beta_elst
     method)
@@ -133,15 +211,23 @@ def estimate_beta_laplace(
         magnitudes: vector of magnitudes differences, sorted in time (first
                     entry is the earliest earthquake)
         delta_m:    discretization of magnitudes. default is no discretization
+        b_parameter:either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta'
+                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+        error:      if True the error of beta/b-value (see above) is returned
 
     Returns:
-        beta:       maximum likelihood beta (b_value = beta * log10(e))
+        b:          maximum likelihood beta or b-value, depending on value of
+                    input variable 'gutenberg'. Note that the difference
+                    is just a factor [b_value = beta * log10(e)]
+        std_b:      Shi and Bolt estimate of the beta/b-value estimate
     """
     mag_diffs = differences(magnitudes)
     mag_diffs = abs(mag_diffs)
     mag_diffs = mag_diffs[mag_diffs > 0]
-    beta = estimate_beta_tinti(mag_diffs, mc=delta_m, delta_m=delta_m)
-    return beta
+    return estimate_b_tinti(
+        mag_diffs, mc=delta_m, delta_m=delta_m, b_parameter=b_parameter,
+        error=error)
 
 
 def shi_bolt_confidence(
