@@ -133,3 +133,6 @@ dmypy.json
 
 # Swap files
 .swp
+
+# Finder files
+.DS_Store
