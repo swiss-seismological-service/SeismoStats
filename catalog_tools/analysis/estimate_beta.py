@@ -166,14 +166,16 @@ def shi_bolt_confidence(
     """
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
+    assert b_value is not None or beta is not None,\
+        'please specify b-value or beta'
+    assert b_value is None or beta is None, \
+        'please only specify either b-value or beta'
+
     if b_value is not None:
         std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
         std_b = np.log(10) * b_value ** 2 * std_m
-    elif beta is not None:
+    else:
         std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
         std_b = beta ** 2 * std_m
-    else:
-        print('input missing: b_value or beta')
-        std_b = None
 
     return std_b
