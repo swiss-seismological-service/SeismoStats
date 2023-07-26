@@ -47,11 +47,11 @@ def test_bin_to_precision(x: np.ndarray, delta_x: float,
 
 
 @pytest.mark.parametrize(
-    "magnitudes, delta_m, bins, c_counts, left",
+    "magnitudes, delta_m, bins, c_counts, bin_position",
     [(np.array([0.20990507, 0.04077336, 0.27906596, 0.57406287, 0.64256544,
                 0.07293118, 0.58589873, 0.02678655, 0.27631233, 0.17682814]),
       0.1, np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
-      np.array([10, 8, 7, 5, 3, 3, 3]), False),
+      np.array([10, 8, 7, 5, 3, 3, 3]), 'center'),
      (np.array([0.02637757, 0.06353823, 0.10257919, 0.54494906, 0.03928375,
                 0.08825028, 0.77713586, 0.54553981, 0.69315583, 0.06656642,
                 0.29035447, 0.2051877, 0.30858087, 0.68896342, 0.03328782,
@@ -62,15 +62,14 @@ def test_bin_to_precision(x: np.ndarray, delta_x: float,
                 0.08979514, 0.0442659, 0.18672424, 0.21239088, 0.02287468,
                 0.1244267, 0.04939361, 0.11232758, 0.02706083, 0.04275401,
                 0.02732529, 0.83884229, 0.4147758, 0.07416183, 0.05636252]),
-      0.2, np.array([-0.1, 0.1, 0.3, 0.5, 0.7]), np.array([50, 29,
-                                                           15, 8, 3]), True)]
+      0.2, np.array([-0.1, 0.1, 0.3, 0.5, 0.7]), np.array([50, 29, 15, 8, 3]),
+      'left')]
 )
 def test_get_cum_fmd(magnitudes: np.ndarray, delta_m: float,
-                     bins: np.ndarray, c_counts: np.ndarray, left: bool):
+                     bins: np.ndarray, c_counts: np.ndarray, bin_position: str):
     errors = []
-    nbins, nc_counts, nmags = get_cum_fmd(magnitudes, delta_m, left=left)
-    print(bins)
-    print(nbins)
+    nbins, nc_counts, nmags = get_cum_fmd(
+        magnitudes, delta_m, bin_position=bin_position)
     if not np.allclose(bins, nbins, atol=1e-10):
         errors.append("Incorrect bin values.")
     if not np.allclose(c_counts, nc_counts, atol=1e-10):
@@ -80,11 +79,11 @@ def test_get_cum_fmd(magnitudes: np.ndarray, delta_m: float,
 
 
 @pytest.mark.parametrize(
-    "magnitudes, delta_m, bins, counts, left",
+    "magnitudes, delta_m, bins, counts, bin_position",
     [(np.array([0.20990507, 0.04077336, 0.27906596, 0.57406287, 0.64256544,
                 0.07293118, 0.58589873, 0.02678655, 0.27631233, 0.17682814]),
       0.1, np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
-      np.array([2, 1, 2, 2, 0, 0, 3]), False),
+      np.array([2, 1, 2, 2, 0, 0, 3]), 'center'),
      (np.array([0.02637757, 0.06353823, 0.10257919, 0.54494906, 0.03928375,
                 0.08825028, 0.77713586, 0.54553981, 0.69315583, 0.06656642,
                 0.29035447, 0.2051877, 0.30858087, 0.68896342, 0.03328782,
@@ -95,13 +94,14 @@ def test_get_cum_fmd(magnitudes: np.ndarray, delta_m: float,
                 0.08979514, 0.0442659, 0.18672424, 0.21239088, 0.02287468,
                 0.1244267, 0.04939361, 0.11232758, 0.02706083, 0.04275401,
                 0.02732529, 0.83884229, 0.4147758, 0.07416183, 0.05636252]),
-      0.2, np.array([-0.1, 0.1, 0.3, 0.5, 0.7]), np.array([21, 14,
-                                                           7, 5, 3]), True)]
+      0.2, np.array([-0.1, 0.1, 0.3, 0.5, 0.7]), np.array([21, 14, 7, 5, 3]),
+      'left')]
 )
 def test_get_fmd(magnitudes: np.ndarray, delta_m: float,
-                 bins: np.ndarray, counts: np.ndarray, left: bool):
+                 bins: np.ndarray, counts: np.ndarray, bin_position):
     errors = []
-    nbins, ncounts, nmags = get_fmd(magnitudes, delta_m, left=left)
+    nbins, ncounts, nmags = get_fmd(
+        magnitudes, delta_m, bin_position=bin_position)
 
     if not np.allclose(bins, nbins, atol=1e-10):
         errors.append("Incorrect bin values.")

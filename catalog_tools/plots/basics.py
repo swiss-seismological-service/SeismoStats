@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, Union
 
 # Own functions
-from catalog_tools.utils.binning import get_cum_fmd, get_fmd, bin_to_precision
+from catalog_tools.utils.binning import get_cum_fmd, get_fmd
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
