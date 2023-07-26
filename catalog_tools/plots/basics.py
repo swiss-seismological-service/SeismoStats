@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, Union
 
 # Own functions
-from catalog_tools.utils.binning import bin_to_precision
+from catalog_tools.utils.binning import get_cum_fmd, get_fmd
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
@@ -30,11 +30,13 @@ def plot_cum_fmd(
         delta_m: float = 0,
         color: Union[str, list] = 'blue',
         size: int = 3,
-        grid: bool = False
+        grid: bool = False,
+        bin_position: str = 'center'
 ) -> plt.Axes:
     """ Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
-    provided b-value)
+    provided b-value). Unlike plot_cum_fmd, plots values for all bins and
+    requires binning.
 
     Args:
         mags    : array of magnitudes
@@ -47,17 +49,16 @@ def plot_cum_fmd(
             colored differently this should be a list with two entries
         size    : size of scattered data
         grid    : bool, include grid lines or not
+        bin_position    : position of the bin, options are  'center' and 'left'
+                        accordingly, left edges of bins or center points are
+                        returned.
 
     Returns:
         ax that was plotted on
     """
 
     mags = mags[~np.isnan(mags)]
-
-    mags_unique, counts = np.unique(mags, return_counts=True)
-    idx = np.argsort(mags_unique)
-    mags_unique = mags_unique[idx[::-1]]
-    counts = counts[idx[::-1]]
+    bins, c_counts, mags = get_cum_fmd(mags, delta_m, bin_position=bin_position)
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -65,15 +66,21 @@ def plot_cum_fmd(
     if b_value is not None:
         if mc is None:
             mc = min(mags)
-        x = mags[mags >= mc]
-        y = gutenberg_richter(x, b_value, mc, len(x))
+        if bin_position == 'left':
+            mc -= delta_m / 2
+
+        n_mc = len(mags[mags >= mc])
+        x = bins[bins >= mc]
+        y = gutenberg_richter(x, b_value, min(x), n_mc)
+
         if type(color) is not list:
             color = [color, color]
-        ax.plot(x - delta_m / 2, y, color=color[1])
-        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
+
+        ax.plot(x, y, color=color[1])
+        ax.scatter(bins, c_counts, s=size,
                    color=color[0], marker='s')
     else:
-        ax.scatter(mags_unique - delta_m / 2, np.cumsum(counts), s=size,
+        ax.scatter(bins, c_counts, s=size,
                    color=color, marker='s')
 
     ax.set_yscale('log')
@@ -89,38 +96,44 @@ def plot_cum_fmd(
 
 def plot_fmd(
         mags: np.ndarray,
-        delta_m: float = 0,
         ax: Optional[plt.Axes] = None,
+        delta_m: float = 0.1,
         color: str = 'blue',
         size: int = 5,
-        grid: bool = False
+        grid: bool = False,
+        bin_position: str = 'center'
 ) -> plt.Axes:
-    """ Plots frequency magnitude distribution (non cumulative)
+    """ Plots frequency magnitude distribution. Unlike plot_fmd,
+    plots values for all bins and requires binning.
 
     Args:
         mags    : array of magnitudes
+        ax      : axis where figure should be plotted
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
-        ax      : axis where figure should be plotted
-        color   : color of the data
+        color   : color of the data.
         size    : size of scattered data
         grid    : bool, include grid lines or not
+        bin_position    : position of the bin, options are  'center' and 'left'
+                        accordingly, left edges of bins or center points are
+                        returned.
 
     Returns:
         ax that was plotted on
     """
 
+    mags = mags[~np.isnan(mags)]
+
     if delta_m == 0:
         delta_m = 0.1
-    mags = bin_to_precision(mags, delta_m)
-    mags = np.array(mags)
+
+    bins, counts, mags = get_fmd(mags, delta_m, bin_position=bin_position)
 
     if ax is None:
         ax = plt.subplots()[1]
 
-    mags_unique, counts = np.unique(mags, return_counts=True)
-
-    ax.scatter(mags_unique, counts, s=size, color=color, marker='^')
+    ax.scatter(bins, counts, s=size,
+               color=color, marker='^')
     ax.set_yscale('log')
     ax.set_xlabel('Magnitude')
     ax.set_ylabel('N')
@@ -133,10 +146,10 @@ def plot_fmd(
 
 
 def plot_cum_count(
-    cat: pd.DataFrame,
-    ax: Optional[plt.Axes] = None,
-    mcs: Optional[np.ndarray] = np.array([0]),
-    delta_m: Optional[float] = 0.1,
+        cat: pd.DataFrame,
+        ax: Optional[plt.Axes] = None,
+        mcs: Optional[np.ndarray] = np.array([0]),
+        delta_m: Optional[float] = 0.1,
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -164,7 +177,7 @@ def plot_cum_count(
         ax = plt.subplots()[1]
 
     for mc in mcs:
-        cat_above_mc = cat.query(f"magnitude>={mc-delta_m/2}")
+        cat_above_mc = cat.query(f"magnitude>={mc - delta_m / 2}")
         times = sorted(cat_above_mc["time"])
         times_adjusted = [first_time, *times, last_time]
 
@@ -223,6 +236,7 @@ def plot_mags_in_time(
 
     if ax is None:
         ax = plt.subplots()[1]
+
     ax.scatter(times,
                cat["magnitude"],
                s=dot_size(cat["magnitude"],

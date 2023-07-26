@@ -56,3 +56,76 @@ def bin_to_precision(x: Union[np.ndarray, list], delta_x: float = 0.1
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
     return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
+
+
+def get_fmd(
+        mags: np.ndarray,
+        delta_m: float,
+        bin_position: str = 'center'
+) -> [np.ndarray, np.ndarray, np.ndarray]:
+    """ Calculates event counts per magnitude bin. Note that the returned bins
+        array contains the center point of each bin unless bin_position is
+        'left'.
+
+    Args:
+        mags    : array of magnitudes
+        delta_m : discretization of the magnitudes
+        bin_position    : position of the bin, options are  'center' and 'left'.
+                        accordingly, left edges of bins or center points are
+                        returned.
+    Returns:
+        bins    : array of bin centers (left to right)
+        counts  : counts for each bin ("")
+        mags    : array of magnitudes binned to delta_m
+    """
+    mags = bin_to_precision(mags, delta_m)
+    mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
+    mags_i = mags_i.astype(int)
+    counts = np.bincount(mags_i)
+
+    bins = bin_to_precision(
+        np.arange((np.min(mags)) * 100000,
+                  (np.max(mags) + delta_m / 2) * 100000,
+                  delta_m * 100000) / 100000, delta_m)
+
+    assert bin_position == 'left' or bin_position == 'center', \
+        "bin_position needs to be 'left'  of 'center'"
+    if bin_position == 'left':
+        bins = bins - delta_m / 2
+
+    return bins, counts, mags
+
+
+def get_cum_fmd(
+        mags: np.ndarray,
+        delta_m: float,
+        bin_position: str = 'center'
+) -> [np.ndarray, np.ndarray, np.ndarray]:
+    """ Calculates cumulative event counts across all magnitude units
+    (summed from the right). Note that the returned bins array contains
+    the center point of each bin unless left is True.
+
+    Args:
+        mags    : array of magnitudes
+        delta_m : discretization of the magnitudes
+        bin_position    : position of the bin, options are  'center' and 'left'.
+                        accordingly, left edges of bins or center points are
+                        returned.
+
+    Returns:
+        bins    : array of bin centers (left to right)
+        c_counts: cumulative counts for each bin ("")
+        mags    : array of magnitudes binned to delta_m
+    """
+
+    if delta_m == 0:
+        mags_unique, counts = np.unique(mags, return_counts=True)
+        idx = np.argsort(mags_unique)
+        bins = mags_unique
+        counts = counts[idx]
+    else:
+        bins, counts, mags = get_fmd(mags, delta_m, bin_position=bin_position)
+    c_counts = np.cumsum(counts[::-1])
+    c_counts = c_counts[::-1]
+
+    return bins, c_counts, mags
