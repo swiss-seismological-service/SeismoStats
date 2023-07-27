@@ -5,6 +5,7 @@
 from catalog_tools.analysis.estimate_beta import\
     estimate_b_elst,\
     estimate_b_utsu,\
+    estimate_beta_tinti,\
     estimate_b_tinti,\
     estimate_b_laplace,\
     shi_bolt_confidence
