@@ -12,14 +12,23 @@ from catalog_tools.analysis.estimate_beta import\
     estimate_b_utsu,\
     estimate_b_elst,\
     estimate_b_laplace,\
+    estimate_b_weichert,\
     differences,\
     shi_bolt_confidence
 
 
 def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
-                                 delta_m: float) -> np.ndarray:
+                                 delta_m: float, mag_max: float = None) -> np.ndarray:
     """ This function simulates the magnitudes with the correct offset"""
-    mags = simulate_magnitudes(n, beta, mc - delta_m / 2)
+    mags = simulate_magnitudes(n, beta, mc - delta_m / 2, mag_max)
+    if delta_m > 0:
+        mags = bin_to_precision(mags, delta_m)
+    return mags
+
+def simulate_magnitudes_w_offset2(n: int, beta: float, mc: float,
+                                 delta_m: float, mag_max: float = None) -> np.ndarray:
+    """ This function simulates the magnitudes with the correct offset"""
+    mags = simulate_magnitudes(n, beta, mc, mag_max)
     if delta_m > 0:
         mags = bin_to_precision(mags, delta_m)
     return mags
@@ -97,6 +106,66 @@ def test_estimate_b_laplace(n: int, b: float, mc: float, delta_m: float,
                                     b_parameter=b_parameter)
     assert abs(b - b_estimate) / b <= precision
 
+@pytest.mark.parametrize(
+    "a_val_true,b_val_true,precision",
+    [(7, 1, 0.01)]
+)
+def test_estimate_b_weichert(a_val_true: float,
+                             b_val_true: float,
+                             precision: float):
+
+    # annual expected rates:
+    r45 = 10**(a_val_true-b_val_true*3.95) - 10**(a_val_true-b_val_true*4.95)
+    r56 = 10**(a_val_true-b_val_true*4.95) - 10**(a_val_true-b_val_true*5.95)
+    r67 = 10**(a_val_true-b_val_true*5.95) - 10**(a_val_true-b_val_true*6.95)
+    r78 = 10**(a_val_true-b_val_true*6.95) - 10**(a_val_true-b_val_true*7.95)
+
+    # assume a catalogue from year 1000 to end of 1999 with completeness as follows:
+    # 3.95 - 1940 / 4.95 - 1880 / 5.95 - 1500 / 6.95 - 1000
+
+    # sample earthquakes over 1,000 year period
+    n45 = np.random.poisson(r45*(2000-1940))
+    mags45 = simulate_magnitudes_w_offset(n=n45, beta=np.log(10), mc=4, delta_m=0.1, mag_max=4.95)
+    years45 = np.random.randint(1940, 2000, n45)
+
+    n56 = np.random.poisson(r56*(2000-1880))
+    mags56 = simulate_magnitudes_w_offset(n=n56, beta=np.log(10), mc=5, delta_m=0.1, mag_max=5.95)
+    years56 = np.random.randint(1880, 2000, n56)
+
+    n67 = np.random.poisson(r67*(2000-1500))
+    mags67 = simulate_magnitudes_w_offset(n=n67, beta=np.log(10), mc=6, delta_m=0.1, mag_max=6.95)
+    years67 = np.random.randint(1500, 2000, n67)
+
+    n78 = np.random.poisson(r78*(2000-1000))
+    mags78 = simulate_magnitudes_w_offset(n=n78, beta=np.log(10), mc=7, delta_m=0.1, mag_max=7.95)
+    years78 = np.random.randint(1000, 2000, n78)
+
+    # add some earthquakes in incomplete years
+    mags_inc = np.concatenate([
+        np.random.randint(40, 50, 100) / 10,
+        np.random.randint(50, 60, 10) / 10,
+        np.random.randint(60, 70, 1) / 10
+    ])
+    years_inc = np.concatenate([
+        np.random.randint(1000, 1940, 100),
+        np.random.randint(1000, 1880, 10),
+        np.random.randint(1000, 1500, 1)
+    ])
+
+    mags = np.concatenate([mags45,mags56,mags67,mags78, mags_inc])
+    years = np.concatenate([years45, years56, years67,years78, years_inc])
+
+    b_val, std_b_val, rate_at_mref, std_rate_at_mref, a_val = estimate_b_weichert(
+            magnitudes=mags,
+            years=years,
+            completeness_table=np.array([[3.95, 1940], [4.95, 1880], [5.95, 1500], [6.95, 1000]]),
+            mag_max=7.95,
+            tend=2000,
+            delta_m=0.1,
+            b_parameter='b_value')
+
+    assert abs(b_val_true - b_val) / b_val_true <= precision
+    assert abs(a_val_true - a_val) / a_val_true <= precision
 
 @pytest.mark.parametrize(
     "magnitudes,b_value,std_b_value,std_beta",
