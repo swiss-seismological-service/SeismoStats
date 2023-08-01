@@ -19,12 +19,12 @@ def simulate_magnitudes(n: int, beta: float, mc: float,
         distribution
     """
     if mag_max:
-        quantile1 = stats.expon.cdf(mc, loc=0, scale=1/beta)
-        quantile2 = stats.expon.cdf(mag_max, loc=0, scale=1/beta)
+        quantile1 = stats.expon.cdf(mc, loc=0, scale=1 / beta)
+        quantile2 = stats.expon.cdf(mag_max, loc=0, scale=1 / beta)
         mags = stats.expon.ppf(
             np.random.uniform(quantile1, quantile2, size=n),
             loc=0,
-            scale=1/beta,
+            scale=1 / beta,
         )
     else:
         mags = np.random.exponential(1 / beta, n) + mc

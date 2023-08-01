@@ -241,7 +241,7 @@ def estimate_b_weichert(
         tend: int = None,
         delta_m: float = 0.1,
         b_parameter: str = 'b_value'
-        ) -> [float, float, float, float, float]:
+) -> [float, float, float, float, float]:
     """ applies the Weichert (1980) algorithm for estimation of the
     Gutenberg-Richter magnitude-frequency distribution parameters in
     the case of unequal completeness periods for different magnitude
@@ -282,23 +282,27 @@ def estimate_b_weichert(
         rate_at_lmc: maximum likelihood point estimate of earthquake rate
                      at the lower magnitude of completeness
         std_rate_at_lmc: standard error of rate_at_lmc
-        a_val: maximum likelihood point estimate of a-value ( = log10(rate at mag=0) )
-               of Gutenberg-Richter magnitude frequency distribution
+        a_val: maximum likelihood point estimate of a-value
+               ( =log10(rate at mag=0) ) of Gutenberg-Richter
+               magnitude frequency distribution
     """
     assert len(magnitudes) == len(years), \
         "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
     assert np.all(np.ediff1d(completeness_table[:, 0]) >= 0),\
         "magnitudes in completeness table not in ascending order"
-    assert [i-delta_m in np.arange(completeness_table[0, 0], mag_max+0.001, delta_m)
+    assert [i - delta_m in np.arange(completeness_table[0, 0],
+                                     mag_max + 0.001, delta_m)
             for i in np.unique(magnitudes)],\
         "magnitude bins not aligned with completeness edges"
     if not np.all(magnitudes >= completeness_table[:, 0].min()):
-        warnings.warn("magnitudes below %.2f are not covered by the "
-                      "completeness table and are discarded" % completeness_table[0, 0])
+        warnings.warn(
+            "magnitudes below %.2f are not covered by the "
+            "completeness table and are discarded" %
+            completeness_table[0, 0])
     assert b_parameter == 'b_value' or b_parameter == 'beta', \
         "please choose either 'b_value' or 'beta' as b_parameter"
-    factor = 1/np.log(10) if b_parameter == 'b_value' else 1
+    factor = 1 / np.log(10) if b_parameter == 'b_value' else 1
     tend = tend if tend else np.max(years)
 
     # Get the magnitudes and completeness years as separate arrays
@@ -308,9 +312,9 @@ def estimate_b_weichert(
     # Obtain the completeness start year for each value in magnitudes
     insertion_indices = np.searchsorted(completeness_magnitudes, magnitudes)
     cmpl_yrs = np.array(
-            [completeness_years[idx-1] if idx not in [0, len(completeness_years)]
-             else {0: -1, len(completeness_years): completeness_years[-1]}[idx]
-             for i, idx in enumerate(insertion_indices)]
+        [completeness_years[idx - 1] if idx not in [0, len(completeness_years)]
+         else {0: -1, len(completeness_years): completeness_years[-1]}[idx]
+         for i, idx in enumerate(insertion_indices)]
     )
 
     # filter out events outside completeness window and
@@ -319,16 +323,17 @@ def estimate_b_weichert(
     idxcomp = ((cmpl_yrs > 0) & (years - cmpl_yrs >= 0))
     complete_events = pd.DataFrame.groupby(
         pd.DataFrame(data={
-            'mag_left_edge': np.array([i.left for i in pd.cut(magnitudes[idxcomp],
-                                       bins=np.arange(completeness_magnitudes[0],
-                                       mag_max+0.01, delta_m), right=False)]
-                                      ),
+            'mag_left_edge': np.array(
+                [i.left for i in pd.cut(magnitudes[idxcomp],
+                 bins=np.arange(completeness_magnitudes[0],
+                 mag_max + 0.01, delta_m), right=False)]),
             'completeness_start': cmpl_yrs[idxcomp]
         }), by=['mag_left_edge', 'completeness_start'])\
         .size()\
         .to_frame('num')\
         .reset_index()
-    assert np.all(complete_events.completeness_start > 0)  # should be the case by design
+    assert np.all(
+        complete_events.completeness_start > 0)  # should be the case by design
 
     # minimization
     beta = np.log(10)  # initialization of beta
@@ -338,50 +343,55 @@ def estimate_b_weichert(
                       method='Nelder-Mead',
                       options={'maxiter': 5000, 'disp': True},
                       tol=1e5 * np.finfo(float).eps)
-    b_parameter = output.x[0]*factor
+    b_parameter = output.x[0] * factor
 
     # compute rate at lower magnitude of completeness bin
-    wf = np.sum(np.exp(-output.x[0] *
-                       (complete_events.mag_left_edge + delta_m * 0.5))) /\
-        np.sum((tend-complete_events.completeness_start.values) *
-               np.exp(-output.x[0] * (complete_events.mag_left_edge + delta_m * 0.5)))
+    wf = np.sum(np.exp(-output.x[0]
+                       * (complete_events.mag_left_edge + delta_m * 0.5)))\
+        / np.sum((tend - complete_events.completeness_start.values)
+                 * np.exp(-output.x[0]
+                          * (complete_events.mag_left_edge + delta_m * 0.5)))
     rate_at_lmc = complete_events.num.sum() * wf
 
     # compute a-value ( a_val = log10(rate at M=0) )
-    a_val = np.log10(rate_at_lmc) + (output.x[0]/np.log(10)) * \
-        complete_events.mag_left_edge.values[0]
+    a_val = np.log10(rate_at_lmc) + \
+        (output.x[0] / np.log(10)) * complete_events.mag_left_edge.values[0]
 
     # compute uncertainty in b-parameter according to Weichert (1980)
-    nominator = np.sum((tend-complete_events.completeness_start.values) *
-                       np.exp(-output.x[0]*(complete_events.mag_left_edge + delta_m * 0.5)))**2
-    denominator_term1 = np.sum((tend-complete_events.completeness_start.values) *
-                               (complete_events.mag_left_edge + delta_m * 0.5) *
-                               np.exp(-output.x[0]*(complete_events.mag_left_edge +
-                                                    delta_m * 0.5)))**2
+    nominator = np.sum((tend - complete_events.completeness_start.values)
+                       * np.exp(-output.x[0] * (complete_events.mag_left_edge
+                                                + delta_m * 0.5)))**2
+    denominator_term1 = np.sum(
+        (tend - complete_events.completeness_start.values)
+        * (complete_events.mag_left_edge + delta_m * 0.5)
+        * np.exp(- output.x[0] * (complete_events.mag_left_edge
+                 + delta_m * 0.5)))**2
     denominator_term2 = np.sqrt(nominator) * \
-        np.sum((tend-complete_events.completeness_start.values) *
-               ((complete_events.mag_left_edge + delta_m * 0.5)**2) *
-               np.exp(-output.x[0] * (complete_events.mag_left_edge +
-                      delta_m * 0.5))
+        np.sum((tend - complete_events.completeness_start.values)
+               * ((complete_events.mag_left_edge + delta_m * 0.5)**2)
+               * np.exp(-output.x[0] * (complete_events.mag_left_edge
+                        + delta_m * 0.5))
                )
-    var_beta = -(1/complete_events.num.sum())*nominator/(denominator_term1-denominator_term2)
-    std_b_parameter = np.sqrt(var_beta)*factor
+    var_beta = -(1 / complete_events.num.sum()) * nominator\
+        / (denominator_term1 - denominator_term2)
+    std_b_parameter = np.sqrt(var_beta) * factor
 
     # compute uncertainty in rate at lower magnitude of completeness
-    std_rate_at_lmc = rate_at_lmc/np.sqrt(complete_events.num.sum())
+    std_rate_at_lmc = rate_at_lmc / np.sqrt(complete_events.num.sum())
 
     return b_parameter, std_b_parameter, rate_at_lmc, std_rate_at_lmc, a_val
 
 
 def weichert_minimization(beta, tend, complete_events, delta_m):
     magbins = complete_events.mag_left_edge + delta_m * 0.5
-    nom = np.sum((tend-complete_events.completeness_start.values) *
-                 magbins * np.exp(-beta * magbins))
-    denom = np.sum((tend-complete_events.completeness_start.values) *
-                   np.exp(-beta * magbins))
-    left = nom/denom
-    right = np.sum(complete_events.num.values*magbins)/complete_events.num.sum()
-    return np.abs(left-right)
+    nom = np.sum((tend - complete_events.completeness_start.values
+                  ) * magbins * np.exp(-beta * magbins))
+    denom = np.sum((tend - complete_events.completeness_start.values
+                    ) * np.exp(-beta * magbins))
+    left = nom / denom
+    right = np.sum(complete_events.num.values * magbins)\
+        / complete_events.num.sum()
+    return np.abs(left - right)
 
 
 def shi_bolt_confidence(
