@@ -238,7 +238,7 @@ def estimate_b_weichert(
         years: np.ndarray,
         completeness_table: np.ndarray,
         mag_max: Union[int, float],
-        last_year: Union[int, float] = None,
+        last_year: Optional[Union[int, float]] = None,
         delta_m: float = 0.1,
         b_parameter: str = 'b_value'
 ) -> Tuple[float, float, float, float, float]:
