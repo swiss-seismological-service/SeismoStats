@@ -6,35 +6,40 @@ from xml.sax import handler, make_parser
 
 import pandas as pd
 import requests
-from obspy import UTCDateTime
-from obspy.clients.fdsn import Client
+
+# from obspy import UTCDateTime
+# from obspy.clients.fdsn import Client
 
 
 class Event:
+    @staticmethod
+    def get_realvalue(key, value):
+        real_values = ['value', 'uncertainty',
+                       'lowerUncertainty', 'upperUncertainty',
+                       'confidenceLevel']
+        return {f'{key}{v}': f'{value}_{v}' for v in real_values}
+
+    event_mappings = {
+        'publicID': 'eventid'
+    }
+
+    origin_mappings = {
+        **get_realvalue('origintime', 'time'),
+        **get_realvalue('originlatitude', 'latitude'),
+        **get_realvalue('originlongitude', 'longitude'),
+        **get_realvalue('origindepth', 'depth')
+    }
+
+    magnitude_mappings = {
+        **get_realvalue('magnitudemag', 'magnitude'),
+        'magnitudetype': 'type',
+        'magnitudeevaluationMode': 'evaluationMode',
+    }
+
     def __init__(self):
         self.data = {}
         self.data['origins'] = {}
         self.data['magnitudes'] = {}
-
-        self.real_values = ['value', 'uncertainty',
-                            'lowerUncertainty', 'upperUncertainty',
-                            'confidenceLevel']
-
-        self.event_mappings = {
-            'publicID': 'eventid'
-        }
-        self.origin_mappings = {
-            **self.get_realvalue('origintime', 'time'),
-            **self.get_realvalue('originlatitude', 'latitude'),
-            **self.get_realvalue('originlongitude', 'longitude'),
-            **self.get_realvalue('origindepth', 'depth')
-        }
-
-        self.magnitude_mappings = {
-            **self.get_realvalue('magnitudemag', 'magnitude'),
-            'magnitudetype': 'type',
-            'magnitudeevaluationMode': 'evaluationMode',
-        }
 
     def clean_magnitudes(self):
         cleaned_mags = {}
@@ -47,18 +52,14 @@ class Event:
                 pref = next((m for m in mags if self.data['preferredMagnitudeID']
                             == m['magnitudepublicID']), None)
                 if pref is None:
-                    key1 = None
-                    key2 = None
-                    if all('magnitudecreationInfoversion' in m for m in mags):
-                        key1 = 'magnitudecreationInfoversion'
-                    if all('magnitudecreationInfocreationTime' in m for m in mags):
-                        key2 = 'magnitudecreationInfocreationTime'
+                    key1 = (False, 'magnitudecreationInfoversion')
+                    key2 = (False, 'magnitudecreationInfocreationTime')
+                    key1[0] = all(key1[1] in m for m in mags)
+                    key2[0] = all(key2[1] in m for m in mags)
                     mags = sorted(mags, key=lambda x: (
-                        int(x[key1]) if key1 else None, datetime.strptime(x[key2][:19], '%Y-%m-%dT%H:%M:%S' if key2 else None)), reverse=True)
-                    pprint(mags)
-                    pprint(mags[0])
-                    pref = mags[0]
-                    raise Exception()
+                        int(x[key1[1]]) if key1[0] else None,
+                        datetime.strptime(x[key2[1]][:19], '%Y-%m-%dT%H:%M:%S' if key2[0] else None)),
+                        reverse=True)
                 cleaned_mags[pref['magnitudepublicID']] = pref
             else:
                 cleaned_mags[mags[0]['magnitudepublicID']] = mags[0]
@@ -86,9 +87,6 @@ class Event:
                         self.data['preferredMagnitudeID']][key]
 
         return result
-
-    def get_realvalue(self, key, value):
-        return {f'{key}{v}': f'{value}_{v}' for v in self.real_values}
 
 
 # define a Custom ContentHandler class that extends ContenHandler
