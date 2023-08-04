@@ -1,6 +1,6 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
@@ -235,7 +235,7 @@ def estimate_b_laplace(
 
 def estimate_b_weichert(
         magnitudes: np.ndarray,
-        years: np.ndarray,
+        dates: List[np.datetime64],
         completeness_table: np.ndarray,
         mag_max: Union[int, float],
         last_year: Optional[Union[int, float]] = None,
@@ -255,7 +255,7 @@ def estimate_b_weichert(
 
     Args:
         magnitudes: vector of earthquake magnitudes
-        years: vector of years of occurrence of each earthquake
+        dates: list of datetime objects of occurrence of each earthquake
         completeness_table: Nx2 array, where the first column
             contains the leftmost edge of magnitude bins and
             the second column the associated year of completeness, i.e.
@@ -286,7 +286,7 @@ def estimate_b_weichert(
                ( =log10(rate at mag=0) ) of Gutenberg-Richter
                magnitude frequency distribution
     """
-    assert len(magnitudes) == len(years), \
+    assert len(magnitudes) == len(dates), \
         "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
     assert np.all(np.ediff1d(completeness_table[:, 0]) >= 0),\
@@ -304,6 +304,11 @@ def estimate_b_weichert(
     assert b_parameter == 'b_value' or b_parameter == 'beta', \
         "please choose either 'b_value' or 'beta' as b_parameter"
     factor = 1 / np.log(10) if b_parameter == 'b_value' else 1
+
+    # convert datetime to integer calendar year
+    years = np.array(dates).astype('datetime64[Y]').astype(int) + 1970
+
+    # get last year of catalogue if last_year not defined
     last_year = last_year if last_year else np.max(years)
 
     # Get the magnitudes and completeness years as separate arrays
