@@ -159,15 +159,9 @@ def test_estimate_b_weichert(a_val_true: float,
     years = np.concatenate([years45, years56, years67, years78, years_inc])
 
     b_val, std_b_val, rate_at_mref, std_rate_at_mref, a_val = \
-        estimate_b_weichert(
-            magnitudes=mags,
-            years=years,
-            completeness_table=np.array([[3.95, 1940], [4.95, 1880],
-                                         [5.95, 1500], [6.95, 1000]]),
-            mag_max=7.95,
-            tend=2000,
-            delta_m=0.1,
-            b_parameter='b_value')
+        estimate_b_weichert(magnitudes=mags, years=years, completeness_table=np.array([[3.95, 1940], [4.95, 1880],
+                                                                                       [5.95, 1500], [6.95, 1000]]),
+                            mag_max=7.95, last_year=2000, delta_m=0.1, b_parameter='b_value')
 
     assert abs(b_val_true - b_val) / b_val_true <= precision
     assert abs(a_val_true - a_val) / a_val_true <= precision

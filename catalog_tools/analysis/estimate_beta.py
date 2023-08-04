@@ -236,12 +236,12 @@ def estimate_b_laplace(
 def estimate_b_weichert(
         magnitudes: np.ndarray,
         years: np.ndarray,
-        completeness_table,
-        mag_max,
-        tend: int = None,
+        completeness_table: np.ndarray,
+        mag_max: Union[int, float],
+        last_year: Union[int, float] = None,
         delta_m: float = 0.1,
         b_parameter: str = 'b_value'
-) -> [float, float, float, float, float]:
+) -> Tuple[float, float, float, float, float]:
     """ applies the Weichert (1980) algorithm for estimation of the
     Gutenberg-Richter magnitude-frequency distribution parameters in
     the case of unequal completeness periods for different magnitude
@@ -269,7 +269,7 @@ def estimate_b_weichert(
                       [ 6.95, 1520]])
 
         mag_max: maximum possible magnitude
-        tend: last year of observation (the default is None, in which case
+        last_year: last year of observation (the default is None, in which case
               it is set to the latest year in years).
         delta_m: magnitude resolution, the default is 0.1.
         b_parameter:either 'b-value', then the corresponding value of the
@@ -300,10 +300,11 @@ def estimate_b_weichert(
             "magnitudes below %.2f are not covered by the "
             "completeness table and are discarded" %
             completeness_table[0, 0])
+    assert delta_m > 0, "delta_m cannot be zero"
     assert b_parameter == 'b_value' or b_parameter == 'beta', \
         "please choose either 'b_value' or 'beta' as b_parameter"
     factor = 1 / np.log(10) if b_parameter == 'b_value' else 1
-    tend = tend if tend else np.max(years)
+    last_year = last_year if last_year else np.max(years)
 
     # Get the magnitudes and completeness years as separate arrays
     completeness_magnitudes = completeness_table[:, 0]
@@ -337,39 +338,40 @@ def estimate_b_weichert(
 
     # minimization
     beta = np.log(10)  # initialization of beta
-    output = minimize(weichert_minimization,
-                      beta,
-                      args=(tend, complete_events, delta_m),
-                      method='Nelder-Mead',
-                      options={'maxiter': 5000, 'disp': True},
-                      tol=1e5 * np.finfo(float).eps)
-    b_parameter = output.x[0] * factor
+    solution = minimize(_weichert_objective_function,
+                        beta,
+                        args=(last_year, complete_events, delta_m),
+                        method='Nelder-Mead',
+                        options={'maxiter': 5000, 'disp': True},
+                        tol=1e5 * np.finfo(float).eps)
+    beta = solution.x[0]
+    b_parameter = beta * factor
 
     # compute rate at lower magnitude of completeness bin
-    wf = np.sum(np.exp(-output.x[0]
-                       * (complete_events.mag_left_edge + delta_m * 0.5)))\
-        / np.sum((tend - complete_events.completeness_start.values)
-                 * np.exp(-output.x[0]
-                          * (complete_events.mag_left_edge + delta_m * 0.5)))
-    rate_at_lmc = complete_events.num.sum() * wf
+    weichert_multiplier = np.sum(
+        np.exp(-beta * (complete_events.mag_left_edge + delta_m * 0.5)))\
+        / np.sum(
+        (last_year - complete_events.completeness_start.values)
+            * np.exp(-beta * (complete_events.mag_left_edge + delta_m * 0.5)))
+    rate_at_lmc = complete_events.num.sum() * weichert_multiplier
 
     # compute a-value ( a_val = log10(rate at M=0) )
-    a_val = np.log10(rate_at_lmc) + \
-        (output.x[0] / np.log(10)) * complete_events.mag_left_edge.values[0]
+    a_val = np.log10(rate_at_lmc)\
+        + (beta / np.log(10)) * complete_events.mag_left_edge.values[0]
 
     # compute uncertainty in b-parameter according to Weichert (1980)
-    nominator = np.sum((tend - complete_events.completeness_start.values)
-                       * np.exp(-output.x[0] * (complete_events.mag_left_edge
-                                                + delta_m * 0.5)))**2
+    nominator = np.sum((last_year - complete_events.completeness_start.values)
+                       * np.exp(-beta * (complete_events.mag_left_edge
+                                         + delta_m * 0.5)))**2
     denominator_term1 = np.sum(
-        (tend - complete_events.completeness_start.values)
+        (last_year - complete_events.completeness_start.values)
         * (complete_events.mag_left_edge + delta_m * 0.5)
-        * np.exp(- output.x[0] * (complete_events.mag_left_edge
+        * np.exp(- beta * (complete_events.mag_left_edge
                  + delta_m * 0.5)))**2
     denominator_term2 = np.sqrt(nominator) * \
-        np.sum((tend - complete_events.completeness_start.values)
+        np.sum((last_year - complete_events.completeness_start.values)
                * ((complete_events.mag_left_edge + delta_m * 0.5)**2)
-               * np.exp(-output.x[0] * (complete_events.mag_left_edge
+               * np.exp(-beta * (complete_events.mag_left_edge
                         + delta_m * 0.5))
                )
     var_beta = -(1 / complete_events.num.sum()) * nominator\
@@ -382,11 +384,15 @@ def estimate_b_weichert(
     return b_parameter, std_b_parameter, rate_at_lmc, std_rate_at_lmc, a_val
 
 
-def weichert_minimization(beta, tend, complete_events, delta_m):
+def _weichert_objective_function(beta, last_year, complete_events, delta_m):
+    """
+    function to be minimized for estimation of GR parameters as per
+    Weichert (1980). Used internally within estimate_b_weichert function.
+    """
     magbins = complete_events.mag_left_edge + delta_m * 0.5
-    nom = np.sum((tend - complete_events.completeness_start.values
+    nom = np.sum((last_year - complete_events.completeness_start.values
                   ) * magbins * np.exp(-beta * magbins))
-    denom = np.sum((tend - complete_events.completeness_start.values
+    denom = np.sum((last_year - complete_events.completeness_start.values
                     ) * np.exp(-beta * magbins))
     left = nom / denom
     right = np.sum(complete_events.num.values * magbins)\
