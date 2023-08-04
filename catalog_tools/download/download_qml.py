@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 
 
-def get_realvalue(key, value):
+def get_realvalue(key: str, value: str) -> dict:
     real_values = ['value', 'uncertainty',
                    'lowerUncertainty', 'upperUncertainty',
                    'confidenceLevel']
@@ -43,7 +43,7 @@ DUMMY_ORIGIN = {
 }
 
 
-def get_preferred_magnitude(magnitudes, id):
+def get_preferred_magnitude(magnitudes: list, id: str) -> tuple[dict, list]:
     preferred = next((m for m in magnitudes if id
                      == m['magnitudepublicID']), DUMMY_MAGNITUDE)
 
@@ -53,11 +53,15 @@ def get_preferred_magnitude(magnitudes, id):
     return preferred, magnitudes
 
 
-def get_preferred_origin(origins, id):
+def get_preferred_origin(origins: list, id: str):
     return next((o for o in origins if id == o['originpublicID']), DUMMY_ORIGIN)
 
 
-def select_secondary_magnitudes(magnitudes):
+def select_secondary_magnitudes(magnitudes: list):
+    """
+    Check the magnitudes for multiple magnitudes of the same type and
+    select the one with the highest version number and creation time.
+    """
     magnitude_types = set(m['magnitudetype'] for m in magnitudes)
 
     if len(magnitude_types) == len(magnitudes):
@@ -87,7 +91,7 @@ def select_secondary_magnitudes(magnitudes):
     return selection
 
 
-def extract_origin(origin):
+def extract_origin(origin: dict) -> dict:
     origin_dict = {}
     for key, value in ORIGIN_MAPPINGS.items():
         if key in origin:
@@ -95,7 +99,7 @@ def extract_origin(origin):
     return origin_dict
 
 
-def extract_magnitude(magnitude):
+def extract_magnitude(magnitude: dict) -> dict:
     magnitude_dict = {}
     for key, value in MAGNITUDE_MAPPINGS.items():
         if key in magnitude:
@@ -103,7 +107,7 @@ def extract_magnitude(magnitude):
     return magnitude_dict
 
 
-def extract_secondary_magnitudes(magnitudes):
+def extract_secondary_magnitudes(magnitudes: list) -> dict:
     magnitude_dict = {}
     for magnitude in magnitudes:
         mappings = get_realvalue(
@@ -114,7 +118,7 @@ def extract_secondary_magnitudes(magnitudes):
     return magnitude_dict
 
 
-def parse_to_dict(event, origins, magnitudes):
+def parse_to_dict(event: dict, origins: list, magnitudes: list) -> dict:
     preferred_origin = next(
         (o for o in origins
          if o['originpublicID'] == event['preferredOriginID']),
@@ -130,10 +134,13 @@ def parse_to_dict(event, origins, magnitudes):
         extract_magnitude(preferred_magnitude) | \
         extract_secondary_magnitudes(magnitudes)
 
-# define a Custom ContentHandler class that extends ContenHandler
-
 
 class CustomContentHandler(xml.sax.ContentHandler):
+    """
+    Custom ContentHandler class that extends ContenHandler to
+    stream parse QuakeML files.
+    """
+
     def __init__(self, catalog):
         self.catalog = catalog
 
@@ -192,9 +199,10 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
 start_cat = "2018-01-01T00:00:00"
 end_cat = "2019-01-01T00:00:00"
+includeallmagnitudes = "true"
 
-URL = f'https://service.scedc.caltech.edu/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=4.0&minlatitude=10&minlongitude=-124&maxlatitude=35&maxlongitude=-80'  # &includeallmagnitudes=true'  # noqa
-URL2 = f'http://arclink.ethz.ch/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=2.0&minlatitude=45&minlongitude=5&maxlatitude=48&maxlongitude=11'  # &includeallmagnitudes=true'  # noqa
+URL = f'https://service.scedc.caltech.edu/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=4.0&minlatitude=10&minlongitude=-124&maxlatitude=35&maxlongitude=-80&includeallmagnitudes={includeallmagnitudes}'  # noqa
+URL2 = f'http://arclink.ethz.ch/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=2.0&minlatitude=45&minlongitude=5&maxlatitude=48&maxlongitude=11&includeallmagnitudes={includeallmagnitudes}'  # noqa
 
 
 def main():
@@ -208,7 +216,7 @@ def main():
 
     r.raw.decode_content = True  # if content-encoding is used decode
     parser.parse(r.raw)
-    print(len(pd.DataFrame.from_dict(catalog)))
+    print(pd.DataFrame.from_dict(catalog))
 
 
 if __name__ == '__main__':
