@@ -307,28 +307,31 @@ def estimate_b_weichert(
     last_year = last_year if last_year else np.max(years)
 
     # Get the magnitudes and completeness years as separate arrays
-    completeness_magnitudes = completeness_table[:, 0]
-    completeness_years = completeness_table[:, 1]
+    completeness_table_magnitudes = completeness_table[:, 0]
+    completeness_table_years = completeness_table[:, 1]
 
     # Obtain the completeness start year for each value in magnitudes
-    insertion_indices = np.searchsorted(completeness_magnitudes, magnitudes)
-    cmpl_yrs = np.array(
-        [completeness_years[idx - 1] if idx not in [0, len(completeness_years)]
-         else {0: -1, len(completeness_years): completeness_years[-1]}[idx]
+    insertion_indices = np.searchsorted(
+        completeness_table_magnitudes, magnitudes)
+    completeness_starts = np.array(
+        [completeness_table_years[idx - 1] if
+         idx not in [0, len(completeness_table_years)]
+         else {0: -1,
+               len(completeness_table_years): completeness_table_years[-1]}[idx]
          for i, idx in enumerate(insertion_indices)]
     )
 
     # filter out events outside completeness window and
     # get number of "complete" events in each magnitude bin
     # and associated year of completeness
-    idxcomp = ((cmpl_yrs > 0) & (years - cmpl_yrs >= 0))
+    idxcomp = ((completeness_starts > 0) & (years - completeness_starts >= 0))
     complete_events = pd.DataFrame.groupby(
         pd.DataFrame(data={
             'mag_left_edge': np.array(
                 [i.left for i in pd.cut(magnitudes[idxcomp],
-                 bins=np.arange(completeness_magnitudes[0],
-                 mag_max + 0.01, delta_m), right=False)]),
-            'completeness_start': cmpl_yrs[idxcomp]
+                 bins=np.arange(completeness_table_magnitudes[0],
+                                mag_max + 0.01, delta_m), right=False)]),
+            'completeness_start': completeness_starts[idxcomp]
         }), by=['mag_left_edge', 'completeness_start'])\
         .size()\
         .to_frame('num')\
@@ -384,7 +387,10 @@ def estimate_b_weichert(
     return b_parameter, std_b_parameter, rate_at_lmc, std_rate_at_lmc, a_val
 
 
-def _weichert_objective_function(beta, last_year, complete_events, delta_m):
+def _weichert_objective_function(beta: float,
+                                 last_year: Union[float, int],
+                                 complete_events: pd.DataFrame,
+                                 delta_m: float) -> float:
     """
     function to be minimized for estimation of GR parameters as per
     Weichert (1980). Used internally within estimate_b_weichert function.
