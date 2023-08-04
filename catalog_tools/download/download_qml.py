@@ -1,119 +1,161 @@
 import xml.sax
 from datetime import datetime
-from pprint import pprint
-from time import perf_counter
 from xml.sax import handler, make_parser
 
 import pandas as pd
 import requests
 
-# from obspy import UTCDateTime
-# from obspy.clients.fdsn import Client
+
+def get_realvalue(key, value):
+    real_values = ['value', 'uncertainty',
+                   'lowerUncertainty', 'upperUncertainty',
+                   'confidenceLevel']
+    return {f'{key}{v}': f'{value}_{v}' for v in real_values}
 
 
-class Event:
-    @staticmethod
-    def get_realvalue(key, value):
-        real_values = ['value', 'uncertainty',
-                       'lowerUncertainty', 'upperUncertainty',
-                       'confidenceLevel']
-        return {f'{key}{v}': f'{value}_{v}' for v in real_values}
+EVENT_MAPPINGS = {
+    'publicID': 'eventid'
+}
 
-    event_mappings = {
-        'publicID': 'eventid'
-    }
+ORIGIN_MAPPINGS = {
+    **get_realvalue('origintime', 'time'),
+    **get_realvalue('originlatitude', 'latitude'),
+    **get_realvalue('originlongitude', 'longitude'),
+    **get_realvalue('origindepth', 'depth')
+}
 
-    origin_mappings = {
-        **get_realvalue('origintime', 'time'),
-        **get_realvalue('originlatitude', 'latitude'),
-        **get_realvalue('originlongitude', 'longitude'),
-        **get_realvalue('origindepth', 'depth')
-    }
+MAGNITUDE_MAPPINGS = {
+    **get_realvalue('magnitudemag', 'magnitude'),
+    'magnitudetype': 'magnitude_type',
+    'magnitudeevaluationMode': 'evaluationMode',
+}
 
-    magnitude_mappings = {
-        **get_realvalue('magnitudemag', 'magnitude'),
-        'magnitudetype': 'type',
-        'magnitudeevaluationMode': 'evaluationMode',
-    }
+DUMMY_MAGNITUDE = {
+    'magnitudemagvalue': None,
+    'magnitudetype': None,
+    'magnitudeevaluationMode': None}
 
-    def __init__(self):
-        self.data = {}
-        self.data['origins'] = {}
-        self.data['magnitudes'] = {}
+DUMMY_ORIGIN = {
+    'origintimevalue': None,
+    'originlatitudevalue': None,
+    'originlongitudevalue': None,
+    'origindepthvalue': None
+}
 
-    def clean_magnitudes(self):
-        cleaned_mags = {}
-        mag_types = set(m['magnitudetype']
-                        for m in self.data['magnitudes'].values())
-        for mt in mag_types:
-            mags = [m for m in self.data['magnitudes'].values()
-                    if m['magnitudetype'] == mt]
-            if len(mags) > 1:
-                pref = next((m for m in mags if self.data['preferredMagnitudeID']
-                            == m['magnitudepublicID']), None)
-                if pref is None:
-                    key1 = (False, 'magnitudecreationInfoversion')
-                    key2 = (False, 'magnitudecreationInfocreationTime')
-                    key1[0] = all(key1[1] in m for m in mags)
-                    key2[0] = all(key2[1] in m for m in mags)
-                    mags = sorted(mags, key=lambda x: (
-                        int(x[key1[1]]) if key1[0] else None,
-                        datetime.strptime(x[key2[1]][:19], '%Y-%m-%dT%H:%M:%S' if key2[0] else None)),
-                        reverse=True)
-                cleaned_mags[pref['magnitudepublicID']] = pref
-            else:
-                cleaned_mags[mags[0]['magnitudepublicID']] = mags[0]
-        self.data['magnitudes'] = cleaned_mags
 
-    def to_dict(self):
-        self.clean_magnitudes()
-        result = {}
-        for key in self.event_mappings:
-            if key in self.data:
-                result[self.event_mappings[key]] = self.data[key]
-        if self.data['preferredOriginID'] in self.data['origins']:
-            for key in self.origin_mappings:
-                if key in \
-                        self.data['origins'][
-                            self.data['preferredOriginID']]:
-                    result[self.origin_mappings[key]] = self.data['origins'][
-                        self.data['preferredOriginID']][key]
-        if self.data['preferredMagnitudeID'] in self.data['magnitudes']:
-            for key in self.magnitude_mappings:
-                if key in self.data['magnitudes'][
-                        self.data['preferredMagnitudeID']]:
-                    result[self.magnitude_mappings[key]] = \
-                        self.data['magnitudes'][
-                        self.data['preferredMagnitudeID']][key]
+def get_preferred_magnitude(magnitudes, id):
+    preferred = next((m for m in magnitudes if id
+                     == m['magnitudepublicID']), DUMMY_MAGNITUDE)
 
-        return result
+    magnitudes = [m for m in magnitudes if m['magnitudetype']
+                  != preferred['magnitudetype'] or id == m['magnitudepublicID']]
 
+    return preferred, magnitudes
+
+
+def get_preferred_origin(origins, id):
+    return next((o for o in origins if id == o['originpublicID']), DUMMY_ORIGIN)
+
+
+def select_secondary_magnitudes(magnitudes):
+    magnitude_types = set(m['magnitudetype'] for m in magnitudes)
+
+    if len(magnitude_types) == len(magnitudes):
+        return magnitudes
+
+    selection = []
+
+    for mt in magnitude_types:
+        mags = [m for m in magnitudes if m['magnitudetype'] == mt]
+
+        if len(mags) == 1:
+            selection.extend(mags)
+            continue
+
+        key1 = [False, 'magnitudecreationInfoversion']
+        key2 = [False, 'magnitudecreationInfocreationTime']
+        key1[0] = all(key1[1] in m for m in mags)
+        key2[0] = all(key2[1] in m for m in mags)
+        mags = sorted(mags, key=lambda x: (
+            float(x[key1[1]]) if key1[0] else None,
+            datetime.strptime(x[key2[1]][:19], '%Y-%m-%dT%H:%M:%S')
+            if key2[0] else None),
+            reverse=True)
+
+        selection.append(mags[0])
+
+    return selection
+
+
+def extract_origin(origin):
+    origin_dict = {}
+    for key, value in ORIGIN_MAPPINGS.items():
+        if key in origin:
+            origin_dict[value] = origin[key]
+    return origin_dict
+
+
+def extract_magnitude(magnitude):
+    magnitude_dict = {}
+    for key, value in MAGNITUDE_MAPPINGS.items():
+        if key in magnitude:
+            magnitude_dict[value] = magnitude[key]
+    return magnitude_dict
+
+
+def extract_secondary_magnitudes(magnitudes):
+    magnitude_dict = {}
+    for magnitude in magnitudes:
+        mappings = get_realvalue(
+            'magnitudemag', f'magnitude_{magnitude["magnitudetype"]}')
+        for key, value in mappings.items():
+            if key in magnitude:
+                magnitude_dict[value] = magnitude[key]
+    return magnitude_dict
+
+
+def parse_to_dict(event, origins, magnitudes):
+    preferred_origin = next(
+        (o for o in origins
+         if o['originpublicID'] == event['preferredOriginID']),
+        None)
+
+    preferred_magnitude, magnitudes = \
+        get_preferred_magnitude(magnitudes, event['preferredMagnitudeID'])
+
+    if magnitudes:
+        magnitudes = select_secondary_magnitudes(magnitudes)
+
+    return extract_origin(preferred_origin) | \
+        extract_magnitude(preferred_magnitude) | \
+        extract_secondary_magnitudes(magnitudes)
 
 # define a Custom ContentHandler class that extends ContenHandler
+
+
 class CustomContentHandler(xml.sax.ContentHandler):
     def __init__(self, catalog):
         self.catalog = catalog
 
-        self.event_obj = Event()
-
-        self.event = {}
-        self.origin = {}
-        self.magnitude = {}
+        self.event = []
+        self.origin = []
+        self.magnitude = []
 
         self.parent = ''
         self.location = ''
 
     def setter(self, key, value, additional_key=''):
-        if self.location in getattr(self, key):
-            getattr(self, key)[self.location + additional_key] += value
+        if self.location in getattr(self, key)[-1]:
+            getattr(self, key)[-1][self.location + additional_key] += value
         else:
-            getattr(self, key)[self.location + additional_key] = value
+            getattr(self, key)[-1][self.location + additional_key] = value
 
     def startElement(self, tagName, attrs):
         if tagName in ['event', 'origin', 'magnitude']:
-            self.parent = tagName
 
+            self.parent = tagName
             self.location = tagName if tagName != 'event' else ''
+            setattr(self, tagName, getattr(self, tagName) + [{}])
 
             if 'publicID' in attrs:
                 self.setter(self.parent, attrs['publicID'], 'publicID')
@@ -123,23 +165,15 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
     def endElement(self, tagName):
         if tagName == 'event':
-            self.event_obj.data.update(self.event)
-            self.catalog.append(self.event_obj.to_dict())
+            self.catalog.append(parse_to_dict(
+                self.event[-1], self.origin, self.magnitude))
             self.parent = ''
             self.location = ''
-            self.event = {}
-            self.event_obj = Event()
+            self.event = []
+            self.origin = []
+            self.magnitude = []
 
-        elif tagName == 'origin':
-            self.event_obj.data['origins'][
-                self.origin['originpublicID']] = self.origin
-            self.origin = {}
-            self.parent = 'event'
-
-        elif tagName == 'magnitude':
-            self.event_obj.data['magnitudes'][
-                self.magnitude['magnitudepublicID']] = self.magnitude
-            self.magnitude = {}
+        elif tagName in ['origin', 'magnitude']:
             self.parent = 'event'
 
         if self.parent != '':
@@ -159,39 +193,22 @@ class CustomContentHandler(xml.sax.ContentHandler):
 start_cat = "2018-01-01T00:00:00"
 end_cat = "2019-01-01T00:00:00"
 
-URL = f'https://service.scedc.caltech.edu/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=4.0&minlatitude=10&minlongitude=-124&maxlatitude=35&maxlongitude=-80&includeallmagnitudes=true'  # noqa
-URL2 = f'http://arclink.ethz.ch/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=2.0&minlatitude=45&minlongitude=5&maxlatitude=48&maxlongitude=11&includeallmagnitudes=true'  # noqa
+URL = f'https://service.scedc.caltech.edu/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=4.0&minlatitude=10&minlongitude=-124&maxlatitude=35&maxlongitude=-80'  # &includeallmagnitudes=true'  # noqa
+URL2 = f'http://arclink.ethz.ch/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=2.0&minlatitude=45&minlongitude=5&maxlatitude=48&maxlongitude=11'  # &includeallmagnitudes=true'  # noqa
 
 
 def main():
-    start = perf_counter()
     catalog = []
 
     parser = make_parser()
     parser.setFeature(handler.feature_namespaces, False)
     parser.setContentHandler(CustomContentHandler(catalog))
 
-    r = requests.get(URL, stream=True)
+    r = requests.get(URL2, stream=True)
 
     r.raw.decode_content = True  # if content-encoding is used decode
     parser.parse(r.raw)
-    print(pd.DataFrame.from_dict(catalog))
-    print(perf_counter() - start)
-
-    # start = perf_counter()
-    # client = Client("http://arclink.ethz.ch")
-    # starttime = UTCDateTime(start_cat)
-    # endtime = UTCDateTime(end_cat)
-    # # cat = client.get_events(starttime=starttime, endtime=endtime,
-    # #                         minmagnitude=4.0, includeallmagnitudes=True,
-    # #                         minlatitude=10, maxlatitude=35,
-    # #                         maxlongitude=-80, minlongitude=-124)
-    # cat = client.get_events(starttime=starttime, endtime=endtime,
-    #                         minmagnitude=2.0, includeallmagnitudes=True,
-    #                         minlatitude=45, maxlatitude=48,
-    #                         maxlongitude=11, minlongitude=5)
-    # print(len(cat))
-    # print(perf_counter() - start)
+    print(len(pd.DataFrame.from_dict(catalog)))
 
 
 if __name__ == '__main__':
