@@ -96,35 +96,20 @@ class CustomContentHandler(xml.sax.ContentHandler):
     def __init__(self, catalog):
         self.catalog = catalog
 
-        self.event = Event()
+        self.event_obj = Event()
 
+        self.event = {}
         self.origin = {}
         self.magnitude = {}
-
-        self.setter = {'event': self.set_event,
-                       'origin': self.set_origin,
-                       'magnitude': self.set_magnitude}
 
         self.parent = ''
         self.location = ''
 
-    def set_event(self, value):
-        if self.location in self.event.data:
-            self.event.data[self.location] += value
+    def setter(self, key, value):
+        if self.location in getattr(self, key):
+            getattr(self, key)[self.location] += value
         else:
-            self.event.data[self.location] = value
-
-    def set_origin(self, value):
-        if self.location in self.origin:
-            self.origin[self.location] += value
-        else:
-            self.origin[self.location] = value
-
-    def set_magnitude(self, value):
-        if self.location in self.magnitude:
-            self.magnitude[self.location] += value
-        else:
-            self.magnitude[self.location] = value
+            getattr(self, key)[self.location] = value
 
     def startElement(self, tagName, attrs):
         if tagName in ['event', 'origin', 'magnitude']:
@@ -134,7 +119,7 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
             if 'publicID' in attrs:
                 self.location += 'publicID'
-                self.setter[self.parent](attrs['publicID'])
+                self.setter(self.parent, attrs['publicID'])
                 self.location = self.location[:-len('publicID')]
 
         elif self.parent != '':
@@ -142,20 +127,21 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
     def endElement(self, tagName):
         if tagName == 'event':
-            self.catalog.append(self.event.to_dict())
+            self.event_obj.data.update(self.event)
+            self.catalog.append(self.event_obj.to_dict())
             self.parent = ''
             self.location = ''
-            # pprint(self.event.data)
-            self.event = Event()
+            self.event = {}
+            self.event_obj = Event()
 
         elif tagName == 'origin':
-            self.event.data['origins'][
+            self.event_obj.data['origins'][
                 self.origin['eventoriginpublicID']] = self.origin
             self.origin = {}
             self.parent = 'event'
 
         elif tagName == 'magnitude':
-            self.event.data['magnitudes'][
+            self.event_obj.data['magnitudes'][
                 self.magnitude['eventmagnitudepublicID']] = self.magnitude
             self.magnitude = {}
             self.parent = 'event'
@@ -165,7 +151,7 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
     def characters(self, chars):
         if chars.strip() and self.parent:
-            self.setter[self.parent](chars.strip())
+            self.setter(self.parent, chars.strip())
 
     def startDocument(self):
         print('About to start!')
@@ -189,7 +175,7 @@ def main():
     parser.setFeature(handler.feature_namespaces, False)
     parser.setContentHandler(CustomContentHandler(catalog))
 
-    r = requests.get(URL2, stream=True)
+    r = requests.get(URL, stream=True)
 
     r.raw.decode_content = True  # if content-encoding is used decode
     parser.parse(r.raw)
