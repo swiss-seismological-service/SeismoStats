@@ -21,47 +21,47 @@ class Event:
                             'confidenceLevel']
 
         self.event_mappings = {
-            'eventpublicID': 'eventid'
+            'publicID': 'eventid'
         }
         self.origin_mappings = {
-            **self.get_realvalue('eventorigintime', 'time'),
-            **self.get_realvalue('eventoriginlatitude', 'latitude'),
-            **self.get_realvalue('eventoriginlongitude', 'longitude'),
-            **self.get_realvalue('eventorigindepth', 'depth')
+            **self.get_realvalue('origintime', 'time'),
+            **self.get_realvalue('originlatitude', 'latitude'),
+            **self.get_realvalue('originlongitude', 'longitude'),
+            **self.get_realvalue('origindepth', 'depth')
         }
 
         self.magnitude_mappings = {
-            **self.get_realvalue('eventmagnitudemag', 'magnitude'),
-            'eventmagnitudetype': 'type',
-            'eventmagnitudeevaluationMode': 'evaluationMode',
+            **self.get_realvalue('magnitudemag', 'magnitude'),
+            'magnitudetype': 'type',
+            'magnitudeevaluationMode': 'evaluationMode',
         }
 
     def clean_magnitudes(self):
         cleaned_mags = {}
-        mag_types = set(m['eventmagnitudetype']
+        mag_types = set(m['magnitudetype']
                         for m in self.data['magnitudes'].values())
         for mt in mag_types:
             mags = [m for m in self.data['magnitudes'].values()
-                    if m['eventmagnitudetype'] == mt]
+                    if m['magnitudetype'] == mt]
             if len(mags) > 1:
-                pref = next((m for m in mags if self.data['eventpreferredMagnitudeID']
-                            == m['eventmagnitudepublicID']), None)
+                pref = next((m for m in mags if self.data['preferredMagnitudeID']
+                            == m['magnitudepublicID']), None)
                 if pref is None:
                     key1 = None
                     key2 = None
-                    if all('eventmagnitudecreationInfoversion' in m for m in mags):
-                        key1 = 'eventmagnitudecreationInfoversion'
-                    if all('eventmagnitudecreationInfocreationTime' in m for m in mags):
-                        key2 = 'eventmagnitudecreationInfocreationTime'
+                    if all('magnitudecreationInfoversion' in m for m in mags):
+                        key1 = 'magnitudecreationInfoversion'
+                    if all('magnitudecreationInfocreationTime' in m for m in mags):
+                        key2 = 'magnitudecreationInfocreationTime'
                     mags = sorted(mags, key=lambda x: (
                         int(x[key1]) if key1 else None, datetime.strptime(x[key2][:19], '%Y-%m-%dT%H:%M:%S' if key2 else None)), reverse=True)
                     pprint(mags)
                     pprint(mags[0])
                     pref = mags[0]
                     raise Exception()
-                cleaned_mags[pref['eventmagnitudepublicID']] = pref
+                cleaned_mags[pref['magnitudepublicID']] = pref
             else:
-                cleaned_mags[mags[0]['eventmagnitudepublicID']] = mags[0]
+                cleaned_mags[mags[0]['magnitudepublicID']] = mags[0]
         self.data['magnitudes'] = cleaned_mags
 
     def to_dict(self):
@@ -70,20 +70,20 @@ class Event:
         for key in self.event_mappings:
             if key in self.data:
                 result[self.event_mappings[key]] = self.data[key]
-        if self.data['eventpreferredOriginID'] in self.data['origins']:
+        if self.data['preferredOriginID'] in self.data['origins']:
             for key in self.origin_mappings:
                 if key in \
                         self.data['origins'][
-                            self.data['eventpreferredOriginID']]:
+                            self.data['preferredOriginID']]:
                     result[self.origin_mappings[key]] = self.data['origins'][
-                        self.data['eventpreferredOriginID']][key]
-        if self.data['eventpreferredMagnitudeID'] in self.data['magnitudes']:
+                        self.data['preferredOriginID']][key]
+        if self.data['preferredMagnitudeID'] in self.data['magnitudes']:
             for key in self.magnitude_mappings:
                 if key in self.data['magnitudes'][
-                        self.data['eventpreferredMagnitudeID']]:
+                        self.data['preferredMagnitudeID']]:
                     result[self.magnitude_mappings[key]] = \
                         self.data['magnitudes'][
-                        self.data['eventpreferredMagnitudeID']][key]
+                        self.data['preferredMagnitudeID']][key]
 
         return result
 
@@ -105,22 +105,20 @@ class CustomContentHandler(xml.sax.ContentHandler):
         self.parent = ''
         self.location = ''
 
-    def setter(self, key, value):
+    def setter(self, key, value, additional_key=''):
         if self.location in getattr(self, key):
-            getattr(self, key)[self.location] += value
+            getattr(self, key)[self.location + additional_key] += value
         else:
-            getattr(self, key)[self.location] = value
+            getattr(self, key)[self.location + additional_key] = value
 
     def startElement(self, tagName, attrs):
         if tagName in ['event', 'origin', 'magnitude']:
             self.parent = tagName
 
-            self.location += tagName
+            self.location = tagName if tagName != 'event' else ''
 
             if 'publicID' in attrs:
-                self.location += 'publicID'
-                self.setter(self.parent, attrs['publicID'])
-                self.location = self.location[:-len('publicID')]
+                self.setter(self.parent, attrs['publicID'], 'publicID')
 
         elif self.parent != '':
             self.location += tagName
@@ -136,13 +134,13 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
         elif tagName == 'origin':
             self.event_obj.data['origins'][
-                self.origin['eventoriginpublicID']] = self.origin
+                self.origin['originpublicID']] = self.origin
             self.origin = {}
             self.parent = 'event'
 
         elif tagName == 'magnitude':
             self.event_obj.data['magnitudes'][
-                self.magnitude['eventmagnitudepublicID']] = self.magnitude
+                self.magnitude['magnitudepublicID']] = self.magnitude
             self.magnitude = {}
             self.parent = 'event'
 
@@ -154,10 +152,10 @@ class CustomContentHandler(xml.sax.ContentHandler):
             self.setter(self.parent, chars.strip())
 
     def startDocument(self):
-        print('About to start!')
+        pass
 
     def endDocument(self):
-        print('Finishing up!')
+        pass
 
 
 start_cat = "2018-01-01T00:00:00"
