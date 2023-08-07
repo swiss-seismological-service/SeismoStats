@@ -1,7 +1,8 @@
+from typing import Optional, Union
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from typing import Optional, Union
 
 # Own functions
 from catalog_tools.utils.binning import get_cum_fmd, get_fmd
@@ -246,9 +247,9 @@ def plot_mags_in_time(
                c="b", linewidth=0.5, alpha=0.8, edgecolor='k')
 
     if mc_change_times is not None and mcs is not None:
-        if not year_only and type(mc_change_times[0]) == int:
+        if not year_only and isinstance(mc_change_times[0], int):
             mc_change_times = [dt.datetime(x, 1, 1) for x in mc_change_times]
-        if year_only and type(mc_change_times[0]) != int:
+        if year_only and not isinstance(mc_change_times[0], int):
             mc_change_times = [x.year for x in mc_change_times]
 
         mc_change_times.append(np.max(times))

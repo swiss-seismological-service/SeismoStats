@@ -1,13 +1,16 @@
 import datetime as dt
 import os
 from unittest import mock
+
 import numpy as np
+from numpy.testing import assert_allclose, assert_array_less, assert_equal
 
-from numpy.testing import assert_equal, assert_allclose, assert_array_less
-
-from catalog_tools.download.download_catalogs import apply_edwards, \
-    download_catalog_sed, prepare_sed_catalog, download_catalog_1,\
-    download_catalog_scedc, prepare_scedc_catalog
+from catalog_tools.download.download_catalogs import (apply_edwards,
+                                                      download_catalog_1,
+                                                      download_catalog_scedc,
+                                                      download_catalog_sed,
+                                                      prepare_scedc_catalog,
+                                                      prepare_sed_catalog)
 
 
 def test_apply_edwards():

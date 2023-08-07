@@ -1,19 +1,16 @@
-import pytest
 import numpy as np
-
-# import functions from other modules
-from catalog_tools.utils.simulate_distributions import simulate_magnitudes
-from catalog_tools.utils.binning import bin_to_precision
+import pytest
 
 # import functions to be tested
-from catalog_tools.analysis.estimate_beta import\
-    estimate_beta_tinti,\
-    estimate_b_tinti,\
-    estimate_b_utsu,\
-    estimate_b_elst,\
-    estimate_b_laplace,\
-    differences,\
-    shi_bolt_confidence
+from catalog_tools.analysis.estimate_beta import (differences, estimate_b_elst,
+                                                  estimate_b_laplace,
+                                                  estimate_b_tinti,
+                                                  estimate_b_utsu,
+                                                  estimate_beta_tinti,
+                                                  shi_bolt_confidence)
+from catalog_tools.utils.binning import bin_to_precision
+# import functions from other modules
+from catalog_tools.utils.simulate_distributions import simulate_magnitudes
 
 
 def simulate_magnitudes_w_offset(n: int, beta: float, mc: float,
