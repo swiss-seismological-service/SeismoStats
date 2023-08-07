@@ -5,14 +5,14 @@ from xml.sax import handler, make_parser
 import pandas as pd
 import requests
 
-from catalog_tools.download.download_qml import CustomContentHandler
+from catalog_tools.io.parser import CustomContentHandler
 
 
 class FDSNWSEventClient():
     def __init__(self, url: str):
         """
         Args:
-            url:    base url of the FDSNWS event service 
+            url:    base url of the FDSNWS event service
                     (eg. 'https://earthquake.usgs.gov/fdsnws/event/1/query')
         """
 
@@ -85,9 +85,9 @@ class FDSNWSEventClient():
 
 
 def main():
-    url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
-    url2 = 'http://arclink.ethz.ch/fdsnws/event/1/query'
-    client = FDSNWSEventClient(url2)
+    # url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
+    url = 'http://arclink.ethz.ch/fdsnws/event/1/query'
+    client = FDSNWSEventClient(url)
     cat = client.get_events(start_time=datetime(
         2023, 7, 1))
     print(cat[cat['magnitude_value'].isna()])
