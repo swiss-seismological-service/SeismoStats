@@ -1,9 +1,6 @@
 import xml.sax
 from datetime import datetime
-from xml.sax import handler, make_parser
-
-import pandas as pd
-import requests
+from typing import Union
 
 
 def get_realvalue(key: str, value: str) -> dict:
@@ -13,9 +10,8 @@ def get_realvalue(key: str, value: str) -> dict:
     return {f'{key}{v}': f'{value}_{v}' for v in real_values}
 
 
-EVENT_MAPPINGS = {
-    'publicID': 'eventid'
-}
+EVENT_MAPPINGS = {'publicID': 'eventid',
+                  'type': 'event_type'}
 
 ORIGIN_MAPPINGS = {
     **get_realvalue('origintime', 'time'),
@@ -43,7 +39,8 @@ DUMMY_ORIGIN = {
 }
 
 
-def get_preferred_magnitude(magnitudes: list, id: str) -> tuple[dict, list]:
+def get_preferred_magnitude(magnitudes: list, id: Union[str, None]) \
+        -> tuple[dict, list]:
     preferred = next((m for m in magnitudes if id
                      == m['magnitudepublicID']), DUMMY_MAGNITUDE)
 
@@ -119,18 +116,22 @@ def extract_secondary_magnitudes(magnitudes: list) -> dict:
 
 
 def parse_to_dict(event: dict, origins: list, magnitudes: list) -> dict:
-    preferred_origin = next(
-        (o for o in origins
-         if o['originpublicID'] == event['preferredOriginID']),
-        None)
+    preferred_origin = \
+        get_preferred_origin(origins,
+                             event.get('preferredOriginID', None))
 
     preferred_magnitude, magnitudes = \
-        get_preferred_magnitude(magnitudes, event['preferredMagnitudeID'])
+        get_preferred_magnitude(magnitudes,
+                                event.get('preferredMagnitudeID', None))
 
     if magnitudes:
         magnitudes = select_secondary_magnitudes(magnitudes)
 
-    return extract_origin(preferred_origin) | \
+    event_params = \
+        {value: event.get(key, None) for key, value in EVENT_MAPPINGS.items()}
+
+    return event_params | \
+        extract_origin(preferred_origin) | \
         extract_magnitude(preferred_magnitude) | \
         extract_secondary_magnitudes(magnitudes)
 
@@ -195,29 +196,3 @@ class CustomContentHandler(xml.sax.ContentHandler):
 
     def endDocument(self):
         pass
-
-
-start_cat = "2018-01-01T00:00:00"
-end_cat = "2019-01-01T00:00:00"
-includeallmagnitudes = "true"
-
-URL = f'https://service.scedc.caltech.edu/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=4.0&minlatitude=10&minlongitude=-124&maxlatitude=35&maxlongitude=-80&includeallmagnitudes={includeallmagnitudes}'  # noqa
-URL2 = f'http://arclink.ethz.ch/fdsnws/event/1/query?starttime={start_cat}&endtime={end_cat}&minmagnitude=2.0&minlatitude=45&minlongitude=5&maxlatitude=48&maxlongitude=11&includeallmagnitudes={includeallmagnitudes}'  # noqa
-
-
-def main():
-    catalog = []
-
-    parser = make_parser()
-    parser.setFeature(handler.feature_namespaces, False)
-    parser.setContentHandler(CustomContentHandler(catalog))
-
-    r = requests.get(URL2, stream=True)
-
-    r.raw.decode_content = True  # if content-encoding is used decode
-    parser.parse(r.raw)
-    print(pd.DataFrame.from_dict(catalog))
-
-
-if __name__ == '__main__':
-    main()
