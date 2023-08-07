@@ -5,6 +5,7 @@ from xml.sax import handler, make_parser
 import pandas as pd
 import requests
 
+from catalog_tools.catalog import Catalog
 from catalog_tools.io.parser import CustomContentHandler
 
 
@@ -80,7 +81,9 @@ class FDSNWSEventClient():
         r = requests.get(request_url, stream=True)
         r.raw.decode_content = True  # if content-encoding is used decode
         parser.parse(r.raw)
-        df = pd.DataFrame.from_dict(catalog)
+
+        df = Catalog.from_dict(catalog)
+
         return df
 
 
@@ -88,10 +91,11 @@ def main():
     # url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
     url = 'http://arclink.ethz.ch/fdsnws/event/1/query'
     client = FDSNWSEventClient(url)
-    cat = client.get_events(start_time=datetime(
-        2023, 7, 1))
-    print(cat[cat['magnitude_value'].isna()])
-    print(cat.columns)
+    cat = client.get_events(
+        start_time=datetime(2023, 7, 1),
+        include_all_magnitudes=True)
+
+    print(type(cat))
 
 
 if __name__ == '__main__':
