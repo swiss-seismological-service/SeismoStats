@@ -1,6 +1,7 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
 from typing import Optional, Tuple, Union, List
+
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
@@ -433,7 +434,7 @@ def shi_bolt_confidence(
     """
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
-    assert b_value is not None or beta is not None,\
+    assert b_value is not None or beta is not None, \
         'please specify b-value or beta'
     assert b_value is None or beta is None, \
         'please only specify either b-value or beta'

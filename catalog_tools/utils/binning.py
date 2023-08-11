@@ -1,6 +1,7 @@
-import numpy as np
 import decimal
 from typing import Union
+
+import numpy as np
 
 
 def normal_round_to_int(x: float) -> int:
@@ -51,7 +52,7 @@ def bin_to_precision(x: Union[np.ndarray, list], delta_x: float = 0.1
     Returns:
         Value rounded to the given precision.
     """
-    if type(x) == list:
+    if isinstance(x, list):
         x = np.array(x)
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)

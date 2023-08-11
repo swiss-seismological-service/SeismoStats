@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 # import functions from other modules
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
