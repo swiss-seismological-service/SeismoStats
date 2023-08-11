@@ -1,20 +1,17 @@
 import numpy as np
 import pytest
 
+# import functions to be tested
+from catalog_tools.analysis.estimate_beta import (differences, estimate_b_elst,
+                                                  estimate_b_laplace,
+                                                  estimate_b_tinti,
+                                                  estimate_b_utsu,
+                                                  estimate_b_weichert,
+                                                  estimate_beta_tinti,
+                                                  shi_bolt_confidence)
+from catalog_tools.utils.binning import bin_to_precision
 # import functions from other modules
 from catalog_tools.utils.simulate_distributions import simulate_magnitudes
-from catalog_tools.utils.binning import bin_to_precision
-
-# import functions to be tested
-from catalog_tools.analysis.estimate_beta import\
-    estimate_beta_tinti,\
-    estimate_b_tinti,\
-    estimate_b_utsu,\
-    estimate_b_elst,\
-    estimate_b_laplace,\
-    estimate_b_weichert,\
-    differences,\
-    shi_bolt_confidence
 
 
 def simulate_magnitudes_w_offset(
@@ -145,7 +142,7 @@ def test_estimate_b_weichert(a_val_true: float,
     mags78 = simulate_magnitudes_w_offset(
         n=n78, beta=np.log(10), mc=7, delta_m=0.1, mag_max=7.95)
     years78 = np.random.randint(1000, 2000, n78)
-    dates78 = np.array(['%d-06-15'%i for i in years78], dtype='datetime64')
+    dates78 = np.array(['%d-06-15' % i for i in years78], dtype='datetime64')
 
     # add some earthquakes in incomplete years
     mags_inc = np.concatenate([
@@ -158,15 +155,19 @@ def test_estimate_b_weichert(a_val_true: float,
         np.random.randint(1000, 1880, 10),
         np.random.randint(1000, 1500, 1)
     ])
-    dates_inc = np.array(['%d-06-15' % i for i in years_inc], dtype='datetime64')
+    dates_inc = np.array(
+        ['%d-06-15' % i for i in years_inc], dtype='datetime64')
 
     mags = np.concatenate([mags45, mags56, mags67, mags78, mags_inc])
     dates = np.concatenate([dates45, dates56, dates67, dates78, dates_inc])
 
     b_val, std_b_val, rate_at_mref, std_rate_at_mref, a_val = \
-        estimate_b_weichert(magnitudes=mags, dates=dates, completeness_table=np.array([[3.95, 1940], [4.95, 1880],
-                                                                                       [5.95, 1500], [6.95, 1000]]),
-                            mag_max=7.95, last_year=2000, delta_m=0.1, b_parameter='b_value')
+        estimate_b_weichert(magnitudes=mags, dates=dates,
+                            completeness_table=np.array(
+                                [[3.95, 1940], [4.95, 1880],
+                                 [5.95, 1500], [6.95, 1000]]),
+                            mag_max=7.95, last_year=2000, delta_m=0.1,
+                            b_parameter='b_value')
 
     assert abs(b_val_true - b_val) / b_val_true <= precision
     assert abs(a_val_true - a_val) / a_val_true <= precision

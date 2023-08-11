@@ -1,6 +1,7 @@
+from typing import Optional
+
 import numpy as np
 from scipy import stats
-from typing import Optional, Tuple, Union
 
 
 def simulate_magnitudes(n: int, beta: float, mc: float,

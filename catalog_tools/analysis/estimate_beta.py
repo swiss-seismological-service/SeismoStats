@@ -1,11 +1,11 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
-from typing import Optional, Tuple, Union, List
+import warnings
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-import warnings
 
 
 def estimate_b_tinti(magnitudes: np.ndarray,
@@ -290,11 +290,11 @@ def estimate_b_weichert(
     assert len(magnitudes) == len(dates), \
         "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
-    assert np.all(np.ediff1d(completeness_table[:, 0]) >= 0),\
+    assert np.all(np.ediff1d(completeness_table[:, 0]) >= 0), \
         "magnitudes in completeness table not in ascending order"
     assert [i - delta_m in np.arange(completeness_table[0, 0],
                                      mag_max + 0.001, delta_m)
-            for i in np.unique(magnitudes)],\
+            for i in np.unique(magnitudes)], \
         "magnitude bins not aligned with completeness edges"
     if not np.all(magnitudes >= completeness_table[:, 0].min()):
         warnings.warn(
