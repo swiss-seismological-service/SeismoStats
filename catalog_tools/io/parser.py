@@ -4,10 +4,12 @@ from typing import Union
 
 
 def get_realvalue(key: str, value: str) -> dict:
-    real_values = ['value', 'uncertainty',
-                   'lowerUncertainty', 'upperUncertainty',
-                   'confidenceLevel']
-    return {f'{key}{v}': f'{value}_{v}' for v in real_values}
+    real_values = {'value': '',
+                   'uncertainty': '_uncertainty',
+                   'lowerUncertainty': '_lowerUncertainty',
+                   'upperUncertainty': '_upperUncertainty',
+                   'confidenceLevel': '_confidenceLevel'}
+    return {f'{key}{k}': f'{value}{v}' for k, v in real_values.items()}
 
 
 EVENT_MAPPINGS = {'publicID': 'eventid',

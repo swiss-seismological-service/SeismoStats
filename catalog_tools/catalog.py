@@ -1,7 +1,6 @@
 import functools
 
 import pandas as pd
-from geopandas import GeoDataFrame
 
 REQUIRED_COLS = ['longitude', 'latitude', 'depth',
                  'time', 'magnitude', 'magnitude_type']
@@ -58,46 +57,6 @@ class Catalog(pd.DataFrame):
         return _catalog_constructor_with_fallback
 
     @require_cols
-    def get_magnitude(self):
-        return self['magnitude'].values
-
-
-def main():
-    df_no = Catalog([{'a': 3, 'b': 2, 'c': 3}], name='cat')
-
-    df_yes = Catalog([{'longitude': 1, 'latitude': 2, 'depth': 3,
-                       'time': 4, 'magnitude': 5, 'magnitude_type': 6,
-                       'magnitude_Mw': 7}], name='cat')
-
-    print(type(df_yes))
-
-    # df['a'] = [1, 2, 3]
-    # df['b'] = [4, 5, 6]
-    df_no['d'] = [7]
-
-    print(df_no.get_magnitude())
-    # print(df_yes)
-    # df2 = df[['a', 'b']]
-    # print(type(df))
-    # print(df)
-    # print(type(df2))
-    # print(df2)
-
-    # gdf = GeoDataFrame()
-    # print(type(gdf))
-    # gdf = gdf.from_dict([{'a': 3, 'b': 2, 'c': 3}])
-    # print(gdf.area)
-    # print(type(gdf))
-    # print(type(gdf[['a', 'b']]))
-
-    # url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
-    # url = 'http://arclink.ethz.ch/fdsnws/event/1/query'
-    # client = FDSNWSEventClient(url)
-    # cat = client.get_events(
-    #     start_time=datetime(2010, 7, 1),
-    #     end_time=datetime(2020, 7, 1),
-    #     include_all_magnitudes=False)
-
-
-if __name__ == '__main__':
-    main()
+    def strip(self, inplace=False):
+        self.drop(columns=set(self.columns).difference(set(REQUIRED_COLS)),
+                  inplace=inplace)
