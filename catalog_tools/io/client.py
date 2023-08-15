@@ -70,6 +70,8 @@ class FDSNWSEventClient():
             request_url += f'&minmagnitude={min_magnitude}'
         if include_all_magnitudes:
             request_url += f'&includeallmagnitudes={include_all_magnitudes}'
+        if event_type:
+            request_url += f'&eventtype={event_type}'
 
         print(request_url)
 
@@ -85,18 +87,3 @@ class FDSNWSEventClient():
         df = Catalog.from_dict(catalog)
 
         return df
-
-
-def main():
-    # url = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
-    url = 'http://arclink.ethz.ch/fdsnws/event/1/query'
-    client = FDSNWSEventClient(url)
-    cat = client.get_events(
-        start_time=datetime(2023, 7, 1),
-        include_all_magnitudes=True)
-
-    print(type(cat))
-
-
-if __name__ == '__main__':
-    main()
