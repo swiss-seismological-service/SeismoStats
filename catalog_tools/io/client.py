@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 
 from catalog_tools.catalog import Catalog
-from catalog_tools.io.parser import CustomContentHandler
+from catalog_tools.io.parser import QuakeMLHandler
 
 
 class FDSNWSEventClient():
@@ -28,7 +28,8 @@ class FDSNWSEventClient():
                    min_magnitude: Optional[float] = None,
                    include_all_magnitudes: Optional[bool] = None,
                    event_type: Optional[str] = None,
-                   delta_m: float = 0.1) -> pd.DataFrame:
+                   delta_m: float = 0.1,
+                   include_uncertainty: bool = False) -> pd.DataFrame:
         """Downloads an earthquake catalog based on a URL.
 
         Args:
@@ -73,17 +74,20 @@ class FDSNWSEventClient():
         if event_type:
             request_url += f'&eventtype={event_type}'
 
-        print(request_url)
-
         catalog = []
         parser = make_parser()
         parser.setFeature(handler.feature_namespaces, False)
-        parser.setContentHandler(CustomContentHandler(catalog))
+        parser.setContentHandler(QuakeMLHandler(
+            catalog, includeallmagnitudes=include_all_magnitudes))
 
         r = requests.get(request_url, stream=True)
         r.raw.decode_content = True  # if content-encoding is used decode
         parser.parse(r.raw)
 
         df = Catalog.from_dict(catalog)
-
+        # if not include_uncertainty:
+        # wrong way round
+        # rgx = "(_uncertainty|_lowerUncertainty|" \
+        #       "_upperUncertainty|_confidenceLevel)$"
+        # df = df.filter(regex=rgx)
         return df

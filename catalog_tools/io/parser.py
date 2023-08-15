@@ -117,7 +117,8 @@ def extract_secondary_magnitudes(magnitudes: list) -> dict:
     return magnitude_dict
 
 
-def parse_to_dict(event: dict, origins: list, magnitudes: list) -> dict:
+def parse_to_dict(event: dict, origins: list, magnitudes: list,
+                  includeallmagnitudes: bool = True) -> dict:
     preferred_origin = \
         get_preferred_origin(origins,
                              event.get('preferredOriginID', None))
@@ -126,8 +127,10 @@ def parse_to_dict(event: dict, origins: list, magnitudes: list) -> dict:
         get_preferred_magnitude(magnitudes,
                                 event.get('preferredMagnitudeID', None))
 
-    if magnitudes:
+    if magnitudes and includeallmagnitudes:
         magnitudes = select_secondary_magnitudes(magnitudes)
+    else:
+        magnitudes = []
 
     event_params = \
         {value: event.get(key, None) for key, value in EVENT_MAPPINGS.items()}
@@ -138,15 +141,15 @@ def parse_to_dict(event: dict, origins: list, magnitudes: list) -> dict:
         extract_secondary_magnitudes(magnitudes)
 
 
-class CustomContentHandler(xml.sax.ContentHandler):
+class QuakeMLHandler(xml.sax.ContentHandler):
     """
     Custom ContentHandler class that extends ContenHandler to
     stream parse QuakeML files.
     """
 
-    def __init__(self, catalog):
+    def __init__(self, catalog, includeallmagnitudes=True):
         self.catalog = catalog
-
+        self.includeallmagnitudes = includeallmagnitudes
         self.event = []
         self.origin = []
         self.magnitude = []
@@ -176,7 +179,8 @@ class CustomContentHandler(xml.sax.ContentHandler):
     def endElement(self, tagName):
         if tagName == 'event':
             self.catalog.append(parse_to_dict(
-                self.event[-1], self.origin, self.magnitude))
+                self.event[-1], self.origin, self.magnitude,
+                includeallmagnitudes=self.includeallmagnitudes))
             self.parent = ''
             self.location = ''
             self.event = []
