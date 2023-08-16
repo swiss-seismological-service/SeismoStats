@@ -1,6 +1,5 @@
 import xml.sax
 from datetime import datetime
-from typing import Union
 
 
 def get_realvalue(key: str, value: str) -> dict:
@@ -41,7 +40,7 @@ DUMMY_ORIGIN = {
 }
 
 
-def get_preferred_magnitude(magnitudes: list, id: Union[str, None]) \
+def get_preferred_magnitude(magnitudes: list, id: str | None) \
         -> tuple[dict, list]:
     preferred = next((m for m in magnitudes if id
                      == m['magnitudepublicID']), DUMMY_MAGNITUDE)
@@ -119,6 +118,25 @@ def extract_secondary_magnitudes(magnitudes: list) -> dict:
 
 def parse_to_dict(event: dict, origins: list, magnitudes: list,
                   includeallmagnitudes: bool = True) -> dict:
+    """
+    Parse earthquake event information dictionaries as produced by the
+    QuakeMLHandler and return a dictionary of event parameters.
+
+    Args:
+        event : dict
+            A dictionary representing the earthquake event.
+        origins : list
+            A list of dictionaries representing the earthquake origins.
+        magnitudes : list
+            A list of dictionaries representing the earthquake magnitudes.
+        includeallmagnitudes : bool, optional
+            If True, include all magnitudes in the output dictionary.
+            Otherwise, only include the preferred magnitude.
+
+    Returns:
+        dict
+            A dictionary of earthquake event parameters.
+    """
     preferred_origin = \
         get_preferred_origin(origins,
                              event.get('preferredOriginID', None))
@@ -143,8 +161,19 @@ def parse_to_dict(event: dict, origins: list, magnitudes: list,
 
 class QuakeMLHandler(xml.sax.ContentHandler):
     """
-    Custom ContentHandler class that extends ContenHandler to
-    stream parse QuakeML files.
+    A SAX ContentHandler that is used to parse QuakeML files and extract
+    earthquake event information.
+
+    Args:
+        catalog : Catalog
+            A Catalog object to store the extracted earthquake events.
+        includeallmagnitudes : bool, optional
+            If True, include all magnitudes in the catalog. Otherwise,
+            only include the preferred magnitude.
+    Notes:
+        This class is a SAX ContentHandler, and is used in conjunction
+        with an xml.sax parser to extract earthquake event information
+        from QuakeML files.
     """
 
     def __init__(self, catalog, includeallmagnitudes=True):
