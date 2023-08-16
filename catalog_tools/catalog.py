@@ -7,7 +7,7 @@ REQUIRED_COLS = ['longitude', 'latitude', 'depth',
 
 
 def _check_required_cols(df, required_cols=REQUIRED_COLS):
-    if not set(REQUIRED_COLS).issubset(set(df.columns)):
+    if not set(required_cols).issubset(set(df.columns)):
         return False
     return True
 
@@ -58,5 +58,9 @@ class Catalog(pd.DataFrame):
 
     @require_cols
     def strip(self, inplace=False):
-        self.drop(columns=set(self.columns).difference(set(REQUIRED_COLS)),
-                  inplace=inplace)
+        """Remove all columns except the required ones.
+        """
+        df = self.drop(columns=set(self.columns).difference(set(REQUIRED_COLS)),
+                       inplace=inplace)
+        if not inplace:
+            return df
