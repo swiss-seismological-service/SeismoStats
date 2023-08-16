@@ -1,5 +1,4 @@
 import decimal
-from typing import Union
 
 import numpy as np
 
@@ -39,7 +38,7 @@ def normal_round(x: float, n: int = 0) -> float:
     return normal_round_to_int(x * power) / power
 
 
-def bin_to_precision(x: Union[np.ndarray, list], delta_x: float = 0.1
+def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1
                      ) -> np.ndarray:
     """
     Rounds a float number x to a given precision. If precision not given,

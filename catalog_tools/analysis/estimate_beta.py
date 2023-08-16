@@ -1,7 +1,6 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
 import warnings
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -11,10 +10,10 @@ from scipy.optimize import minimize
 def estimate_b_tinti(magnitudes: np.ndarray,
                      mc: float,
                      delta_m: float = 0,
-                     weights: Optional[list] = None,
+                     weights: list | None = None,
                      b_parameter: str = 'b_value',
                      error: bool = False
-                     ) -> Union[float, Tuple[float, float]]:
+                     ) -> float | tuple[float, float]:
     """ returns the maximum likelihood beta
     Source:
         Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
@@ -64,9 +63,9 @@ def estimate_b_tinti(magnitudes: np.ndarray,
 def estimate_beta_tinti(magnitudes: np.ndarray,
                         mc: float,
                         delta_m: float = 0,
-                        weights: Optional[list] = None,
+                        weights: list | None = None,
                         error: bool = False
-                        ) -> Union[float, Tuple[float, float]]:
+                        ) -> float | tuple[float, float]:
     """ returns the maximum likelihood beta
     Source:
         Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
@@ -104,7 +103,7 @@ def estimate_b_utsu(magnitudes: np.ndarray,
                     delta_m: float = 0,
                     b_parameter: str = 'b_value',
                     error: bool = False
-                    ) -> Union[float, Tuple[float, float]]:
+                    ) -> float | tuple[float, float]:
     """ returns the maximum likelihood beta
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University, vol 13, pp
@@ -164,7 +163,7 @@ def estimate_b_elst(magnitudes: np.ndarray,
                     delta_m: float = 0,
                     b_parameter: str = 'b_value',
                     error: bool = False
-                    ) -> Union[float, Tuple[float, float]]:
+                    ) -> float | tuple[float, float]:
     """ returns the b-value estimation using the positive differences of the
     Magnitudes
 
@@ -202,7 +201,7 @@ def estimate_b_laplace(
         delta_m: float = 0,
         b_parameter: str = 'b_value',
         error: bool = False
-) -> Union[float, Tuple[float, float]]:
+) -> float | tuple[float, float]:
     """ returns the b-value estimation using the all the  differences of the
     Magnitudes (this has a little less variance than the estimate_beta_elst
     method)
@@ -236,13 +235,13 @@ def estimate_b_laplace(
 
 def estimate_b_weichert(
         magnitudes: np.ndarray,
-        dates: List[np.datetime64],
+        dates: list[np.datetime64],
         completeness_table: np.ndarray,
-        mag_max: Union[int, float],
-        last_year: Optional[Union[int, float]] = None,
+        mag_max: int | float,
+        last_year: int | float | None = None,
         delta_m: float = 0.1,
         b_parameter: str = 'b_value'
-) -> Tuple[float, float, float, float, float]:
+) -> tuple[float, float, float, float, float]:
     """ applies the Weichert (1980) algorithm for estimation of the
     Gutenberg-Richter magnitude-frequency distribution parameters in
     the case of unequal completeness periods for different magnitude
@@ -394,7 +393,7 @@ def estimate_b_weichert(
 
 
 def _weichert_objective_function(beta: float,
-                                 last_year: Union[float, int],
+                                 last_year: float | int,
                                  complete_events: pd.DataFrame,
                                  delta_m: float) -> float:
     """
@@ -414,8 +413,8 @@ def _weichert_objective_function(beta: float,
 
 def shi_bolt_confidence(
         magnitudes: np.ndarray,
-        b_value: Optional[float] = None,
-        beta: Optional[float] = None
+        b_value: float | None = None,
+        beta: float | None = None
 ) -> float:
     """ calculates the confidence limit of the b_value or beta (depending on
         which parameter is given) according to shi and bolt 1982

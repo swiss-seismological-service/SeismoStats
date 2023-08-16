@@ -1,10 +1,10 @@
-from io import BytesIO
-import urllib.request
 import datetime as dt
-import pandas as pd
-from typing import Optional
-from obspy.clients.fdsn.client import Client
+import urllib.request
+from io import BytesIO
+
 import numpy as np
+import pandas as pd
+from obspy.clients.fdsn.client import Client
 
 # catalog tools
 from catalog_tools.utils.binning import bin_to_precision
@@ -29,10 +29,10 @@ def apply_edwards(mag_type: str, mag: float) -> pd.Series:
 def download_catalog_sed(
         start_time: dt.datetime = dt.datetime(1970, 1, 1),
         end_time: dt.datetime = dt.datetime.now(),
-        min_latitude: Optional[float] = None,
-        max_latitude: Optional[float] = None,
-        min_longitude: Optional[float] = None,
-        max_longitude: Optional[float] = None,
+        min_latitude: float | None = None,
+        max_latitude: float | None = None,
+        min_longitude: float | None = None,
+        max_longitude: float | None = None,
         min_magnitude: float = 0.0,
         delta_m: float = 0.0,
         only_earthquakes: bool = True
@@ -79,10 +79,10 @@ def download_catalog_sed(
 def download_catalog_scedc(
         start_time: dt.datetime = dt.datetime(1970, 1, 1),
         end_time: dt.datetime = dt.datetime.now(),
-        min_latitude: Optional[float] = None,
-        max_latitude: Optional[float] = None,
-        min_longitude: Optional[float] = None,
-        max_longitude: Optional[float] = None,
+        min_latitude: float | None = None,
+        max_latitude: float | None = None,
+        min_longitude: float | None = None,
+        max_longitude: float | None = None,
         min_magnitude: float = 0.0,
         delta_m: float = 0.0,
         only_earthquakes: bool = True
@@ -130,10 +130,10 @@ def download_catalog_1(
         base_query: str,
         start_time: dt.datetime = dt.datetime(1970, 1, 1),
         end_time: dt.datetime = dt.datetime.now(),
-        min_latitude: Optional[float] = None,
-        max_latitude: Optional[float] = None,
-        min_longitude: Optional[float] = None,
-        max_longitude: Optional[float] = None,
+        min_latitude: float | None = None,
+        max_latitude: float | None = None,
+        min_longitude: float | None = None,
+        max_longitude: float | None = None,
         min_magnitude: float = 0.01,
         delta_m: float = 0.1,
         delimiter: str = '|'
@@ -266,10 +266,10 @@ def download_catalog(
         client_name: str = 'EMSC',
         start_time: dt.datetime = dt.datetime(2023, 1, 1),
         end_time: dt.datetime = dt.datetime.now(),
-        min_latitude: Optional[float] = None,
-        max_latitude: Optional[float] = None,
-        min_longitude: Optional[float] = None,
-        max_longitude: Optional[float] = None,
+        min_latitude: float | None = None,
+        max_latitude: float | None = None,
+        min_longitude: float | None = None,
+        max_longitude: float | None = None,
         min_magnitude: float = 0
 ) -> pd.DataFrame:
     """Downloads an earthquake catalog based on a client.
@@ -335,7 +335,7 @@ def download_catalog(
             maxlongitude=max_longitude,
             minmagnitude=min_magnitude,
         )
-    except: # noqa
+    except:  # noqa
         start_1 = start_time
         mid_1 = start_time + (end_time - start_time) / 2
         end_1 = end_time

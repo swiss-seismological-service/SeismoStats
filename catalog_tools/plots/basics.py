@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -25,11 +23,11 @@ def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
 
 def plot_cum_fmd(
         mags: np.ndarray,
-        ax: Optional[plt.Axes] = None,
-        b_value: Optional[float] = None,
-        mc: Optional[float] = None,
+        ax: plt.Axes | None = None,
+        b_value: float | None = None,
+        mc: float | None = None,
         delta_m: float = 0,
-        color: Union[str, list] = 'blue',
+        color: str | list = 'blue',
         size: int = 3,
         grid: bool = False,
         bin_position: str = 'center'
@@ -97,7 +95,7 @@ def plot_cum_fmd(
 
 def plot_fmd(
         mags: np.ndarray,
-        ax: Optional[plt.Axes] = None,
+        ax: plt.Axes | None = None,
         delta_m: float = 0.1,
         color: str = 'blue',
         size: int = 5,
@@ -148,9 +146,9 @@ def plot_fmd(
 
 def plot_cum_count(
         cat: pd.DataFrame,
-        ax: Optional[plt.Axes] = None,
-        mcs: Optional[np.ndarray] = np.array([0]),
-        delta_m: Optional[float] = 0.1,
+        ax: plt.Axes | None = None,
+        mcs: np.ndarray | None = np.array([0]),
+        delta_m: float | None = 0.1,
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -194,9 +192,9 @@ def plot_cum_count(
 
 def plot_mags_in_time(
     cat: pd.DataFrame,
-    ax: Optional[plt.Axes] = None,
-    mc_change_times: Optional[list] = None,
-    mcs: Optional[list] = None,
+    ax: plt.Axes | None = None,
+    mc_change_times: list | None = None,
+    mcs: list | None = None,
     dot_smallest: int = 10,
     dot_largest: int = 200,
     dot_interpolation_power: int = 2
