@@ -85,9 +85,12 @@ class FDSNWSEventClient():
         parser.parse(r.raw)
 
         df = Catalog.from_dict(catalog)
-        # if not include_uncertainty:
-        # wrong way round
-        # rgx = "(_uncertainty|_lowerUncertainty|" \
-        #       "_upperUncertainty|_confidenceLevel)$"
-        # df = df.filter(regex=rgx)
+
+        if not include_uncertainty:
+            rgx = "(_uncertainty|_lowerUncertainty|" \
+                "_upperUncertainty|_confidenceLevel)$"
+            # df = df.filter(regex=rgx)
+            cols = df.filter(regex=rgx).columns
+            df = df.drop(columns=cols)
+
         return df
