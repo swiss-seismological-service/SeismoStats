@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import functools
 
 import pandas as pd
+
+from catalog_tools.utils.binning import bin_to_precision
 
 REQUIRED_COLS = ['longitude', 'latitude', 'depth',
                  'time', 'magnitude', 'magnitude_type']
@@ -73,7 +77,7 @@ class Catalog(pd.DataFrame):
         return _catalog_constructor_with_fallback
 
     @require_cols
-    def strip(self, inplace: bool = False):
+    def strip(self, inplace: bool = False) -> Catalog | None:
         """
         Remove all columns except the required ones.
 
@@ -88,5 +92,30 @@ class Catalog(pd.DataFrame):
         """
         df = self.drop(columns=set(self.columns).difference(set(REQUIRED_COLS)),
                        inplace=inplace)
+        if not inplace:
+            return df
+
+    @require_cols(require=['magnitude'])
+    def bin_magnitudes(
+            self, delta_m: float, inplace: bool = False) -> Catalog | None:
+        """
+        Bin magnitudes to a given precision.
+
+        Args:
+            delta_m : float
+                Magnitude bin size.
+            inplace : bool, optional
+                If True, do operation inplace.
+
+        Returns:
+            Catalog or None
+        """
+        if inplace:
+            df = self
+        else:
+            df = self.copy()
+
+        df['magnitude'] = bin_to_precision(df["magnitude"], delta_m)
+
         if not inplace:
             return df

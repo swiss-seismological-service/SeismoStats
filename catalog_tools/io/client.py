@@ -102,4 +102,10 @@ class FDSNWSEventClient():
             cols = df.filter(regex=rgx).columns
             df = df.drop(columns=cols)
 
+        df['magnitude'] = pd.to_numeric(df['magnitude'])
+        df['latitude'] = pd.to_numeric(df['latitude'])
+        df['longitude'] = pd.to_numeric(df['longitude'])
+        df['depth'] = pd.to_numeric(df['depth'])
+        df['time'] = pd.to_datetime(df['time'])
+
         return df
