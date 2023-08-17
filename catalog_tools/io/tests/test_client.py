@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 import responses
+from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 from responses import matchers
 
 from catalog_tools.catalog import Catalog
@@ -14,7 +15,7 @@ date_format = "%Y-%m-%dT%H:%M:%S"
 
 
 @responses.activate
-def test_download_catalog_1():
+def test_download_catalog():
     url = 'http://mocked_url'
     start_time = datetime(1900, 1, 1)
     end_time = datetime(2022, 1, 1)
@@ -63,7 +64,14 @@ def test_download_catalog_1():
     )
 
     assert len(cat) == 4
+
     assert isinstance(cat, Catalog)
+
+    assert is_numeric_dtype(cat.magnitude.dtype)
+    assert is_numeric_dtype(cat.longitude.dtype)
+    assert is_numeric_dtype(cat.latitude.dtype)
+    assert is_numeric_dtype(cat.depth.dtype)
+    assert is_datetime64_any_dtype(cat.time.dtype)
 
     assert cat.columns.tolist().sort() == \
         ['evaluationMode', 'eventid', 'event_type', 'time', 'latitude',
