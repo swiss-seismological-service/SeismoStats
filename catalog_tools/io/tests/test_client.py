@@ -1,0 +1,79 @@
+import os
+from datetime import datetime
+
+import responses
+from responses import matchers
+
+from catalog_tools.catalog import Catalog
+from catalog_tools.io.client import FDSNWSEventClient
+
+PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'query.xml')
+
+date_format = "%Y-%m-%dT%H:%M:%S"
+
+
+@responses.activate
+def test_download_catalog_1():
+    url = 'http://mocked_url'
+    start_time = datetime(1900, 1, 1)
+    end_time = datetime(2022, 1, 1)
+    delta_m = 0.1
+    min_mag = 3.0
+    max_mag = 5.0
+    min_lat = 45.0
+    max_lat = 50.0
+    min_lon = 5.0
+    max_lon = 10.0
+    event_type = 'earthquake'
+
+    responses.add(responses.GET, url,
+                  body=open(PATH_RESOURCES, 'rb'), status=200,
+                  match=[
+                      matchers.query_param_matcher(
+                          {'starttime': start_time.strftime(date_format),
+                           'endtime': end_time.strftime(date_format),
+                           'minmagnitude': min_mag - (delta_m / 2),
+                           'maxmagnitude': max_mag,
+                           'minlatitude': min_lat,
+                           'maxlatitude': max_lat,
+                           'minlongitude': min_lon,
+                           'maxlongitude': max_lon,
+                           'eventtype': event_type})],)
+
+    responses.add(responses.GET, url,
+                  body=open(PATH_RESOURCES, 'rb'), status=200,
+                  match=[
+                      matchers.query_param_matcher(
+                          {'includeallmagnitudes': True,
+                           'minmagnitude': min_mag})],)
+
+    client = FDSNWSEventClient(url)
+
+    cat = client.get_events(
+        start_time=start_time,
+        end_time=end_time,
+        min_magnitude=min_mag,
+        max_magnitude=max_mag,
+        min_latitude=min_lat,
+        max_latitude=max_lat,
+        min_longitude=min_lon,
+        max_longitude=max_lon,
+        event_type=event_type
+    )
+
+    assert len(cat) == 4
+    assert isinstance(cat, Catalog)
+
+    assert cat.columns.tolist().sort() == \
+        ['evaluationMode', 'eventid', 'event_type', 'time', 'latitude',
+         'longitude', 'depth', 'magnitude', 'magnitude_type'].sort()
+
+    cat = client.get_events(
+        include_all_magnitudes=True,
+        include_uncertainty=True,
+        delta_m=None,
+        min_magnitude=min_mag,
+    )
+
+    assert len(cat.columns) == 22

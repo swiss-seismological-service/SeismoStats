@@ -10,6 +10,8 @@ from catalog_tools.io.parser import QuakeMLHandler
 
 class FDSNWSEventClient():
     """
+    Client for downloading earthquake catalogs from the FDSNWS event service.
+
     Args:
         url:    base url of the FDSNWS event service
                 (eg. 'https://earthquake.usgs.gov/fdsnws/event/1/query')
@@ -25,26 +27,29 @@ class FDSNWSEventClient():
                    min_longitude: float | None = None,
                    max_longitude: float | None = None,
                    min_magnitude: float | None = None,
+                   max_magnitude: float | None = None,
                    include_all_magnitudes: bool | None = None,
                    event_type: str | None = None,
-                   delta_m: float = 0.1,
+                   delta_m: float | None = 0.1,
                    include_uncertainty: bool = False) -> pd.DataFrame:
         """Downloads an earthquake catalog based on a URL.
 
         Args:
-            base_query:     base query url ()
-            start_time:     start time of the catalog.
-            end_time:       end time of the catalog. defaults to current time.
-            min_latitude:   minimum latitude of catalog.
-            max_latitude:   maximum latitude of catalog.
-            min_longitude:  minimum longitude of catalog.
-            max_longitude:  maximum longitude of catalog.
-            min_magnitude:  minimum magnitude of catalog.
+            start_time:             start time of the catalog.
+            end_time:               end time of the catalog. defaults to
+                                    current time.
+            min_latitude:           minimum latitude of catalog.
+            max_latitude:           maximum latitude of catalog.
+            min_longitude:          minimum longitude of catalog.
+            max_longitude:          maximum longitude of catalog.
+            min_magnitude:          minimum magnitude of catalog.
+            max_magnitude:          maximum magnitude of catalog.
             include_all_magnitudes: whether to include all magnitudes.
-            event_type:     type of event to download.
-            delta_m:        magnitude bin size. if >0, then events of
-                magnitude >= (min_magnitude - delta_m/2) will be downloaded.
-            include_uncertainty: whether to include uncertainty columns.
+            event_type:             type of event to download.
+            delta_m:                magnitude bin size. if >0, then events of
+                                    magnitude >= (min_magnitude - delta_m/2)
+                                    will be downloaded.
+            include_uncertainty:    whether to include uncertainty columns.
 
         Returns:
             The catalog as a Catalog Object.
@@ -69,6 +74,8 @@ class FDSNWSEventClient():
             request_url += f'&minmagnitude={min_magnitude - (delta_m / 2)}'
         elif min_magnitude:
             request_url += f'&minmagnitude={min_magnitude}'
+        if max_magnitude:
+            request_url += f'&maxmagnitude={max_magnitude}'
         if include_all_magnitudes:
             request_url += f'&includeallmagnitudes={include_all_magnitudes}'
         if event_type:
@@ -83,6 +90,7 @@ class FDSNWSEventClient():
 
         r = requests.get(request_url, stream=True)
         r.raw.decode_content = True  # if content-encoding is used decode
+
         parser.parse(r.raw)
 
         df = Catalog.from_dict(catalog)
