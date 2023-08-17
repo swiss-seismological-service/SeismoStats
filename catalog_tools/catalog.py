@@ -27,6 +27,17 @@ def _catalog_constructor_with_fallback(*args, **kwargs):
 def require_cols(_func=None, *,
                  require: list[str] = REQUIRED_COLS,
                  exclude: list[str] = None):
+    """
+    Decorator to check if a Class has the required columns for a method.
+
+    Args:
+        _func : function, optional
+            Function to decorate.
+        require : list of str, optional
+            List of required columns.
+        exclude : list of str, optional
+            List of columns to exclude from the required columns.
+    """
     def decorator_require(func):
         @functools.wraps(func)
         def wrapper_require(self, *args, **kwargs):
