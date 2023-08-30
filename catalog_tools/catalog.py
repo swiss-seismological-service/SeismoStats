@@ -7,7 +7,7 @@ import pandas as pd
 from catalog_tools.utils.binning import bin_to_precision
 
 REQUIRED_COLS = ['longitude', 'latitude', 'depth',
-                 'time', 'magnitude', 'magnitude_type']
+                 'time', 'magnitude']
 
 
 def _check_required_cols(df: pd.DataFrame,
@@ -25,7 +25,7 @@ def _catalog_constructor_with_fallback(*args, **kwargs):
 
 
 def require_cols(_func=None, *,
-                 require: list[str] = REQUIRED_COLS,
+                 require: list[str],
                  exclude: list[str] = None):
     """
     Decorator to check if a Class has the required columns for a method.
@@ -33,7 +33,7 @@ def require_cols(_func=None, *,
     Args:
         _func : function, optional
             Function to decorate.
-        require : list of str, optional
+        require : list of str
             List of required columns.
         exclude : list of str, optional
             List of columns to exclude from the required columns.
@@ -87,7 +87,7 @@ class Catalog(pd.DataFrame):
     def _constructor(self):
         return _catalog_constructor_with_fallback
 
-    @require_cols
+    @require_cols(require=REQUIRED_COLS)
     def strip(self, inplace: bool = False) -> Catalog | None:
         """
         Remove all columns except the required ones.

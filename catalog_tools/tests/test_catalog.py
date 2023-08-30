@@ -68,7 +68,7 @@ def test_catalog_bin():
 class TestCatalog:
     columns = ['name', 'magnitude']
 
-    @require_cols()
+    @require_cols(require=REQUIRED_COLS)
     def require(self):
         pass
 
@@ -76,7 +76,7 @@ class TestCatalog:
     def require_spec(self):
         pass
 
-    @require_cols(exclude=['magnitude'])
+    @require_cols(require=REQUIRED_COLS, exclude=['magnitude'])
     def require_exclude(self):
         pass
 
