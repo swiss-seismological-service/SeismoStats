@@ -1,11 +1,9 @@
-from typing import Optional
-
 import numpy as np
 from scipy import stats
 
 
 def simulate_magnitudes(n: int, beta: float, mc: float,
-                        mag_max: Optional[float] = None) -> np.ndarray:
+                        mag_max: float | None = None) -> np.ndarray:
     """ Generates a vector of n elements drawn from an exponential distribution
     exp(-beta*M)
 

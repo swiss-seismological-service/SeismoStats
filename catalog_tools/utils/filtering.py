@@ -1,9 +1,8 @@
-from shapely.geometry import Polygon, Point
-from typing import List
 import pandas as pd
+from shapely.geometry import Point, Polygon
 
 
-def cat_intersect_polygon(cat: pd.DataFrame, polygon_vertices: List[tuple]
+def cat_intersect_polygon(cat: pd.DataFrame, polygon_vertices: list[tuple]
                           ) -> pd.DataFrame:
     """Returns a DataFrame containing
     only the rows with points inside a given polygon.

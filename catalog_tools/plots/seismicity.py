@@ -1,18 +1,14 @@
 # standard
+import cartopy
+import cartopy.crs as ccrs
+import cartopy.io.img_tiles as cimgt
+import geopandas
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from cartopy.io import shapereader
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 # for map plotting
 from shapely.geometry import Polygon
-import cartopy
-from cartopy.io import shapereader
-import cartopy.io.img_tiles as cimgt
-import cartopy.crs as ccrs
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-import geopandas
-
-# typing
-from typing import Optional, List
 
 # Own functions
 from catalog_tools.plots.basics import dot_size
@@ -21,9 +17,9 @@ from catalog_tools.plots.basics import dot_size
 def plot_in_space(
         cat: pd.DataFrame,
         resolution: str = '110m',
-        include_map: Optional[bool] = False,
-        country: Optional[str] = None,
-        colors: Optional[str] = None,
+        include_map: bool | None = False,
+        country: str | None = None,
+        colors: str | None = None,
         dot_smallest: int = 10,
         dot_largest: int = 200,
         dot_interpolation_power: int = 2,
@@ -120,7 +116,7 @@ def plot_in_space(
 
 
 def rect_from_bound(xmin: float, xmax: float, ymin: float, ymax: float
-                    ) -> List[tuple]:
+                    ) -> list[tuple]:
     """
     Makes list of tuples for creating a rectangle polygon
     Args:
