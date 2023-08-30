@@ -40,7 +40,7 @@ DUMMY_ORIGIN = {
 }
 
 
-def _get_preferred_magnitude(magnitudes: list, id: str | None) \
+def _select_magnitude_by_id(magnitudes: list, id: str | None) \
         -> tuple[dict, list]:
     preferred = next((m for m in magnitudes if id
                      == m['magnitudepublicID']), DUMMY_MAGNITUDE)
@@ -51,8 +51,11 @@ def _get_preferred_magnitude(magnitudes: list, id: str | None) \
     return preferred, magnitudes
 
 
-def _get_preferred_origin(origins: list, id: str):
-    return next((o for o in origins if id == o['originpublicID']), DUMMY_ORIGIN)
+def _select_origin_by_id(origins: list, id: str) -> tuple[dict, list]:
+    preferred = next((o for o in origins if id
+                     == o['originpublicID']), DUMMY_ORIGIN)
+    origins = [o for o in origins if id != o['originpublicID']]
+    return preferred, origins
 
 
 def _select_secondary_magnitudes(magnitudes: list):
@@ -62,6 +65,7 @@ def _select_secondary_magnitudes(magnitudes: list):
     """
     magnitude_types = set(m['magnitudetype'] for m in magnitudes)
 
+    # only one magnitude per type, return all magnitudes
     if len(magnitude_types) == len(magnitudes):
         return magnitudes
 
@@ -74,6 +78,7 @@ def _select_secondary_magnitudes(magnitudes: list):
             selection.extend(mags)
             continue
 
+        # sort mags array by version number and creation time
         key1 = [False, 'magnitudecreationInfoversion']
         key2 = [False, 'magnitudecreationInfocreationTime']
         key1[0] = all(key1[1] in m for m in mags)
@@ -84,6 +89,7 @@ def _select_secondary_magnitudes(magnitudes: list):
             if key2[0] else None),
             reverse=True)
 
+        # select magnitude with highest version number and creation time
         selection.append(mags[0])
 
     return selection
@@ -137,13 +143,13 @@ def _parse_to_dict(event: dict, origins: list, magnitudes: list,
         dict
             A dictionary of earthquake event parameters.
     """
-    preferred_origin = \
-        _get_preferred_origin(origins,
-                              event.get('preferredOriginID', None))
+    preferred_origin, _ = \
+        _select_origin_by_id(origins,
+                             event.get('preferredOriginID', None))
 
     preferred_magnitude, magnitudes = \
-        _get_preferred_magnitude(magnitudes,
-                                 event.get('preferredMagnitudeID', None))
+        _select_magnitude_by_id(magnitudes,
+                                event.get('preferredMagnitudeID', None))
 
     if magnitudes and includeallmagnitudes:
         magnitudes = _select_secondary_magnitudes(magnitudes)
