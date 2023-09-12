@@ -16,9 +16,9 @@ def _rategrid_constructor_with_fallback(*args, **kwargs):
     df = RateGrid(*args, **kwargs)
     if not _check_required_cols(df, REQUIRED_COLS_RATEGRID):
         return pd.DataFrame(*args, **kwargs)
-    if not _check_required_cols(df, required_cols=['catalog_id']):
+    if not _check_required_cols(df, required_cols=['grid_id']):
         return df
-    return RateGridForecast(*args, **kwargs)
+    return ForecastRateGrid(*args, **kwargs)
 
 
 class RateGrid(pd.DataFrame):
@@ -75,7 +75,7 @@ class RateGrid(pd.DataFrame):
             return df
 
 
-class RateGridForecast(RateGrid):
+class ForecastRateGrid(RateGrid):
     """
     A subclass of pandas DataFrame that represents a forecast on a grid where
     for each grid cell, the GR parameters a, b, and mc and number_events
@@ -95,7 +95,7 @@ class RateGridForecast(RateGrid):
             DataFrame constructor.
 
     Notes:
-        The RateGridForecast class is a subclass of pandas DataFrame, and
+        The ForecastRateGrid class is a subclass of pandas DataFrame, and
         inherits all of its methods and attributes.
     """
 
