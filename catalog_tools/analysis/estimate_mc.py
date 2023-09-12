@@ -1,8 +1,6 @@
 """This module contains functions
 for the estimation of the completeness magnitude.
 """
-from typing import List, Optional, Tuple, Union
-
 import numpy as np
 import pandas as pd
 
@@ -12,8 +10,8 @@ from catalog_tools.utils.simulate_distributions import simulate_magnitudes
 
 
 def fitted_cdf_discrete(sample: np.ndarray, mc: float, delta_m: float,
-                        x_max: Optional[float] = None,
-                        beta: Optional[float] = None) -> Tuple[
+                        x_max: float | None = None,
+                        beta: float | None = None) -> tuple[
         np.ndarray, np.ndarray]:
     """
     Calculate the fitted cumulative distribution function (CDF)
@@ -34,7 +32,7 @@ def fitted_cdf_discrete(sample: np.ndarray, mc: float, delta_m: float,
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
+    tuple[np.ndarray, np.ndarray]
         Tuple containing the x-values and y-values of the fitted CDF.
     """
 
@@ -54,23 +52,23 @@ def fitted_cdf_discrete(sample: np.ndarray, mc: float, delta_m: float,
     return x, y[np.cumsum(y_count) - 1]
 
 
-def empirical_cdf(sample: Union[np.ndarray, pd.Series],
-                  weights: Optional[Union[np.ndarray, pd.Series]] = None) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def empirical_cdf(sample: np.ndarray | pd.Series,
+                  weights: np.ndarray | pd.Series | None = None) \
+        -> tuple[np.ndarray, np.ndarray]:
     """
     Calculate the empirical cumulative distribution function (CDF)
     from a sample.
 
     Parameters
     ----------
-    sample : Union[np.ndarray, pd.Series]
+    sample : np.ndarray | pd.Series
         Magnitude sample.
-    weights : Union[np.ndarray, pd.Series], optional
+    weights : np.ndarray | pd.Series, optional
         Sample weights, by default None.
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
+    tuple[np.ndarray, np.ndarray]
         Tuple containing the x-values and y-values of the empirical CDF.
     """
 
@@ -98,9 +96,9 @@ def empirical_cdf(sample: Union[np.ndarray, pd.Series],
 
 
 def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
-               ks_ds: Optional[List[float]] = None, n_samples: int = 10000,
-               beta: Optional[float] = None) -> Tuple[
-        float, float, List[float]]:
+               ks_ds: list[float] | None = None, n_samples: int = 10000,
+               beta: float | None = None) -> tuple[
+        float, float, list[float]]:
     """
     Perform the Kolmogorov-Smirnov (KS) test
     for the Gutenberg-Richter distribution.
@@ -113,7 +111,7 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
         Completeness magnitude.
     delta_m : float
         Magnitude bin size.
-    ks_ds : List[float], optional
+    ks_ds : list[float], optional
         List to store KS distances, by default None.
     n_samples : int, optional
         Number of magnitude samples to be generated
@@ -123,7 +121,7 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
 
     Returns
     -------
-    Tuple[float, float, List[float]]
+    tuple[float, float, list[float]]
         Tuple containing the original KS distance, p-value,
         and list of KS distances.
     """
@@ -176,11 +174,11 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
 
 def estimate_mc(sample: np.ndarray, mcs_test: np.ndarray, delta_m: float,
                 p_pass: float, stop_when_passed: bool = True,
-                verbose: bool = False, beta: Optional[float] = None,
+                verbose: bool = False, beta: float | None = None,
                 n_samples: int = 10000) \
-        -> Tuple[
-            np.ndarray, List[float], np.ndarray,
-            Optional[float], Optional[float]]:
+        -> tuple[
+            np.ndarray, list[float], np.ndarray,
+            float | None, float | None]:
     """
     Estimate the completeness magnitude (mc).
 
@@ -206,7 +204,7 @@ def estimate_mc(sample: np.ndarray, mcs_test: np.ndarray, delta_m: float,
 
     Returns
     -------
-    Tuple[np.ndarray, List[float], np.ndarray, Optional[float], Optional[float]]
+    tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]
         Tuple containing the tested completeness magnitudes,
         KS distances, p-values, best mc, and beta.
     """
