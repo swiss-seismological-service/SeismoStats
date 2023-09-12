@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from catalog_tools.catalog import (REQUIRED_COLS, Catalog, ForecastCatalog,
-                                   require_cols)
+from catalog_tools.catalog import (REQUIRED_COLS_CATALOG, Catalog,
+                                   ForecastCatalog, require_cols)
 from catalog_tools.utils.binning import bin_to_precision
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
@@ -49,11 +49,11 @@ def test_catalog_strip():
     stripped_catalog = catalog.strip()
     assert isinstance(stripped_catalog, Catalog)
     assert stripped_catalog.columns.tolist().sort() == \
-        REQUIRED_COLS.sort()
+        REQUIRED_COLS_CATALOG.sort()
 
     # Test inplace stripping
     catalog.strip(inplace=True)
-    assert catalog.columns.tolist().sort() == REQUIRED_COLS.sort()
+    assert catalog.columns.tolist().sort() == REQUIRED_COLS_CATALOG.sort()
 
     # Test constructor fallback
     dropped = catalog.drop(columns=['magnitude'])
@@ -61,7 +61,7 @@ def test_catalog_strip():
 
 
 def test_forecast_catalog_strip():
-    required_cols = REQUIRED_COLS + ['catalog_id']
+    required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
     # Test stripping columns
     catalog = ForecastCatalog(RAW_DATA)
     stripped_catalog = catalog.strip()
@@ -100,7 +100,7 @@ def test_catalog_bin():
 class TestCatalog:
     columns = ['name', 'magnitude']
 
-    @require_cols(require=REQUIRED_COLS)
+    @require_cols(require=REQUIRED_COLS_CATALOG)
     def require(self):
         pass
 
@@ -108,7 +108,7 @@ class TestCatalog:
     def require_spec(self):
         pass
 
-    @require_cols(require=REQUIRED_COLS, exclude=['magnitude'])
+    @require_cols(require=REQUIRED_COLS_CATALOG, exclude=['magnitude'])
     def require_exclude(self):
         pass
 
@@ -116,11 +116,11 @@ class TestCatalog:
         pytest.raises(AttributeError, self.require)
 
     def test_require_succeed(self):
-        self.columns = REQUIRED_COLS
+        self.columns = REQUIRED_COLS_CATALOG
         self.require()
 
     def test_require_exclude(self):
-        self.columns = REQUIRED_COLS
+        self.columns = REQUIRED_COLS_CATALOG
         self.columns.remove('magnitude')
         self.require_exclude()
 

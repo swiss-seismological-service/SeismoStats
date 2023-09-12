@@ -4,22 +4,16 @@ import functools
 
 import pandas as pd
 
+from catalog_tools.utils import _check_required_cols
 from catalog_tools.utils.binning import bin_to_precision
 
-REQUIRED_COLS = ['longitude', 'latitude', 'depth',
-                 'time', 'magnitude']
-
-
-def _check_required_cols(df: pd.DataFrame,
-                         required_cols: list[str] = REQUIRED_COLS):
-    if not set(required_cols).issubset(set(df.columns)):
-        return False
-    return True
+REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
+                         'time', 'magnitude']
 
 
 def _catalog_constructor_with_fallback(*args, **kwargs):
     df = Catalog(*args, **kwargs)
-    if not _check_required_cols(df):
+    if not _check_required_cols(df, REQUIRED_COLS_CATALOG):
         return pd.DataFrame(*args, **kwargs)
     if not _check_required_cols(df, required_cols=['catalog_id']):
         return df
@@ -82,7 +76,7 @@ class Catalog(pd.DataFrame):
         all of its methods and attributes.
     """
     _metadata = ['name', '_required_cols']
-    _required_cols = REQUIRED_COLS
+    _required_cols = REQUIRED_COLS_CATALOG
 
     def __init__(self, data=None, *args, name=None, **kwargs):
         super().__init__(data, *args, **kwargs)
@@ -161,4 +155,4 @@ class ForecastCatalog(Catalog):
         inherits all of its methods and attributes.
     """
 
-    _required_cols = REQUIRED_COLS + ['catalog_id']
+    _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
