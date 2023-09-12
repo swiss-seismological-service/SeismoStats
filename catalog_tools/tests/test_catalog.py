@@ -1,8 +1,22 @@
 import pandas as pd
 import pytest
 
-from catalog_tools.catalog import REQUIRED_COLS, Catalog, require_cols
+from catalog_tools.catalog import (REQUIRED_COLS, Catalog, ForecastCatalog,
+                                   require_cols)
 from catalog_tools.utils.binning import bin_to_precision
+
+RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
+            'magnitude': [10.0, 12.5, 8.2],
+            'longitude': [120.0, 121.0, 122.0],
+            'latitude': [30.0, 31.0, 32.0],
+            'depth': [10.0, 11.0, 12.0],
+            'time': [pd.Timestamp('2020-01-01'),
+                     pd.Timestamp('2020-01-02'),
+                     pd.Timestamp('2020-01-03')],
+            'magnitude_type': ['Mw', 'Mw', 'Mw'],
+            'ra': [120.0, 121.0, 122.0],
+            'dec': [30.0, 31.0, 32.0],
+            'catalog_id': [1, 1, 2]}
 
 
 def test_catalog_init():
@@ -21,21 +35,17 @@ def test_catalog_init():
     catalog = Catalog(data, columns=['name', 'magnitude'])
 
 
+def test_forecast_catalog_init():
+    # Test initialization with data
+    data = {'name': ['Object 1', 'Object 2', 'Object 3'],
+            'magnitude': [10.0, 12.5, 8.2]}
+    catalog = ForecastCatalog(data)
+    assert isinstance(catalog, ForecastCatalog)
+
+
 def test_catalog_strip():
     # Test stripping columns
-    data = {'name': ['Object 1', 'Object 2', 'Object 3'],
-            'magnitude': [10.0, 12.5, 8.2],
-            'longitude': [120.0, 121.0, 122.0],
-            'latitude': [30.0, 31.0, 32.0],
-            'depth': [10.0, 11.0, 12.0],
-            'time': [pd.Timestamp('2020-01-01'),
-                     pd.Timestamp('2020-01-02'),
-                     pd.Timestamp('2020-01-03')],
-            'magnitude_type': ['Mw', 'Mw', 'Mw'],
-            'ra': [120.0, 121.0, 122.0],
-            'dec': [30.0, 31.0, 32.0]}
-
-    catalog = Catalog(data)
+    catalog = Catalog(RAW_DATA)
     stripped_catalog = catalog.strip()
     assert isinstance(stripped_catalog, Catalog)
     assert stripped_catalog.columns.tolist().sort() == \
@@ -48,6 +58,28 @@ def test_catalog_strip():
     # Test constructor fallback
     dropped = catalog.drop(columns=['magnitude'])
     assert not isinstance(dropped, Catalog)
+
+
+def test_forecast_catalog_strip():
+    required_cols = REQUIRED_COLS + ['catalog_id']
+    # Test stripping columns
+    catalog = ForecastCatalog(RAW_DATA)
+    stripped_catalog = catalog.strip()
+    assert isinstance(stripped_catalog, ForecastCatalog)
+    assert stripped_catalog.columns.tolist().sort() == \
+        required_cols.sort()
+
+    # Test inplace stripping
+    catalog.strip(inplace=True)
+    assert catalog.columns.tolist().sort() == required_cols.sort()
+
+    # Test constructor fallback
+    dropped = catalog.drop(columns=['magnitude'])
+    assert not isinstance(dropped, ForecastCatalog)
+
+    # Test constructor fallback "downgrade"
+    dropped = catalog.drop(columns=['catalog_id'])
+    assert isinstance(dropped, Catalog)
 
 
 def test_catalog_bin():
