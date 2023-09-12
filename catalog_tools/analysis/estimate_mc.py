@@ -1,19 +1,20 @@
 """This module contains functions
 for the estimation of the completeness magnitude.
 """
-import numpy as np
-from typing import Optional, Tuple, List, Union
-import estimate_beta
-from catalog_tools.utils.simulate_distributions import simulate_magnitudes
-from catalog_tools.utils.binning import normal_round
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
+
+from catalog_tools.analysis.estimate_beta import estimate_beta_tinti
+from catalog_tools.utils.binning import normal_round
+from catalog_tools.utils.simulate_distributions import simulate_magnitudes
 
 
 def fitted_cdf_discrete(sample: np.ndarray, mc: float, delta_m: float,
                         x_max: Optional[float] = None,
                         beta: Optional[float] = None) -> Tuple[
-    np.ndarray, np.ndarray]:
+        np.ndarray, np.ndarray]:
     """
     Calculate the fitted cumulative distribution function (CDF)
     for a discrete Gutenberg-Richter distribution.
@@ -54,8 +55,8 @@ def fitted_cdf_discrete(sample: np.ndarray, mc: float, delta_m: float,
 
 
 def empirical_cdf(sample: Union[np.ndarray, pd.Series],
-        weights: Optional[Union[np.ndarray, pd.Series]] = None) -> Tuple[
-    np.ndarray, np.ndarray]:
+                  weights: Optional[Union[np.ndarray, pd.Series]] = None) \
+        -> Tuple[np.ndarray, np.ndarray]:
     """
     Calculate the empirical cumulative distribution function (CDF)
     from a sample.
@@ -99,9 +100,9 @@ def empirical_cdf(sample: Union[np.ndarray, pd.Series],
 def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
                ks_ds: Optional[List[float]] = None, n_samples: int = 10000,
                beta: Optional[float] = None) -> Tuple[
-    float, float, List[float]]:
+        float, float, List[float]]:
     """
-    Perform the Kolmogorov-Smirnov (KS) test 
+    Perform the Kolmogorov-Smirnov (KS) test
     for the Gutenberg-Richter distribution.
 
     Parameters
@@ -115,7 +116,7 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
     ks_ds : List[float], optional
         List to store KS distances, by default None.
     n_samples : int, optional
-        Number of magnitude samples to be generated 
+        Number of magnitude samples to be generated
         in p-value calculation of KS distance, by default 10000.
     beta : float, optional
         Beta parameter for the Gutenberg-Richter distribution, by default None.
@@ -123,7 +124,7 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
     Returns
     -------
     Tuple[float, float, List[float]]
-        Tuple containing the original KS distance, p-value, 
+        Tuple containing the original KS distance, p-value,
         and list of KS distances.
     """
 
@@ -138,7 +139,7 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
         return 1, 0, []
 
     if beta is None:
-        beta = estimate_beta(sample, mc=mc, delta_m=delta_m)
+        beta = estimate_beta_tinti(sample, mc=mc, delta_m=delta_m)
 
     if ks_ds is None:
         ks_ds = []
@@ -146,7 +147,7 @@ def ks_test_gr(sample: np.ndarray, mc: float, delta_m: float,
         n_sample = len(sample)
         simulated_all = normal_round(
             simulate_magnitudes(mc=mc - delta_m / 2, beta=beta,
-                n=n_samples * n_sample) / delta_m) * delta_m
+                                n=n_samples * n_sample) / delta_m) * delta_m
 
         x_max = np.max(simulated_all)
         x_fit, y_fit = fitted_cdf_discrete(
@@ -239,7 +240,7 @@ def estimate_mc(sample: np.ndarray, mcs_test: np.ndarray, delta_m: float,
         best_mc = mcs_test[np.argmax(ps >= p_pass)]
 
         if beta is None:
-            beta = estimate_beta(
+            beta = estimate_beta_tinti(
                 sample[sample >= best_mc - delta_m / 2],
                 mc=best_mc, delta_m=delta_m)
 
