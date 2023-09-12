@@ -1,3 +1,5 @@
+import functools
+
 import pandas as pd
 
 
@@ -20,3 +22,38 @@ def _check_required_cols(df: pd.DataFrame,
     if not set(required_cols).issubset(set(df.columns)):
         return False
     return True
+
+
+def require_cols(_func=None, *,
+                 require: list[str],
+                 exclude: list[str] = None):
+    """
+    Decorator to check if a Class has the required columns for a method.
+
+    Args:
+        _func : function, optional
+            Function to decorate.
+        require : list of str
+            List of required columns.
+        exclude : list of str, optional
+            List of columns to exclude from the required columns.
+    """
+    def decorator_require(func):
+        @functools.wraps(func)
+        def wrapper_require(self, *args, **kwargs):
+            nonlocal require
+            if exclude:
+                require = [col for col in require if col not in exclude]
+            if not _check_required_cols(self, require):
+                raise AttributeError(
+                    'Catalog is missing the following columns '
+                    f'for execution of the method "{func.__name__}": '
+                    f'{set(require).difference(set(self.columns))}.')
+            value = func(self, *args, **kwargs)
+            return value
+        return wrapper_require
+
+    if _func is None:
+        return decorator_require
+    else:
+        return decorator_require(_func)

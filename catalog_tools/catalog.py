@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import functools
-
 import pandas as pd
 
-from catalog_tools.utils import _check_required_cols
+from catalog_tools.utils import _check_required_cols, require_cols
 from catalog_tools.utils.binning import bin_to_precision
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
@@ -18,41 +16,6 @@ def _catalog_constructor_with_fallback(*args, **kwargs):
     if not _check_required_cols(df, required_cols=['catalog_id']):
         return df
     return ForecastCatalog(*args, **kwargs)
-
-
-def require_cols(_func=None, *,
-                 require: list[str],
-                 exclude: list[str] = None):
-    """
-    Decorator to check if a Class has the required columns for a method.
-
-    Args:
-        _func : function, optional
-            Function to decorate.
-        require : list of str
-            List of required columns.
-        exclude : list of str, optional
-            List of columns to exclude from the required columns.
-    """
-    def decorator_require(func):
-        @functools.wraps(func)
-        def wrapper_require(self, *args, **kwargs):
-            nonlocal require
-            if exclude:
-                require = [col for col in require if col not in exclude]
-            if not _check_required_cols(self, require):
-                raise AttributeError(
-                    'Catalog is missing the following columns '
-                    f'for execution of the method "{func.__name__}": '
-                    f'{set(require).difference(set(self.columns))}.')
-            value = func(self, *args, **kwargs)
-            return value
-        return wrapper_require
-
-    if _func is None:
-        return decorator_require
-    else:
-        return decorator_require(_func)
 
 
 class Catalog(pd.DataFrame):
