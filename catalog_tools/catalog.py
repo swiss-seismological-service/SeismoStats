@@ -81,7 +81,8 @@ class Catalog(pd.DataFrame):
         The Catalog class is a subclass of pandas DataFrame, and inherits
         all of its methods and attributes.
     """
-    _metadata = ['name']
+    _metadata = ['name', '_required_cols']
+    _required_cols = REQUIRED_COLS
 
     def __init__(self, data=None, *args, name=None, **kwargs):
         super().__init__(data, *args, **kwargs)
@@ -92,7 +93,7 @@ class Catalog(pd.DataFrame):
     def _constructor(self):
         return _catalog_constructor_with_fallback
 
-    @require_cols(require=REQUIRED_COLS)
+    @require_cols(require=_required_cols)
     def strip(self, inplace: bool = False) -> Catalog | None:
         """
         Remove all columns except the required ones.
@@ -106,8 +107,8 @@ class Catalog(pd.DataFrame):
                 If inplace is True, returns None. Otherwise, returns a new
                 Catalog with the stripped columns.
         """
-        df = self.drop(columns=set(self.columns).difference(set(REQUIRED_COLS)),
-                       inplace=inplace)
+        df = self.drop(columns=set(self.columns).difference(
+            set(self._required_cols)), inplace=inplace)
         if not inplace:
             return df
 
@@ -156,27 +157,8 @@ class ForecastCatalog(Catalog):
             DataFrame constructor.
 
     Notes:
-        The Catalog class is a subclass of pandas DataFrame, and inherits
-        all of its methods and attributes.
+        The ForecastCatalog class is a subclass of pandas DataFrame, and
+        inherits all of its methods and attributes.
     """
 
-    @require_cols(require=REQUIRED_COLS + ['catalog_id'])
-    def strip(self, inplace: bool = False) -> Catalog | None:
-        """
-        Remove all columns except the required ones.
-
-        Args:
-            inplace : bool, optional
-                If True, do operation inplace.
-
-        Returns:
-            Catalog or None
-                If inplace is True, returns None. Otherwise, returns a new
-                Catalog with the stripped columns.
-        """
-        df = self.drop(
-            columns=set(self.columns).difference(
-                set(REQUIRED_COLS + ['catalog_id'])),
-            inplace=inplace)
-        if not inplace:
-            return df
+    _required_cols = REQUIRED_COLS + ['catalog_id']
