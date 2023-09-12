@@ -21,7 +21,9 @@ def _catalog_constructor_with_fallback(*args, **kwargs):
     df = Catalog(*args, **kwargs)
     if not _check_required_cols(df):
         return pd.DataFrame(*args, **kwargs)
-    return df
+    if not _check_required_cols(df, required_cols=['catalog_id']):
+        return df
+    return ForecastCatalog(*args, **kwargs)
 
 
 def require_cols(_func=None, *,
@@ -61,7 +63,10 @@ def require_cols(_func=None, *,
 
 class Catalog(pd.DataFrame):
     """
-    A subclass of pandas DataFrame that represents a catalog of items.
+    A subclass of pandas DataFrame that represents a catalog of earthquakes.
+
+    To be a valid Catalog object, the DataFrame must have the following
+    columns: longitude, latitude, depth, time, and magnitude.
 
     Args:
         data : array-like, Iterable, dict, or DataFrame, optional
@@ -128,5 +133,50 @@ class Catalog(pd.DataFrame):
 
         df['magnitude'] = bin_to_precision(df["magnitude"], delta_m)
 
+        if not inplace:
+            return df
+
+
+class ForecastCatalog(Catalog):
+    """
+    A subclass of pandas DataFrame that represents catalogs of earthquake
+    forecasts.
+
+    To be a valid ForecastCatalog object, the DataFrame must have the
+    following columns: longitude, latitude, depth, time, magnitude,
+    catalog_id.
+
+    Args:
+        data : array-like, Iterable, dict, or DataFrame, optional
+            Data to initialize the catalog with.
+        name : str, optional
+            Name of the catalog.
+        *args, **kwargs : optional
+            Additional arguments and keyword arguments to pass to pandas
+            DataFrame constructor.
+
+    Notes:
+        The Catalog class is a subclass of pandas DataFrame, and inherits
+        all of its methods and attributes.
+    """
+
+    @require_cols(require=REQUIRED_COLS + ['catalog_id'])
+    def strip(self, inplace: bool = False) -> Catalog | None:
+        """
+        Remove all columns except the required ones.
+
+        Args:
+            inplace : bool, optional
+                If True, do operation inplace.
+
+        Returns:
+            Catalog or None
+                If inplace is True, returns None. Otherwise, returns a new
+                Catalog with the stripped columns.
+        """
+        df = self.drop(
+            columns=set(self.columns).difference(
+                set(REQUIRED_COLS + ['catalog_id'])),
+            inplace=inplace)
         if not inplace:
             return df
