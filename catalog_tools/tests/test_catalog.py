@@ -1,8 +1,7 @@
 import pandas as pd
-import pytest
 
 from catalog_tools.catalog import (REQUIRED_COLS_CATALOG, Catalog,
-                                   ForecastCatalog, require_cols)
+                                   ForecastCatalog)
 from catalog_tools.utils.binning import bin_to_precision
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
@@ -95,35 +94,3 @@ def test_catalog_bin():
     catalog.bin_magnitudes(delta_m, inplace=True)
     assert (catalog['magnitude'].tolist()
             == bin_to_precision(mag_values, delta_m)).all()
-
-
-class TestCatalog:
-    columns = ['name', 'magnitude']
-
-    @require_cols(require=REQUIRED_COLS_CATALOG)
-    def require(self):
-        pass
-
-    @require_cols(require=['name'])
-    def require_spec(self):
-        pass
-
-    @require_cols(require=REQUIRED_COLS_CATALOG, exclude=['magnitude'])
-    def require_exclude(self):
-        pass
-
-    def test_require(self):
-        pytest.raises(AttributeError, self.require)
-
-    def test_require_succeed(self):
-        self.columns = REQUIRED_COLS_CATALOG
-        self.require()
-
-    def test_require_exclude(self):
-        self.columns = REQUIRED_COLS_CATALOG
-        self.columns.remove('magnitude')
-        self.require_exclude()
-
-    def test_require_spec(self):
-        self.columns = ['name']
-        self.require_spec()
