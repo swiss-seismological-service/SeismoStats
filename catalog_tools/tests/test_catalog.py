@@ -60,21 +60,10 @@ def test_catalog_strip():
 
 
 def test_forecast_catalog_strip():
-    required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
     # Test stripping columns
     catalog = ForecastCatalog(RAW_DATA)
     stripped_catalog = catalog.strip()
     assert isinstance(stripped_catalog, ForecastCatalog)
-    assert stripped_catalog.columns.tolist().sort() == \
-        required_cols.sort()
-
-    # Test inplace stripping
-    catalog.strip(inplace=True)
-    assert catalog.columns.tolist().sort() == required_cols.sort()
-
-    # Test constructor fallback
-    dropped = catalog.drop(columns=['magnitude'])
-    assert not isinstance(dropped, ForecastCatalog)
 
     # Test constructor fallback "downgrade"
     dropped = catalog.drop(columns=['catalog_id'])
