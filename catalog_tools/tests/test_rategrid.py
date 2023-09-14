@@ -1,3 +1,8 @@
+from datetime import datetime
+
+import pandas as pd
+import pytest
+
 from catalog_tools.rategrid import (REQUIRED_COLS_RATEGRID, ForecastRateGrid,
                                     RateGrid)
 
@@ -8,6 +13,20 @@ RAW_DATA = {
     'latitude_max': [-45, 0, 45, 90],
     'depth_min': [0, 10, 20, 30],
     'depth_max': [10, 20, 30, 40],
+    'number_events': [100, 200, 300, 400],
+    'a': [1.0, 1.5, 2.0, 2.5],
+    'b': [0.5, 0.6, 0.7, 0.8],
+    'mc': [4.0, 4.5, 5.0, 5.5],
+    'grid_id': [1, 2, 3, 4]
+}
+
+RAW_DATA_2 = {
+    'longitude_min': [-90, 0, 90, -180],
+    'longitude_max': [0, 90, 180, -90],
+    'latitude_min': [-45, 0, 45, -90],
+    'latitude_max': [0, 45, 90, -45],
+    'depth_min': [10, 20, 30, 0],
+    'depth_max': [20, 30, 40, 10],
     'number_events': [100, 200, 300, 400],
     'a': [1.0, 1.5, 2.0, 2.5],
     'b': [0.5, 0.6, 0.7, 0.8],
@@ -66,3 +85,38 @@ def test_forecast_rategrid_strip():
     # Test constructor fallback "downgrade"
     dropped = rategrid.drop(columns=['grid_id'])
     assert isinstance(dropped, RateGrid)
+
+
+def test_rategrid_time_index():
+    starttimes = [datetime(2020, 1, 1), datetime(2020, 1, 3)]
+    endtimes = [datetime(2020, 1, 2), datetime(2020, 1, 4)]
+
+    rategrid = ForecastRateGrid(
+        RAW_DATA, starttime=starttimes[0], endtime=endtimes[0])
+    rategrid2 = ForecastRateGrid(
+        RAW_DATA_2, starttime=starttimes[1], endtime=endtimes[1])
+
+    rategrid = rategrid.add_time_index(endtime=False)
+    rategrid2 = rategrid2.add_time_index(endtime=False)
+
+    assert rategrid.starttime == starttimes[0]
+    assert rategrid2.endtime == endtimes[1]
+
+    rategrid = pd.concat([rategrid, rategrid2], axis=0, sort=False)
+
+    assert list(rategrid.index.get_level_values(
+        'starttime').unique()) == starttimes
+
+    assert list(rategrid.index.get_level_values(
+        'cell_id')) == [0, 1, 2, 3, 1, 2, 3, 0]
+
+    assert rategrid.starttime == starttimes[0]
+    assert rategrid.endtime == starttimes[1]
+
+    assert rategrid2.endtime == endtimes[1]
+
+    rategrid_none = ForecastRateGrid(
+        RAW_DATA)
+
+    with pytest.raises(AttributeError):
+        rategrid_none.add_time_index()
