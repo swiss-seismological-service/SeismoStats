@@ -35,6 +35,12 @@ class RateGrid(pd.DataFrame):
             Data to initialize the catalog with.
         name : str, optional
             Name of the catalog.
+        starttime : str or datetime-like, optional
+            Start time of the catalog. If a string, it must be in a format
+            that can be parsed by pandas.to_datetime.
+        endtime : str or datetime-like, optional
+            End time of the catalog. If a string, it must be in a format
+            that can be parsed by pandas.to_datetime.
         *args, **kwargs : optional
             Additional arguments and keyword arguments to pass to pandas
             DataFrame constructor.
@@ -43,13 +49,22 @@ class RateGrid(pd.DataFrame):
         The RateGrid class is a subclass of pandas DataFrame, and inherits
         all of its methods and attributes.
     """
-    _metadata = ['name', '_required_cols']
+    _metadata = ['name', '_required_cols', 'starttime', 'endtime']
     _required_cols = REQUIRED_COLS_RATEGRID
 
-    def __init__(self, data=None, *args, name=None, **kwargs):
+    def __init__(self, data=None, *args, name=None,
+                 starttime=None,
+                 endtime=None,
+                 **kwargs):
         super().__init__(data, *args, **kwargs)
 
         self.name = name
+
+        self.starttime = starttime if isinstance(
+            starttime, pd.Timestamp) else pd.to_datetime(starttime)
+
+        self.endtime = endtime if isinstance(
+            endtime, pd.Timestamp) else pd.to_datetime(endtime)
 
     @property
     def _constructor(self):
@@ -90,6 +105,12 @@ class ForecastRateGrid(RateGrid):
             Data to initialize the catalog with.
         name : str, optional
             Name of the catalog.
+        starttime : str or datetime-like, optional
+            Start time of the catalog. If a string, it must be in a format
+            that can be parsed by pandas.to_datetime.
+        endtime : str or datetime-like, optional
+            End time of the catalog. If a string, it must be in a format
+            that can be parsed by pandas.to_datetime.
         *args, **kwargs : optional
             Additional arguments and keyword arguments to pass to pandas
             DataFrame constructor.
