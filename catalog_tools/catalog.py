@@ -94,6 +94,10 @@ class Catalog(pd.DataFrame):
         if not inplace:
             return df
 
+    @require_cols(require=_required_cols)
+    def to_quakeml(self) -> str:
+        raise NotImplementedError
+
 
 class ForecastCatalog(Catalog):
     """
@@ -119,3 +123,7 @@ class ForecastCatalog(Catalog):
     """
 
     _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
+
+    @require_cols(require=_required_cols)
+    def to_quakeml(self) -> str:
+        raise NotImplementedError
