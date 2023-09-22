@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 
 import pandas as pd
 
@@ -94,8 +95,59 @@ def test_catalog_bin():
 def test_to_quakeml():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
 
-    catalog = Catalog.from_quakeml(xml_file)
+    catalog = Catalog.from_quakeml(
+        xml_file, include_uncertainties=True, include_ids=True)
     catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
+    catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
+
+    with open(xml_file, 'r') as file:
+        xml = file.read()
+    xml = re.sub(r"[\n\t\s]*", "", xml)
+
+    assert catalog_xml == xml
+
+
+def test_to_quakeml_without():
+    xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
+
+    catalog = Catalog.from_quakeml(xml_file)
+
+    rgx = "(eventid|originid|magnitudeid)$"
+    cols = catalog.filter(regex=rgx).columns
+    assert len(cols) == 0
+
+    rgx = "(_uncertainty|_lowerUncertainty|" \
+        "_upperUncertainty|_confidenceLevel)$"
+    cols = catalog.filter(regex=rgx).columns
+    assert len(cols) == 0
+
+    catalog = catalog._create_ids()
+    event = catalog.iloc[0]
+    assert uuid.UUID(str(event['magnitudeid']))
+    assert uuid.UUID(str(event['originid']))
+    assert uuid.UUID(str(event['eventid']))
+    assert event['magnitudeid'] == event['magnitude_MLhc_magnitudeid']
+    assert event['magnitudeid'] != event['magnitude_MLv_magnitudeid']
+    assert uuid.UUID(str(event['magnitude_MLv_magnitudeid']))
+
+
+def test_to_quakeml_forecast():
+    xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
+
+    catalog = Catalog.from_quakeml(
+        xml_file, include_uncertainties=True, include_ids=True)
+    catalog2 = catalog.copy()
+
+    catalog['catalog_id'] = 1
+    catalog2['catalog_id'] = 2
+
+    catalog = pd.concat([catalog, catalog2]).reset_index(drop=True)
+
+    catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
+
+    assert len(catalog_xml) == 2
+
+    catalog_xml = catalog_xml[0]
     catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
 
     with open(xml_file, 'r') as file:

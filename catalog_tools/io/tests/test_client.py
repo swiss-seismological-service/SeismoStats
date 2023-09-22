@@ -84,4 +84,4 @@ def test_download_catalog():
         min_magnitude=min_mag,
     )
 
-    assert len(cat.columns) == 22
+    assert len(cat.columns) == 21

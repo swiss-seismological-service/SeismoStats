@@ -90,7 +90,7 @@ class TransformationCoordsTestCase(unittest.TestCase):
             MOCK_INJ_EASTING,
             MOCK_INJ_NORTHING,
             altitude=MOCK_INJ_ALTITUDE_LOCAL)
-        print(lon, lat, altitude)
+
         self.assertAlmostEqual(lat, MOCK_INJ_LAT)
         self.assertAlmostEqual(lon, MOCK_INJ_LON)
         self.assertAlmostEqual(altitude, MOCK_INJ_ALTITUDE)
