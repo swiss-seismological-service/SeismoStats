@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import pandas as pd
 
+from catalog_tools.io.parser import parse_quakeml_file
 from catalog_tools.utils import (_check_required_cols, _render_template,
                                  require_cols)
 from catalog_tools.utils.binning import bin_to_precision
@@ -53,6 +54,22 @@ class Catalog(pd.DataFrame):
         super().__init__(data, *args, **kwargs)
 
         self.name = name
+
+    @classmethod
+    def from_quakeml(cls, quakeml: str) -> Catalog:
+        """
+        Create a Catalog from a QuakeML file.
+
+        Args:
+            quakeml : str
+                Path to a QuakeML file.
+
+        Returns:
+            Catalog
+        """
+        catalog = parse_quakeml_file(quakeml)
+
+        return cls.from_dict(catalog)
 
     @property
     def _constructor(self):
@@ -138,7 +155,7 @@ class Catalog(pd.DataFrame):
                     event['sec_mags'][mag_type][mag_key] = \
                         event[mag]
                 del event[mag]
-        print(data)
+
         return _render_template(data, QML_TEMPLATE)
 
 
