@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
+    <eventParameters publicID="smi:org.gfz-potsdam.de/geofon/EventParameters">
+        <event publicID="smi:ch.ethz.sed/sc20a/Event/2021zqxyri">
+
+            <creationInfo>
+                <agencyID>SED</agencyID>
+                <author>catalog-tools</author>
+            </creationInfo>
+
+            <magnitude publicID="smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206">
+                <creationInfo>
+                    <agencyID>SED</agencyID>
+                    <author>catalog-tools</author>
+                </creationInfo>
+                <mag>
+                    <value>2.510115344</value>
+                    <uncertainty>0.23854491</uncertainty>
+                </mag>
+                <type>MLhc</type>
+                <originID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080</originID>
+            </magnitude>
+
+            <magnitude publicID="smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.752473.80241">
+                <creationInfo>
+                    <agencyID>SED</agencyID>
+                    <author>catalog-tools</author>
+                </creationInfo>
+                <mag>
+                    <value>2.301758471</value>
+                    <uncertainty>0.2729312832</uncertainty>
+                </mag>
+                <type>MLv</type>
+                <originID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080</originID>
+            </magnitude>
+
+            <origin publicID="smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080">
+                <time>
+                    <value>2021-12-30T07:43:14.681975Z</value>
+                </time>
+                <longitude>
+                    <value>7.388024848</value>
+                    <uncertainty>0.1007121534</uncertainty>
+                </longitude>
+                <latitude>
+                    <value>46.05144527</value>
+                    <uncertainty>0.1222628824</uncertainty>
+                </latitude>
+                <evaluationMode>manual</evaluationMode>
+                <creationInfo>
+                    <agencyID>SED</agencyID>
+                    <author>catalog-tools</author>
+                </creationInfo>
+                <depth>
+                    <value>1181.640625</value>
+                    <uncertainty>274.9552879</uncertainty>
+                </depth>
+            </origin>
+
+            <preferredOriginID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080</preferredOriginID>
+            <preferredMagnitudeID>smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206</preferredMagnitudeID>
+            <type>earthquake</type>
+        </event>
+
+        <event publicID="smi:ch.ethz.sed/sc20a/Event/2021zihlix">
+            <creationInfo>
+                <agencyID>SED</agencyID>
+                <author>catalog-tools</author>
+            </creationInfo>
+
+            <magnitude publicID="smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164">
+                <creationInfo>
+                    <agencyID>SED</agencyID>
+                    <author>catalog-tools</author>
+                </creationInfo>
+                <mag>
+                    <value>3.539687307</value>
+                    <uncertainty>0.272435385</uncertainty>
+                </mag>
+                <type>MLhc</type>
+                <originID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045</originID>
+            </magnitude>
+
+            <origin publicID="smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045">
+                <time>
+                    <value>2021-12-25T14:49:40.125942Z</value>
+                </time>
+                <longitude>
+                    <value>6.917056725</value>
+                    <uncertainty>0.1277685645</uncertainty>
+                </longitude>
+                <latitude>
+                    <value>47.37175484</value>
+                    <uncertainty>0.1363265577</uncertainty>
+                </latitude>
+                <evaluationMode>manual</evaluationMode>
+                <creationInfo>
+                    <agencyID>SED</agencyID>
+                    <author>catalog-tools</author>
+                </creationInfo>
+                <depth>
+                    <value>3364.257812</value>
+                    <uncertainty>1036.395075</uncertainty>
+                </depth>
+            </origin>
+
+            <preferredOriginID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045</preferredOriginID>
+            <preferredMagnitudeID>smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164</preferredMagnitudeID>
+            <type>earthquake</type>
+
+        </event>
+    </eventParameters>
+</q:quakeml>
