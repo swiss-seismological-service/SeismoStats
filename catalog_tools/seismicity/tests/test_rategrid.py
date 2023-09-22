@@ -3,8 +3,8 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from catalog_tools.rategrid import (REQUIRED_COLS_RATEGRID, ForecastRateGrid,
-                                    RateGrid)
+from catalog_tools.seismicity.rategrid import (REQUIRED_COLS_RATEGRID,
+                                               ForecastRateGrid, RateGrid)
 
 RAW_DATA = {
     'longitude_min': [-180, -90, 0, 90],

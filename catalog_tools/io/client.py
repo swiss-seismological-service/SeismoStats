@@ -4,7 +4,7 @@ from xml.sax import handler, make_parser
 import pandas as pd
 import requests
 
-from catalog_tools.catalog import Catalog
+from catalog_tools import Catalog
 from catalog_tools.io.parser import QuakeMLHandler
 
 
