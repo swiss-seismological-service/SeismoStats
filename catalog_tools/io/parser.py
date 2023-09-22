@@ -18,25 +18,27 @@ ORIGIN_MAPPINGS = {
     **_get_realvalue('origintime', 'time'),
     **_get_realvalue('originlatitude', 'latitude'),
     **_get_realvalue('originlongitude', 'longitude'),
-    **_get_realvalue('origindepth', 'depth')
+    **_get_realvalue('origindepth', 'depth'),
+    'originevaluationMode': 'evaluationmode',
+    'originpublicID': 'originid',
 }
 
 MAGNITUDE_MAPPINGS = {
     **_get_realvalue('magnitudemag', 'magnitude'),
     'magnitudetype': 'magnitude_type',
-    'magnitudeevaluationMode': 'evaluationMode',
+    'magnitudepublicID': 'magnitudeid',
 }
 
 DUMMY_MAGNITUDE = {
     'magnitudemagvalue': None,
-    'magnitudetype': None,
-    'magnitudeevaluationMode': None}
+    'magnitudetype': None}
 
 DUMMY_ORIGIN = {
     'origintimevalue': None,
     'originlatitudevalue': None,
     'originlongitudevalue': None,
-    'origindepthvalue': None
+    'origindepthvalue': None,
+    'originevaluationMode': None
 }
 
 
@@ -114,8 +116,10 @@ def _extract_magnitude(magnitude: dict) -> dict:
 def _extract_secondary_magnitudes(magnitudes: list) -> dict:
     magnitude_dict = {}
     for magnitude in magnitudes:
-        mappings = _get_realvalue(
-            'magnitudemag', f'magnitude_{magnitude["magnitudetype"]}')
+        mappings = {**_get_realvalue(
+            'magnitudemag', f'magnitude_{magnitude["magnitudetype"]}'),
+            'magnitudepublicID':
+            f'magnitude_{magnitude["magnitudetype"]}_magnitudeid'}
         for key, value in mappings.items():
             if key in magnitude:
                 magnitude_dict[value] = magnitude[key]

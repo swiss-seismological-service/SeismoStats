@@ -23,6 +23,7 @@ RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
 CATALOG_TEST_DATA = [
     {'depth': '1181.640625',
      'depth_uncertainty': '274.9552879',
+     'evaluationmode': 'manual',
      'event_type': 'earthquake',
      'eventid': 'smi:ch.ethz.sed/sc20a/Event/2021zqxyri',
      'latitude': '46.05144527',
@@ -31,14 +32,23 @@ CATALOG_TEST_DATA = [
      'longitude_uncertainty': '0.1007121534',
      'magnitude': '2.510115344',
      'magnitude_MLhc': '2.510115344',
+     'magnitude_MLhc_magnitudeid':
+     'smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206',
      'magnitude_MLhc_uncertainty': '0.23854491',
      'magnitude_MLv': '2.301758471',
+     'magnitude_MLv_magnitudeid':
+     'smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.752473.80241',
      'magnitude_MLv_uncertainty': '0.2729312832',
      'magnitude_type': 'MLhc',
      'magnitude_uncertainty': '0.23854491',
+     'magnitudeid':
+     'smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206',
+     'originid':
+     'smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080',
      'time': '2021-12-30T07:43:14.681975Z'},
     {'depth': '3364.257812',
      'depth_uncertainty': '1036.395075',
+     'evaluationmode': 'manual',
      'event_type': 'earthquake',
      'eventid': 'smi:ch.ethz.sed/sc20a/Event/2021zihlix',
      'latitude': '47.37175484',
@@ -47,9 +57,15 @@ CATALOG_TEST_DATA = [
      'longitude_uncertainty': '0.1277685645',
      'magnitude': '3.539687307',
      'magnitude_MLhc': '3.539687307',
+     'magnitude_MLhc_magnitudeid':
+     'smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164',
      'magnitude_MLhc_uncertainty': '0.272435385',
      'magnitude_type': 'MLhc',
      'magnitude_uncertainty': '0.272435385',
+     'magnitudeid':
+     'smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164',
+     'originid':
+     'smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045',
      'time': '2021-12-25T14:49:40.125942Z'}]
 
 PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -127,11 +143,12 @@ def test_to_quakeml():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
 
     catalog = Catalog(CATALOG_TEST_DATA)
-    catalog_xml = catalog.to_quakeml()
-    catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
+    catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
 
+    catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
+    print('\n', catalog_xml)
     with open(xml_file, 'r') as file:
         xml = file.read()
     xml = re.sub(r"[\n\t\s]*", "", xml)
-
+    print('\n', xml)
     assert catalog_xml == xml
