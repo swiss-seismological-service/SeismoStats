@@ -1,7 +1,7 @@
 import pandas as pd
 
-from catalog_tools.catalog import (REQUIRED_COLS_CATALOG, Catalog,
-                                   ForecastCatalog)
+from catalog_tools.seismicity.catalog import (REQUIRED_COLS_CATALOG, Catalog,
+                                              ForecastCatalog)
 from catalog_tools.utils.binning import bin_to_precision
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],

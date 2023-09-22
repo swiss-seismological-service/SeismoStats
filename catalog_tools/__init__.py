@@ -12,6 +12,9 @@ from catalog_tools.analysis.estimate_beta import (estimate_b_elst,
 from catalog_tools.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
                                         plot_mags_in_time)
 from catalog_tools.plots.seismicity import plot_in_space
+# seismicity
+from catalog_tools.seismicity.catalog import Catalog, ForecastCatalog
+from catalog_tools.seismicity.rategrid import ForecastRateGrid, RateGrid
 # utils
 from catalog_tools.utils.binning import bin_to_precision
 from catalog_tools.utils.filtering import cat_intersect_polygon
