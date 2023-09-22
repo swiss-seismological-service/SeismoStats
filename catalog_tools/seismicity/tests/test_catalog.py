@@ -1,3 +1,6 @@
+import os
+import re
+
 import pandas as pd
 
 from catalog_tools.seismicity.catalog import (REQUIRED_COLS_CATALOG, Catalog,
@@ -16,6 +19,41 @@ RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
             'ra': [120.0, 121.0, 122.0],
             'dec': [30.0, 31.0, 32.0],
             'catalog_id': [1, 1, 2]}
+
+CATALOG_TEST_DATA = [
+    {'depth': '1181.640625',
+     'depth_uncertainty': '274.9552879',
+     'event_type': 'earthquake',
+     'eventid': 'smi:ch.ethz.sed/sc20a/Event/2021zqxyri',
+     'latitude': '46.05144527',
+     'latitude_uncertainty': '0.1222628824',
+     'longitude': '7.388024848',
+     'longitude_uncertainty': '0.1007121534',
+     'magnitude': '2.510115344',
+     'magnitude_MLhc': '2.510115344',
+     'magnitude_MLhc_uncertainty': '0.23854491',
+     'magnitude_MLv': '2.301758471',
+     'magnitude_MLv_uncertainty': '0.2729312832',
+     'magnitude_type': 'MLhc',
+     'magnitude_uncertainty': '0.23854491',
+     'time': '2021-12-30T07:43:14.681975Z'},
+    {'depth': '3364.257812',
+     'depth_uncertainty': '1036.395075',
+     'event_type': 'earthquake',
+     'eventid': 'smi:ch.ethz.sed/sc20a/Event/2021zihlix',
+     'latitude': '47.37175484',
+     'latitude_uncertainty': '0.1363265577',
+     'longitude': '6.917056725',
+     'longitude_uncertainty': '0.1277685645',
+     'magnitude': '3.539687307',
+     'magnitude_MLhc': '3.539687307',
+     'magnitude_MLhc_uncertainty': '0.272435385',
+     'magnitude_type': 'MLhc',
+     'magnitude_uncertainty': '0.272435385',
+     'time': '2021-12-25T14:49:40.125942Z'}]
+
+PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'data')
 
 
 def test_catalog_init():
@@ -83,3 +121,17 @@ def test_catalog_bin():
     catalog.bin_magnitudes(delta_m, inplace=True)
     assert (catalog['magnitude'].tolist()
             == bin_to_precision(mag_values, delta_m)).all()
+
+
+def test_to_quakeml():
+    xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
+
+    catalog = Catalog(CATALOG_TEST_DATA)
+    catalog_xml = catalog.to_quakeml()
+    catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
+
+    with open(xml_file, 'r') as file:
+        xml = file.read()
+    xml = re.sub(r"[\n\t\s]*", "", xml)
+
+    assert catalog_xml == xml
