@@ -1,11 +1,10 @@
 from datetime import datetime
-from xml.sax import handler, make_parser
 
 import pandas as pd
 import requests
 
 from catalog_tools import Catalog
-from catalog_tools.io.parser import QuakeMLHandler
+from catalog_tools.io.parser import parse_quakeml_response
 
 
 class FDSNWSEventClient():
@@ -31,7 +30,8 @@ class FDSNWSEventClient():
                    include_all_magnitudes: bool | None = None,
                    event_type: str | None = None,
                    delta_m: float | None = 0.1,
-                   include_uncertainty: bool = False) -> pd.DataFrame:
+                   include_uncertainty: bool = False,
+                   include_ids: bool = False) -> pd.DataFrame:
         """Downloads an earthquake catalog based on a URL.
 
         Args:
@@ -50,6 +50,8 @@ class FDSNWSEventClient():
                                     magnitude >= (min_magnitude - delta_m/2)
                                     will be downloaded.
             include_uncertainty:    whether to include uncertainty columns.
+            include_ids:            whether to include event, magnitude
+                                    and origin IDs.
 
         Returns:
             The catalog as a Catalog Object.
@@ -83,15 +85,8 @@ class FDSNWSEventClient():
 
         catalog = []
 
-        parser = make_parser()
-        parser.setFeature(handler.feature_namespaces, False)
-        parser.setContentHandler(QuakeMLHandler(
-            catalog, includeallmagnitudes=include_all_magnitudes))
-
         r = requests.get(request_url, stream=True)
-        r.raw.decode_content = True  # if content-encoding is used decode
-
-        parser.parse(r.raw)
+        catalog = parse_quakeml_response(r)
 
         df = Catalog.from_dict(catalog)
 
@@ -99,6 +94,11 @@ class FDSNWSEventClient():
             rgx = "(_uncertainty|_lowerUncertainty|" \
                 "_upperUncertainty|_confidenceLevel)$"
 
+            cols = df.filter(regex=rgx).columns
+            df = df.drop(columns=cols)
+
+        if not include_ids:
+            rgx = "(eventid|originid|magnitudeid)$"
             cols = df.filter(regex=rgx).columns
             df = df.drop(columns=cols)
 

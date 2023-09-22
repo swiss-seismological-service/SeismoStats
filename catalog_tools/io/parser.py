@@ -1,6 +1,8 @@
 import xml.sax
 from datetime import datetime
 
+from requests import Response
+
 
 def _get_realvalue(key: str, value: str) -> dict:
     real_values = {'value': '',
@@ -40,6 +42,12 @@ DUMMY_ORIGIN = {
     'origindepthvalue': None,
     'originevaluationMode': None
 }
+
+
+def SECONDARY_MAGNITUDE_MAPPINGS(type):
+    return {
+        **_get_realvalue('magnitudemag', f'magnitude_{type}'),
+        'magnitudepublicID': f'magnitude_{type}_magnitudeid'}
 
 
 def _select_magnitude_by_id(magnitudes: list, id: str | None) \
@@ -116,10 +124,7 @@ def _extract_magnitude(magnitude: dict) -> dict:
 def _extract_secondary_magnitudes(magnitudes: list) -> dict:
     magnitude_dict = {}
     for magnitude in magnitudes:
-        mappings = {**_get_realvalue(
-            'magnitudemag', f'magnitude_{magnitude["magnitudetype"]}'),
-            'magnitudepublicID':
-            f'magnitude_{magnitude["magnitudetype"]}_magnitudeid'}
+        mappings = SECONDARY_MAGNITUDE_MAPPINGS(magnitude['magnitudetype'])
         for key, value in mappings.items():
             if key in magnitude:
                 magnitude_dict[value] = magnitude[key]
@@ -241,3 +246,46 @@ class QuakeMLHandler(xml.sax.ContentHandler):
 
     def endDocument(self):
         pass
+
+
+def parse_quakeml_file(file_path: str) -> list[dict]:
+    """
+    Parse a QuakeML file and return a list of earthquake event information
+    dictionaries.
+
+    Args:
+        file_path : str
+            Path to the QuakeML file.
+
+    Returns:
+        list[dict]
+            A list of earthquake event information dictionaries.
+    """
+    data = []
+    handler = QuakeMLHandler(data)
+    parser = xml.sax.make_parser()
+    parser.setContentHandler(handler)
+    parser.parse(file_path)
+    return data
+
+
+def parse_quakeml_response(response: Response) -> list[dict]:
+    """
+    Parse a QuakeML response and return a list of earthquake event information
+    dictionaries.
+
+    Args:
+        response : Response
+            A response object from a QuakeML request.
+
+    Returns:
+        list[dict]
+            A list of earthquake event information dictionaries.
+    """
+    response.raw.decode_content = True  # if content-encoding is used decode
+    data = []
+    handler = QuakeMLHandler(data)
+    parser = xml.sax.make_parser()
+    parser.setContentHandler(handler)
+    parser.parse(response.raw)
+    return data
