@@ -56,7 +56,9 @@ class Catalog(pd.DataFrame):
         self.name = name
 
     @classmethod
-    def from_quakeml(cls, quakeml: str) -> Catalog:
+    def from_quakeml(cls, quakeml: str,
+                     include_uncertainties: bool = False,
+                     include_ids: bool = False) -> Catalog:
         """
         Create a Catalog from a QuakeML file.
 
@@ -68,8 +70,36 @@ class Catalog(pd.DataFrame):
             Catalog
         """
         catalog = parse_quakeml_file(quakeml)
+        df = cls.from_dict(catalog)
 
-        return cls.from_dict(catalog)
+        if not include_uncertainties:
+            df = df.drop_uncertainties()
+        if not include_ids:
+            df = df.drop_ids()
+
+        return df
+
+    def drop_uncertainties(self):
+        """
+        Drop uncertainty columns from the catalog.
+        """
+
+        rgx = "(_uncertainty|_lowerUncertainty|" \
+            "_upperUncertainty|_confidenceLevel)$"
+
+        cols = self.filter(regex=rgx).columns
+        df = self.drop(columns=cols)
+        return df
+
+    def drop_ids(self):
+        """
+        Drop event, origin, and magnitude IDs from the catalog.
+        """
+
+        rgx = "(eventid|originid|magnitudeid)$"
+        cols = self.filter(regex=rgx).columns
+        df = self.drop(columns=cols)
+        return df
 
     @property
     def _constructor(self):
@@ -119,26 +149,72 @@ class Catalog(pd.DataFrame):
         if not inplace:
             return df
 
-    @require_cols(require=_required_cols)
-    def to_quakeml(self, agencyID=' ', author=' ') -> str:
-        df = self.copy()
-        if 'eventid' not in df.columns:
-            df['eventid'] = uuid.uuid4()
-        if 'originid' not in df.columns:
-            df['originid'] = uuid.uuid4()
-        if 'magnitudeid' not in df.columns:
-            df['magnitudeid'] = uuid.uuid4()
+    def _secondary_magnitudekeys(self) -> list[str]:
+        """
+        Get a list of secondary magnitude keys in the catalog.
+
+        This will always include also the preferred magnitude type.
+        """
 
         vals = ['_uncertainty',
                 '_lowerUncertainty',
                 '_upperUncertainty',
-                '_confidenceLevel']
+                '_confidenceLevel',
+                '_type']
 
-        secondary_mags = [mag for mag in df.columns if
+        secondary_mags = [mag for mag in self.columns if
                           'magnitude_' in mag
-                          and not mag == 'magnitude_type'
                           and not any(['magnitude' + val
                                        in mag for val in vals])]
+        return secondary_mags
+
+    def _create_ids(self):
+        """
+        Create missing event, origin, and magnitude IDs for the catalog.
+
+        Will fill in missing IDs with UUIDs.
+        """
+
+        if 'eventid' not in self.columns:
+            self['eventid'] = uuid.uuid4()
+        if 'originid' not in self.columns:
+            self['originid'] = uuid.uuid4()
+        if 'magnitudeid' not in self.columns:
+            self['magnitudeid'] = uuid.uuid4()
+
+        mag_types = set([mag.split('_')[1]
+                        for mag in self._secondary_magnitudekeys()])
+
+        for mag_type in mag_types:
+            if f'magnitude_{mag_type}_magnitudeid' not in self.columns:
+                self[f'magnitude_{mag_type}_magnitudeid'] = \
+                    self.apply(
+                        lambda x: uuid.uuid4()
+                        if not mag_type == x['magnitude_type']
+                        else x['magnitudeid'], axis=1)
+
+        return self
+
+    @require_cols(require=_required_cols)
+    def to_quakeml(self, agencyID=' ', author=' ') -> str:
+        """
+        Convert the catalog to QuakeML format.
+
+        Args:
+            agencyID : str, optional
+                Agency ID.
+            author : str, optional
+                Author of the catalog.
+
+        Returns:
+            str
+                The catalog in QuakeML format.
+        """
+
+        df = self.copy()
+        df = df._create_ids()
+
+        secondary_mags = self._secondary_magnitudekeys()
 
         data = dict(events=df.to_dict(orient='records'),
                     agencyID=agencyID, author=author)
@@ -185,5 +261,8 @@ class ForecastCatalog(Catalog):
     _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
 
     @require_cols(require=_required_cols)
-    def to_quakeml(self) -> str:
-        raise NotImplementedError
+    def to_quakeml(self, agencyID=' ', author=' ') -> str:
+        catalogs = []
+        for _, group in self.groupby('catalog_id'):
+            catalogs.append(Catalog(group).to_quakeml(agencyID, author))
+        return catalogs

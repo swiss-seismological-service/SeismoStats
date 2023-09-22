@@ -91,16 +91,10 @@ class FDSNWSEventClient():
         df = Catalog.from_dict(catalog)
 
         if not include_uncertainty:
-            rgx = "(_uncertainty|_lowerUncertainty|" \
-                "_upperUncertainty|_confidenceLevel)$"
-
-            cols = df.filter(regex=rgx).columns
-            df = df.drop(columns=cols)
+            df = df.drop_uncertainties()
 
         if not include_ids:
-            rgx = "(eventid|originid|magnitudeid)$"
-            cols = df.filter(regex=rgx).columns
-            df = df.drop(columns=cols)
+            df = df.drop_ids()
 
         df['magnitude'] = pd.to_numeric(df['magnitude'])
         df['latitude'] = pd.to_numeric(df['latitude'])
