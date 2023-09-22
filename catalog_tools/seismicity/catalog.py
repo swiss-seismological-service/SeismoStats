@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import os
+import uuid
+from collections import defaultdict
+
 import pandas as pd
 
-from catalog_tools.utils import _check_required_cols, require_cols
+from catalog_tools.utils import (_check_required_cols, _render_template,
+                                 require_cols)
 from catalog_tools.utils.binning import bin_to_precision
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
+
+QML_TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'catalog_templates', 'quakeml.j2')
 
 
 def _catalog_constructor_with_fallback(*args, **kwargs):
@@ -95,8 +103,43 @@ class Catalog(pd.DataFrame):
             return df
 
     @require_cols(require=_required_cols)
-    def to_quakeml(self) -> str:
-        raise NotImplementedError
+    def to_quakeml(self, agencyID=' ', author=' ') -> str:
+        df = self.copy()
+        if 'eventid' not in df.columns:
+            df['eventid'] = uuid.uuid4()
+        if 'originid' not in df.columns:
+            df['originid'] = uuid.uuid4()
+        if 'magnitudeid' not in df.columns:
+            df['magnitudeid'] = uuid.uuid4()
+
+        vals = ['_uncertainty',
+                '_lowerUncertainty',
+                '_upperUncertainty',
+                '_confidenceLevel']
+
+        secondary_mags = [mag for mag in df.columns if
+                          'magnitude_' in mag
+                          and not mag == 'magnitude_type'
+                          and not any(['magnitude' + val
+                                       in mag for val in vals])]
+
+        data = dict(events=df.to_dict(orient='records'),
+                    agencyID=agencyID, author=author)
+
+        for event in data['events']:
+            event['sec_mags'] = defaultdict(dict)
+            for mag in secondary_mags:
+                if pd.notna(event[mag]) \
+                        and event['magnitude_type'] not in mag:
+
+                    mag_type = mag.split('_')[1]
+                    mag_key = mag.replace('_' + mag_type, '')
+
+                    event['sec_mags'][mag_type][mag_key] = \
+                        event[mag]
+                del event[mag]
+        print(data)
+        return _render_template(data, QML_TEMPLATE)
 
 
 class ForecastCatalog(Catalog):

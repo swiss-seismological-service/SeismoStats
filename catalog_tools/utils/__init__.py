@@ -1,6 +1,7 @@
 import functools
 
 import pandas as pd
+from jinja2 import Template, select_autoescape
 
 
 def _check_required_cols(df: pd.DataFrame,
@@ -57,3 +58,11 @@ def require_cols(_func=None, *,
         return decorator_require
     else:
         return decorator_require(_func)
+
+
+def _render_template(data: dict, template_path: str) -> str:
+    with open(template_path) as t:
+        template = Template(t.read(), autoescape=select_autoescape())
+
+    qml = template.render(**data)
+    return qml
