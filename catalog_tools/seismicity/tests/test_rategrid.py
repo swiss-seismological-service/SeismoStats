@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from catalog_tools.seismicity.rategrid import (REQUIRED_COLS_RATEGRID,
-                                               ForecastRateGrid, RateGrid)
+                                               ForecastGRRateGrid, GRRateGrid)
 
 RAW_DATA = {
     'longitude_min': [-180, -90, 0, 90],
@@ -39,31 +39,31 @@ def test_rategrid_init():
     # Test initialization with data
     data = {'name': ['Object 1', 'Object 2', 'Object 3'],
             'a': [10.0, 12.5, 8.2]}
-    rategrid = RateGrid(data)
-    assert isinstance(rategrid, RateGrid)
+    rategrid = GRRateGrid(data)
+    assert isinstance(rategrid, GRRateGrid)
     assert rategrid.name is None
 
     # Test initialization with name
-    rategrid = RateGrid(data, name='My RateGrid')
+    rategrid = GRRateGrid(data, name='My RateGrid')
     assert rategrid.name == 'My RateGrid'
 
     # Test initialization with additional arguments
-    rategrid = RateGrid(data, columns=['name', 'a'])
+    rategrid = GRRateGrid(data, columns=['name', 'a'])
 
 
 def test_forecast_rategrid_init():
     # Test initialization with data
     data = {'name': ['Object 1', 'Object 2', 'Object 3'],
             'a': [10.0, 12.5, 8.2]}
-    rategrid = ForecastRateGrid(data)
-    assert isinstance(rategrid, ForecastRateGrid)
+    rategrid = ForecastGRRateGrid(data)
+    assert isinstance(rategrid, ForecastGRRateGrid)
 
 
 def test_rategrid_strip():
     # Test stripping columns
-    rategrid = RateGrid(RAW_DATA)
+    rategrid = GRRateGrid(RAW_DATA)
     stripped_rategrid = rategrid.strip()
-    assert isinstance(stripped_rategrid, RateGrid)
+    assert isinstance(stripped_rategrid, GRRateGrid)
     assert stripped_rategrid.columns.tolist().sort() == \
         REQUIRED_COLS_RATEGRID.sort()
 
@@ -73,27 +73,27 @@ def test_rategrid_strip():
 
     # Test constructor fallback
     dropped = rategrid.drop(columns=['a'])
-    assert not isinstance(dropped, RateGrid)
+    assert not isinstance(dropped, GRRateGrid)
 
 
 def test_forecast_rategrid_strip():
     # Test stripping columns
-    rategrid = ForecastRateGrid(RAW_DATA)
+    rategrid = ForecastGRRateGrid(RAW_DATA)
     stripped_rategrid = rategrid.strip()
-    assert isinstance(stripped_rategrid, ForecastRateGrid)
+    assert isinstance(stripped_rategrid, ForecastGRRateGrid)
 
     # Test constructor fallback "downgrade"
     dropped = rategrid.drop(columns=['grid_id'])
-    assert isinstance(dropped, RateGrid)
+    assert isinstance(dropped, GRRateGrid)
 
 
 def test_rategrid_time_index():
     starttimes = [datetime(2020, 1, 1), datetime(2020, 1, 3)]
     endtimes = [datetime(2020, 1, 2), datetime(2020, 1, 4)]
 
-    rategrid = ForecastRateGrid(
+    rategrid = ForecastGRRateGrid(
         RAW_DATA, starttime=starttimes[0], endtime=endtimes[0])
-    rategrid2 = ForecastRateGrid(
+    rategrid2 = ForecastGRRateGrid(
         RAW_DATA_2, starttime=starttimes[1], endtime=endtimes[1])
 
     rategrid = rategrid.add_time_index(endtime=False)
@@ -115,7 +115,7 @@ def test_rategrid_time_index():
 
     assert rategrid2.endtime == endtimes[1]
 
-    rategrid_none = ForecastRateGrid(
+    rategrid_none = ForecastGRRateGrid(
         RAW_DATA)
 
     with pytest.raises(AttributeError):

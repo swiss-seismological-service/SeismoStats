@@ -9,20 +9,20 @@ REQUIRED_COLS_RATEGRID = [
     'longitude_min', 'longitude_max',
     'latitude_min', 'latitude_max',
     'depth_min', 'depth_max',
-    'number_events', 'a', 'b', 'mc'
+    'a', 'b', 'mc'
 ]
 
 
 def _rategrid_constructor_with_fallback(*args, **kwargs):
-    df = RateGrid(*args, **kwargs)
+    df = GRRateGrid(*args, **kwargs)
     if not _check_required_cols(df, REQUIRED_COLS_RATEGRID):
         return pd.DataFrame(*args, **kwargs)
     if not _check_required_cols(df, required_cols=['grid_id']):
         return df
-    return ForecastRateGrid(*args, **kwargs)
+    return ForecastGRRateGrid(*args, **kwargs)
 
 
-class RateGrid(pd.DataFrame):
+class GRRateGrid(pd.DataFrame):
     """
     A subclass of pandas DataFrame that represents a grid where for each
     grid cell, the GR parameters a, b, and mc and number_events are stored.
@@ -78,7 +78,7 @@ class RateGrid(pd.DataFrame):
         return _rategrid_constructor_with_fallback
 
     @require_cols(require=_required_cols)
-    def strip(self, inplace: bool = False) -> RateGrid | None:
+    def strip(self, inplace: bool = False) -> GRRateGrid | None:
         """
         Remove all columns except the required ones.
 
@@ -157,7 +157,7 @@ class RateGrid(pd.DataFrame):
                 self.endtime = self.index.get_level_values('starttime').max()
 
 
-class ForecastRateGrid(RateGrid):
+class ForecastGRRateGrid(GRRateGrid):
     """
     A subclass of pandas DataFrame that represents a forecast on a grid where
     for each grid cell, the GR parameters a, b, and mc and number_events
