@@ -248,7 +248,8 @@ class QuakeMLHandler(xml.sax.ContentHandler):
         pass
 
 
-def parse_quakeml_file(file_path: str) -> list[dict]:
+def parse_quakeml_file(
+        file_path: str, includeallmagnitudes: bool = True) -> list[dict]:
     """
     Parse a QuakeML file and return a list of earthquake event information
     dictionaries.
@@ -262,14 +263,15 @@ def parse_quakeml_file(file_path: str) -> list[dict]:
             A list of earthquake event information dictionaries.
     """
     data = []
-    handler = QuakeMLHandler(data)
+    handler = QuakeMLHandler(data, includeallmagnitudes)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
     parser.parse(file_path)
     return data
 
 
-def parse_quakeml_response(response: Response) -> list[dict]:
+def parse_quakeml_response(
+        response: Response, includeallmagnitudes: bool = True) -> list[dict]:
     """
     Parse a QuakeML response and return a list of earthquake event information
     dictionaries.
@@ -284,7 +286,7 @@ def parse_quakeml_response(response: Response) -> list[dict]:
     """
     response.raw.decode_content = True  # if content-encoding is used decode
     data = []
-    handler = QuakeMLHandler(data)
+    handler = QuakeMLHandler(data, includeallmagnitudes)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
     parser.parse(response.raw)
