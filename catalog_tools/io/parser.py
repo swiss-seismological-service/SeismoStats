@@ -270,6 +270,26 @@ def parse_quakeml_file(
     return data
 
 
+def parse_quakeml(
+        quakeml: str, includeallmagnitudes: bool = True) -> list[dict]:
+    """
+    Parse a QuakeML string and return a list of earthquake event information
+    dictionaries.
+
+    Args:
+        quakeml : str
+            A QuakeML string.
+
+    Returns:
+        list[dict]
+            A list of earthquake event information dictionaries.
+    """
+    data = []
+    handler = QuakeMLHandler(data, includeallmagnitudes)
+    xml.sax.parseString(quakeml, handler)
+    return data
+
+
 def parse_quakeml_response(
         response: Response, includeallmagnitudes: bool = True) -> list[dict]:
     """
