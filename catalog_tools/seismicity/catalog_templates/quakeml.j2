@@ -38,7 +38,7 @@
 
             <origin publicID="{{ event.originid }}">
                 <time>
-                    <value>{{ event.time }}</value>
+                    <value>{{ event.time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}</value>
                 </time>
                 <longitude>
                     <value>{{ event.longitude }}</value>
