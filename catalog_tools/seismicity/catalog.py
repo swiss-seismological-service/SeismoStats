@@ -6,7 +6,7 @@ from collections import defaultdict
 
 import pandas as pd
 
-from catalog_tools.io.parser import parse_quakeml_file
+from catalog_tools.io.parser import parse_quakeml, parse_quakeml_file
 from catalog_tools.utils import (_check_required_cols, _render_template,
                                  require_cols)
 from catalog_tools.utils.binning import bin_to_precision
@@ -65,12 +65,16 @@ class Catalog(pd.DataFrame):
 
         Args:
             quakeml : str
-                Path to a QuakeML file.
+                Path to a QuakeML file or QuakeML as a string.
 
         Returns:
             Catalog
         """
-        catalog = parse_quakeml_file(quakeml, includeallmagnitudes)
+        if os.path.isfile(quakeml):
+            catalog = parse_quakeml_file(quakeml, includeallmagnitudes)
+        else:
+            catalog = parse_quakeml(quakeml, includeallmagnitudes)
+
         df = cls.from_dict(catalog)
 
         if not includeuncertainties:
