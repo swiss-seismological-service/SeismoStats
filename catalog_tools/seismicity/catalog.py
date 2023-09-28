@@ -75,10 +75,43 @@ class Catalog(pd.DataFrame):
         else:
             catalog = parse_quakeml(quakeml, includeallmagnitudes)
 
-        df = cls.from_dict(catalog)
+        df = cls.from_dict(catalog, includeuncertainties, includeids)
 
-        if not includeuncertainties:
+        return df
+
+    @classmethod
+    def from_dict(cls,
+                  data: list[dict],
+                  includeuncertainty: bool = True,
+                  includeids: bool = True, *args, **kwargs) -> Catalog:
+        """
+        Create a Catalog from a list of dictionaries.
+
+        Args:
+            data : list[dict]
+                A list of earthquake event information dictionaries.
+
+        Returns:
+            Catalog
+        """
+
+        df = super().from_dict(data, *args, **kwargs)
+        df = cls(df)
+
+        if 'magnitude' in df.columns:
+            df['magnitude'] = pd.to_numeric(df['magnitude'])
+        if 'latitude' in df.columns:
+            df['latitude'] = pd.to_numeric(df['latitude'])
+        if 'longitude' in df.columns:
+            df['longitude'] = pd.to_numeric(df['longitude'])
+        if 'depth' in df.columns:
+            df['depth'] = pd.to_numeric(df['depth'])
+        if 'time' in df.columns:
+            df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
+
+        if not includeuncertainty:
             df = df.drop_uncertainties()
+
         if not includeids:
             df = df.drop_ids()
 
@@ -200,7 +233,7 @@ class Catalog(pd.DataFrame):
 
         return self
 
-    @require_cols(require=_required_cols)
+    @require_cols(require=_required_cols + ['magnitude_type'])
     def to_quakeml(self, agencyID=' ', author=' ') -> str:
         """
         Convert the catalog to QuakeML format.

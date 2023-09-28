@@ -88,18 +88,4 @@ class FDSNWSEventClient():
         r = requests.get(request_url, stream=True)
         catalog = parse_quakeml_response(r)
 
-        df = Catalog.from_dict(catalog)
-
-        if not include_uncertainty:
-            df = df.drop_uncertainties()
-
-        if not include_ids:
-            df = df.drop_ids()
-
-        df['magnitude'] = pd.to_numeric(df['magnitude'])
-        df['latitude'] = pd.to_numeric(df['latitude'])
-        df['longitude'] = pd.to_numeric(df['longitude'])
-        df['depth'] = pd.to_numeric(df['depth'])
-        df['time'] = pd.to_datetime(df['time'])
-
-        return df
+        return Catalog.from_dict(catalog, include_uncertainty, include_ids)
