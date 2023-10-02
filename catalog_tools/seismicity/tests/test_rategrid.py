@@ -111,7 +111,7 @@ def test_rategrid_time_index():
         'cell_id')) == [0, 1, 2, 3, 1, 2, 3, 0]
 
     assert rategrid.starttime == starttimes[0]
-    assert rategrid.endtime == starttimes[1]
+    assert rategrid.endtime == endtimes[0]
 
     assert rategrid2.endtime == endtimes[1]
 
