@@ -272,6 +272,23 @@ class Catalog(pd.DataFrame):
 
         return _render_template(data, QML_TEMPLATE)
 
+    def __finalize__(self, other, method=None, **kwargs):
+        """ propagate metadata from other to self
+            Source: https://github.com/geopandas/geopandas
+        """
+        self = super().__finalize__(other, method=method, **kwargs)
+
+        # merge operation: using metadata of the left object
+        if method == "merge":
+            for name in self._metadata:
+                object.__setattr__(self, name, getattr(other.left, name, None))
+        # concat operation: using metadata of the first object
+        elif method == "concat":
+            for name in self._metadata:
+                object.__setattr__(self, name, getattr(
+                    other.objs[0], name, None))
+        return self
+
 
 class ForecastCatalog(Catalog):
     """

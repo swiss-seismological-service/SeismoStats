@@ -96,6 +96,7 @@ class GRRateGrid(pd.DataFrame):
         if not inplace:
             return df
 
+    @require_cols(require=_required_cols)
     def add_time_index(self, endtime=True):
         """
         Create MultiIndex using starttime, optionally endtime and a cell
@@ -155,6 +156,23 @@ class GRRateGrid(pd.DataFrame):
                 self.endtime = self.index.get_level_values('endtime').max()
             else:
                 self.endtime = self.index.get_level_values('starttime').max()
+
+    def __finalize__(self, other, method=None, **kwargs):
+        """ propagate metadata from other to self
+            Source: https://github.com/geopandas/geopandas
+        """
+        self = super().__finalize__(other, method=method, **kwargs)
+
+        # merge operation: using metadata of the left object
+        if method == "merge":
+            for name in self._metadata:
+                object.__setattr__(self, name, getattr(other.left, name, None))
+        # concat operation: using metadata of the first object
+        elif method == "concat":
+            for name in self._metadata:
+                object.__setattr__(self, name, getattr(
+                    other.objs[0], name, None))
+        return self
 
 
 class ForecastGRRateGrid(GRRateGrid):

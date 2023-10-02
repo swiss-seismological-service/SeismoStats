@@ -1,5 +1,9 @@
 import numpy as np
 from pyproj import Transformer
+from shapely import geometry
+from shapely.affinity import translate
+from shapely.geometry import Polygon
+from shapely.ops import transform
 
 
 class CoordinateTransformer:
@@ -96,3 +100,37 @@ class CoordinateTransformer:
             enu = (enu[0], enu[1], None)
 
         return enu
+
+    def polygon_to_local_coords(self, polygon: Polygon) -> Polygon:
+        """
+        Transform polygon to local coordinates.
+        """
+        new_polygon = transform(
+            self.transformer_to_local.transform, polygon)
+        translated_polygon = translate(
+            new_polygon, xoff=-self.ref_easting,
+            yoff=-self.ref_northing, zoff=-self.ref_altitude)
+        return translated_polygon
+
+    def polygon_from_local_coords(self, polygon: Polygon) -> Polygon:
+        """
+        Transform polygon to local coordinates.
+        """
+        translated_polygon = translate(
+            polygon, xoff=self.ref_easting,
+            yoff=self.ref_northing, zoff=self.ref_altitude)
+        new_polygon = transform(
+            self.transformer_to_external.transform, translated_polygon)
+        return new_polygon
+
+
+def bounding_box_to_polygon(x_min, x_max, y_min, y_max, srid=None) -> Polygon:
+    bbox = (x_min, y_min,
+            x_max, y_max)
+    return geometry.box(*bbox, ccw=True)
+
+
+def polygon_to_bounding_box(polygon: Polygon) -> \
+        tuple[float, float, float, float]:
+    (minx, miny, maxx, maxy) = polygon.bounds
+    return (minx, miny, maxx, maxy)
