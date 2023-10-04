@@ -1,7 +1,6 @@
 # standard
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 # statistical
 from scipy.stats import norm
@@ -28,7 +27,11 @@ def plot_mc_vs_b(
         magnitudes: magnitudes of the catalog
         mcs:        completeness magnitudes (list or numpy array)
         delta_m:    discretization of the magnitudes
-        method:     method used for b-value estimation, either 'tinti' or 'elst' or 'elst_postcut'. eslt_postcut is the same as tinti but with the postcut method (differences are taken before cutting the magnitudes below the completeness magnitude). The mcs are then interpreted as dmcs.
+        method:     method used for b-value estimation, either 'tinti' or
+                    'elst' or 'elst_postcut'. elst_postcut is the same as tinti
+                    but with the postcut method (differences are taken before
+                    cutting the magnitudes below the completeness magnitude).
+                    The mcs are then interpreted as dmcs.
         confidence_intvl:   confidence interval that should be plotted
         ax:         axis where figure should be plotted
         color:      color of the data
