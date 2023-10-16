@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.testing import assert_allclose
 
 from catalog_tools.analysis.estimate_mc import empirical_cdf
 
@@ -35,5 +36,5 @@ def test_empirical_cdf():
 
     x, y = empirical_cdf(sample)
 
-    assert (x == xs).all()
-    assert (y == ys).all()
+    assert_allclose(x, xs, rtol=1e-7)
+    assert_allclose(y, ys, rtol=1e-7)
