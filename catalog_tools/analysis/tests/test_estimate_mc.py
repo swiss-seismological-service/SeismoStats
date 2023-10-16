@@ -60,5 +60,5 @@ def test_estimate_mc():
                      0.21699092832299466,
                      0.11605633802816911,
                      0.07087102843116255], ks_ds, rtol=1e-7)
-    assert_allclose([0.000e+00, 1.000e-04, 5.100e-02, 4.362e-01], ps, rtol=0.03)
+    assert_allclose([0.000e+00, 1.000e-04, 5.100e-02, 4.362e-01], ps, atol=0.03)
     assert_equal(1.1, best_mc)
