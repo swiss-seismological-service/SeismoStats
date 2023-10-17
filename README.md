@@ -27,26 +27,21 @@ tox
 pip install -e ../path/to/catalog-tools
 
 # if you don't need to do live changes in catalog-tools you can install it "from source"
-pip install git+ssh://git@github.com/swiss-seismological-service/catalog-tools.git
+pip install git+https://github.com/swiss-seismological-service/catalog-tools.git
 
 # if you want to install a specific branch:
-pip install git+ssh://git@github.com/swiss-seismological-service/catalog-tools.git@feature/branch
+pip install git+https://github.com/swiss-seismological-service/catalog-tools.git@feature/branch
 
 # update it once the repo has changed:
-pip install --force-reinstall git+ssh://git@github.com/swiss-seismological-service/catalog-tools.git
+pip install --force-reinstall git+https://github.com/swiss-seismological-service/catalog-tools.git
 ```
 
-### Problems with cartopy / geos
+### Problems with geos
 
 ```
 1. geos_c.h not found
 Solutions (Mac):
 brew install geos
-Solutions (Linux, not tested yet):
+Solutions:
 sudo apt-get libgeos-dev
-
-2. Cartopy failed to build wheel x86_64_linux-gnu-gcc
-Solution: use conda to install cartopy
-Linux/Ubuntu 64bit:
-conda install -c conda-forge cartopy
 ```
