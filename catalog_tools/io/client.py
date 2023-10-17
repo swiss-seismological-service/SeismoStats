@@ -60,27 +60,27 @@ class FDSNWSEventClient():
         request_url = self.url + '?'
         date_format = "%Y-%m-%dT%H:%M:%S"
 
-        if start_time:
+        if start_time is not None:
             request_url += f'&starttime={start_time.strftime(date_format)}'
-        if end_time:
+        if end_time is not None:
             request_url += f'&endtime={end_time.strftime(date_format)}'
-        if min_latitude:
+        if min_latitude is not None:
             request_url += f'&minlatitude={min_latitude}'
-        if max_latitude:
+        if max_latitude is not None:
             request_url += f'&maxlatitude={max_latitude}'
-        if min_longitude:
+        if min_longitude is not None:
             request_url += f'&minlongitude={min_longitude}'
-        if max_longitude:
+        if max_longitude is not None:
             request_url += f'&maxlongitude={max_longitude}'
-        if min_magnitude and delta_m:
+        if min_magnitude is not None and delta_m is not None:
             request_url += f'&minmagnitude={min_magnitude - (delta_m / 2)}'
-        elif min_magnitude:
+        elif min_magnitude is not None:
             request_url += f'&minmagnitude={min_magnitude}'
-        if max_magnitude:
+        if max_magnitude is not None:
             request_url += f'&maxmagnitude={max_magnitude}'
-        if include_all_magnitudes:
+        if include_all_magnitudes is not None:
             request_url += f'&includeallmagnitudes={include_all_magnitudes}'
-        if event_type:
+        if event_type is not None:
             request_url += f'&eventtype={event_type}'
 
         catalog = []
