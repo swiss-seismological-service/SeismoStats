@@ -24,7 +24,7 @@ def test_download_catalog():
     max_mag = 5.0
     min_lat = 45.0
     max_lat = 50.0
-    min_lon = 5.0
+    min_lon = 0
     max_lon = 10.0
     event_type = 'earthquake'
 
