@@ -19,6 +19,11 @@ from catalog_tools.plots.basics import (
     plot_mags_in_time,
 )
 from catalog_tools.plots.seismicity import plot_in_space
+from catalog_tools.plots.statistical import plot_mc_vs_b
+
+# seismicity
+from catalog_tools.seismicity.catalog import Catalog, ForecastCatalog
+from catalog_tools.seismicity.rategrid import ForecastGRRateGrid, GRRateGrid
 
 # utils
 from catalog_tools.utils.binning import bin_to_precision

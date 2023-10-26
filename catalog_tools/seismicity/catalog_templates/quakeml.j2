@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
+    <eventParameters publicID="smi:org.gfz-potsdam.de/geofon/EventParameters"> 
+        {% for event in events %} 
+        <event publicID="{{ event.eventid }}">
+            <creationInfo>
+                <agencyID>{{ agencyID }}</agencyID>
+                <author>{{ author }}</author>
+            </creationInfo>
+
+            <magnitude publicID="{{ event.magnitudeid }}">
+                <creationInfo>
+                    <agencyID>{{ agencyID }}</agencyID>
+                    <author>{{ author }}</author>
+                </creationInfo>
+                <mag>
+                    <value>{{ event.magnitude }}</value>
+                    <uncertainty>{{ event.magnitude_uncertainty }}</uncertainty>
+                </mag>
+                <type>{{ event.magnitude_type }}</type>
+                <originID>{{ event.originid }}</originID>
+            </magnitude>
+
+            {% for type, magnitude in event.sec_mags.items() %}
+            <magnitude publicID="{{ magnitude.magnitude_magnitudeid }}">
+                <creationInfo>
+                    <agencyID>{{ agencyID }}</agencyID>
+                    <author>{{ author }}</author>
+                </creationInfo>
+                <mag>
+                    <value>{{ magnitude.magnitude }}</value>
+                    <uncertainty>{{ magnitude.magnitude_uncertainty }}</uncertainty>
+                </mag>
+                <type>{{ type }}</type>
+                <originID>{{ event.originid }}</originID>
+            </magnitude>
+            {% endfor %}
+
+            <origin publicID="{{ event.originid }}">
+                <time>
+                    <value>{{ event.time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}</value>
+                </time>
+                <longitude>
+                    <value>{{ event.longitude }}</value>
+                    <uncertainty> {{ event.longitude_uncertainty }}</uncertainty>
+                </longitude>
+                <latitude>
+                    <value>{{ event.latitude }}</value>
+                    <uncertainty>{{ event.latitude_uncertainty }}</uncertainty>
+                </latitude>
+                <evaluationMode>{{ event.evaluationmode }}</evaluationMode>
+                <creationInfo>
+                    <agencyID>{{ agencyID }}</agencyID>
+                    <author>{{ author }}</author>
+                </creationInfo>
+                <depth>
+                    <value>{{ event.depth }}</value>
+                    <uncertainty>{{ event.depth_uncertainty }}</uncertainty>
+                </depth>
+            </origin>
+
+            <preferredOriginID>{{ event.originid }}</preferredOriginID>
+            <preferredMagnitudeID>{{ event.magnitudeid }}</preferredMagnitudeID>
+            <type>{{ event.event_type }}</type>
+
+        </event> 
+        {% endfor %} 
+        </eventParameters>
+</q:quakeml>

@@ -33,7 +33,7 @@ def test_estimate_beta_tinti(n: int, beta: float, mc: float, delta_m: float,
                              precision: float):
     mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
     beta_estimate = estimate_beta_tinti(mags, mc, delta_m)
-    print((beta_estimate - beta) / beta)
+
     assert abs(beta - beta_estimate) / beta <= precision
 
 
@@ -46,7 +46,7 @@ def test_estimate_b_tinti(n: int, b: float, mc: float, delta_m: float,
                           b_parameter: str, precision: float):
     mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
     b_estimate = estimate_b_tinti(mags, mc, delta_m, b_parameter=b_parameter)
-    print((b_estimate - b) / b)
+
     assert abs(b - b_estimate) / b <= precision
 
 
