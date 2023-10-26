@@ -25,7 +25,8 @@ def fitted_cdf_discrete(
         mc:         Completeness magnitude
         delta_m:    Magnitude bins
         x_max:      Maximum magnitude, by default None
-        beta:       Beta parameter for the Gutenberg-Richter distribution, by default None
+        beta:       Beta parameter for the Gutenberg-Richter distribution, by
+                    default None
 
     Returns:
         x: x-values of the fitted CDF
@@ -99,16 +100,18 @@ def ks_test_gr(
     beta: float | None = None,
 ) -> tuple[float, float, list[float]]:
     """
-    Perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter distribution.
+    Perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
+    distribution.
 
     Args:
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
         ks_ds:      List to store KS distances, by default None
-        n_samples:  Number of magnitude samples to be generated
-            in p-value calculation of KS distance, by default 10000
-        beta :      Beta parameter for the Gutenberg-Richter distribution, by default None
+        n_samples:  Number of magnitude samples to be generated in p-value
+                    calculation of KS distance, by default 10000
+        beta :      Beta parameter for the Gutenberg-Richter distribution, by
+                    default None
 
     Returns:
         orig_ks_d:  original KS distance
@@ -180,17 +183,22 @@ def estimate_mc(
     n_samples: int = 10000,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
-    Estimate the completeness magnitude (mc) for a given list of completeness magnitudes.
+    Estimate the completeness magnitude (mc) for a given list of completeness
+    magnitudes.
 
     Args:
         sample:             Magnitudes to test
         mcs_test:           Completeness magnitudes to test
-        delta_m:            Magnitude bins (sample has to be rounded to bins beforehand)
+        delta_m:            Magnitude bins (sample has to be rounded to bins
+                            beforehand)
         p_pass:             P-value with which the test is passed
-        stop_when_passed:   Stop calculations when first mc passes the test, by default True
+        stop_when_passed:   Stop calculations when first mc passes the test, by
+                            default True
         verbose:            Verbose output, by default False
-        beta:               If beta is 'known', only estimate mc, by default None
-        n_samples:          Number of magnitude samples to be generated in p-value calculation of KS distance, by default 10000
+        beta:               If beta is 'known', only estimate mc, by default
+                            None
+        n_samples:          Number of magnitude samples to be generated in
+                            p-value calculation of KS distance, by default 10000
 
     Returns:
         mcs_test:   tested completeness magnitudes
