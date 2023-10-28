@@ -3,7 +3,7 @@ import xml.sax
 
 import numpy as np
 
-from catalog_tools.io.parser import QuakeMLHandler, parse_quakeml
+from seismostats.io.parser import QuakeMLHandler, parse_quakeml
 
 OUT = [{'depth': '1181.640625',
         'depth_uncertainty': '274.9552879',

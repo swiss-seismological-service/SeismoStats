@@ -1,8 +1,8 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # import functions to be tested
-from catalog_tools.utils.filtering import cat_intersect_polygon
+from seismostats.utils.filtering import cat_intersect_polygon
 
 
 def test_cat_intersect_polygon():

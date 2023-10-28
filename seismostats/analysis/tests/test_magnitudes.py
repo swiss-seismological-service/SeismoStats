@@ -1,6 +1,6 @@
 from numpy.testing import assert_almost_equal, assert_equal
 
-from catalog_tools.analysis.magnitudes import apply_edwards
+from seismostats.analysis.magnitudes import apply_edwards
 
 
 def test_apply_edwards():

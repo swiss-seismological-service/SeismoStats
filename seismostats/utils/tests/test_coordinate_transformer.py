@@ -2,7 +2,7 @@
 
 import unittest
 
-from catalog_tools.utils.coordinates import CoordinateTransformer
+from seismostats.utils.coordinates import CoordinateTransformer
 
 WGS84_PROJ = "epsg:4326"
 SWISS_PROJ = "epsg:2056"

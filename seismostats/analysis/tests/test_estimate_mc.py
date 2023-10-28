@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
-from catalog_tools.analysis.estimate_mc import empirical_cdf, estimate_mc
+from seismostats.analysis.estimate_mc import empirical_cdf, estimate_mc
 
 
 def test_empirical_cdf():

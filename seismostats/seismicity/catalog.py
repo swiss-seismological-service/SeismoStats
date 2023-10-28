@@ -6,10 +6,10 @@ from collections import defaultdict
 
 import pandas as pd
 
-from catalog_tools.io.parser import parse_quakeml, parse_quakeml_file
-from catalog_tools.utils import (_check_required_cols, _render_template,
-                                 require_cols)
-from catalog_tools.utils.binning import bin_to_precision
+from seismostats.io.parser import parse_quakeml, parse_quakeml_file
+from seismostats.utils import (_check_required_cols, _render_template,
+                               require_cols)
+from seismostats.utils.binning import bin_to_precision
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']

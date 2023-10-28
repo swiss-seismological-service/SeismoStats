@@ -1,10 +1,8 @@
-from catalog_tools.utils.binning import normal_round_to_int, normal_round
-from catalog_tools.utils.binning import bin_to_precision
-from catalog_tools.utils.binning import get_fmd, get_cum_fmd
-
-
-import pytest
 import numpy as np
+import pytest
+
+from seismostats.utils.binning import (bin_to_precision, get_cum_fmd, get_fmd,
+                                       normal_round, normal_round_to_int)
 
 
 @pytest.mark.parametrize(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from catalog_tools.utils import _check_required_cols, require_cols
+from seismostats.utils import _check_required_cols, require_cols
 
 REQUIRED_COLS_RATEGRID = [
     'longitude_min', 'longitude_max',

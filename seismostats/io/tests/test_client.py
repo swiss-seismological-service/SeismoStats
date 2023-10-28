@@ -5,8 +5,8 @@ import responses
 from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 from responses import matchers
 
-from catalog_tools import Catalog
-from catalog_tools.io.client import FDSNWSEventClient
+from seismostats import Catalog
+from seismostats.io.client import FDSNWSEventClient
 
 PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'query.xml')

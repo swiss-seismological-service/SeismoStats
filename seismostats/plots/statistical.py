@@ -1,15 +1,12 @@
 # standard
 import matplotlib.pyplot as plt
 import numpy as np
-
 # statistical
 from scipy.stats import norm
 
 # Own functions
-from catalog_tools.analysis.estimate_beta import (
-    estimate_b_elst,
-    estimate_b_tinti,
-)
+from seismostats.analysis.estimate_beta import (estimate_b_elst,
+                                                estimate_b_tinti)
 
 
 def plot_mc_vs_b(

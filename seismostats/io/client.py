@@ -3,8 +3,8 @@ from datetime import datetime
 import pandas as pd
 import requests
 
-from catalog_tools import Catalog
-from catalog_tools.io.parser import parse_quakeml_response
+from seismostats import Catalog
+from seismostats.io.parser import parse_quakeml_response
 
 
 class FDSNWSEventClient():

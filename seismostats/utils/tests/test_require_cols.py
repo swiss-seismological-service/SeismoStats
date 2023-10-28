@@ -1,6 +1,6 @@
 import pytest
 
-from catalog_tools.utils import require_cols
+from seismostats.utils import require_cols
 
 REQUIRED = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']

@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from catalog_tools.plots.basics import dot_size
+from seismostats.plots.basics import dot_size
 
 
 def test_dot_size():
