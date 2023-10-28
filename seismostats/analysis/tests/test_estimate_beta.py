@@ -2,16 +2,16 @@ import numpy as np
 import pytest
 
 # import functions to be tested
-from catalog_tools.analysis.estimate_beta import (differences, estimate_b_elst,
-                                                  estimate_b_laplace,
-                                                  estimate_b_tinti,
-                                                  estimate_b_utsu,
-                                                  estimate_b_weichert,
-                                                  estimate_beta_tinti,
-                                                  shi_bolt_confidence)
-from catalog_tools.utils.binning import bin_to_precision
+from seismostats.analysis.estimate_beta import (differences, estimate_b_elst,
+                                                estimate_b_laplace,
+                                                estimate_b_tinti,
+                                                estimate_b_utsu,
+                                                estimate_b_weichert,
+                                                estimate_beta_tinti,
+                                                shi_bolt_confidence)
+from seismostats.utils.binning import bin_to_precision
 # import functions from other modules
-from catalog_tools.utils.simulate_distributions import simulate_magnitudes
+from seismostats.utils.simulate_distributions import simulate_magnitudes
 
 
 def simulate_magnitudes_w_offset(

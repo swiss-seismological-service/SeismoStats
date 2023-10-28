@@ -7,12 +7,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-
 # for map plotting
 from shapely.geometry import Polygon
 
 # Own functions
-from catalog_tools.plots.basics import dot_size
+from seismostats.plots.basics import dot_size
 
 
 def plot_in_space(

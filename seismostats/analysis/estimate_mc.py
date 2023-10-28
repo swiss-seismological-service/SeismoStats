@@ -4,9 +4,9 @@ for the estimation of the completeness magnitude.
 import numpy as np
 import pandas as pd
 
-from catalog_tools.analysis.estimate_beta import estimate_beta_tinti
-from catalog_tools.utils.binning import normal_round
-from catalog_tools.utils.simulate_distributions import simulate_magnitudes
+from seismostats.analysis.estimate_beta import estimate_beta_tinti
+from seismostats.utils.binning import normal_round
+from seismostats.utils.simulate_distributions import simulate_magnitudes
 
 
 def fitted_cdf_discrete(
@@ -152,7 +152,7 @@ def ks_test_gr(
         )
 
         for i in range(n_samples):
-            simulated = simulated_all[n_sample * i : n_sample * (i + 1)].copy()
+            simulated = simulated_all[n_sample * i: n_sample * (i + 1)].copy()
             x_emp, y_emp = empirical_cdf(simulated)
             y_fit_int = np.interp(x_emp, x_fit, y_fit)
 

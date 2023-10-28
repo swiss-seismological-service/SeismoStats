@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 # Own functions
-from catalog_tools.utils.binning import get_cum_fmd, get_fmd
+from seismostats.utils.binning import get_cum_fmd, get_fmd
 
 
 def gutenberg_richter(magnitudes: np.ndarray, b_value: float,
