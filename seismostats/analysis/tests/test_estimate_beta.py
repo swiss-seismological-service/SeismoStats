@@ -96,6 +96,7 @@ def test_estimate_b_laplace(n: int, b: float, mc: float, delta_m: float,
                                     b_parameter=b_parameter)
     assert abs(b - b_estimate) / b <= precision
 
+
 def _create_test_catalogue_poisson(
         a_val_true: float,
         b_val_true: float):
@@ -122,20 +123,22 @@ def _create_test_catalogue_poisson(
         if ii == len(completeness_table) - 1:
             bin_upper_edge = mmax
         else:
-            bin_upper_edge, _ = completeness_table[ii+1]
+            bin_upper_edge, _ = completeness_table[ii + 1]
 
         # get expected annual rates in completeness bin
         exp_rate = 10 ** (a_val_true - b_val_true
-                           * bin_lower_edge) \
+                          * bin_lower_edge) \
             - 10 ** (a_val_true - b_val_true
                      * bin_upper_edge)
 
         # sample observed earthquakes over 1,000 year period
         obs_countsi = np.random.poisson(exp_rate * (end_year - cyear_lower))
         obs_mags.append(simulate_magnitudes_w_offset(
-            n=obs_countsi, beta=np.log(10), mc=bin_lower_edge+0.05, delta_m=0.1, mag_max=bin_upper_edge))
+            n=obs_countsi, beta=np.log(10), mc=bin_lower_edge + 0.05,
+            delta_m=0.1, mag_max=bin_upper_edge))
         obs_yearsi = np.random.randint(cyear_lower, end_year, obs_countsi)
-        obs_dates.append(np.array(['%d-06-15' % i for i in obs_yearsi], dtype='datetime64'))
+        obs_dates.append(np.array(['%d-06-15' % i for i in obs_yearsi],
+                                  dtype='datetime64'))
 
     # add some earthquakes in incomplete years
     mags_inc = np.concatenate([
@@ -155,6 +158,7 @@ def _create_test_catalogue_poisson(
     mags = np.concatenate([*obs_mags, mags_inc])
     dates = np.concatenate([*obs_dates, dates_inc])
     return mags, dates
+
 
 @pytest.mark.parametrize(
     "a_val_true,b_val_true,precision",
