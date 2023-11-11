@@ -1,21 +1,18 @@
-import numpy as np
-import pytest
 import pickle
 import warnings
 
-# import functions to be tested
-from seismostats.analysis.estimate_beta import (
-    differences,
-    estimate_b,
-    estimate_b_positive,
-    estimate_b_laplace,
-    estimate_b_tinti,
-    estimate_b_utsu,
-    estimate_b_weichert,
-    shi_bolt_confidence,
-)
-from seismostats.utils.binning import bin_to_precision
+import numpy as np
+import pytest
 
+# import functions to be tested
+from seismostats.analysis.estimate_beta import (differences, estimate_b,
+                                                estimate_b_laplace,
+                                                estimate_b_positive,
+                                                estimate_b_tinti,
+                                                estimate_b_utsu,
+                                                estimate_b_weichert,
+                                                shi_bolt_confidence)
+from seismostats.utils.binning import bin_to_precision
 # import functions from other modules
 from seismostats.utils.simulate_distributions import simulate_magnitudes
 
@@ -214,56 +211,47 @@ def test_estimate_b_laplace(
     assert abs(b - b_estimate) / b <= precision
 
 
-@pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
-def test_estimate_b_weichert(
-    a_val_true: float, b_val_true: float, precision: float
-):
-    # annual expected rates:
-    r45 = 10 ** (a_val_true - b_val_true * 3.95) - 10 ** (
-        a_val_true - b_val_true * 4.95
-    )
-    r56 = 10 ** (a_val_true - b_val_true * 4.95) - 10 ** (
-        a_val_true - b_val_true * 5.95
-    )
-    r67 = 10 ** (a_val_true - b_val_true * 5.95) - 10 ** (
-        a_val_true - b_val_true * 6.95
-    )
-    r78 = 10 ** (a_val_true - b_val_true * 6.95) - 10 ** (
-        a_val_true - b_val_true * 7.95
-    )
+def _create_test_catalogue_poisson(
+        a_val_true: float,
+        b_val_true: float):
+    """
+    creates a synthetic catalogue with magnitudes
+    between 4 and 7.9 with unequal completeness periods. To be used
+    for testing relevant recurrence parameter estimators.
+    """
 
     # assume a catalogue from year 1000 to end of 1999
     # with completeness as follows:
-    # 3.95 - 1940 / 4.95 - 1880 / 5.95 - 1500 / 6.95 - 1000
+    completeness_table = np.array([[3.95, 1940],
+                                   [4.95, 1880],
+                                   [5.95, 1500],
+                                   [6.95, 1000]])
 
-    # sample earthquakes over 1,000 year period
-    n45 = np.random.poisson(r45 * (2000 - 1940))
-    mags45 = simulate_magnitudes_w_offset(
-        n=n45, beta=np.log(10), mc=4, delta_m=0.1, mag_max=4.95
-    )
-    years45 = np.random.randint(1940, 2000, n45)
-    dates45 = np.array(["%d-06-15" % i for i in years45], dtype="datetime64")
+    end_year = 2000
+    mmax = 7.95
 
-    n56 = np.random.poisson(r56 * (2000 - 1880))
-    mags56 = simulate_magnitudes_w_offset(
-        n=n56, beta=np.log(10), mc=5, delta_m=0.1, mag_max=5.95
-    )
-    years56 = np.random.randint(1880, 2000, n56)
-    dates56 = np.array(["%d-06-15" % i for i in years56], dtype="datetime64")
+    obs_mags = []
+    obs_dates = []
+    for ii in range(len(completeness_table)):
+        bin_lower_edge, cyear_lower = completeness_table[ii]
+        if ii == len(completeness_table) - 1:
+            bin_upper_edge = mmax
+        else:
+            bin_upper_edge, _ = completeness_table[ii + 1]
 
-    n67 = np.random.poisson(r67 * (2000 - 1500))
-    mags67 = simulate_magnitudes_w_offset(
-        n=n67, beta=np.log(10), mc=6, delta_m=0.1, mag_max=6.95
-    )
-    years67 = np.random.randint(1500, 2000, n67)
-    dates67 = np.array(["%d-06-15" % i for i in years67], dtype="datetime64")
+        # get expected annual rates in completeness bin
+        exp_rate = 10 ** (a_val_true - b_val_true
+                          * bin_lower_edge) \
+            - 10 ** (a_val_true - b_val_true
+                     * bin_upper_edge)
 
-    n78 = np.random.poisson(r78 * (2000 - 1000))
-    mags78 = simulate_magnitudes_w_offset(
-        n=n78, beta=np.log(10), mc=7, delta_m=0.1, mag_max=7.95
-    )
-    years78 = np.random.randint(1000, 2000, n78)
-    dates78 = np.array(["%d-06-15" % i for i in years78], dtype="datetime64")
+        # sample observed earthquakes over 1,000 year period
+        obs_countsi = np.random.poisson(exp_rate * (end_year - cyear_lower))
+        obs_mags.append(simulate_magnitudes_w_offset(
+            n=obs_countsi, beta=np.log(10), mc=bin_lower_edge + 0.05, delta_m=0.1, mag_max=bin_upper_edge))
+        obs_yearsi = np.random.randint(cyear_lower, end_year, obs_countsi)
+        obs_dates.append(
+            np.array(['%d-06-15' % i for i in obs_yearsi], dtype='datetime64'))
 
     # add some earthquakes in incomplete years
     mags_inc = np.concatenate(
@@ -284,8 +272,21 @@ def test_estimate_b_weichert(
         ["%d-06-15" % i for i in years_inc], dtype="datetime64"
     )
 
-    mags = np.concatenate([mags45, mags56, mags67, mags78, mags_inc])
-    dates = np.concatenate([dates45, dates56, dates67, dates78, dates_inc])
+    # merge complete and incomplete earthquakes
+    mags = np.concatenate([*obs_mags, mags_inc])
+    dates = np.concatenate([*obs_dates, dates_inc])
+    return mags, dates
+
+
+@pytest.mark.parametrize(
+    "a_val_true,b_val_true,precision",
+    [(7, 1, 0.01)]
+)
+def test_estimate_b_weichert(a_val_true: float,
+                             b_val_true: float,
+                             precision: float):
+    mags, dates = _create_test_catalogue_poisson(
+        a_val_true, b_val_true)
 
     (
         b_val,
