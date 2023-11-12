@@ -248,7 +248,8 @@ def _create_test_catalogue_poisson(
         # sample observed earthquakes over 1,000 year period
         obs_countsi = np.random.poisson(exp_rate * (end_year - cyear_lower))
         obs_mags.append(simulate_magnitudes_w_offset(
-            n=obs_countsi, beta=np.log(10), mc=bin_lower_edge + 0.05, delta_m=0.1,
+            n=obs_countsi, beta=np.log(10), mc=bin_lower_edge + 0.05,
+            delta_m=0.1,
             mag_max=bin_upper_edge))
         obs_yearsi = np.random.randint(cyear_lower, end_year, obs_countsi)
         obs_dates.append(
