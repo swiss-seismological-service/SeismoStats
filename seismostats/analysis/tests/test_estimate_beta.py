@@ -7,6 +7,7 @@ from seismostats.analysis.estimate_beta import (differences, estimate_b_elst,
                                                 estimate_b_tinti,
                                                 estimate_b_utsu,
                                                 estimate_b_weichert,
+                                                estimate_b_kijko_smit_2012,
                                                 estimate_beta_tinti,
                                                 shi_bolt_confidence)
 from seismostats.utils.binning import bin_to_precision
@@ -178,6 +179,29 @@ def test_estimate_b_weichert(a_val_true: float,
                             mag_max=7.95, last_year=2000, delta_m=0.1,
                             b_parameter='b_value')
 
+    assert abs(b_val_true - b_val) / b_val_true <= precision
+    assert abs(a_val_true - a_val) / a_val_true <= precision
+
+
+@pytest.mark.parametrize(
+    "a_val_true,b_val_true,precision",
+    [(7, 1, 0.01)]
+)
+def test_estimate_b_kijko_smit_2012(a_val_true: float,
+                                    b_val_true: float,
+                                    precision: float):
+    mags, dates = _create_test_catalogue_poisson(
+        a_val_true, b_val_true)
+
+    b_val, std_b, rate_at_lmc, a_val = \
+        estimate_b_kijko_smit_2012(
+            magnitudes=mags,
+            dates=dates,
+            completeness_table=np.array([[3.95, 1940], [4.95, 1880],
+                                         [5.95, 1500], [6.95, 1000]]),
+            last_year=2000,
+            delta_m=0.1,
+            b_parameter='b_value')
     assert abs(b_val_true - b_val) / b_val_true <= precision
     assert abs(a_val_true - a_val) / a_val_true <= precision
 
