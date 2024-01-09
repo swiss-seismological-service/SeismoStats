@@ -1,4 +1,6 @@
-# catalog-tools
+### SeismoStats
+
+Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
 
 ### Start developing:
 
