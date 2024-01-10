@@ -1,4 +1,4 @@
-### SeismoStats
+# SeismoStats
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
 
