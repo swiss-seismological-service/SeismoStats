@@ -2,7 +2,7 @@
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
 
-### Start developing:
+## Start developing:
 
 ```
 # just use a basic virtual environment
@@ -21,7 +21,7 @@ pip install -e '.[dev]'
 tox
 ```
 
-### Use this repository inside another environment/code
+## Use this repository inside another environment/code
 
 ```
 # use it locally, being able to switch back and forth doing changes
@@ -38,7 +38,7 @@ pip install git+https://github.com/swiss-seismological-service/catalog-tools.git
 pip install --force-reinstall git+https://github.com/swiss-seismological-service/catalog-tools.git
 ```
 
-### Problems with geos
+## Problems with geos
 
 ```
 1. geos_c.h not found
