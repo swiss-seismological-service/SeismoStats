@@ -1,4 +1,4 @@
-# catalog-tools
+# SeismoStats
 
 ### Start developing:
 
@@ -27,13 +27,13 @@ tox
 pip install -e ../path/to/catalog-tools
 
 # if you don't need to do live changes in catalog-tools you can install it "from source"
-pip install git+https://github.com/swiss-seismological-service/catalog-tools.git
+pip install git+https://github.com/swiss-seismological-service/seismostat.git
 
 # if you want to install a specific branch:
-pip install git+https://github.com/swiss-seismological-service/catalog-tools.git@feature/branch
+pip install git+https://github.com/swiss-seismological-service/seismostat.git@feature/branch
 
 # update it once the repo has changed:
-pip install --force-reinstall git+https://github.com/swiss-seismological-service/catalog-tools.git
+pip install --force-reinstall git+https://github.com/swiss-seismological-service/seismostat.git
 ```
 
 ### Problems with geos
