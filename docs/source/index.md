@@ -11,6 +11,7 @@ Check out the {doc}`usage` section for further information, including how to
 
 usage
 notebooks/catalog_examples
+api
 ```
 
 ## Indices and tables

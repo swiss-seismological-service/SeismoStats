@@ -39,7 +39,7 @@ class Catalog(pd.DataFrame):
             Data to initialize the catalog with.
         name : str, optional
             Name of the catalog.
-        *args, **kwargs : optional
+        args, kwargs : optional
             Additional arguments and keyword arguments to pass to pandas
             DataFrame constructor.
 
