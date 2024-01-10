@@ -16,6 +16,8 @@ release = '0.1'
 
 extensions = [
     "myst_parser",
+    "sphinx.ext.autosectionlabel",
+    "nbsphinx",
 ]
 
 templates_path = ['_templates']

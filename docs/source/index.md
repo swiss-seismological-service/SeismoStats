@@ -10,6 +10,7 @@ Check out the {doc}`usage` section for further information, including how to
 :maxdepth: 2
 
 usage
+notebooks/catalog_examples
 ```
 
 ## Indices and tables
