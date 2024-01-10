@@ -20,3 +20,6 @@ pip install -e '.[dev]'
 # run tests
 tox
 ```
+
+## Code
+You can use the {py:func}`seismostats.seismicity.catalog.Catalog` class to load a catalog.
