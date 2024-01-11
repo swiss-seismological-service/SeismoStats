@@ -22,4 +22,4 @@ tox
 ```
 
 ## Code
-You can use the {py:func}`seismostats.seismicity.catalog.Catalog` class to load a catalog.
+You can use the {py:func}`seismostats.Catalog` class to load a catalog.
