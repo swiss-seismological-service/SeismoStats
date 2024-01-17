@@ -54,9 +54,9 @@ def estimate_b(
     """
 
     # test that the magnitudes are binned correctly
-    diffs = np.diff(magnitudes)
+    mags_unique = np.unique(magnitudes)
     assert (
-        np.min(abs(diffs[diffs != 0])) - delta_m < delta_m * 1e-4
+        max((mags_unique / delta_m) - np.round(mags_unique / delta_m)) < 1e-4
     ), "magnitudes are not binned correctly"
     # test that smallest magnitude is not below mc
     assert (
@@ -65,8 +65,8 @@ def estimate_b(
     # test if lowest magnitude is much larger than mc
     if np.min(magnitudes) - mc > delta_m / 2:
         warnings.warn(
-            "lowest magnitude is more than delta_m/2 larger than mc. "
-            "Check if mc is chosen correctly"
+            "no magnitudes in the lowest magnitude bin are present."
+            "check if mc is chosen correctly"
         )
 
     if method == "tinti":
@@ -156,12 +156,12 @@ def estimate_b_tinti(
             "please choose either 'b_value' or 'beta' as b_parameter"
         )
 
+    b = beta * factor
+    std = shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter)
+
     if return_std is True:
-        std_b = shi_bolt_confidence(magnitudes, beta=beta) * factor
-        b = beta * factor
-        return b, std_b
+        return b, std
     else:
-        b = beta * factor
         return b
 
 
@@ -196,25 +196,27 @@ def estimate_b_utsu(
     """
     beta = 1 / np.mean(magnitudes - mc + delta_m / 2)
 
-    assert (
-        b_parameter == "b_value" or b_parameter == "beta"
-    ), "please choose either 'b_value' or 'beta' as b_parameter"
     if b_parameter == "b_value":
         factor = 1 / np.log(10)
-    else:
+    elif b_parameter == "beta":
         factor = 1
+    else:
+        raise ValueError(
+            "please choose either 'b_value' or 'beta' as b_parameter"
+        )
+
+    b = beta * factor
+    std = shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter)
 
     if return_std is True:
-        std_b = shi_bolt_confidence(magnitudes, beta=beta) * factor
-        b = beta * factor
-        return b, std_b
+        return b, std
     else:
-        b = beta * factor
         return b
 
 
 def differences(magnitudes: np.ndarray) -> np.ndarray:
-    """returns all the differences between the magnitudes.
+    """returns all the differences between the magnitudes, only counting each
+    difference once
 
     Args:
         magnitudes: vector of magnitudes differences, sorted in time (first
@@ -223,9 +225,10 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
     Returns: array of all differences of the elements of the input
     """
     mag_diffs = np.array([])
-    for ii, mag in enumerate(magnitudes):
-        loop_mag = np.delete(magnitudes, [ii], axis=0)
-        mag_diffs = np.append(mag_diffs, loop_mag - mag)
+    for ii in range(1, len(magnitudes)):
+        loop_mag1 = magnitudes[ii:]
+        loop_mag2 = magnitudes[:-ii]
+        mag_diffs = np.append(mag_diffs, loop_mag1 - loop_mag2)
     return mag_diffs
 
 
@@ -275,7 +278,10 @@ def estimate_b_positive(
     )
 
     if return_n:
-        return out + tuple([len(mag_diffs)])
+        if type(out) is tuple:
+            return out + tuple([len(mag_diffs)])
+        else:
+            return out, len(mag_diffs)
     else:
         return out
 
@@ -285,6 +291,7 @@ def estimate_b_laplace(
     delta_m: float = 0,
     b_parameter: str = "b_value",
     return_std: bool = False,
+    return_n: bool = False,
 ) -> float | tuple[float, float]:
     """returns the b-value estimation using the all the  differences of the
     Magnitudes (this has a little less variance than the estimate_b_positive
@@ -313,6 +320,7 @@ def estimate_b_laplace(
     mag_diffs = differences(magnitudes)
     mag_diffs = abs(mag_diffs)
     mag_diffs = mag_diffs[mag_diffs > 0]
+
     return estimate_b_tinti(
         mag_diffs,
         mc=delta_m,
@@ -551,8 +559,8 @@ def _weichert_objective_function(
 
 def shi_bolt_confidence(
     magnitudes: np.ndarray,
-    b_value: float | None = None,
-    beta: float | None = None,
+    b: float | None = None,
+    b_parameter: str = "b_value",
 ) -> float:
     """calculates the confidence limit of the b_value or beta (depending on
         which parameter is given) according to shi and bolt 1982
@@ -562,27 +570,24 @@ def shi_bolt_confidence(
 
     Args:
         magnitudes: numpy array of magnitudes
-        b_value:    b-value of the magnitudes
-        beta:       beta value (difference to b-value is factor of np.log(10)).
-                    -> provide either b_value or beta, not both
+        b:          known or estimated b-value/beta of the magnitudes
+        b_parameter:either either 'b_value' or 'beta'
 
     Returns:
-        sig_b:  confidence limit of the b-value/beta value (depending on input)
+        std:  confidence limit of the b-value/beta value (depending on input)
     """
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
-    assert (
-        b_value is not None or beta is not None
-    ), "please specify b-value or beta"
-    assert (
-        b_value is None or beta is None
-    ), "please only specify either b-value or beta"
-
-    if b_value is not None:
-        std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
-        std_b = np.log(10) * b_value**2 * std_m
+    if b_parameter == "b_value":
+        factor = 1 / np.log(10)
+    elif b_parameter == "beta":
+        factor = 1
     else:
-        std_m = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
-        std_b = beta**2 * std_m
+        raise ValueError(
+            "please choose either 'b_value' or 'beta' as b_parameter"
+        )
 
-    return std_b
+    std = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
+    std = 1 / factor * b**2 * std
+
+    return std
