@@ -5,6 +5,7 @@ import pickle
 # import functions to be tested
 from seismostats.analysis.estimate_beta import (
     differences,
+    estimate_b,
     estimate_b_positive,
     estimate_b_laplace,
     estimate_b_tinti,
@@ -29,6 +30,51 @@ def simulate_magnitudes_w_offset(
 
 
 @pytest.mark.parametrize(
+    "method, return_std, return_n, b_parameter",
+    [
+        ("tinti", True, True, "beta"),
+        ("tinti", False, False, "b_value"),
+        ("utsu", True, False, "beta"),
+        ("utsu", False, True, "b_value"),
+        ("positive", True, True, "beta"),
+        ("positive", False, False, "b_value"),
+        ("positive", True, False, "beta"),
+        ("positive", False, True, "b_value"),
+        ("laplace", True, True, "beta"),
+        ("laplace", False, False, "b_value"),
+    ],
+)
+def test_estimate_b(
+    method: str,
+    return_std: bool,
+    return_n: bool,
+    b_parameter: str,
+):
+    """this test only checks if the number of output is correct. the actual
+    values are tested in the individual tests for each method"""
+    mags = simulate_magnitudes_w_offset(
+        n=100, beta=np.log(10), mc=0, delta_m=0.1
+    )
+    out = estimate_b(
+        mags,
+        mc=0,
+        delta_m=0.1,
+        b_parameter=b_parameter,
+        method=method,
+        return_std=return_std,
+        return_n=return_n,
+    )
+
+    # assert that the correct number of values are returned
+    assert np.size(out) == 1 + return_std + (
+        return_n
+        * (1 - (method == "utsu"))
+        * (1 - (method == "tinti"))
+        * (1 - (method == "laplace"))
+    )
+
+
+@pytest.mark.parametrize(
     "n,b,mc,delta_m,b_parameter,precision",
     [
         (1000000, 1.2 * np.log(10), 3, 0, "beta", 0.005),
@@ -50,21 +96,27 @@ def test_estimate_b_tinti(
 
 
 @pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,precision",
+    "n,beta,mc,delta_m,b_parameter,precision",
     [
         (1000000, 1.2 * np.log(10), 3, 0, "beta", 0.005),
-        (1000000, np.log(10), 3, 0.1, "beta", 0.01),
+        (1000000, np.log(10), 3, 0.1, "b_value", 0.01),
     ],
 )
 def test_estimate_b_utsu(
     n: int,
-    b: float,
+    beta: float,
     mc: float,
     delta_m: float,
     b_parameter: str,
     precision: float,
 ):
-    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
+
+    if b_parameter == "b_value":
+        b = beta / np.log(10)
+    else:
+        b = beta
+
     b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
     assert abs(b - b_estimate) / b <= precision
 
