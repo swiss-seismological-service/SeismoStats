@@ -13,24 +13,26 @@ def estimate_b(
     delta_m: float = 0,
     weights: list | None = None,
     b_parameter: str = "b_value",
-    error: bool = False,
+    return_std: bool = False,
     method="tinti",
-    n_b: bool = False,
+    return_n: bool = False,
 ) -> float | tuple[float, float]:
     """returns the maximum likelihood beta or b-value. Method depends on the
     input parameter 'method'.
 
     Args:
         magnitudes: vector of magnitudes, unsorted, already cutoff (no
-                    magnitudes below mc present)
+                magnitudes below mc present)
         mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
         weights:    weights of each magnitude can be specified here
         b_parameter:either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
-        error:      if True the error of beta/b-value (see above) is returned
-        method:     method to use for estimation of beta/b-value. Options are:
+                Gutenberg-Richter law is returned, otherwise 'beta'
+                from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+        return_std: if True the standard deviation of beta/b-value (see
+                above) is returned
+        method:     method to use for estimation of beta/b-value. Options
+                are:
                     - 'tinti', 'utsu' (these are the classic estimators. 'tinti'
                     is the recommended one, as it is more accurate. It is also
                     the default method)
@@ -40,15 +42,15 @@ def estimate_b(
                     - 'laplace' (this is using the distribution of all
                     differences, caution, can take long time to compute)
 
-        n_b:        if True the number of events used for the estimation is
-                    returned. This is only relevant for the 'positive' method
+        return_n:   if True the number of events used for the estimation is
+                returned. This is only relevant for the 'positive' method
 
     Returns:
-        b:          maximum likelihood beta or b-value, depending on value of
-                    input variable 'gutenberg'. Note that the difference
-                    is just a factor [b_value = beta * log10(e)]
-        std_b:      Shi and Bolt estimate of the beta/b-value estimate
-        n_b:        number of events used for the estimation
+        b:      maximum likelihood beta or b-value, depending on value of
+            input variable 'gutenberg'. Note that the difference
+            is just a factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
+        n:      number of events used for the estimation
     """
 
     # test that the magnitudes are binned correctly
@@ -74,7 +76,7 @@ def estimate_b(
             delta_m=delta_m,
             weights=weights,
             b_parameter=b_parameter,
-            error=error,
+            return_std=return_std,
         )
     elif method == "utsu":
         return estimate_b_utsu(
@@ -82,22 +84,22 @@ def estimate_b(
             mc=mc,
             delta_m=delta_m,
             b_parameter=b_parameter,
-            error=error,
+            return_std=return_std,
         )
     elif method == "positive":
         return estimate_b_positive(
             magnitudes,
             delta_m=delta_m,
             b_parameter=b_parameter,
-            error=error,
-            n_b=n_b,
+            return_std=return_std,
+            return_n=return_n,
         )
     elif method == "laplace":
         return estimate_b_laplace(
             magnitudes,
             delta_m=delta_m,
             b_parameter=b_parameter,
-            error=error,
+            return_std=return_std,
         )
 
     else:
@@ -112,7 +114,7 @@ def estimate_b_tinti(
     delta_m: float = 0,
     weights: list | None = None,
     b_parameter: str = "b_value",
-    error: bool = False,
+    return_std: bool = False,
 ) -> float | tuple[float, float]:
     """returns the maximum likelihood beta
     Source:
@@ -127,15 +129,16 @@ def estimate_b_tinti(
         delta_m:    discretization of magnitudes. default is no discretization
         weights:    weights of each magnitude can be specified here
         b_parameter:either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
-        error:      if True the error of beta/b-value (see above) is returned
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))]
+        return_std: if True the standard deviation of beta/b-value (see above)
+                is returned
 
     Returns:
-        b:          maximum likelihood beta or b-value, depending on value of
-                    input variable 'gutenberg'. Note that the difference
-                    is just a factor [b_value = beta * log10(e)]
-        std_b:      Shi and Bolt estimate of the beta/b-value estimate
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'gutenberg'. Note that the difference
+                is just a factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
     """
 
     if delta_m > 0:
@@ -144,15 +147,16 @@ def estimate_b_tinti(
     else:
         beta = 1 / np.average(magnitudes - mc, weights=weights)
 
-    assert (
-        b_parameter == "b_value" or b_parameter == "beta"
-    ), "please choose either 'b_value' or 'beta' as b_parameter"
     if b_parameter == "b_value":
         factor = 1 / np.log(10)
-    else:
+    elif b_parameter == "beta":
         factor = 1
+    else:
+        raise ValueError(
+            "please choose either 'b_value' or 'beta' as b_parameter"
+        )
 
-    if error is True:
+    if return_std is True:
         std_b = shi_bolt_confidence(magnitudes, beta=beta) * factor
         b = beta * factor
         return b, std_b
@@ -166,7 +170,7 @@ def estimate_b_utsu(
     mc: float,
     delta_m: float = 0,
     b_parameter: str = "b_value",
-    error: bool = False,
+    return_std: bool = False,
 ) -> float | tuple[float, float]:
     """returns the maximum likelihood beta
     Source:
@@ -179,15 +183,16 @@ def estimate_b_utsu(
         mc:         completeness magnitude
         delta_m:    discretization of magnitudes. default is no discretization
         b_parameter:either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
-        error:      if True the error of beta/b-value (see above) is returned
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))]
+        return_std:  if True the standard deviation of beta/b-value (see above)
+                is returned
 
     Returns:
-        b:          maximum likelihood beta or b-value, depending on value of
-                    input variable 'gutenberg'. Note that the difference
-                    is just a factor [b_value = beta * log10(e)]
-        std_b:      Shi and Bolt estimate of the beta/b-value estimate
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'gutenberg'. Note that the difference
+                is just a factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
     """
     beta = 1 / np.mean(magnitudes - mc + delta_m / 2)
 
@@ -199,7 +204,7 @@ def estimate_b_utsu(
     else:
         factor = 1
 
-    if error is True:
+    if return_std is True:
         std_b = shi_bolt_confidence(magnitudes, beta=beta) * factor
         b = beta * factor
         return b, std_b
@@ -228,8 +233,8 @@ def estimate_b_positive(
     magnitudes: np.ndarray,
     delta_m: float = 0,
     b_parameter: str = "b_value",
-    error: bool = False,
-    n_b: bool = False,
+    return_std: bool = False,
+    return_n: bool = False,
 ) -> float | tuple[float, float]:
     """returns the b-value estimation using the positive differences of the
     Magnitudes
@@ -243,17 +248,18 @@ def estimate_b_positive(
                     entry is the earliest earthquake)
         delta_m:    discretization of magnitudes. default is no discretization
         b_parameter:either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
-        error:      if True the error of beta/b-value (see above) is returned
-        n_b:        if True the number of events used for the estimation is
-                    returned
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))]
+        return_std: if True the standard deviation of beta/b-value (see above)
+                is returned
+        return_n:   if True the number of events used for the estimation is
+                returned
 
     Returns:
-        b:          maximum likelihood beta or b-value, depending on value of
-                    input variable 'gutenberg'. Note that the difference
-                    is just a factor [b_value = beta * log10(e)]
-        std_b:      Shi and Bolt estimate of the beta/b-value estimate
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'gutenberg'. Note that the difference is just a
+                factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
     """
 
     mag_diffs = np.diff(magnitudes)
@@ -265,10 +271,10 @@ def estimate_b_positive(
         mc=delta_m,
         delta_m=delta_m,
         b_parameter=b_parameter,
-        error=error,
+        return_std=return_std,
     )
 
-    if n_b:
+    if return_n:
         return out + tuple([len(mag_diffs)])
     else:
         return out
@@ -278,7 +284,7 @@ def estimate_b_laplace(
     magnitudes: np.ndarray,
     delta_m: float = 0,
     b_parameter: str = "b_value",
-    error: bool = False,
+    return_std: bool = False,
 ) -> float | tuple[float, float]:
     """returns the b-value estimation using the all the  differences of the
     Magnitudes (this has a little less variance than the estimate_b_positive
@@ -293,15 +299,16 @@ def estimate_b_laplace(
                     entry is the earliest earthquake)
         delta_m:    discretization of magnitudes. default is no discretization
         b_parameter:either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
-        error:      if True the error of beta/b-value (see above) is returned
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))]
+        return_std: if True the standard deviation of beta/b-value (see above)
+                is returned
 
     Returns:
-        b:          maximum likelihood beta or b-value, depending on value of
-                    input variable 'gutenberg'. Note that the difference
-                    is just a factor [b_value = beta * log10(e)]
-        std_b:      Shi and Bolt estimate of the beta/b-value estimate
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'b_parameter'. Note that the difference is just a
+                factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
     """
     mag_diffs = differences(magnitudes)
     mag_diffs = abs(mag_diffs)
@@ -311,7 +318,7 @@ def estimate_b_laplace(
         mc=delta_m,
         delta_m=delta_m,
         b_parameter=b_parameter,
-        error=error,
+        return_std=return_std,
     )
 
 
