@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import pickle
 
 # import functions to be tested
 from seismostats.analysis.estimate_beta import (
@@ -70,7 +71,7 @@ def test_estimate_b_utsu(
 
 @pytest.mark.parametrize(
     "magnitudes,mag_diffs",
-    [(np.array([1, -2, 3]), np.array([-3, 2, 3, 5, -2, -5]))],
+    [(np.array([1, -2, 3]), np.array([-3, 5, 2]))],
 )
 def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
     y = differences(magnitudes)
@@ -216,147 +217,25 @@ def test_estimate_b_weichert(
     assert abs(a_val_true - a_val) / a_val_true <= precision
 
 
+# load data for test_shi_bolt_confidence
+with open(
+    "seismostats/analysis/tests/data/test_shi_bolt_confidence.p", "rb"
+) as f:
+    data = pickle.load(f)
+
+
 @pytest.mark.parametrize(
-    "magnitudes,b_value,std_b_value,std_beta",
+    "magnitudes,b,b_parameter,std",
     [
-        (
-            np.array(
-                [
-                    0.20990507,
-                    0.04077336,
-                    0.27906596,
-                    0.57406287,
-                    0.64256544,
-                    0.07293118,
-                    0.58589873,
-                    0.02678655,
-                    0.27631233,
-                    0.17682814,
-                ]
-            ),
-            1,
-            0.16999880611649493,
-            0.39143671679062625,
-        ),
-        (
-            np.array(
-                [
-                    0.02637757,
-                    0.06353823,
-                    0.10257919,
-                    0.54494906,
-                    0.03928375,
-                    0.08825028,
-                    0.77713586,
-                    0.54553981,
-                    0.69315583,
-                    0.06656642,
-                    0.29035447,
-                    0.2051877,
-                    0.30858087,
-                    0.68896342,
-                    0.03328782,
-                    0.45016109,
-                    0.40779409,
-                    0.06788892,
-                    0.02684032,
-                    0.56140282,
-                    0.29443359,
-                    0.36328762,
-                    0.17124489,
-                    0.02154936,
-                    0.36461541,
-                    0.03613088,
-                    0.15798366,
-                    0.09111875,
-                    0.16169287,
-                    0.11986668,
-                    0.10232035,
-                    0.72695761,
-                    0.19484174,
-                    0.0459675,
-                    0.40514163,
-                    0.08979514,
-                    0.0442659,
-                    0.18672424,
-                    0.21239088,
-                    0.02287468,
-                    0.1244267,
-                    0.04939361,
-                    0.11232758,
-                    0.02706083,
-                    0.04275401,
-                    0.02326945,
-                    0.15048133,
-                    0.50777581,
-                    0.09583551,
-                    0.40618488,
-                    0.15595656,
-                    0.09607254,
-                    0.25576619,
-                    0.01698973,
-                    0.62755249,
-                    0.31429311,
-                    0.86575907,
-                    0.37956298,
-                    0.65648246,
-                    0.0851286,
-                    0.00850252,
-                    0.22357953,
-                    0.03295106,
-                    0.08841752,
-                    0.09657961,
-                    0.54002676,
-                    0.20335658,
-                    0.23215333,
-                    0.20120566,
-                    0.60970099,
-                    0.01128978,
-                    0.31771308,
-                    1.25246151,
-                    0.02285632,
-                    0.2687791,
-                    0.1192099,
-                    0.06627574,
-                    0.04301886,
-                    0.24720467,
-                    0.28518304,
-                    0.04252851,
-                    0.27818821,
-                    0.08331663,
-                    1.23090656,
-                    0.1880176,
-                    0.11314717,
-                    0.01462853,
-                    0.09256047,
-                    0.4857446,
-                    0.08656431,
-                    0.07022632,
-                    0.32654491,
-                    0.26047389,
-                    0.20872121,
-                    0.40157424,
-                    0.02732529,
-                    0.83884229,
-                    0.4147758,
-                    0.07416183,
-                    0.05636252,
-                ]
-            ),
-            1.5,
-            0.13286469044352858,
-            0.3059322556005374,
-        ),
+        data["values_test1"],
+        data["values_test2"],
     ],
 )
 def test_shi_bolt_confidence(
-    magnitudes: np.ndarray, b_value: float, std_b_value: float, std_beta: float
+    magnitudes: np.ndarray, b: float, b_parameter: str, std: float
 ):
     precision = 1e-10
-    beta = b_value * np.log(10)
-
     assert (
-        shi_bolt_confidence(magnitudes, b_value=b_value) - std_b_value
+        shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter) - std
         < precision
     )
-    assert shi_bolt_confidence(magnitudes, beta=beta) - std_beta < precision
