@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import pickle
+import warnings
 
 # import functions to be tested
 from seismostats.analysis.estimate_beta import (
@@ -72,6 +73,45 @@ def test_estimate_b(
         * (1 - (method == "tinti"))
         * (1 - (method == "laplace"))
     )
+
+    # test that uncorrect binninng leads to error
+    with pytest.raises(AssertionError) as excinfo:
+        estimate_b(
+            mags,
+            mc=0,
+            delta_m=0.2,
+            b_parameter=b_parameter,
+            method=method,
+            return_std=return_std,
+            return_n=return_n,
+        )
+    assert str(excinfo.value) == "magnitudes are not binned correctly"
+
+    # test that magnitudes smaller than mc lkead to error
+    with pytest.raises(AssertionError) as excinfo:
+        estimate_b(
+            mags,
+            mc=1,
+            delta_m=0.1,
+            b_parameter=b_parameter,
+            method=method,
+            return_std=return_std,
+            return_n=return_n,
+        )
+    assert str(excinfo.value) == "magnitudes below mc are present in the data"
+
+    # test that warning is raised if smallest magnitude is much larger than mc
+    with warnings.catch_warnings(record=True) as w:
+        estimate_b(
+            mags,
+            mc=-1,
+            delta_m=0.1,
+            b_parameter=b_parameter,
+            method=method,
+            return_std=return_std,
+            return_n=return_n,
+        )
+        assert w[-1].category == UserWarning
 
 
 @pytest.mark.parametrize(
