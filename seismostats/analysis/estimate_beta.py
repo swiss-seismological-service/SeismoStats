@@ -16,7 +16,7 @@ def estimate_b(
     return_std: bool = False,
     method="tinti",
     return_n: bool = False,
-) -> float | tuple[float, float]:
+) -> float | tuple[float, float] | tuple[float, float, float]:
     """returns the maximum likelihood beta or b-value. Method depends on the
     input parameter 'method'.
 
@@ -238,7 +238,7 @@ def estimate_b_positive(
     b_parameter: str = "b_value",
     return_std: bool = False,
     return_n: bool = False,
-) -> float | tuple[float, float]:
+) -> float | tuple[float, float] | tuple[float, float, float]:
     """returns the b-value estimation using the positive differences of the
     Magnitudes
 
