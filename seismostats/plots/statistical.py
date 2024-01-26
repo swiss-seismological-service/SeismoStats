@@ -49,7 +49,7 @@ def plot_mc_vs_b(
                     magnitudes[magnitudes >= mc],
                     mc,
                     delta_m=delta_m,
-                    error=True,
+                    return_std=True,
                 )
                 for mc in mcs
             ]
@@ -58,7 +58,7 @@ def plot_mc_vs_b(
                 estimate_b_positive(
                     magnitudes[magnitudes >= mc],
                     delta_m=delta_m,
-                    error=True,
+                    return_std=True,
                 )
                 for mc in mcs
             ]
@@ -70,7 +70,7 @@ def plot_mc_vs_b(
                     mag_diffs[mag_diffs >= mc],
                     mc=mc,
                     delta_m=delta_m,
-                    error=True,
+                    return_std=True,
                 )
                 for mc in mcs
             ]
