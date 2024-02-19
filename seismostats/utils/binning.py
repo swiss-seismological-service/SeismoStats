@@ -51,6 +51,9 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1
     Returns:
         Value rounded to the given precision.
     """
+    if x is None:
+        raise ValueError("x cannot be None")
+    
     if isinstance(x, list):
         x = np.array(x)
     d = decimal.Decimal(str(delta_x))
