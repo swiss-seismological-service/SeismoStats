@@ -62,7 +62,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
 
 def get_fmd(
     mags: np.ndarray, delta_m: float, bin_position: str = "center"
-) -> [np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculates event counts per magnitude bin. Note that the returned bins
         array contains the center point of each bin unless bin_position is
         'left'.
@@ -104,7 +104,7 @@ def get_fmd(
 
 def get_cum_fmd(
     mags: np.ndarray, delta_m: float, bin_position: str = "center"
-) -> [np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculates cumulative event counts across all magnitude units
     (summed from the right). Note that the returned bins array contains
     the center point of each bin unless left is True.
