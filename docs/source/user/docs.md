@@ -1,4 +1,4 @@
-# Creating and Building the Documentation
+# Adding Documentation
 
 ## Building the Documentation
 1. Install the project including documentation dependencies using `pip install -e .[doc]` from the root of the project.

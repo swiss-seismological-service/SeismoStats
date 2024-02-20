@@ -33,3 +33,19 @@ exclude_patterns = []
 
 html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
+html_theme_options = {
+    "use_edit_page_button": False,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/swiss-seismological-service/SeismoStats",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        }
+    ]
+}
+html_show_sourcelink = False
+navigation_with_keys = True
+html_context = {
+    "default_mode": "light",
+}
