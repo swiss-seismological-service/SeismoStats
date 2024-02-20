@@ -39,14 +39,36 @@ class Catalog(pd.DataFrame):
             Data to initialize the catalog with.
         name : str, optional
             Name of the catalog.
-        args, kwargs : optional
-            Additional arguments and keyword arguments to pass to pandas
+        args : optional
+            Additional arguments to pass to pandas
             DataFrame constructor.
-
+        kwargs: optional
+            Additional keyword arguments to pass to pandas
+            DataFrame constructor.
     Notes:
         The Catalog class is a subclass of pandas DataFrame, and inherits
         all of its methods and attributes.
+
+    Examples:
+        Create a Catalog from a dictionary.
+
+        >>> import pandas as pd
+        >>> from seismostats.seismicity import Catalog
+        >>> data = {'longitude': [0, 1, 2],
+        ...         'latitude': [0, 1, 2],
+        ...         'depth': [0, 1, 2],
+        ...         'time': pd.to_datetime(['2021-01-01 00:00:00',
+        ...                                 '2021-01-01 00:00:00',
+        ...                                 '2021-01-01 00:00:00']),
+        ...         'magnitude': [1, 2, 3]}
+        >>> catalog = Catalog(data)
+        >>> catalog
+           longitude  latitude  depth                time  magnitude
+        0          0         0      0 2021-01-01 00:00:00          1
+        1          1         1      1 2021-01-01 00:00:00          2
+        2          2         2      2 2021-01-01 00:00:00          3
     """
+
     _metadata = ['name', '_required_cols']
     _required_cols = REQUIRED_COLS_CATALOG
 

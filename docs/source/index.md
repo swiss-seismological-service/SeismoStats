@@ -5,12 +5,11 @@ User Guide <user/index>
 API reference <reference/index>
 ```
 
-```{include} ../../README.md
-:relative-images:
-```
+# Seismo Stats
 
-Check out the {doc}`user/usage` section for further information, including how to
-{ref}`install <installation>` the project.
+Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
+
+Check out the {doc}`user/usage` section for further information, or the {doc}`reference/index` for a technical reference.
 
 
 <!-- ## Indices and tables
