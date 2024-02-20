@@ -1,7 +1,9 @@
+# User Guide
+
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 
 usage
 docs
-../notebooks/catalog_examples
+examples
 ```

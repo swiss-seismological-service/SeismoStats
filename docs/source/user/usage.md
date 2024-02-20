@@ -2,8 +2,6 @@
 
 ## Installation
 
-(installation)=
-
 ```bash
 pip install -e .
 python3 -m venv env
