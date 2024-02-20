@@ -153,7 +153,7 @@ def ks_test_gr(
         )
 
         for i in range(n_samples):
-            simulated = simulated_all[n_sample * i : n_sample * (i + 1)].copy()
+            simulated = simulated_all[n_sample * i: n_sample * (i + 1)].copy()
             x_emp, y_emp = empirical_cdf(simulated)
             y_fit_int = np.interp(x_emp, x_fit, y_fit)
 
