@@ -8,7 +8,6 @@ from seismostats.analysis.estimate_mc import empirical_cdf, estimate_mc
 # load data for test_empirical_cdf
 with open("seismostats/analysis/tests/data/test_empirical_cdf.p", "rb") as f:
     data = pickle.load(f)
-print(data["values_test"])
 
 
 @pytest.mark.parametrize("sample,xs,ys", [data["values_test"]])
@@ -22,7 +21,6 @@ def test_empirical_cdf(sample, xs, ys):
 # load data for test_estimate_mc
 with open("seismostats/analysis/tests/data/test_estimate_mc.p", "rb") as f:
     data = pickle.load(f)
-print(data["values_test"])
 
 
 @pytest.mark.parametrize(
