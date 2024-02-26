@@ -1,4 +1,4 @@
-# catalog-tools
+# SeismoStats
 
 ### Start developing:
 
