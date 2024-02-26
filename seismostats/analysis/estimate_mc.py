@@ -4,7 +4,7 @@ for the estimation of the completeness magnitude.
 import numpy as np
 import pandas as pd
 
-from seismostats.analysis.estimate_beta import estimate_beta_tinti
+from seismostats.analysis.estimate_beta import estimate_b_tinti
 from seismostats.utils.binning import normal_round
 from seismostats.utils.simulate_distributions import simulate_magnitudes
 
@@ -34,7 +34,9 @@ def fitted_cdf_discrete(
     """
 
     if beta is None:
-        beta = estimate_beta_tinti(sample, mc=mc, delta_m=delta_m)
+        beta = estimate_b_tinti(
+            sample, mc=mc, delta_m=delta_m, b_parameter="beta"
+        )
 
     if x_max is None:
         sample_bin_n = (sample.max() - mc) / delta_m
@@ -130,7 +132,9 @@ def ks_test_gr(
         return 1, 0, []
 
     if beta is None:
-        beta = estimate_beta_tinti(sample, mc=mc, delta_m=delta_m)
+        beta = estimate_b_tinti(
+            sample, mc=mc, delta_m=delta_m, b_parameter="beta"
+        )
 
     if ks_ds is None:
         ks_ds = []
@@ -152,7 +156,7 @@ def ks_test_gr(
         )
 
         for i in range(n_samples):
-            simulated = simulated_all[n_sample * i: n_sample * (i + 1)].copy()
+            simulated = simulated_all[n_sample * i : n_sample * (i + 1)].copy()
             x_emp, y_emp = empirical_cdf(simulated)
             y_fit_int = np.interp(x_emp, x_fit, y_fit)
 
@@ -237,10 +241,11 @@ def estimate_mc(
         best_mc = mcs_test[np.argmax(ps >= p_pass)]
 
         if beta is None:
-            beta = estimate_beta_tinti(
+            beta = estimate_b_tinti(
                 sample[sample >= best_mc - delta_m / 2],
                 mc=best_mc,
                 delta_m=delta_m,
+                b_parameter="beta",
             )
 
         if verbose:
