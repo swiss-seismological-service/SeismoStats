@@ -5,7 +5,7 @@ for the estimation of the completeness magnitude.
 import numpy as np
 import pandas as pd
 
-from seismostats.analysis.estimate_beta import estimate_beta_tinti
+from seismostats.analysis.estimate_beta import estimate_b_tinti
 from seismostats.utils.binning import normal_round, get_fmd
 from seismostats.utils.simulate_distributions import simulate_magnitudes
 

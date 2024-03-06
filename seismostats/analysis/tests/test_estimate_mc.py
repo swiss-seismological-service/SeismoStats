@@ -1,12 +1,11 @@
 from numpy.testing import assert_allclose, assert_equal
+import numpy as np
 import pickle
 import pytest
 
-from seismostats.analysis.estimate_mc import (
-    empirical_cdf,
-    mc_ks,
-    mc_max_curvature,
-)
+from seismostats.analysis.estimate_mc import empirical_cdf
+from seismostats.analysis.estimate_mc import mc_max_curvature
+from seismostats.analysis.estimate_mc import mc_ks
 
 
 @pytest.fixture
@@ -129,19 +128,19 @@ def test_empirical_cdf(sample, xs, ys):
 
     assert_allclose(x, xs, rtol=1e-7)
     assert_allclose(y, ys, rtol=1e-7)
-    
+
+
 # load data for test_estimate_mc
 with open("seismostats/analysis/tests/data/test_estimate_mc.p", "rb") as f:
     data = pickle.load(f)
+
 
 @pytest.mark.parametrize(
     "mags,mcs",
     [data["values_test"]],
 )
 def test_estimate_mc_ks(mags, mcs):
-    mcs, ks_ds, ps, best_mc, beta = mc_ks(
-        mags, mcs, delta_m=0.1, p_pass=0.1
-    )
+    mcs, ks_ds, ps, best_mc, beta = mc_ks(mags, mcs, delta_m=0.1, p_pass=0.1)
 
     assert_equal([0.8, 0.9, 1.0, 1.1], mcs)
     assert_equal(2.242124985031149, beta)
