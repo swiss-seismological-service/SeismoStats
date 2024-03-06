@@ -1,12 +1,15 @@
 # standard
 import matplotlib.pyplot as plt
 import numpy as np
+
 # statistical
 from scipy.stats import norm
 
 # Own functions
-from seismostats.analysis.estimate_beta import (estimate_b_elst,
-                                                estimate_b_tinti)
+from seismostats.analysis.estimate_beta import (
+    estimate_b_positive,
+    estimate_b_tinti,
+)
 
 
 def plot_mc_vs_b(
@@ -25,10 +28,11 @@ def plot_mc_vs_b(
         mcs:        completeness magnitudes (list or numpy array)
         delta_m:    discretization of the magnitudes
         method:     method used for b-value estimation, either 'tinti' or
-                    'elst' or 'elst_postcut'. elst_postcut is the same as tinti
-                    but with the postcut method (differences are taken before
-                    cutting the magnitudes below the completeness magnitude).
-                    The mcs are then interpreted as dmcs.
+                    'positive' or 'positive_postcut'. positive_postcut is the
+                    same as 'positive' but with the postcut method (differences
+                    are taken before cutting the magnitudes below the
+                    completeness magnitude). The mcs are then interpreted as
+                    dmcs.
         confidence_intvl:   confidence interval that should be plotted
         ax:         axis where figure should be plotted
         color:      color of the data
@@ -45,20 +49,20 @@ def plot_mc_vs_b(
                     magnitudes[magnitudes >= mc],
                     mc,
                     delta_m=delta_m,
-                    error=True,
+                    return_std=True,
                 )
                 for mc in mcs
             ]
-        elif method == "elst":
+        elif method == "positive":
             results = [
-                estimate_b_elst(
+                estimate_b_positive(
                     magnitudes[magnitudes >= mc],
                     delta_m=delta_m,
-                    error=True,
+                    return_std=True,
                 )
                 for mc in mcs
             ]
-        elif method == "elst_postcut":
+        elif method == "positive_postcut":
             mag_diffs = np.diff(magnitudes)
             mag_diffs = mag_diffs[mag_diffs > 0]
             results = [
@@ -66,12 +70,15 @@ def plot_mc_vs_b(
                     mag_diffs[mag_diffs >= mc],
                     mc=mc,
                     delta_m=delta_m,
-                    error=True,
+                    return_std=True,
                 )
                 for mc in mcs
             ]
         else:
-            raise ValueError("Method must be either 'tinti' or 'elst'.")
+            raise ValueError(
+                "Method must be either 'tinti', 'positive' or"
+                "'positive_postcut'"
+            )
 
         b_values, b_errors = zip(*results)
         b_values = np.array(b_values)
