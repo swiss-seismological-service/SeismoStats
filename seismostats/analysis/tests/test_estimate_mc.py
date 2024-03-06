@@ -3,9 +3,11 @@ import numpy as np
 import pickle
 import pytest
 
-from seismostats.analysis.estimate_mc import empirical_cdf
-from seismostats.analysis.estimate_mc import mc_max_curvature
-from seismostats.analysis.estimate_mc import mc_ks
+from seismostats.analysis.estimate_mc import (
+    empirical_cdf,
+    mc_max_curvature,
+    mc_ks,
+)
 
 
 @pytest.fixture
