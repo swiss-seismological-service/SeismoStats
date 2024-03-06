@@ -47,9 +47,9 @@ def estimate_b(
 
     Returns:
         b:      maximum likelihood beta or b-value, depending on value of
-            input variable 'gutenberg'. Note that the difference
+            input variable 'b_parameter'. Note that the difference
             is just a factor [b_value = beta * log10(e)]
-        std:    Shi and Bolt estimate of the beta/b-value estimate
+        std:    Shi and Bolt estimate of the beta/b-value estimate error
         n:      number of events used for the estimation
     """
 
@@ -136,7 +136,7 @@ def estimate_b_tinti(
 
     Returns:
         b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'gutenberg'. Note that the difference
+                input variable 'b_parameter'. Note that the difference
                 is just a factor [b_value = beta * log10(e)]
         std:    Shi and Bolt estimate of the beta/b-value estimate
     """
@@ -190,7 +190,7 @@ def estimate_b_utsu(
 
     Returns:
         b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'gutenberg'. Note that the difference
+                input variable 'b_parameter'. Note that the difference
                 is just a factor [b_value = beta * log10(e)]
         std:    Shi and Bolt estimate of the beta/b-value estimate
     """
@@ -260,7 +260,7 @@ def estimate_b_positive(
 
     Returns:
         b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'gutenberg'. Note that the difference is just a
+                input variable 'b_parameter'. Note that the difference is just a
                 factor [b_value = beta * log10(e)]
         std:    Shi and Bolt estimate of the beta/b-value estimate
     """
