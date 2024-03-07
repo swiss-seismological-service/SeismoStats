@@ -12,7 +12,7 @@ from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
 from seismostats.analysis.estimate_beta import estimate_b
-from seismostats.analysis.estimate_mc import estimate_mc
+from seismostats.analysis.estimate_mc import mc_ks
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -273,14 +273,14 @@ class Catalog(pd.DataFrame):
                                  self.magnitude.max(),
                                  delta_m)
 
-        mc_est = estimate_mc(self.magnitude,
-                             mcs_test,
-                             delta_m,
-                             p_pass,
-                             stop_when_passed,
-                             verbose,
-                             beta,
-                             n_samples)
+        mc_est = mc_ks(self.magnitude,
+                       mcs_test,
+                       delta_m,
+                       p_pass,
+                       stop_when_passed,
+                       verbose,
+                       beta,
+                       n_samples)
 
         self.mc = mc_est[3]
         return mc_est
