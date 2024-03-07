@@ -1,11 +1,12 @@
 """This module contains functions
 for the estimation of the completeness magnitude.
 """
+
 import numpy as np
 import pandas as pd
 
 from seismostats.analysis.estimate_beta import estimate_b_tinti
-from seismostats.utils.binning import normal_round
+from seismostats.utils.binning import normal_round, get_fmd
 from seismostats.utils.simulate_distributions import simulate_magnitudes
 
 
@@ -176,7 +177,7 @@ def ks_test_gr(
     return orig_ks_d, p_val, ks_ds
 
 
-def estimate_mc(
+def mc_ks(
     sample: np.ndarray,
     mcs_test: np.ndarray,
     delta_m: float,
@@ -188,7 +189,7 @@ def estimate_mc(
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
     Estimate the completeness magnitude (mc) for a given list of completeness
-    magnitudes.
+    magnitudes using the K-S distance method.
 
     Args:
         sample:             Magnitudes to test
@@ -263,3 +264,27 @@ def estimate_mc(
             print("None of the mcs passed the test.")
 
     return mcs_test, ks_ds, ps, best_mc, beta
+
+
+def mc_max_curvature(
+    sample: np.ndarray,
+    delta_m: float,
+    correction_factor: float = 0.2,
+) -> float:
+    """
+    Estimate the completeness magnitude (mc) by maximum curvature (Wiemer and
+    Wyss 2000, Woessner and Wiemer 2005).
+    Args:
+        sample:             Magnitudes to test
+        delta_m:            Magnitude bins (sample has to be rounded to bins
+                            beforehand)
+        correction_factor:  Correction factor for the maximum curvature method
+        (default 0.2 after Woessner & Wiemer 2005)
+    Returns:
+        mc:                 estimated completeness magnitude
+    """
+    bins, count, mags = get_fmd(
+        mags=sample, delta_m=delta_m, bin_position="center"
+    )
+    mc = bins[count.argmax()] + correction_factor
+    return mc
