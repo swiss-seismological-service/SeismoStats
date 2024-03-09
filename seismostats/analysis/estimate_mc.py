@@ -41,7 +41,7 @@ def cdf_discrete_GR(
 
     x = np.sort(sample)
     x = np.unique(x)
-    y = 1 - np.exp(-beta * (x + delta_m / 2 - mc))
+    y = 1 - np.exp(-beta * (x + delta_m - mc))
     return x, y
 
 
@@ -164,7 +164,7 @@ def mc_ks(
     stop_when_passed: bool = True,
     verbose: bool = False,
     beta: float | None = None,
-    n_samples: int = 10000,
+    n: int = 10000,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
     Estimate the completeness magnitude (mc) for a given list of completeness
@@ -181,9 +181,8 @@ def mc_ks(
         verbose:            Verbose output, by default False
         beta:               If beta is 'known', only estimate mc, by default
                             None
-        n_samples:          Number of magnitude samples to be generated in
-                            p-value calculation of KS distance, by default 10000
-
+         n:                 Number of number of times the KS distance is
+                        calculated for estimating the p-value, by default 10000
     Returns:
         mcs_test:   tested completeness magnitudes
         ks_ds:      KS distances
@@ -200,9 +199,7 @@ def mc_ks(
         if verbose:
             print("\ntesting mc", mc)
 
-        ks_d, p, _ = ks_test_gr(
-            sample, mc=mc, delta_m=delta_m, n_samples=n_samples, beta=beta
-        )
+        ks_d, p, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, n=n, beta=beta)
 
         ks_ds.append(ks_d)
         ps.append(p)
