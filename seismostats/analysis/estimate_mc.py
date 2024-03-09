@@ -31,7 +31,7 @@ def cdf_discrete_GR(
 
     Returns:
         x: unique x-values of the sample
-        y: corresponding y-values of the CDF
+        y: corresponding y-values of the CDF of the GR distribution
     """
 
     if beta is None:
@@ -139,22 +139,18 @@ def ks_test_gr(
 
         for ii in range(n):
             simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
-            x_th, y_th = cdf_discrete_GR(
+            _, y_th = cdf_discrete_GR(
                 simulated, mc=mc, delta_m=delta_m, beta=beta
             )
-            x_emp, y_emp = empirical_cdf(simulated)
+            _, y_emp = empirical_cdf(simulated)
 
             ks_d = np.max(np.abs(y_emp - y_th))
             ks_ds.append(ks_d)
-    else:
-        x_fit, y_fit = cdf_discrete_GR(
-            sample, mc=mc, delta_m=delta_m, beta=beta
-        )
 
-    x_emp, y_emp = empirical_cdf(sample)
-    y_emp_int = np.interp(x_fit, x_emp, y_emp)
+    _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
+    _, y_emp = empirical_cdf(sample)
 
-    orig_ks_d = np.max(np.abs(y_fit - y_emp_int))
+    orig_ks_d = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= orig_ks_d) / len(ks_ds)
 
     return orig_ks_d, p_val, ks_ds
