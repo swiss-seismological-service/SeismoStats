@@ -6,32 +6,32 @@ import numpy as np
 import pandas as pd
 
 from seismostats.analysis.estimate_beta import estimate_b_tinti
-from seismostats.utils.binning import normal_round, get_fmd
-from seismostats.utils.simulate_distributions import simulate_magnitudes
+from seismostats.utils.binning import get_fmd
+from seismostats.utils.simulate_distributions import (
+    simulated_magnitudes_binned,
+)
 
 
-def fitted_cdf_discrete(
+def cdf_discrete_GR(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
-    x_max: float | None = None,
     beta: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Calculate the fitted cumulative distribution function (CDF)
-    for a discrete Gutenberg-Richter distribution.
+    Calculate the cumulative distribution function (CDF)
+    for a discrete Gutenberg-Richter distribution at the points of the sample.
 
     Parameters:
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bins
-        x_max:      Maximum magnitude, by default None
         beta:       Beta parameter for the Gutenberg-Richter distribution, by
                     default None
 
     Returns:
-        x: x-values of the fitted CDF
-        y: y-values of the fitted CDF
+        x: unique x-values of the sample
+        y: corresponding y-values of the CDF
     """
 
     if beta is None:
@@ -39,17 +39,9 @@ def fitted_cdf_discrete(
             sample, mc=mc, delta_m=delta_m, b_parameter="beta"
         )
 
-    if x_max is None:
-        sample_bin_n = (sample.max() - mc) / delta_m
-    else:
-        sample_bin_n = (x_max - mc) / delta_m
-
-    bins = np.arange(sample_bin_n + 1)
-    cdf = 1 - np.exp(-beta * delta_m * (bins + 1))
-    x, y = mc + bins * delta_m, cdf
-
-    x, y_count = np.unique(x, return_counts=True)
-    y = y[np.cumsum(y_count) - 1]
+    x = np.sort(sample)
+    x = np.unique(x)
+    y = 1 - np.exp(-beta * (x + delta_m / 2 - mc))
     return x, y
 
 
@@ -80,11 +72,11 @@ def empirical_cdf(
     except BaseException:
         pass
 
-    sample_idxs_sorted = np.argsort(sample)
-    sample_sorted = sample[sample_idxs_sorted]
+    idx = np.argsort(sample)
+    sample_sorted = sample[idx]
 
     if weights is not None:
-        weights_sorted = weights[sample_idxs_sorted]
+        weights_sorted = weights[idx]
         x, y = sample_sorted, np.cumsum(weights_sorted) / weights_sorted.sum()
     else:
         x, y = sample_sorted, np.arange(1, len(sample) + 1) / len(sample)
@@ -99,7 +91,7 @@ def ks_test_gr(
     mc: float,
     delta_m: float,
     ks_ds: list[float] | None = None,
-    n_samples: int = 10000,
+    n: int = 10000,
     beta: float | None = None,
 ) -> tuple[float, float, list[float]]:
     """
@@ -111,8 +103,8 @@ def ks_test_gr(
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
         ks_ds:      List to store KS distances, by default None
-        n_samples:  Number of magnitude samples to be generated in p-value
-                    calculation of KS distance, by default 10000
+        n:          Number of number of times the KS distance is calculated for
+                estimating the p-value, by default 10000
         beta :      Beta parameter for the Gutenberg-Richter distribution, by
                     default None
 
@@ -141,30 +133,21 @@ def ks_test_gr(
         ks_ds = []
 
         n_sample = len(sample)
-        simulated_all = (
-            normal_round(
-                simulate_magnitudes(
-                    mc=mc - delta_m / 2, beta=beta, n=n_samples * n_sample
-                )
-                / delta_m
+        simulated_all = simulated_magnitudes_binned(
+            n * n_sample, beta, mc, delta_m, b_parameter="beta"
+        )
+
+        for ii in range(n):
+            simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
+            x_th, y_th = cdf_discrete_GR(
+                simulated, mc=mc, delta_m=delta_m, beta=beta
             )
-            * delta_m
-        )
-
-        x_max = np.max(simulated_all)
-        x_fit, y_fit = fitted_cdf_discrete(
-            sample, mc=mc, delta_m=delta_m, x_max=x_max, beta=beta
-        )
-
-        for i in range(n_samples):
-            simulated = simulated_all[n_sample * i : n_sample * (i + 1)].copy()
             x_emp, y_emp = empirical_cdf(simulated)
-            y_fit_int = np.interp(x_emp, x_fit, y_fit)
 
-            ks_d = np.max(np.abs(y_emp - y_fit_int))
+            ks_d = np.max(np.abs(y_emp - y_th))
             ks_ds.append(ks_d)
     else:
-        x_fit, y_fit = fitted_cdf_discrete(
+        x_fit, y_fit = cdf_discrete_GR(
             sample, mc=mc, delta_m=delta_m, beta=beta
         )
 
