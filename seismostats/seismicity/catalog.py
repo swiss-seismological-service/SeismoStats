@@ -506,11 +506,12 @@ class ForecastCatalog(Catalog):
     """
 
     _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
+    _metadata = Catalog._metadata + ['total_catalogs']
 
     def __init__(self, data=None, *args, name=None, **kwargs):
         super().__init__(data, *args, **kwargs)
-        # Represent catalogs with no events
-        self.empty_catalogs = None
+        # Total number of catalogs represented, inculding empty catalogs
+        self.total_catalogs = None
 
     @require_cols(require=_required_cols)
     def to_quakeml(self, agencyID=' ', author=' ') -> str:
