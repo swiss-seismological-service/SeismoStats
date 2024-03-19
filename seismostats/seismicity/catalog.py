@@ -72,10 +72,17 @@ class Catalog(pd.DataFrame):
     _metadata = ['name', '_required_cols']
     _required_cols = REQUIRED_COLS_CATALOG
 
-    def __init__(self, data=None, *args, name=None, **kwargs):
+    def __init__(self, data=None, *args, name=None,
+                 starttime=None, endtime=None, **kwargs):
         super().__init__(data, *args, **kwargs)
 
         self.name = name
+
+        self.starttime = starttime if isinstance(
+            starttime, pd.Timestamp) else pd.to_datetime(starttime)
+
+        self.endtime = endtime if isinstance(
+            endtime, pd.Timestamp) else pd.to_datetime(endtime)
 
     @classmethod
     def from_quakeml(cls, quakeml: str,
@@ -336,6 +343,11 @@ class ForecastCatalog(Catalog):
     """
 
     _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
+
+    def __init__(self, data=None, *args, name=None, **kwargs):
+        super().__init__(data, *args, **kwargs)
+        # Represent catalogs with no events
+        self.empty_catalogs = None
 
     @require_cols(require=_required_cols)
     def to_quakeml(self, agencyID=' ', author=' ') -> str:
