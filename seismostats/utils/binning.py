@@ -38,8 +38,7 @@ def normal_round(x: float, n: int = 0) -> float:
     return normal_round_to_int(x * power) / power
 
 
-def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1
-                     ) -> np.ndarray:
+def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
     """
     Rounds a float number x to a given precision. If precision not given,
     assumes 0.1 bin size
@@ -51,6 +50,9 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1
     Returns:
         Value rounded to the given precision.
     """
+    if x is None:
+        raise ValueError("x cannot be None")
+
     if isinstance(x, list):
         x = np.array(x)
     d = decimal.Decimal(str(delta_x))
@@ -59,11 +61,9 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1
 
 
 def get_fmd(
-        mags: np.ndarray,
-        delta_m: float,
-        bin_position: str = 'center'
-) -> [np.ndarray, np.ndarray, np.ndarray]:
-    """ Calculates event counts per magnitude bin. Note that the returned bins
+    mags: np.ndarray, delta_m: float, bin_position: str = "center"
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Calculates event counts per magnitude bin. Note that the returned bins
         array contains the center point of each bin unless bin_position is
         'left'.
 
@@ -84,24 +84,28 @@ def get_fmd(
     counts = np.bincount(mags_i)
 
     bins = bin_to_precision(
-        np.arange((np.min(mags)) * 100000,
-                  (np.max(mags) + delta_m / 2) * 100000,
-                  delta_m * 100000) / 100000, delta_m)
+        np.arange(
+            (np.min(mags)) * 100000,
+            (np.max(mags) + delta_m / 2) * 100000,
+            delta_m * 100000,
+        )
+        / 100000,
+        delta_m,
+    )
 
-    assert bin_position == 'left' or bin_position == 'center', \
-        "bin_position needs to be 'left'  of 'center'"
-    if bin_position == 'left':
+    assert (
+        bin_position == "left" or bin_position == "center"
+    ), "bin_position needs to be 'left'  of 'center'"
+    if bin_position == "left":
         bins = bins - delta_m / 2
 
     return bins, counts, mags
 
 
 def get_cum_fmd(
-        mags: np.ndarray,
-        delta_m: float,
-        bin_position: str = 'center'
-) -> [np.ndarray, np.ndarray, np.ndarray]:
-    """ Calculates cumulative event counts across all magnitude units
+    mags: np.ndarray, delta_m: float, bin_position: str = "center"
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Calculates cumulative event counts across all magnitude units
     (summed from the right). Note that the returned bins array contains
     the center point of each bin unless left is True.
 
