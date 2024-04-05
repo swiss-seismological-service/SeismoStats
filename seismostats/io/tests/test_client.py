@@ -60,7 +60,7 @@ def test_download_catalog():
         max_latitude=max_lat,
         min_longitude=min_lon,
         max_longitude=max_lon,
-        event_type=event_type
+        event_type=event_type,
     )
 
     assert len(cat) == 4
@@ -81,7 +81,7 @@ def test_download_catalog():
         include_all_magnitudes=True,
         include_uncertainty=True,
         delta_m=None,
-        min_magnitude=min_mag,
+        min_magnitude=min_mag
     )
 
     assert len(cat.columns) == 21

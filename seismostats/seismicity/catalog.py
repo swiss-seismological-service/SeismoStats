@@ -81,7 +81,8 @@ class Catalog(pd.DataFrame):
     def from_quakeml(cls, quakeml: str,
                      includeallmagnitudes: bool = True,
                      includeuncertainties: bool = False,
-                     includeids: bool = False) -> Catalog:
+                     includeids: bool = False,
+                     includequality: bool = False) -> Catalog:
         """
         Create a Catalog from a QuakeML file.
 
@@ -93,9 +94,11 @@ class Catalog(pd.DataFrame):
             Catalog
         """
         if os.path.isfile(quakeml):
-            catalog = parse_quakeml_file(quakeml, includeallmagnitudes)
+            catalog = parse_quakeml_file(
+                quakeml, includeallmagnitudes, includequality)
         else:
-            catalog = parse_quakeml(quakeml, includeallmagnitudes)
+            catalog = parse_quakeml(
+                quakeml, includeallmagnitudes, includequality)
 
         df = cls.from_dict(catalog, includeuncertainties, includeids)
 
@@ -133,7 +136,6 @@ class Catalog(pd.DataFrame):
 
         if not includeuncertainty:
             df = df.drop_uncertainties()
-
         if not includeids:
             df = df.drop_ids()
 
