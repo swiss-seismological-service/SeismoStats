@@ -123,14 +123,17 @@ class Catalog(pd.DataFrame):
         df = super().from_dict(data, *args, **kwargs)
         df = cls(df)
 
-        if 'magnitude' in df.columns:
-            df['magnitude'] = pd.to_numeric(df['magnitude'])
-        if 'latitude' in df.columns:
-            df['latitude'] = pd.to_numeric(df['latitude'])
-        if 'longitude' in df.columns:
-            df['longitude'] = pd.to_numeric(df['longitude'])
-        if 'depth' in df.columns:
-            df['depth'] = pd.to_numeric(df['depth'])
+        numeric_cols = ['magnitude', 'latitude', 'longitude', 'depth',
+                        'associatedphasecount', 'usedphasecount',
+                        'associatedstationcount', 'usedstationcount',
+                        'standarderror', 'azimuthalgap',
+                        'secondaryazimuthalgap', 'maximumdistance',
+                        'minimumdistance', 'mediandistance']
+
+        for num in numeric_cols:
+            if num in df.columns:
+                df[num] = pd.to_numeric(df[num])
+
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
 
