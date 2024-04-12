@@ -12,7 +12,11 @@ from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
 from seismostats.analysis.estimate_beta import estimate_b
+<<<<<<< HEAD
 from seismostats.analysis.estimate_mc import estimate_mc
+=======
+from seismostats.analysis.estimate_mc import mc_ks
+>>>>>>> 0a5c4fdf79c9e6a708f7a7bad9abe8d364573665
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -267,16 +271,25 @@ class Catalog(pd.DataFrame):
             best_mc:    best mc
             beta:       corresponding best beta
         """
+<<<<<<< HEAD
         if delta_m is None and self.delta_m is None:
             raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
             delta_m = self.delta_m
+=======
+        if delta_m is None:
+            if self.delta_m is None:
+                raise ValueError("binning (delta_m) needs to be set")
+            else:
+                delta_m = self.delta_m
+>>>>>>> 0a5c4fdf79c9e6a708f7a7bad9abe8d364573665
 
         if mcs_test is None:
             mcs_test = np.arange(self.magnitude.min(),
                                  self.magnitude.max(),
                                  delta_m)
 
+<<<<<<< HEAD
         mc_est = estimate_mc(self.magnitude,
                              mcs_test,
                              delta_m,
@@ -285,12 +298,26 @@ class Catalog(pd.DataFrame):
                              verbose,
                              beta,
                              n_samples)
+=======
+        mc_est = mc_ks(self.magnitude,
+                       mcs_test,
+                       delta_m,
+                       p_pass,
+                       stop_when_passed,
+                       verbose,
+                       beta,
+                       n_samples)
+>>>>>>> 0a5c4fdf79c9e6a708f7a7bad9abe8d364573665
 
         self.mc = mc_est[3]
         return mc_est
 
     @require_cols(require=['magnitude'])
+<<<<<<< HEAD
     def estimate_b(
+=======
+    def get_b_value(
+>>>>>>> 0a5c4fdf79c9e6a708f7a7bad9abe8d364573665
         self,
         mc: float | None = None,
         delta_m: float | None = None,
@@ -331,6 +358,7 @@ class Catalog(pd.DataFrame):
             n:      number of events used for the estimation
         """
 
+<<<<<<< HEAD
         if mc is None and self.mc is None:
             raise ValueError("completeness magnitude (mc) needs to be set")
         if mc is None:
@@ -340,6 +368,19 @@ class Catalog(pd.DataFrame):
             raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
             delta_m = self.delta_m
+=======
+        if mc is None:
+            if self.mc is None:
+                raise ValueError("completeness magnitude (mc) needs to be set")
+            else:
+                mc = self. mc
+
+        if delta_m is None:
+            if self.delta_m is None:
+                raise ValueError("binning (delta_m) needs to be set")
+            else:
+                delta_m = self.delta_m
+>>>>>>> 0a5c4fdf79c9e6a708f7a7bad9abe8d364573665
 
         b_estimate = estimate_b(self.magnitude,
                                 mc,
