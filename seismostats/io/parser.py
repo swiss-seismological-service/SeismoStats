@@ -25,6 +25,19 @@ ORIGIN_MAPPINGS = {
     'originpublicID': 'originid',
 }
 
+QUALITY_MAPPINGS = {
+    'originqualityassociatedPhaseCount': 'associatedphasecount',
+    'originqualityusedPhaseCount': 'usedphasecount',
+    'originqualityassociatedStationCount': 'associatedstationcount',
+    'originqualityusedStationCount': 'usedstationcount',
+    'originqualitystandardError': 'standarderror',
+    'originqualityazimuthalGap': 'azimuthalgap',
+    'originqualitysecondaryAzimuthalGap': 'secondaryazimuthalgap',
+    'originqualitymaximumDistance': 'maximumdistance',
+    'originqualityminimumDistance': 'minimumdistance',
+    'originqualitymedianDistance': 'mediandistance'
+}
+
 MAGNITUDE_MAPPINGS = {
     **_get_realvalue('magnitudemag', 'magnitude'),
     'magnitudetype': 'magnitude_type',
@@ -105,11 +118,15 @@ def _select_secondary_magnitudes(magnitudes: list):
     return selection
 
 
-def _extract_origin(origin: dict) -> dict:
+def _extract_origin(origin: dict, includequality: bool) -> dict:
     origin_dict = {}
     for key, value in ORIGIN_MAPPINGS.items():
         if key in origin:
             origin_dict[value] = origin[key]
+    if includequality:
+        for key, value in QUALITY_MAPPINGS.items():
+            if key in origin:
+                origin_dict[value] = origin[key]
     return origin_dict
 
 
@@ -132,7 +149,8 @@ def _extract_secondary_magnitudes(magnitudes: list) -> dict:
 
 
 def _parse_to_dict(event: dict, origins: list, magnitudes: list,
-                   includeallmagnitudes: bool = True) -> dict:
+                   includeallmagnitudes: bool = True,
+                   includequality: bool = True) -> dict:
     """
     Parse earthquake event information dictionaries as produced by the
     QuakeMLHandler and return a dictionary of event parameters.
@@ -169,7 +187,7 @@ def _parse_to_dict(event: dict, origins: list, magnitudes: list,
         {value: event.get(key, None) for key, value in EVENT_MAPPINGS.items()}
 
     return event_params | \
-        _extract_origin(preferred_origin) | \
+        _extract_origin(preferred_origin, includequality) | \
         _extract_magnitude(preferred_magnitude) | \
         _extract_secondary_magnitudes(magnitudes)
 
@@ -191,9 +209,11 @@ class QuakeMLHandler(xml.sax.ContentHandler):
         from QuakeML files.
     """
 
-    def __init__(self, catalog, includeallmagnitudes=True):
+    def __init__(
+            self, catalog, includeallmagnitudes=True, includequality=True):
         self.catalog = catalog
         self.includeallmagnitudes = includeallmagnitudes
+        self.includequality = includequality
         self.event = []
         self.origin = []
         self.magnitude = []
@@ -224,7 +244,8 @@ class QuakeMLHandler(xml.sax.ContentHandler):
         if tagName == 'event':
             self.catalog.append(_parse_to_dict(
                 self.event[-1], self.origin, self.magnitude,
-                includeallmagnitudes=self.includeallmagnitudes))
+                includeallmagnitudes=self.includeallmagnitudes,
+                includequality=self.includequality))
             self.parent = ''
             self.location = ''
             self.event = []
@@ -249,7 +270,8 @@ class QuakeMLHandler(xml.sax.ContentHandler):
 
 
 def parse_quakeml_file(
-        file_path: str, includeallmagnitudes: bool = True) -> list[dict]:
+        file_path: str, includeallmagnitudes: bool = True,
+        includequality: bool = True) -> list[dict]:
     """
     Parse a QuakeML file and return a list of earthquake event information
     dictionaries.
@@ -263,7 +285,7 @@ def parse_quakeml_file(
             A list of earthquake event information dictionaries.
     """
     data = []
-    handler = QuakeMLHandler(data, includeallmagnitudes)
+    handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
     parser.parse(file_path)
@@ -271,7 +293,8 @@ def parse_quakeml_file(
 
 
 def parse_quakeml(
-        quakeml: str, includeallmagnitudes: bool = True) -> list[dict]:
+        quakeml: str, includeallmagnitudes: bool = True,
+        includequality: bool = True) -> list[dict]:
     """
     Parse a QuakeML string and return a list of earthquake event information
     dictionaries.
@@ -285,13 +308,15 @@ def parse_quakeml(
             A list of earthquake event information dictionaries.
     """
     data = []
-    handler = QuakeMLHandler(data, includeallmagnitudes)
+    handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
     xml.sax.parseString(quakeml, handler)
     return data
 
 
 def parse_quakeml_response(
-        response: Response, includeallmagnitudes: bool = True) -> list[dict]:
+        response: Response,
+        includeallmagnitudes: bool = True,
+        includequality: bool = True) -> list[dict]:
     """
     Parse a QuakeML response and return a list of earthquake event information
     dictionaries.
@@ -306,7 +331,7 @@ def parse_quakeml_response(
     """
     response.raw.decode_content = True  # if content-encoding is used decode
     data = []
-    handler = QuakeMLHandler(data, includeallmagnitudes)
+    handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
     parser.parse(response.raw)

@@ -31,7 +31,8 @@ class FDSNWSEventClient():
                    event_type: str | None = None,
                    delta_m: float | None = 0.1,
                    include_uncertainty: bool = False,
-                   include_ids: bool = False) -> pd.DataFrame:
+                   include_ids: bool = False,
+                   includequality: bool = False) -> pd.DataFrame:
         """Downloads an earthquake catalog based on a URL.
 
         Args:
@@ -52,6 +53,7 @@ class FDSNWSEventClient():
             include_uncertainty:    whether to include uncertainty columns.
             include_ids:            whether to include event, magnitude
                                     and origin IDs.
+            includequality:         whether to include quality columns.
 
         Returns:
             The catalog as a Catalog Object.
@@ -86,6 +88,7 @@ class FDSNWSEventClient():
         catalog = []
 
         r = requests.get(request_url, stream=True)
-        catalog = parse_quakeml_response(r)
+        catalog = parse_quakeml_response(r, includequality=includequality)
 
-        return Catalog.from_dict(catalog, include_uncertainty, include_ids)
+        return Catalog.from_dict(
+            catalog, include_uncertainty, include_ids)
