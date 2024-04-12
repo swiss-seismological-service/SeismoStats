@@ -72,7 +72,7 @@ class Catalog(pd.DataFrame):
         2          2         2      2 2021-01-01 00:00:00          3
     """
 
-    _metadata = ['name', '_required_cols']
+    _metadata = ['name', '_required_cols', 'mc', 'delta_m', 'b_value']
     _required_cols = REQUIRED_COLS_CATALOG
 
     def __init__(
@@ -262,11 +262,10 @@ class Catalog(pd.DataFrame):
             best_mc:    best mc
             beta:       corresponding best beta
         """
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
-            if self.delta_m is None:
-                raise ValueError("binning (delta_m) needs to be set")
-            else:
-                delta_m = self.delta_m
+            delta_m = self.delta_m
 
         if mcs_test is None:
             mcs_test = np.arange(self.magnitude.min(),
@@ -286,7 +285,7 @@ class Catalog(pd.DataFrame):
         return mc_est
 
     @require_cols(require=['magnitude'])
-    def get_b_value(
+    def estimate_b(
         self,
         mc: float | None = None,
         delta_m: float | None = None,
@@ -327,17 +326,15 @@ class Catalog(pd.DataFrame):
             n:      number of events used for the estimation
         """
 
+        if mc is None and self.mc is None:
+            raise ValueError("completeness magnitude (mc) needs to be set")
         if mc is None:
-            if self.mc is None:
-                raise ValueError("completeness magnitude (mc) needs to be set")
-            else:
-                mc = self. mc
+            mc = self.mc
 
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
-            if self.delta_m is None:
-                raise ValueError("binning (delta_m) needs to be set")
-            else:
-                delta_m = self.delta_m
+            delta_m = self.delta_m
 
         b_estimate = estimate_b(self.magnitude,
                                 mc,
