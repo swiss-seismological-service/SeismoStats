@@ -4,12 +4,15 @@ import os
 import uuid
 from collections import defaultdict
 
+import numpy as np
 import pandas as pd
 
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
+from seismostats.analysis.estimate_beta import estimate_b
+from seismostats.analysis.estimate_mc import mc_ks
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -69,13 +72,26 @@ class Catalog(pd.DataFrame):
         2          2         2      2 2021-01-01 00:00:00          3
     """
 
-    _metadata = ['name', '_required_cols']
+    _metadata = ['name', '_required_cols', 'mc', 'delta_m', 'b_value']
     _required_cols = REQUIRED_COLS_CATALOG
 
-    def __init__(self, data=None, *args, name=None, **kwargs):
+    def __init__(
+        self,
+        data=None,
+        *args,
+        name=None,
+        mc=None,
+        delta_m=None,
+        b_value=None,
+        **kwargs
+    ):
+
         super().__init__(data, *args, **kwargs)
 
         self.name = name
+        self.mc = mc
+        self.b_value = b_value
+        self.delta_m = delta_m
 
     @classmethod
     def from_quakeml(cls, quakeml: str,
@@ -210,9 +226,136 @@ class Catalog(pd.DataFrame):
             df = self.copy()
 
         df['magnitude'] = bin_to_precision(df["magnitude"], delta_m)
+        df.delta_m = delta_m
 
         if not inplace:
             return df
+
+    @require_cols(require=['magnitude'])
+    def estimate_mc(
+        self,
+        mcs_test: list | None = None,
+        delta_m: float | None = None,
+        p_pass: float = 0.05,
+        stop_when_passed: bool = True,
+        verbose: bool = False,
+        beta: float | None = None,
+        n_samples: int = 10000
+    ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
+        """
+        Estimate the completeness magnitude (mc), possible mc values given as
+        an argument, or set to a range of values between min and max magnitude
+        in the catalog.
+
+        Args:
+            mcs_test:           Completeness magnitudes to test
+            delta_m:            Magnitude bins (sample has to be rounded to bins
+                            beforehand)
+            p_pass:             P-value with which the test is passed
+            stop_when_passed:   Stop calculations when first mc passes the test,
+                            by default True
+            verbose:            Verbose output, by default False
+            beta:               If beta is 'known', only estimate mc,
+                            by default None
+            n_samples:          Number of magnitude samples to be generated in
+                            p-value calculation of KS distance, default 10000
+
+        Returns:
+            mcs_test:   tested completeness magnitudes
+            ks_ds:      KS distances
+            ps:         p-values
+            best_mc:    best mc
+            beta:       corresponding best beta
+        """
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
+        if delta_m is None:
+            delta_m = self.delta_m
+
+        if mcs_test is None:
+            mcs_test = np.arange(self.magnitude.min(),
+                                 self.magnitude.max(),
+                                 delta_m)
+
+        mc_est = mc_ks(self.magnitude,
+                       mcs_test,
+                       delta_m,
+                       p_pass,
+                       stop_when_passed,
+                       verbose,
+                       beta,
+                       n_samples)
+
+        self.mc = mc_est[3]
+        return mc_est
+
+    @require_cols(require=['magnitude'])
+    def estimate_b(
+        self,
+        mc: float | None = None,
+        delta_m: float | None = None,
+        weights: list | None = None,
+        b_parameter: str = "b_value",
+        return_std: bool = False,
+        method: str = "tinti",
+        return_n: bool = False,
+    ) -> float | tuple[float, float] | tuple[float, float, float]:
+        """
+        Estimates b-value of magnitudes in the Catalog based on settings given
+        by the input parameters. Sets attribute b-value to the computed value,
+        but also returns the computed b-value. If return_std or return_n set
+        to True, also returns the uncertainty and/or number of magnitudes used
+        to estimate the b-value.
+
+        Args:
+            mc:         completeness magnitude, etiher given as parameter or
+                    taken from the object attribute
+            delta_m:    discretization of magnitudes, etiher given as parameter
+                    or taken from the object attribute
+            weights:    weights of each magnitude can be specified here
+            b_parameter:either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta'
+                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+            return_std: if True the standard deviation of beta/b-value (see
+                    above) is returned
+            method:     method to use for estimation of beta/b-value. Options
+                    are: 'tinti', 'utsu', 'positive', 'laplace'
+            return_n:   if True, the number of events used for the estimation is
+                    returned. This is only relevant for the 'positive' method
+
+        Returns:
+            b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'b_parameter'. Note that the difference
+                is just a factor [b_value = beta * log10(e)]
+            std:    Shi and Bolt estimate of the beta/b-value error estimate
+            n:      number of events used for the estimation
+        """
+
+        if mc is None and self.mc is None:
+            raise ValueError("completeness magnitude (mc) needs to be set")
+        if mc is None:
+            mc = self.mc
+
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
+        if delta_m is None:
+            delta_m = self.delta_m
+
+        b_estimate = estimate_b(self.magnitude,
+                                mc,
+                                delta_m,
+                                weights,
+                                b_parameter,
+                                return_std,
+                                method,
+                                return_n)
+
+        if return_std or return_n:
+            self.b_value = b_estimate[0]
+        else:
+            self.b_value = b_estimate
+
+        return b_estimate
 
     def _secondary_magnitudekeys(self) -> list[str]:
         """
