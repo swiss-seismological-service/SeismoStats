@@ -84,8 +84,14 @@ class Catalog(pd.DataFrame):
         b_value=None,
         **kwargs
     ):
+        if data is None and 'columns' not in kwargs:
+            super().__init__(columns=REQUIRED_COLS_CATALOG, *args, **kwargs)
+        else:
+            super().__init__(data, *args, **kwargs)
 
-        super().__init__(data, *args, **kwargs)
+        if self.columns.empty:
+            self = self.reindex(self.columns.union(
+                REQUIRED_COLS_CATALOG), axis=1)
 
         self.name = name
         self.mc = mc
@@ -158,7 +164,10 @@ class Catalog(pd.DataFrame):
             df = df.drop_ids()
 
         if not isinstance(df, Catalog):
-            return Catalog(df)
+            df = Catalog(df)
+
+        if df.empty:
+            df = Catalog(columns=REQUIRED_COLS_CATALOG)
 
         return df
 
