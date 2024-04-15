@@ -6,13 +6,12 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-
+from seismostats.analysis.estimate_beta import estimate_b
+from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
-from seismostats.analysis.estimate_beta import estimate_b
-from seismostats.analysis.estimate_mc import mc_ks
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -153,10 +152,13 @@ class Catalog(pd.DataFrame):
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
 
-        if not includeuncertainty:
+        if not includeuncertainty and isinstance(df, Catalog):
             df = df.drop_uncertainties()
-        if not includeids:
+        if not includeids and isinstance(df, Catalog):
             df = df.drop_ids()
+
+        if not isinstance(df, Catalog):
+            return Catalog(df)
 
         return df
 

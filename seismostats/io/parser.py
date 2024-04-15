@@ -1,5 +1,6 @@
 import xml.sax
 from datetime import datetime
+from xml.sax._exceptions import SAXParseException
 
 from requests import Response
 
@@ -288,7 +289,12 @@ def parse_quakeml_file(
     handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
-    parser.parse(file_path)
+    try:
+        parser.parse(file_path)
+    except SAXParseException as e:
+        if 'no element found' in str(e):
+            return data
+        raise
     return data
 
 
@@ -308,6 +314,10 @@ def parse_quakeml(
             A list of earthquake event information dictionaries.
     """
     data = []
+
+    if quakeml == '':
+        return data
+
     handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
     xml.sax.parseString(quakeml, handler)
     return data
