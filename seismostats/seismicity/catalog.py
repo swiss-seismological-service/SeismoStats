@@ -6,13 +6,12 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-
+from seismostats.analysis.estimate_beta import estimate_b
+from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
-from seismostats.analysis.estimate_beta import estimate_b
-from seismostats.analysis.estimate_mc import mc_ks
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -72,7 +71,7 @@ class Catalog(pd.DataFrame):
         2          2         2      2 2021-01-01 00:00:00          3
     """
 
-    _metadata = ['name', '_required_cols']
+    _metadata = ['name', '_required_cols', 'mc', 'delta_m', 'b_value']
     _required_cols = REQUIRED_COLS_CATALOG
 
     def __init__(
@@ -85,8 +84,14 @@ class Catalog(pd.DataFrame):
         b_value=None,
         **kwargs
     ):
+        if data is None and 'columns' not in kwargs:
+            super().__init__(columns=REQUIRED_COLS_CATALOG, *args, **kwargs)
+        else:
+            super().__init__(data, *args, **kwargs)
 
-        super().__init__(data, *args, **kwargs)
+        if self.columns.empty:
+            self = self.reindex(self.columns.union(
+                REQUIRED_COLS_CATALOG), axis=1)
 
         self.name = name
         self.mc = mc
@@ -97,7 +102,8 @@ class Catalog(pd.DataFrame):
     def from_quakeml(cls, quakeml: str,
                      includeallmagnitudes: bool = True,
                      includeuncertainties: bool = False,
-                     includeids: bool = False) -> Catalog:
+                     includeids: bool = False,
+                     includequality: bool = False) -> Catalog:
         """
         Create a Catalog from a QuakeML file.
 
@@ -109,9 +115,11 @@ class Catalog(pd.DataFrame):
             Catalog
         """
         if os.path.isfile(quakeml):
-            catalog = parse_quakeml_file(quakeml, includeallmagnitudes)
+            catalog = parse_quakeml_file(
+                quakeml, includeallmagnitudes, includequality)
         else:
-            catalog = parse_quakeml(quakeml, includeallmagnitudes)
+            catalog = parse_quakeml(
+                quakeml, includeallmagnitudes, includequality)
 
         df = cls.from_dict(catalog, includeuncertainties, includeids)
 
@@ -136,22 +144,30 @@ class Catalog(pd.DataFrame):
         df = super().from_dict(data, *args, **kwargs)
         df = cls(df)
 
-        if 'magnitude' in df.columns:
-            df['magnitude'] = pd.to_numeric(df['magnitude'])
-        if 'latitude' in df.columns:
-            df['latitude'] = pd.to_numeric(df['latitude'])
-        if 'longitude' in df.columns:
-            df['longitude'] = pd.to_numeric(df['longitude'])
-        if 'depth' in df.columns:
-            df['depth'] = pd.to_numeric(df['depth'])
+        numeric_cols = ['magnitude', 'latitude', 'longitude', 'depth',
+                        'associatedphasecount', 'usedphasecount',
+                        'associatedstationcount', 'usedstationcount',
+                        'standarderror', 'azimuthalgap',
+                        'secondaryazimuthalgap', 'maximumdistance',
+                        'minimumdistance', 'mediandistance']
+
+        for num in numeric_cols:
+            if num in df.columns:
+                df[num] = pd.to_numeric(df[num])
+
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
 
-        if not includeuncertainty:
+        if not includeuncertainty and isinstance(df, Catalog):
             df = df.drop_uncertainties()
-
-        if not includeids:
+        if not includeids and isinstance(df, Catalog):
             df = df.drop_ids()
+
+        if not isinstance(df, Catalog):
+            df = Catalog(df)
+
+        if df.empty:
+            df = Catalog(columns=REQUIRED_COLS_CATALOG)
 
         return df
 
@@ -262,11 +278,10 @@ class Catalog(pd.DataFrame):
             best_mc:    best mc
             beta:       corresponding best beta
         """
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
-            if self.delta_m is None:
-                raise ValueError("binning (delta_m) needs to be set")
-            else:
-                delta_m = self.delta_m
+            delta_m = self.delta_m
 
         if mcs_test is None:
             mcs_test = np.arange(self.magnitude.min(),
@@ -286,7 +301,7 @@ class Catalog(pd.DataFrame):
         return mc_est
 
     @require_cols(require=['magnitude'])
-    def get_b_value(
+    def estimate_b(
         self,
         mc: float | None = None,
         delta_m: float | None = None,
@@ -327,17 +342,15 @@ class Catalog(pd.DataFrame):
             n:      number of events used for the estimation
         """
 
+        if mc is None and self.mc is None:
+            raise ValueError("completeness magnitude (mc) needs to be set")
         if mc is None:
-            if self.mc is None:
-                raise ValueError("completeness magnitude (mc) needs to be set")
-            else:
-                mc = self. mc
+            mc = self.mc
 
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
-            if self.delta_m is None:
-                raise ValueError("binning (delta_m) needs to be set")
-            else:
-                delta_m = self.delta_m
+            delta_m = self.delta_m
 
         b_estimate = estimate_b(self.magnitude,
                                 mc,
