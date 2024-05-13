@@ -6,50 +6,36 @@ import numpy as np
 import pandas as pd
 
 from seismostats.analysis.estimate_beta import estimate_b_tinti
-from seismostats.utils.binning import normal_round, get_fmd
-from seismostats.utils.simulate_distributions import simulate_magnitudes
+from seismostats.utils.binning import get_fmd
+from seismostats.utils.simulate_distributions import (
+    simulated_magnitudes_binned,
+)
 
 
-def fitted_cdf_discrete(
+def cdf_discrete_GR(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
-    x_max: float | None = None,
-    beta: float | None = None,
+    beta: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Calculate the fitted cumulative distribution function (CDF)
-    for a discrete Gutenberg-Richter distribution.
+    Calculate the cumulative distribution function (CDF)
+    for a discrete Gutenberg-Richter distribution at the points of the sample.
 
     Parameters:
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bins
-        x_max:      Maximum magnitude, by default None
-        beta:       Beta parameter for the Gutenberg-Richter distribution, by
-                    default None
+        beta:       Beta parameter for the Gutenberg-Richter distribution
 
     Returns:
-        x: x-values of the fitted CDF
-        y: y-values of the fitted CDF
+        x: unique x-values of the sample
+        y: corresponding y-values of the CDF of the GR distribution
     """
 
-    if beta is None:
-        beta = estimate_b_tinti(
-            sample, mc=mc, delta_m=delta_m, b_parameter="beta"
-        )
-
-    if x_max is None:
-        sample_bin_n = (sample.max() - mc) / delta_m
-    else:
-        sample_bin_n = (x_max - mc) / delta_m
-
-    bins = np.arange(sample_bin_n + 1)
-    cdf = 1 - np.exp(-beta * delta_m * (bins + 1))
-    x, y = mc + bins * delta_m, cdf
-
-    x, y_count = np.unique(x, return_counts=True)
-    y = y[np.cumsum(y_count) - 1]
+    x = np.sort(sample)
+    x = np.unique(x)
+    y = 1 - np.exp(-beta * (x + delta_m - mc))
     return x, y
 
 
@@ -80,11 +66,11 @@ def empirical_cdf(
     except BaseException:
         pass
 
-    sample_idxs_sorted = np.argsort(sample)
-    sample_sorted = sample[sample_idxs_sorted]
+    idx = np.argsort(sample)
+    sample_sorted = sample[idx]
 
     if weights is not None:
-        weights_sorted = weights[sample_idxs_sorted]
+        weights_sorted = weights[idx]
         x, y = sample_sorted, np.cumsum(weights_sorted) / weights_sorted.sum()
     else:
         x, y = sample_sorted, np.arange(1, len(sample) + 1) / len(sample)
@@ -99,7 +85,7 @@ def ks_test_gr(
     mc: float,
     delta_m: float,
     ks_ds: list[float] | None = None,
-    n_samples: int = 10000,
+    n: int = 10000,
     beta: float | None = None,
 ) -> tuple[float, float, list[float]]:
     """
@@ -111,8 +97,8 @@ def ks_test_gr(
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
         ks_ds:      List to store KS distances, by default None
-        n_samples:  Number of magnitude samples to be generated in p-value
-                    calculation of KS distance, by default 10000
+        n:          Number of number of times the KS distance is calculated for
+                estimating the p-value, by default 10000
         beta :      Beta parameter for the Gutenberg-Richter distribution, by
                     default None
 
@@ -141,37 +127,24 @@ def ks_test_gr(
         ks_ds = []
 
         n_sample = len(sample)
-        simulated_all = (
-            normal_round(
-                simulate_magnitudes(
-                    mc=mc - delta_m / 2, beta=beta, n=n_samples * n_sample
-                )
-                / delta_m
+        simulated_all = simulated_magnitudes_binned(
+            n * n_sample, beta, mc, delta_m, b_parameter="beta"
+        )
+
+        for ii in range(n):
+            simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
+            _, y_th = cdf_discrete_GR(
+                simulated, mc=mc, delta_m=delta_m, beta=beta
             )
-            * delta_m
-        )
+            _, y_emp = empirical_cdf(simulated)
 
-        x_max = np.max(simulated_all)
-        x_fit, y_fit = fitted_cdf_discrete(
-            sample, mc=mc, delta_m=delta_m, x_max=x_max, beta=beta
-        )
-
-        for i in range(n_samples):
-            simulated = simulated_all[n_sample * i : n_sample * (i + 1)].copy()
-            x_emp, y_emp = empirical_cdf(simulated)
-            y_fit_int = np.interp(x_emp, x_fit, y_fit)
-
-            ks_d = np.max(np.abs(y_emp - y_fit_int))
+            ks_d = np.max(np.abs(y_emp - y_th))
             ks_ds.append(ks_d)
-    else:
-        x_fit, y_fit = fitted_cdf_discrete(
-            sample, mc=mc, delta_m=delta_m, beta=beta
-        )
 
-    x_emp, y_emp = empirical_cdf(sample)
-    y_emp_int = np.interp(x_fit, x_emp, y_emp)
+    _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
+    _, y_emp = empirical_cdf(sample)
 
-    orig_ks_d = np.max(np.abs(y_fit - y_emp_int))
+    orig_ks_d = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= orig_ks_d) / len(ks_ds)
 
     return orig_ks_d, p_val, ks_ds
@@ -185,7 +158,7 @@ def mc_ks(
     stop_when_passed: bool = True,
     verbose: bool = False,
     beta: float | None = None,
-    n_samples: int = 10000,
+    n: int = 10000,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
     Estimate the completeness magnitude (mc) for a given list of completeness
@@ -202,9 +175,8 @@ def mc_ks(
         verbose:            Verbose output, by default False
         beta:               If beta is 'known', only estimate mc, by default
                             None
-        n_samples:          Number of magnitude samples to be generated in
-                            p-value calculation of KS distance, by default 10000
-
+         n:                 Number of number of times the KS distance is
+                        calculated for estimating the p-value, by default 10000
     Returns:
         mcs_test:   tested completeness magnitudes
         ks_ds:      KS distances
@@ -221,9 +193,7 @@ def mc_ks(
         if verbose:
             print("\ntesting mc", mc)
 
-        ks_d, p, _ = ks_test_gr(
-            sample, mc=mc, delta_m=delta_m, n_samples=n_samples, beta=beta
-        )
+        ks_d, p, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, n=n, beta=beta)
 
         ks_ds.append(ks_d)
         ps.append(p)
