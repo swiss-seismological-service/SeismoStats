@@ -16,7 +16,7 @@ def cdf_discrete_GR(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
-    beta: float | None = None,
+    beta: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculate the cumulative distribution function (CDF)
@@ -26,18 +26,12 @@ def cdf_discrete_GR(
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bins
-        beta:       Beta parameter for the Gutenberg-Richter distribution, by
-                    default None
+        beta:       Beta parameter for the Gutenberg-Richter distribution
 
     Returns:
         x: unique x-values of the sample
         y: corresponding y-values of the CDF of the GR distribution
     """
-
-    if beta is None:
-        beta = estimate_b_tinti(
-            sample, mc=mc, delta_m=delta_m, b_parameter="beta"
-        )
 
     x = np.sort(sample)
     x = np.unique(x)
