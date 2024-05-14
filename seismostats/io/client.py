@@ -88,6 +88,10 @@ class FDSNWSEventClient():
         catalog = []
 
         r = requests.get(request_url, stream=True)
+
+        if r.status_code == 204:
+            return Catalog.from_dict(catalog, include_uncertainty, include_ids)
+
         catalog = parse_quakeml_response(r, includequality=includequality)
 
         return Catalog.from_dict(
