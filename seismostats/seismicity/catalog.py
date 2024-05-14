@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
+
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
@@ -100,10 +101,10 @@ class Catalog(pd.DataFrame):
 
     @classmethod
     def from_quakeml(cls, quakeml: str,
-                     includeallmagnitudes: bool = True,
+                     include_all_magnitudes: bool = True,
                      includeuncertainties: bool = False,
                      includeids: bool = False,
-                     includequality: bool = False) -> Catalog:
+                     include_quality: bool = False) -> Catalog:
         """
         Create a Catalog from a QuakeML file.
 
@@ -116,10 +117,10 @@ class Catalog(pd.DataFrame):
         """
         if os.path.isfile(quakeml):
             catalog = parse_quakeml_file(
-                quakeml, includeallmagnitudes, includequality)
+                quakeml, include_all_magnitudes, include_quality)
         else:
             catalog = parse_quakeml(
-                quakeml, includeallmagnitudes, includequality)
+                quakeml, include_all_magnitudes, include_quality)
 
         df = cls.from_dict(catalog, includeuncertainties, includeids)
 
