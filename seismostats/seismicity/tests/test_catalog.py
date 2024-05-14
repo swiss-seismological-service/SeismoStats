@@ -94,6 +94,8 @@ def test_catalog_bin():
 
 def test_to_quakeml():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
+    with open(xml_file, 'r') as file:
+        xml_content = file.read()
 
     catalog = Catalog.from_quakeml(
         xml_file, includeuncertainties=True, includeids=True)
@@ -105,6 +107,10 @@ def test_to_quakeml():
     xml = re.sub(r"[\n\t\s]*", "", xml)
 
     assert catalog_xml == xml
+
+    catalog2 = catalog.from_quakeml(
+        xml_content, includeuncertainties=True, includeids=True)
+    assert catalog.equals(catalog2)
 
 
 def test_to_quakeml_without():
@@ -134,14 +140,17 @@ def test_to_quakeml_without():
 def test_to_quakeml_forecast():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
 
-    catalog = Catalog.from_quakeml(
+    catalog1 = Catalog.from_quakeml(
         xml_file, includeuncertainties=True, includeids=True)
-    catalog2 = catalog.copy()
+    catalog1.name = 'Catalog 1'
+    catalog2 = catalog1.copy()
+    catalog2.name = 'Catalog 2'
 
-    catalog['catalog_id'] = 1
+    catalog1['catalog_id'] = 1
     catalog2['catalog_id'] = 2
 
-    catalog = pd.concat([catalog, catalog2]).reset_index(drop=True)
+    catalog = pd.concat([catalog1, catalog2]).reset_index(drop=True)
+    assert catalog.name == 'Catalog 1'
 
     catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
 
@@ -155,3 +164,19 @@ def test_to_quakeml_forecast():
     xml = re.sub(r"[\n\t\s]*", "", xml)
 
     assert catalog_xml == xml
+
+    catalog = pd.merge(catalog1, catalog2, how='outer')
+    assert catalog.name == 'Catalog 1'
+
+
+def test_empty_catalog():
+    catalog = Catalog()
+    assert catalog.empty
+    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG
+
+    catalog = Catalog.from_dict({})
+    assert catalog.empty
+    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG
+
+    catalog = Catalog.from_dict({'magnitude': []}, includeids=False)
+    assert isinstance(catalog, Catalog)
