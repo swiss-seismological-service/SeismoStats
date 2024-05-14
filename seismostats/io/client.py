@@ -90,5 +90,12 @@ class FDSNWSEventClient():
         r = requests.get(request_url, stream=True)
         catalog = parse_quakeml_response(r, includequality=includequality)
 
-        return Catalog.from_dict(
+        catalog = Catalog.from_dict(
             catalog, include_uncertainty, include_ids)
+
+        if start_time:
+            catalog.starttime = start_time
+        if end_time:
+            catalog.endtime = end_time
+
+        return catalog
