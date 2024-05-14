@@ -89,8 +89,7 @@ class Catalog(pd.DataFrame):
         **kwargs
     ):
         if data is None and 'columns' not in kwargs:
-            super().__init__(columns=REQUIRED_COLS_CATALOG, *args,
-                             starttime=None, endtime=None, **kwargs)
+            super().__init__(columns=REQUIRED_COLS_CATALOG, *args, **kwargs)
         else:
             super().__init__(data, *args, **kwargs)
 
