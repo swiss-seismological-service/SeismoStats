@@ -294,7 +294,7 @@ def parse_quakeml_file(
     except SAXParseException as e:
         if 'no element found' in str(e):
             return data
-        raise
+        raise e
     return data
 
 
@@ -344,5 +344,11 @@ def parse_quakeml_response(
     handler = QuakeMLHandler(data, include_all_magnitudes, include_quality)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
-    parser.parse(response.raw)
+
+    try:
+        parser.parse(response.raw)
+    except SAXParseException as e:
+        if 'no element found' in str(e):
+            return data
+        raise e
     return data
