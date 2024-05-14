@@ -119,12 +119,12 @@ def _select_secondary_magnitudes(magnitudes: list):
     return selection
 
 
-def _extract_origin(origin: dict, includequality: bool) -> dict:
+def _extract_origin(origin: dict, include_quality: bool) -> dict:
     origin_dict = {}
     for key, value in ORIGIN_MAPPINGS.items():
         if key in origin:
             origin_dict[value] = origin[key]
-    if includequality:
+    if include_quality:
         for key, value in QUALITY_MAPPINGS.items():
             if key in origin:
                 origin_dict[value] = origin[key]
@@ -150,8 +150,8 @@ def _extract_secondary_magnitudes(magnitudes: list) -> dict:
 
 
 def _parse_to_dict(event: dict, origins: list, magnitudes: list,
-                   includeallmagnitudes: bool = True,
-                   includequality: bool = True) -> dict:
+                   include_all_magnitudes: bool = True,
+                   include_quality: bool = True) -> dict:
     """
     Parse earthquake event information dictionaries as produced by the
     QuakeMLHandler and return a dictionary of event parameters.
@@ -163,7 +163,7 @@ def _parse_to_dict(event: dict, origins: list, magnitudes: list,
             A list of dictionaries representing the earthquake origins.
         magnitudes : list
             A list of dictionaries representing the earthquake magnitudes.
-        includeallmagnitudes : bool, optional
+        include_all_magnitudes : bool, optional
             If True, include all magnitudes in the output dictionary.
             Otherwise, only include the preferred magnitude.
 
@@ -179,7 +179,7 @@ def _parse_to_dict(event: dict, origins: list, magnitudes: list,
         _select_magnitude_by_id(magnitudes,
                                 event.get('preferredMagnitudeID', None))
 
-    if magnitudes and includeallmagnitudes:
+    if magnitudes and include_all_magnitudes:
         magnitudes = _select_secondary_magnitudes(magnitudes)
     else:
         magnitudes = []
@@ -188,7 +188,7 @@ def _parse_to_dict(event: dict, origins: list, magnitudes: list,
         {value: event.get(key, None) for key, value in EVENT_MAPPINGS.items()}
 
     return event_params | \
-        _extract_origin(preferred_origin, includequality) | \
+        _extract_origin(preferred_origin, include_quality) | \
         _extract_magnitude(preferred_magnitude) | \
         _extract_secondary_magnitudes(magnitudes)
 
@@ -201,7 +201,7 @@ class QuakeMLHandler(xml.sax.ContentHandler):
     Args:
         catalog : Catalog
             A Catalog object to store the extracted earthquake events.
-        includeallmagnitudes : bool, optional
+        include_all_magnitudes : bool, optional
             If True, include all magnitudes in the catalog. Otherwise,
             only include the preferred magnitude.
     Notes:
@@ -211,10 +211,10 @@ class QuakeMLHandler(xml.sax.ContentHandler):
     """
 
     def __init__(
-            self, catalog, includeallmagnitudes=True, includequality=True):
+            self, catalog, include_all_magnitudes=True, include_quality=True):
         self.catalog = catalog
-        self.includeallmagnitudes = includeallmagnitudes
-        self.includequality = includequality
+        self.include_all_magnitudes = include_all_magnitudes
+        self.include_quality = include_quality
         self.event = []
         self.origin = []
         self.magnitude = []
@@ -245,8 +245,8 @@ class QuakeMLHandler(xml.sax.ContentHandler):
         if tagName == 'event':
             self.catalog.append(_parse_to_dict(
                 self.event[-1], self.origin, self.magnitude,
-                includeallmagnitudes=self.includeallmagnitudes,
-                includequality=self.includequality))
+                include_all_magnitudes=self.include_all_magnitudes,
+                include_quality=self.include_quality))
             self.parent = ''
             self.location = ''
             self.event = []
@@ -271,8 +271,8 @@ class QuakeMLHandler(xml.sax.ContentHandler):
 
 
 def parse_quakeml_file(
-        file_path: str, includeallmagnitudes: bool = True,
-        includequality: bool = True) -> list[dict]:
+        file_path: str, include_all_magnitudes: bool = True,
+        include_quality: bool = True) -> list[dict]:
     """
     Parse a QuakeML file and return a list of earthquake event information
     dictionaries.
@@ -286,7 +286,7 @@ def parse_quakeml_file(
             A list of earthquake event information dictionaries.
     """
     data = []
-    handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
+    handler = QuakeMLHandler(data, include_all_magnitudes, include_quality)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
     try:
@@ -299,8 +299,8 @@ def parse_quakeml_file(
 
 
 def parse_quakeml(
-        quakeml: str, includeallmagnitudes: bool = True,
-        includequality: bool = True) -> list[dict]:
+        quakeml: str, include_all_magnitudes: bool = True,
+        include_quality: bool = True) -> list[dict]:
     """
     Parse a QuakeML string and return a list of earthquake event information
     dictionaries.
@@ -318,15 +318,15 @@ def parse_quakeml(
     if quakeml == '':
         return data
 
-    handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
+    handler = QuakeMLHandler(data, include_all_magnitudes, include_quality)
     xml.sax.parseString(quakeml, handler)
     return data
 
 
 def parse_quakeml_response(
         response: Response,
-        includeallmagnitudes: bool = True,
-        includequality: bool = True) -> list[dict]:
+        include_all_magnitudes: bool = True,
+        include_quality: bool = True) -> list[dict]:
     """
     Parse a QuakeML response and return a list of earthquake event information
     dictionaries.
@@ -341,7 +341,7 @@ def parse_quakeml_response(
     """
     response.raw.decode_content = True  # if content-encoding is used decode
     data = []
-    handler = QuakeMLHandler(data, includeallmagnitudes, includequality)
+    handler = QuakeMLHandler(data, include_all_magnitudes, include_quality)
     parser = xml.sax.make_parser()
     parser.setContentHandler(handler)
     parser.parse(response.raw)

@@ -166,7 +166,7 @@ def test_parse_quakeml():
     with open(xml_file, 'r') as f:
         xml_str = f.read()
 
-    catalog = parse_quakeml(xml_str, includequality=True)
+    catalog = parse_quakeml(xml_str, include_quality=True)
     print(catalog)
     np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
                             sorted(OUT, key=lambda k: k['eventid']))
