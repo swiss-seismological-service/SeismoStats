@@ -15,6 +15,23 @@ date_format = "%Y-%m-%dT%H:%M:%S"
 
 
 @responses.activate
+def test_empty_catalog():
+    """
+    Tests the case where the Webservice returns an empty (204) response
+    """
+
+    url = 'http://mocked_url'
+    responses.add(responses.GET, url, body='', status=204)
+
+    client = FDSNWSEventClient(url)
+
+    cat = client.get_events()
+
+    assert cat.empty
+    assert isinstance(cat, Catalog)
+
+
+@responses.activate
 def test_download_catalog():
     url = 'http://mocked_url'
     start_time = datetime(1900, 1, 1)

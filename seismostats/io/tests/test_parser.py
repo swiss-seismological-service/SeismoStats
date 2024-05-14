@@ -1,9 +1,14 @@
 import os
 import xml.sax
+from xml.sax._exceptions import SAXParseException
 
 import numpy as np
+import pytest
+import requests
+import responses
 
-from seismostats.io.parser import QuakeMLHandler, parse_quakeml
+from seismostats.io.parser import (QuakeMLHandler, parse_quakeml,
+                                   parse_quakeml_file, parse_quakeml_response)
 
 OUT = [
     {
@@ -167,6 +172,70 @@ def test_parse_quakeml():
         xml_str = f.read()
 
     catalog = parse_quakeml(xml_str, include_quality=True)
-    print(catalog)
+
     np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
                             sorted(OUT, key=lambda k: k['eventid']))
+
+    catalog = parse_quakeml('')
+    assert catalog == []
+
+    catalog = parse_quakeml_file('seismostats/io/tests/empty.xml')
+    assert catalog == []
+
+    catalog = parse_quakeml_file('seismostats/io/tests/query.xml')
+    assert len(catalog) > 0
+
+    with pytest.raises(SAXParseException):
+        catalog = parse_quakeml_file('seismostats/io/tests/wrong.xml')
+
+
+@responses.activate
+def test_parse_quakeml_response():
+
+    # test empty
+    rsp = responses.Response(
+        method="GET",
+        url="http://example.com/nodata",
+        status=204,
+        body=''
+    )
+    responses.add(rsp)
+
+    resp = requests.get("http://example.com/nodata", stream=True)
+
+    catalog = parse_quakeml_response(resp)
+    assert catalog == []
+
+    # test with data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    xml_file = os.path.join(current_dir, 'query.xml')
+    with open(xml_file, 'rb') as f:
+        rsp2 = responses.Response(
+            method="GET",
+            url="http://example.com/data",
+            status=200,
+            body=f.read()
+        )
+        responses.add(rsp2)
+
+        resp2 = requests.get("http://example.com/data", stream=True)
+
+        catalog = parse_quakeml_response(resp2)
+
+        np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
+                                sorted(OUT, key=lambda k: k['eventid']))
+
+    # test invalid data
+    rsp3 = responses.Response(
+        method="GET",
+        url="http://example.com/error",
+        status=200,
+        body='''</html>
+                </html>'''
+    )
+    responses.add(rsp3)
+
+    resp3 = requests.get("http://example.com/error", stream=True)
+
+    with pytest.raises(SAXParseException):
+        catalog = parse_quakeml_response(resp3)
