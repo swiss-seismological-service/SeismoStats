@@ -615,7 +615,7 @@ def estimate_b_kijko_smit_2012(
     assert [i - delta_m in np.arange(completeness_table[0, 0],
                                      np.max(magnitudes) + delta_m + 0.001,
                                      delta_m)
-            for i in np.unique(magnitudes)],\
+            for i in np.unique(magnitudes)], \
         "magnitude bins not aligned with completeness edges"
     if not np.all(magnitudes >= completeness_table[:, 0].min()):
         warnings.warn(
