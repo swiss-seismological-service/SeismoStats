@@ -496,6 +496,8 @@ class ForecastCatalog(Catalog):
             Data to initialize the catalog with.
         name : str, optional
             Name of the catalog.
+        n_catalogs : int, optional
+            Total number of catalogs represented, including empty catalogs.
         *args, **kwargs : optional
             Additional arguments and keyword arguments to pass to pandas
             DataFrame constructor.
@@ -506,12 +508,12 @@ class ForecastCatalog(Catalog):
     """
 
     _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
-    _metadata = Catalog._metadata + ['total_catalogs']
+    _metadata = Catalog._metadata + ['n_catalogs']
 
-    def __init__(self, data=None, *args, name=None, **kwargs):
+    def __init__(self, data=None, *args, n_catalogs=None, **kwargs):
         super().__init__(data, *args, **kwargs)
         # Total number of catalogs represented, inculding empty catalogs
-        self.total_catalogs = None
+        self.n_catalogs = n_catalogs
 
     @require_cols(require=_required_cols)
     def to_quakeml(self, agencyID=' ', author=' ') -> str:
