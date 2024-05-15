@@ -84,8 +84,8 @@ def ks_test_gr(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
+    beta: float,
     n: int = 10000,
-    beta: float | None = None,
 ) -> tuple[float, float, list[float]]:
     """
     For a given magnitude sample and mc,
@@ -96,14 +96,13 @@ def ks_test_gr(
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
+        beta :      Beta parameter for the Gutenberg-Richter distribution
         n:          Number of times the KS distance is calculated for
                     estimating the p-value, by default 10000
-        beta :      Beta parameter for the Gutenberg-Richter distribution, by
-                    default None. If None, beta is estimated from the sample.
 
     Returns:
-        ks_d_obs:   KS distance of the sample
         p_val:      p-value
+        ks_d_obs:   KS distance of the sample
         ks_ds:      list of KS distances
     """
 
@@ -116,9 +115,6 @@ def ks_test_gr(
     if len(np.unique(sample)) == 1:
         print("sample contains only one value")
         return 1, 0, []
-
-    if beta is None:
-        beta = estimate_b_tinti(sample, mc=mc, delta_m=delta_m, b_parameter="beta")
 
     ks_ds = []
 
@@ -187,7 +183,7 @@ def mc_ks(
         if verbose:
             print("\ntesting mc", mc)
 
-        p, ks_d, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, n=n, beta=beta)
+        p, ks_d, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, beta=beta, n=n)
 
         ks_ds.append(ks_d)
         ps.append(p)
