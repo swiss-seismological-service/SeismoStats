@@ -88,7 +88,7 @@ def ks_test_gr(
     n: int = 10000,
 ) -> tuple[float, float, list[float]]:
     """
-    For a given magnitude sample and mc,
+    For a given magnitude sample and mc and beta,
     perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
     distribution, to check if the sample could have been drawn from a GR distribution.
 
@@ -142,9 +142,9 @@ def ks_test_gr(
 
 def mc_ks(
     sample: np.ndarray,
-    mcs_test: np.ndarray,
     delta_m: float,
-    p_pass: float,
+    mcs_test: np.ndarray | None = None,
+    p_pass: float = 0.1,
     stop_when_passed: bool = True,
     verbose: bool = False,
     beta: float | None = None,
@@ -156,10 +156,11 @@ def mc_ks(
 
     Args:
         sample:             Magnitudes to test
-        mcs_test:           Completeness magnitudes to test
         delta_m:            Magnitude bins (sample has to be rounded to bins
                             beforehand)
-        p_pass:             P-value with which the test is passed
+        mcs_test:           Completeness magnitudes to test, by default None
+        p_pass:             P-value with which the test is passed, by default
+                            0.1
         stop_when_passed:   Stop calculations when first mc passes the test, by
                             default True
         verbose:            Verbose output, by default False
