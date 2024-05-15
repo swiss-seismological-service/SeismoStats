@@ -47,14 +47,15 @@ def plot_in_space(
         dot_smallest:   smallest dot size for magnitude scaling
         dot_largest:    largest dot size for magnitude scaling
         dot_interpolation_power: interpolation power for scaling
-        dot_labels:     int, None, "auto" (default), array-like, or
+        dot_labels:     int, None, "auto" (default), list, or
                         `~.ticker.Locator`. Determines, how labels for
                         magnitudes can be created. Input for matplotlib
                         PathCollection.legend_elements. If None, no label is
                         shown. If an integer, target to use dot_labels
                         elements in the normed range. If "auto", an automatic
-                        range is chosen for the labels (default). If a list
-                        or array, use exactly those elements for the legend.
+                        range is chosen for the labels (default). If a list,
+                        use elements of list which are between minimum and
+                        maximum magnitude of dataset for the legend.
                         Finally, a `~.ticker.Locator` can be provided.
     Returns:
         GeoAxis object
@@ -143,6 +144,8 @@ def plot_in_space(
 
     # insert legend
     if dot_labels is not None:
+        if isinstance(dot_labels, np.ndarray):
+            dot_labels = dot_labels.tolist()
         handles, labels = points.legend_elements(
             prop="sizes",
             num=dot_labels,
@@ -157,7 +160,7 @@ def plot_in_space(
                 dot_interpolation_power,
             ),
         )
-        legend = ax.legend(handles, labels, loc="upper right", title="Magnitudes")
+        ax.legend(handles, labels, loc="upper right", title="Magnitudes")
     else:
         # no legend is shown
         pass
@@ -165,7 +168,9 @@ def plot_in_space(
     return ax
 
 
-def rect_from_bound(xmin: float, xmax: float, ymin: float, ymax: float) -> list[tuple]:
+def rect_from_bound(
+    xmin: float, xmax: float, ymin: float, ymax: float
+) -> list[tuple]:
     """
     Makes list of tuples for creating a rectangle polygon
     Args:
