@@ -90,19 +90,19 @@ def ks_test_gr(
     """
     For a given magnitude sample and mc,
     perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
-    distribution.
+    distribution, to check if the sample could have been drawn from a GR distribution.
 
     Args:
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
-        n:          Number of number of times the KS distance is calculated for
-                estimating the p-value, by default 10000
+        n:          Number of times the KS distance is calculated for
+                    estimating the p-value, by default 10000
         beta :      Beta parameter for the Gutenberg-Richter distribution, by
-                    default None
+                    default None. If None, beta is estimated from the sample.
 
     Returns:
-        orig_ks_d:  original KS distance
+        ks_d_obs:   KS distance of the sample
         p_val:      p-value
         ks_ds:      list of KS distances
     """
@@ -138,10 +138,10 @@ def ks_test_gr(
     _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
     _, y_emp = empirical_cdf(sample)
 
-    orig_ks_d = np.max(np.abs(y_emp - y_th))
-    p_val = sum(ks_ds >= orig_ks_d) / len(ks_ds)
+    ks_d_obs = np.max(np.abs(y_emp - y_th))
+    p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
 
-    return orig_ks_d, p_val, ks_ds
+    return ks_d_obs, p_val, ks_ds
 
 
 def mc_ks(
