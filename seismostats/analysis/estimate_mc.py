@@ -84,19 +84,18 @@ def ks_test_gr(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
-    ks_ds: list[float] | None = None,
     n: int = 10000,
     beta: float | None = None,
 ) -> tuple[float, float, list[float]]:
     """
-    Perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
+    For a given magnitude sample and mc,
+    perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
     distribution.
 
     Args:
         sample:     Magnitude sample
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
-        ks_ds:      List to store KS distances, by default None
         n:          Number of number of times the KS distance is calculated for
                 estimating the p-value, by default 10000
         beta :      Beta parameter for the Gutenberg-Richter distribution, by
@@ -119,27 +118,22 @@ def ks_test_gr(
         return 1, 0, []
 
     if beta is None:
-        beta = estimate_b_tinti(
-            sample, mc=mc, delta_m=delta_m, b_parameter="beta"
-        )
+        beta = estimate_b_tinti(sample, mc=mc, delta_m=delta_m, b_parameter="beta")
 
-    if ks_ds is None:
-        ks_ds = []
+    ks_ds = []
 
-        n_sample = len(sample)
-        simulated_all = simulated_magnitudes_binned(
-            n * n_sample, beta, mc, delta_m, b_parameter="beta"
-        )
+    n_sample = len(sample)
+    simulated_all = simulated_magnitudes_binned(
+        n * n_sample, beta, mc, delta_m, b_parameter="beta"
+    )
 
-        for ii in range(n):
-            simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
-            _, y_th = cdf_discrete_GR(
-                simulated, mc=mc, delta_m=delta_m, beta=beta
-            )
-            _, y_emp = empirical_cdf(simulated)
+    for ii in range(n):
+        simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
+        _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
+        _, y_emp = empirical_cdf(simulated)
 
-            ks_d = np.max(np.abs(y_emp - y_th))
-            ks_ds.append(ks_d)
+        ks_d = np.max(np.abs(y_emp - y_th))
+        ks_ds.append(ks_d)
 
     _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
     _, y_emp = empirical_cdf(sample)
@@ -253,8 +247,6 @@ def mc_max_curvature(
     Returns:
         mc:                 estimated completeness magnitude
     """
-    bins, count, mags = get_fmd(
-        mags=sample, delta_m=delta_m, bin_position="center"
-    )
+    bins, count, mags = get_fmd(mags=sample, delta_m=delta_m, bin_position="center")
     mc = bins[count.argmax()] + correction_factor
     return mc
