@@ -141,7 +141,7 @@ def ks_test_gr(
     ks_d_obs = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
 
-    return ks_d_obs, p_val, ks_ds
+    return p_val, ks_d_obs, ks_ds
 
 
 def mc_ks(
@@ -187,7 +187,7 @@ def mc_ks(
         if verbose:
             print("\ntesting mc", mc)
 
-        ks_d, p, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, n=n, beta=beta)
+        p, ks_d, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, n=n, beta=beta)
 
         ks_ds.append(ks_d)
         ps.append(p)
