@@ -5,6 +5,7 @@ import cartopy.io.img_tiles as cimgt
 import geopandas
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
@@ -12,7 +13,7 @@ from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from shapely.geometry import Polygon
 
 # Own functions
-from seismostats.plots.basics import dot_size
+from seismostats.plots.basics import dot_size, reverse_dot_size
 
 
 def plot_in_space(
@@ -25,6 +26,7 @@ def plot_in_space(
     dot_smallest: int = 10,
     dot_largest: int = 200,
     dot_interpolation_power: int = 2,
+    dot_labels: str = "auto",
 ) -> cartopy.mpl.geoaxes.GeoAxes:
     """
      Function plots seismicity on the surface. If include_map is chosen True,
@@ -45,7 +47,15 @@ def plot_in_space(
         dot_smallest:   smallest dot size for magnitude scaling
         dot_largest:    largest dot size for magnitude scaling
         dot_interpolation_power: interpolation power for scaling
-
+        dot_labels:     int, None, "auto" (default), array-like, or 
+                        `~.ticker.Locator`. Determines, how labels for 
+                        magnitudes can be created. Input for matplotlib 
+                        PathCollection.legend_elements. If None, no label is 
+                        shown. If an integer, target to use dot_labels 
+                        elements in the normed range. If "auto", an automatic 
+                        range is chosen for the labels (default). If a list 
+                        or array, use exactly those elements for the legend.
+                        Finally, a `~.ticker.Locator` can be provided.
     Returns:
         GeoAxis object
     """
@@ -116,7 +126,7 @@ def plot_in_space(
     gl.bottom_labels = False
     gl.right_labels = False
 
-    ax.scatter(
+    points = ax.scatter(
         cat["longitude"],
         cat["latitude"],
         c="blue",
@@ -133,6 +143,16 @@ def plot_in_space(
         alpha=0.8,
     )
 
+
+    # insert legend
+    if dot_labels is not None:
+        handles, labels = points.legend_elements(prop="sizes", num = dot_labels, c= 'blue', alpha=0.5, func=lambda x: reverse_dot_size(x, min(cat["magnitude"]), max(cat["magnitude"]), dot_smallest, dot_largest, dot_interpolation_power))
+        legend = ax.legend(handles, labels, loc="upper right", title="Magnitudes")
+    else:
+        # no legend is shown
+        pass
+   
+   
     return ax
 
 

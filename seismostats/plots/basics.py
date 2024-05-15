@@ -300,3 +300,42 @@ def dot_size(
     sizes = mag_powered * (largest - smallest) + smallest
 
     return sizes
+
+def reverse_dot_size(sizes: np.ndarray, min_mag: np.float_, max_mag:np.float_, smallest: int = 10, largest: int = 200,
+                        interpolation_power: int = 1) -> np.ndarray:
+    """Compute magnitudes proportional to a given array of dot sizes.
+
+    The magnitudes are computed by reversing the dot size calculation
+    performed by the dot_size function.
+
+    Args
+    ----------
+    sizes : array-like of float, shape (n_samples,)
+        The sizes of the dots.
+    min_mag : float
+        The minimum magnitude in the dataset.
+    max_mag : float
+        The maximum magnitude in the dataset.
+    smallest : float, optional (default=10)
+        The size of the smallest dot, in pixels.
+    largest : float, optional (default=200)
+        The size of the largest dot, in pixels.
+    interpolation_power : float, optional (default=1)
+        The power used to interpolate between the smallest and largest size.
+        A value of 1 results in a linear interpolation, while larger values
+        result in a more "concave" curve.
+
+    Returns
+    -------
+    magnitudes : ndarray of float, shape (n_samples,)
+        The magnitudes corresponding to the given dot sizes.
+    """
+    if largest <= smallest:
+        print(
+            "largest value is not larger than smallest, "
+            "setting it to whatever I think is better")
+        largest = 50 * max(smallest, 2)
+    size_norm = (sizes - smallest) / (largest - smallest)
+    size_powered = np.power(size_norm, 1/interpolation_power)
+    magnitudes = size_powered * (max_mag - min_mag) + min_mag
+    return magnitudes
