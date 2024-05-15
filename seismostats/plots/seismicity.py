@@ -47,13 +47,13 @@ def plot_in_space(
         dot_smallest:   smallest dot size for magnitude scaling
         dot_largest:    largest dot size for magnitude scaling
         dot_interpolation_power: interpolation power for scaling
-        dot_labels:     int, None, "auto" (default), array-like, or 
-                        `~.ticker.Locator`. Determines, how labels for 
-                        magnitudes can be created. Input for matplotlib 
-                        PathCollection.legend_elements. If None, no label is 
-                        shown. If an integer, target to use dot_labels 
-                        elements in the normed range. If "auto", an automatic 
-                        range is chosen for the labels (default). If a list 
+        dot_labels:     int, None, "auto" (default), array-like, or
+                        `~.ticker.Locator`. Determines, how labels for
+                        magnitudes can be created. Input for matplotlib
+                        PathCollection.legend_elements. If None, no label is
+                        shown. If an integer, target to use dot_labels
+                        elements in the normed range. If "auto", an automatic
+                        range is chosen for the labels (default). If a list
                         or array, use exactly those elements for the legend.
                         Finally, a `~.ticker.Locator` can be provided.
     Returns:
@@ -89,9 +89,7 @@ def plot_in_space(
             poly[0].bounds[1] - pad_lon,
             poly[0].bounds[3] + pad_lon,
         ]
-        msk = Polygon(rect_from_bound(*exts)).difference(
-            poly[0].simplify(0.01)
-        )
+        msk = Polygon(rect_from_bound(*exts)).difference(poly[0].simplify(0.01))
         msk_stm = tile_proj.project_geometry(msk, ll_proj)
         ax.add_geometries(
             msk_stm, tile_proj, facecolor="white", edgecolor=None, alpha=0.6
@@ -143,22 +141,31 @@ def plot_in_space(
         alpha=0.8,
     )
 
-
     # insert legend
     if dot_labels is not None:
-        handles, labels = points.legend_elements(prop="sizes", num = dot_labels, c= 'blue', alpha=0.5, func=lambda x: reverse_dot_size(x, min(cat["magnitude"]), max(cat["magnitude"]), dot_smallest, dot_largest, dot_interpolation_power))
+        handles, labels = points.legend_elements(
+            prop="sizes",
+            num=dot_labels,
+            c="blue",
+            alpha=0.5,
+            func=lambda x: reverse_dot_size(
+                x,
+                min(cat["magnitude"]),
+                max(cat["magnitude"]),
+                dot_smallest,
+                dot_largest,
+                dot_interpolation_power,
+            ),
+        )
         legend = ax.legend(handles, labels, loc="upper right", title="Magnitudes")
     else:
         # no legend is shown
         pass
-   
-   
+
     return ax
 
 
-def rect_from_bound(
-    xmin: float, xmax: float, ymin: float, ymax: float
-) -> list[tuple]:
+def rect_from_bound(xmin: float, xmax: float, ymin: float, ymax: float) -> list[tuple]:
     """
     Makes list of tuples for creating a rectangle polygon
     Args:
