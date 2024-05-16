@@ -91,7 +91,8 @@ def ks_test_gr(
     """
     For a given magnitude sample and mc and beta,
     perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
-    distribution, to check if the sample could have been drawn from a GR distribution.
+    distribution, to check if the sample
+    could have been drawn from a GR distribution.
 
     Args:
         sample:     Magnitude sample
@@ -170,7 +171,8 @@ def mc_ks(
         beta:               If beta is 'known', only estimate mc, by default
                             None
         n:                  Number of number of times the KS distance is
-                            calculated for estimating the p-value, by default 10000
+                            calculated for estimating the p-value,
+                            by default 10000
     Returns:
         mcs_test:   tested completeness magnitudes
         ks_ds:      KS distances
