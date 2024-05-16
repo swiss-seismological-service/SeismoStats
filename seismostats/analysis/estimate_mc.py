@@ -182,6 +182,11 @@ def mc_ks(
         mcs_test = bin_to_precision(
             np.arange(np.min(sample), np.max(sample), delta_m), delta_m
         )
+    else:
+        # check that they are ordered by size
+        if not np.all(np.diff(mcs_test) > 0):
+            warnings.warn("mcs_test are being re-ordered by size.")
+            mcs_test = np.sort(np.unique(mcs_test))
 
     # check if binning is correct
     if not np.allclose(sample, bin_to_precision(sample, delta_m)):
@@ -202,7 +207,7 @@ def mc_ks(
         # i no beta is given, estimate beta
         if beta is None:
             mc_beta = estimate_b(
-                sample=mc_sample, mc=mc, delta_m=delta_m, b_parameter="beta"
+                magnitudes=mc_sample, mc=mc, delta_m=delta_m, b_parameter="beta"
             )
         else:
             mc_beta = beta
