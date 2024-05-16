@@ -226,7 +226,9 @@ def mc_ks(
         else:
             mc_beta = beta
 
-        p, ks_d, _ = ks_test_gr(mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n)
+        p, ks_d, _ = ks_test_gr(
+            mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n
+        )
 
         mcs_tested.append(mc)
         ks_ds.append(ks_d)
@@ -281,6 +283,8 @@ def mc_max_curvature(
     Returns:
         mc:                 estimated completeness magnitude
     """
-    bins, count, mags = get_fmd(mags=sample, delta_m=delta_m, bin_position="center")
+    bins, count, mags = get_fmd(
+        mags=sample, delta_m=delta_m, bin_position="center"
+    )
     mc = bins[count.argmax()] + correction_factor
     return mc
