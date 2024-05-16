@@ -142,12 +142,14 @@ with open("seismostats/analysis/tests/data/test_estimate_mc.p", "rb") as f:
     [data["values_test"]],
 )
 def test_estimate_mc_ks(mags, mcs):
+
+    # test when beta is not given
     best_mc, best_beta, mcs_test, betas, ks_ds, ps = mc_ks(
         mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1
     )
-
-    assert_equal([0.8, 0.9, 1.0, 1.1], mcs)
+    assert_equal(1.1, best_mc)
     assert_equal(2.242124985031149, best_beta)
+    assert_equal([0.8, 0.9, 1.0, 1.1], mcs_test)
     assert_allclose(
         [
             0.2819699492277921,
@@ -158,8 +160,32 @@ def test_estimate_mc_ks(mags, mcs):
         ks_ds,
         rtol=1e-7,
     )
+    assert_allclose(
+        [1.395015596110264, 1.6216675481549436, 1.9365312280350473, 2.242124985031149],
+        betas,
+        rtol=1e-7,
+    )
     assert_allclose([0.000e00, 1.000e-04, 5.100e-02, 4.362e-01], ps, atol=0.03)
+
+    # test when beta is given
+    best_mc, best_beta, mcs_test, betas, ks_ds, ps = mc_ks(
+        mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1, beta=2.24
+    )
     assert_equal(1.1, best_mc)
+    assert_equal(2.24, best_beta)
+    assert_allclose(
+        [2.24, 2.24, 2.24, 2.24],
+        betas,
+        rtol=1e-7,
+    )
+    assert_allclose([0.0, 0.0, 0.0128, 0.4405], ps, atol=0.03)
+
+    # test when mcs are not given
+    best_mc, best_beta, mcs_test, betas, ks_ds, ps = mc_ks(
+        mags, delta_m=0.1, p_pass=0.1
+    )
+    assert_equal(1.1, best_mc)
+    assert_equal(2.242124985031149, best_beta)
 
 
 def test_estimate_mc_maxc(setup_magnitudes):
