@@ -150,6 +150,7 @@ def mc_ks(
     stop_when_passed: bool = True,
     verbose: bool = False,
     beta: float | None = None,
+    b_method: str | None = None,
     n: int = 10000,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
@@ -192,6 +193,12 @@ def mc_ks(
     if not np.allclose(sample, bin_to_precision(sample, delta_m)):
         warnings.warn("Magnitudes are not binned correctly.")
 
+    if beta is not None and b_method is not None:
+        warnings.warn("Both beta and b_method are given. Using beta.")
+
+    if beta is None and b_method is None:
+        b_method = "tinti"
+
     mcs_tested = []
     ks_ds = []
     ps = []
@@ -208,7 +215,11 @@ def mc_ks(
         # i no beta is given, estimate beta
         if beta is None:
             mc_beta = estimate_b(
-                magnitudes=mc_sample, mc=mc, delta_m=delta_m, b_parameter="beta"
+                magnitudes=mc_sample,
+                mc=mc,
+                delta_m=delta_m,
+                b_parameter="beta",
+                method=b_method,
             )
         else:
             mc_beta = beta

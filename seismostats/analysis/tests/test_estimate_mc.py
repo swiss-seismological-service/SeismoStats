@@ -188,6 +188,17 @@ def test_estimate_mc_ks(mags, mcs):
     assert_equal(2.242124985031149, best_beta)
     assert_equal([1.0, 1.1], mcs_tested)
 
+    # test when b-positive is used
+    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
+        mags, delta_m=0.1, b_method="positive"
+    )
+    assert_equal(1.5, best_mc)
+    assert_equal(3.2542240043462796, best_beta)
+    assert_equal(len(mcs_tested), 6)
+    assert_equal(len(betas), 6)
+    assert_equal(len(ks_ds), 6)
+    assert_equal(len(ps), 6)
+
 
 def test_estimate_mc_maxc(setup_magnitudes):
     mc = mc_max_curvature(setup_magnitudes, delta_m=0.1, correction_factor=0.2)
