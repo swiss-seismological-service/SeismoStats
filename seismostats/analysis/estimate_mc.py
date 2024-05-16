@@ -230,7 +230,7 @@ def mc_ks(
 
     if np.any(ps >= p_pass):
         best_mc = mcs_test[np.argmax(ps >= p_pass)]
-        beta = betas[np.argmax(ps >= p_pass)]
+        best_beta = betas[np.argmax(ps >= p_pass)]
 
         if verbose:
             print(
@@ -246,7 +246,7 @@ def mc_ks(
         if verbose:
             print("None of the mcs passed the test.")
 
-    return mcs_test, ks_ds, ps, best_mc, beta
+    return best_mc, best_beta, mcs_test, betas, ks_ds, ps
 
 
 def mc_max_curvature(
