@@ -143,6 +143,8 @@ def plot_in_space(
     )
 
     # insert legend
+    if dot_interpolation_power == 0:  # all dots have the same size
+        dot_labels = None
     if dot_labels is not None:
         if isinstance(dot_labels, np.ndarray):
             dot_labels = dot_labels.tolist()

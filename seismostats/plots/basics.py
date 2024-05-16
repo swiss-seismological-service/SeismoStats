@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import warnings
 
 # Own functions
 from seismostats.utils.binning import get_cum_fmd, get_fmd
@@ -347,6 +348,13 @@ def reverse_dot_size(
     magnitudes : ndarray of float, shape (n_samples,)
         The magnitudes corresponding to the given dot sizes.
     """
+    if interpolation_power == 0:
+        warnings.warn(
+            "interpolation_power is 0, so all dots have the same size,"
+            "returning original dot sizes"
+        )
+        return sizes
+
     if largest <= smallest:
         print(
             "largest value is not larger than smallest, "
