@@ -192,6 +192,7 @@ def mc_ks(
     if not np.allclose(sample, bin_to_precision(sample, delta_m)):
         warnings.warn("Magnitudes are not binned correctly.")
 
+    mcs_tested = []
     ks_ds = []
     ps = []
     betas = []
@@ -214,6 +215,7 @@ def mc_ks(
 
         p, ks_d, _ = ks_test_gr(mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n)
 
+        mcs_tested.append(mc)
         ks_ds.append(ks_d)
         ps.append(p)
         betas.append(mc_beta)
@@ -229,7 +231,7 @@ def mc_ks(
     ps = np.array(ps)
 
     if np.any(ps >= p_pass):
-        best_mc = mcs_test[np.argmax(ps >= p_pass)]
+        best_mc = mcs_tested[np.argmax(ps >= p_pass)]
         best_beta = betas[np.argmax(ps >= p_pass)]
 
         if verbose:
@@ -246,7 +248,7 @@ def mc_ks(
         if verbose:
             print("None of the mcs passed the test.")
 
-    return best_mc, best_beta, mcs_test, betas, ks_ds, ps
+    return best_mc, best_beta, mcs_tested, betas, ks_ds, ps
 
 
 def mc_max_curvature(
