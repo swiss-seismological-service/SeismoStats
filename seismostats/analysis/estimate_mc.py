@@ -230,9 +230,7 @@ def mc_ks(
 
     if np.any(ps >= p_pass):
         best_mc = mcs_test[np.argmax(ps >= p_pass)]
-
-        if beta is None:
-            beta = betas[np.argmax(ps >= p_pass)]
+        beta = betas[np.argmax(ps >= p_pass)]
 
         if verbose:
             print(

@@ -142,10 +142,12 @@ with open("seismostats/analysis/tests/data/test_estimate_mc.p", "rb") as f:
     [data["values_test"]],
 )
 def test_estimate_mc_ks(mags, mcs):
-    mcs, ks_ds, ps, best_mc, beta = mc_ks(mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1)
+    best_mc, best_beta, mcs_test, betas, ks_ds, ps = mc_ks(
+        mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1
+    )
 
     assert_equal([0.8, 0.9, 1.0, 1.1], mcs)
-    assert_equal(2.242124985031149, beta)
+    assert_equal(2.242124985031149, best_beta)
     assert_allclose(
         [
             0.2819699492277921,
