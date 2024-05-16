@@ -4,9 +4,10 @@ for the estimation of the completeness magnitude.
 
 import numpy as np
 import pandas as pd
+import warnings
 
-from seismostats.analysis.estimate_beta import estimate_b_tinti
-from seismostats.utils.binning import get_fmd
+from seismostats.analysis.estimate_beta import estimate_b
+from seismostats.utils.binning import get_fmd, bin_to_precision
 from seismostats.utils.simulate_distributions import (
     simulated_magnitudes_binned,
 )
@@ -106,15 +107,16 @@ def ks_test_gr(
         ks_ds:      list of KS distances
     """
 
-    sample = sample[sample >= mc - delta_m / 2]
+    if np.min(sample) < mc - delta_m / 2:
+        warnings.warn("sample contains values below mc - delta_m / 2")
 
     if len(sample) == 0:
-        print("no sample")
-        return 1, 0, []
+        warnings.warn("no sample")
+        return 0, 1, []
 
     if len(np.unique(sample)) == 1:
-        print("sample contains only one value")
-        return 1, 0, []
+        warnings.warn("sample contains only one value")
+        return 0, 1, []
 
     ks_ds = []
 
@@ -166,8 +168,8 @@ def mc_ks(
         verbose:            Verbose output, by default False
         beta:               If beta is 'known', only estimate mc, by default
                             None
-         n:                 Number of number of times the KS distance is
-                        calculated for estimating the p-value, by default 10000
+        n:                  Number of number of times the KS distance is
+                            calculated for estimating the p-value, by default 10000
     Returns:
         mcs_test:   tested completeness magnitudes
         ks_ds:      KS distances
@@ -176,18 +178,40 @@ def mc_ks(
         beta:       corresponding best beta
     """
 
+    if mcs_test is None:
+        mcs_test = bin_to_precision(
+            np.arange(np.min(sample), np.max(sample), delta_m), delta_m
+        )
+
+    # check if binning is correct
+    if not np.allclose(sample, bin_to_precision(sample, delta_m)):
+        warnings.warn("Magnitudes are not binned correctly.")
+
     ks_ds = []
     ps = []
+    betas = []
     i = 0
 
     for mc in mcs_test:
+
         if verbose:
             print("\ntesting mc", mc)
 
-        p, ks_d, _ = ks_test_gr(sample, mc=mc, delta_m=delta_m, beta=beta, n=n)
+        mc_sample = sample[sample >= mc - delta_m / 2]
+
+        # i no beta is given, estimate beta
+        if beta is None:
+            mc_beta = estimate_b(
+                sample=mc_sample, mc=mc, delta_m=delta_m, b_parameter="beta"
+            )
+        else:
+            mc_beta = beta
+
+        p, ks_d, _ = ks_test_gr(mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n)
 
         ks_ds.append(ks_d)
         ps.append(p)
+        betas.append(mc_beta)
 
         i += 1
 
@@ -203,12 +227,7 @@ def mc_ks(
         best_mc = mcs_test[np.argmax(ps >= p_pass)]
 
         if beta is None:
-            beta = estimate_b_tinti(
-                sample[sample >= best_mc - delta_m / 2],
-                mc=best_mc,
-                delta_m=delta_m,
-                b_parameter="beta",
-            )
+            beta = betas[np.argmax(ps >= p_pass)]
 
         if verbose:
             print(
