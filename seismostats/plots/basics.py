@@ -72,6 +72,11 @@ def plot_cum_fmd(
         labels = ["cumulative", "GR fit"]
 
     if b_value is not None:
+        if type(legend) is not list:
+            labels[1] = "GR fit, b={x:.2f}".format(x=b_value)
+        else:
+            labels[1] = labels[1] + ", b={x:.2f}".format(x=b_value)
+
         if mc is None:
             mc = min(mags)
         if bin_position == "left":
