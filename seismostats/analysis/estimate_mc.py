@@ -194,12 +194,14 @@ def mc_ks(
     # check if binning is correct
     if not np.allclose(sample, bin_to_precision(sample, delta_m)):
         warnings.warn(
-            "Magnitudes are not binned correctly. Test might fail because of this."
+            "Magnitudes are not binned correctly. "
+            "Test might fail because of this."
         )
 
     if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
         warnings.warn(
-            "Mcs to test are not binned correctly. Test might fail because of this."
+            "Mcs to test are not binned correctly. "
+            "Test might fail because of this."
         )
 
     if beta is not None and b_method is not None:
