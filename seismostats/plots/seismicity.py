@@ -56,7 +56,10 @@ def plot_in_space(
                         range is chosen for the labels (default). If a list,
                         use elements of list which are between minimum and
                         maximum magnitude of dataset for the legend.
-                        Finally, a `~.ticker.Locator` can be provided.
+                        Finally, a `~.ticker.Locator` can be provided to use
+                        a predefined matplotlib.ticker (e.g. FixedLocator,
+                        which results in the same legend as providing a list
+                        of values).
     Returns:
         GeoAxis object
     """
@@ -162,7 +165,7 @@ def plot_in_space(
                 dot_interpolation_power,
             ),
         )
-        ax.legend(handles, labels, loc="upper right", title="Magnitudes")
+        ax.legend(handles, labels, title="Magnitudes")
     else:
         # no legend is shown
         pass
