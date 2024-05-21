@@ -17,6 +17,7 @@ from seismostats.plots.statistical import plot_mc_vs_b
 # seismicity
 from seismostats.seismicity.catalog import Catalog, ForecastCatalog
 from seismostats.seismicity.rategrid import ForecastGRRateGrid, GRRateGrid
+from seismostats.utils._config import get_option, set_option
 
 # utils
 from seismostats.utils.binning import bin_to_precision
