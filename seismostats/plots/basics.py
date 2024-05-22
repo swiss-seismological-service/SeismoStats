@@ -35,10 +35,10 @@ def plot_cum_fmd(
     bin_position: str = "center",
     legend: bool | str | list = True,
 ) -> plt.Axes:
-    """Plots cumulative frequency magnitude distribution, optionally with a
-    corresponding theoretical Gutenberg-Richter (GR) distribution (using the
-    provided b-value). Unlike plot_cum_fmd, plots values for all bins and
-    requires binning.
+    """
+    Plots cumulative frequency magnitude distribution, optionally with a
+    corresponding theoretical Gutenberg-Richter (GR) distribution. The GR
+    distribution is plotted provided the b-value is given.
 
     Args:
         mags    : array of magnitudes
@@ -47,10 +47,12 @@ def plot_cum_fmd(
         mc      : completeness magnitude of the theoretical GR distribution
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
-        color   : color of the data. If theoretical GR distribution should be
-            colored differently this should be a list with two entries
-        size    : size of scattered data
-        grid    : bool, include grid lines or not
+        color   : color of the data. If one value is given, it is used for points
+            and the line of the theoretical GR distribution if it is plotted. If
+            a list of colors is given, the first entry is the color of the points,
+            and the second of the line representing the GR distribution.
+        size    : size of data points
+        grid    : whether to include grid lines or not
         bin_position    : position of the bin, options are  'center' and 'left'
                         accordingly, left edges of bins or center points are
                         returned.
@@ -113,11 +115,11 @@ def plot_cum_fmd(
     ax.set_xlabel("Magnitude")
     ax.set_ylabel("N")
 
-    if grid is True:
+    if grid:
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
-    if legend is not False:
+    if legend:
         ax.legend()
 
     return ax
@@ -133,18 +135,19 @@ def plot_fmd(
     bin_position: str = "center",
     legend: bool | str | list = True,
 ) -> plt.Axes:
-    """Plots frequency magnitude distribution. Unlike plot_fmd,
-    plots values for all bins and requires binning.
+    """
+    Plots frequency magnitude distribution. If no binning is specified, the
+    assumed value of ``delta_m`` is 0.1.
 
     Args:
         mags    : array of magnitudes
         ax      : axis where figure should be plotted
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
-        color   : color of the data.
-        size    : size of scattered data
-        grid    : bool, include grid lines or not
-        bin_position    : position of the bin, options are  'center' and 'left'
+        color   : color of the data
+        size    : size of data points
+        grid    : whether to include grid lines or not
+        bin_position    : position of the bin, options are  "center" and "left"
                         accordingly, left edges of bins or center points are
                         returned.
 
@@ -174,11 +177,11 @@ def plot_fmd(
     ax.set_xlabel("Magnitude")
     ax.set_ylabel("N")
 
-    if grid is True:
+    if grid:
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
-    if legend is not False:
+    if legend:
         ax.legend()
 
     return ax
@@ -192,7 +195,8 @@ def plot_cum_count(
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
-    through time. Plots a line for each given Mc.
+    through time. Plots a line for each given completeness magnitude in
+    the array ``mcs``.
 
     Args:
         ax: axis where figure should be plotted
@@ -226,8 +230,8 @@ def plot_cum_count(
             label=f"Mc={np.round(mc, 2)}",
         )
 
-    ax.set_xlabel("time")
-    ax.set_ylabel("count - cumulative")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Cumulative number of events")
     ax.legend()
     return ax
 
@@ -240,14 +244,16 @@ def plot_mags_in_time(
     dot_smallest: int = 10,
     dot_largest: int = 200,
     dot_interpolation_power: int = 2,
+    color_dots: str = "blue",
+    color_line: str = "#eb4034",
 ) -> plt.Axes:
     """
-    Creates a scatter plot, each dot is an event. Time shown on x-axis,
-    magnitude shown on y-axis, but also in size of the dot.
+    Creates a scatter plot, each dot is an event. Time shown on the x-axis,
+    magnitude shown on the y-axis, but also reflected in the size of dots.
 
     Optionally, adds lines that represent the change in completeness magnitude.
-    For example, mc_change_times = [2000, 2005] and mcs = [3.5, 3.0] means that
-    between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
+    For example, ``mc_change_times = [2000, 2005]`` and ``mcs = [3.5, 3.0]`` means
+    that between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
 
     Args:
         ax: axis where figure should be plotted
@@ -255,10 +261,12 @@ def plot_mags_in_time(
              "magnitude" and  either "time" or "year"
         mc_change_times: list of points in time when Mc changes, sorted in
             increasing order, can be given as a list of datetimes or ints (yrs).
-        mcs: changed values of Mc at times given in 'mc_change_times'
+        mcs: changed values of Mc at times given in ``mc_change_times``
         dot_smallest: smallest dot size for magnitude scaling
-        dot_largest:largest dot size for magnitude scaling
+        dot_largest: largest dot size for magnitude scaling
         dot_interpolation_power: interpolation power for scaling
+        color_dots: color of the dots representing the events
+        color_line: color of the line representing the Mc changes
 
     Returns:
         ax that was plotted on
@@ -287,7 +295,7 @@ def plot_mags_in_time(
             largest=dot_largest,
             interpolation_power=dot_interpolation_power,
         ),
-        c="b",
+        c=color_dots,
         linewidth=0.5,
         alpha=0.8,
         edgecolor="k",
@@ -301,20 +309,22 @@ def plot_mags_in_time(
 
         mc_change_times.append(np.max(times))
         mcs.append(mcs[-1])
-        ax.step(mc_change_times, mcs, where="post", c="#eb4034")
+        ax.step(mc_change_times, mcs, where="post", c=color_line)
 
-    ax.set_xlabel("time")
-    ax.set_ylabel("magnitude")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Magnitude")
     return ax
 
 
 def dot_size(
     magnitudes: np.array,
-    smallest: int = 10,
-    largest: int = 200,
+    smallest: float = 10,
+    largest: float = 200,
     interpolation_power: int = 1,
 ) -> np.array:
-    """Compute dot sizes proportional to a given array of magnitudes.
+    """
+    Auxiliary function, computes dot sizes proportional to a given array of 
+    magnitudes.
 
     The dot sizes are computed using a power interpolation between the smallest
     and largest size, with the given interpolation power.
@@ -336,7 +346,7 @@ def dot_size(
     -------
     sizes : ndarray of float, shape (n_samples,)
         The sizes of the dots, proportional to their magnitudes.
-        The returned sizes are between `smallest` and `largest`.
+        The returned sizes are between ``smallest`` and ``largest``.
     """
     if largest <= smallest:
         print(
