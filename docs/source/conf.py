@@ -24,6 +24,8 @@ extensions = [
     'nbsphinx_link'
 ]
 
+autosectionlabel_prefix_document = True
+
 templates_path = ['_templates']
 exclude_patterns = []
 napoleon_custom_sections = [('Returns', 'params_style')]
