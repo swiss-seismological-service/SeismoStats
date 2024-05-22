@@ -17,7 +17,7 @@
     analysis.estimate_b_utsu
     analysis.estimate_b_laplace
     analysis.estimate_b_weichert
-    analysis.estimate_b_kijko_smit_2012
+    analysis.estimate_b_kijko_smit
 ```
 
 ## Estimating the Completeness Magnitude
