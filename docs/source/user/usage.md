@@ -1,5 +1,8 @@
-# Usage
+# Fundamentals and usage
 
-```{include} ../../../README.md
-:relative-images:
+```{toctree}
+:maxdepth: 1
+
+10minute_intro
+examples
 ```
