@@ -5,4 +5,5 @@
 
 catalog
 config
+plots
 ```
