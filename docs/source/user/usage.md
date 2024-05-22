@@ -6,6 +6,7 @@
 10minute_intro
 catalogs
 estimate_b
+estimate_mc
 synthetic
 examples
 ```
