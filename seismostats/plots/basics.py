@@ -29,10 +29,11 @@ def plot_cum_fmd(
     b_value: float | None = None,
     mc: float | None = None,
     delta_m: float = 0,
-    color: str | list = "blue",
-    size: int = 3,
+    color: str | list = None,
+    size: int = None,
     grid: bool = False,
     bin_position: str = "center",
+    legend: bool | str | list = True,
 ) -> plt.Axes:
     """Plots cumulative frequency magnitude distribution, optionally with a
     corresponding theoretical Gutenberg-Richter (GR) distribution (using the
@@ -64,7 +65,19 @@ def plot_cum_fmd(
     if ax is None:
         ax = plt.subplots()[1]
 
+    if type(legend) is list:
+        labels = legend
+    elif type(legend) is str:
+        labels = [legend, "GR fit"]
+    else:
+        labels = ["cumulative", "GR fit"]
+
     if b_value is not None:
+        if type(legend) is not list:
+            labels[1] = "GR fit, b={x:.2f}".format(x=b_value)
+        else:
+            labels[1] = labels[1] + ", b={x:.2f}".format(x=b_value)
+
         if mc is None:
             mc = min(mags)
         if bin_position == "left":
@@ -77,10 +90,24 @@ def plot_cum_fmd(
         if type(color) is not list:
             color = [color, color]
 
-        ax.plot(x, y, color=color[1])
-        ax.scatter(bins, c_counts, s=size, color=color[0], marker="s")
+        ax.scatter(
+            bins,
+            c_counts,
+            s=size,
+            color=color[0],
+            marker="s",
+            label=labels[0],
+        )
+        ax.plot(x, y, color=color[1], label=labels[1])
     else:
-        ax.scatter(bins, c_counts, s=size, color=color, marker="s")
+        ax.scatter(
+            bins,
+            c_counts,
+            s=size,
+            color=color,
+            marker="s",
+            label=labels[0],
+        )
 
     ax.set_yscale("log")
     ax.set_xlabel("Magnitude")
@@ -90,6 +117,9 @@ def plot_cum_fmd(
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
+    if legend is not False:
+        ax.legend()
+
     return ax
 
 
@@ -97,10 +127,11 @@ def plot_fmd(
     mags: np.ndarray,
     ax: plt.Axes | None = None,
     delta_m: float = 0.1,
-    color: str = "blue",
-    size: int = 5,
+    color: str = None,
+    size: int = None,
     grid: bool = False,
     bin_position: str = "center",
+    legend: bool | str | list = True,
 ) -> plt.Axes:
     """Plots frequency magnitude distribution. Unlike plot_fmd,
     plots values for all bins and requires binning.
@@ -131,7 +162,14 @@ def plot_fmd(
     if ax is None:
         ax = plt.subplots()[1]
 
-    ax.scatter(bins, counts, s=size, color=color, marker="^")
+    if type(legend) is list:
+        labels = legend
+    elif type(legend) is str:
+        labels = [legend]
+    else:
+        labels = ["non cumulative"]
+
+    ax.scatter(bins, counts, s=size, color=color, marker="^", label=labels[0])
     ax.set_yscale("log")
     ax.set_xlabel("Magnitude")
     ax.set_ylabel("N")
@@ -139,6 +177,9 @@ def plot_fmd(
     if grid is True:
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
+
+    if legend is not False:
+        ax.legend()
 
     return ax
 
