@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import warnings
 
 # Own functions
 from seismostats.utils.binning import get_cum_fmd, get_fmd
@@ -89,6 +90,7 @@ def plot_cum_fmd(
         if type(color) is not list:
             color = [color, color]
 
+
         ax.scatter(
             bins,
             c_counts,
@@ -108,6 +110,7 @@ def plot_cum_fmd(
             label=labels[0],
         )
 
+
     ax.set_yscale("log")
     ax.set_xlabel("Magnitude")
     ax.set_ylabel("N")
@@ -116,8 +119,10 @@ def plot_cum_fmd(
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
+
     if legend is not False:
         ax.legend()
+
 
     return ax
 
@@ -179,6 +184,7 @@ def plot_fmd(
 
     if legend is not False:
         ax.legend()
+
 
     return ax
 
@@ -351,3 +357,57 @@ def dot_size(
     sizes = mag_powered * (largest - smallest) + smallest
 
     return sizes
+
+
+def reverse_dot_size(
+    sizes: np.ndarray,
+    min_mag: np.float_,
+    max_mag: np.float_,
+    smallest: int = 10,
+    largest: int = 200,
+    interpolation_power: int = 1,
+) -> np.ndarray:
+    """Compute magnitudes proportional to a given array of dot sizes.
+
+    The magnitudes are computed by reversing the dot size calculation
+    performed by the dot_size function.
+
+    Args
+    ----------
+    sizes : array-like of float, shape (n_samples,)
+        The sizes of the dots.
+    min_mag : float
+        The minimum magnitude in the dataset.
+    max_mag : float
+        The maximum magnitude in the dataset.
+    smallest : float, optional (default=10)
+        The size of the smallest dot, in pixels.
+    largest : float, optional (default=200)
+        The size of the largest dot, in pixels.
+    interpolation_power : float, optional (default=1)
+        The power used to interpolate between the smallest and largest size.
+        A value of 1 results in a linear interpolation, while larger values
+        result in a more "concave" curve.
+
+    Returns
+    -------
+    magnitudes : ndarray of float, shape (n_samples,)
+        The magnitudes corresponding to the given dot sizes.
+    """
+    if interpolation_power == 0:
+        warnings.warn(
+            "interpolation_power is 0, so all dots have the same size,"
+            "returning original dot sizes"
+        )
+        return sizes
+
+    if largest <= smallest:
+        print(
+            "largest value is not larger than smallest, "
+            "setting it to whatever I think is better"
+        )
+        largest = 50 * max(smallest, 2)
+    size_norm = (sizes - smallest) / (largest - smallest)
+    size_powered = np.power(size_norm, 1 / interpolation_power)
+    magnitudes = size_powered * (max_mag - min_mag) + min_mag
+    return magnitudes
