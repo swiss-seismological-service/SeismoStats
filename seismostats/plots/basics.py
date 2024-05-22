@@ -90,7 +90,6 @@ def plot_cum_fmd(
         if type(color) is not list:
             color = [color, color]
 
-
         ax.scatter(
             bins,
             c_counts,
@@ -110,7 +109,6 @@ def plot_cum_fmd(
             label=labels[0],
         )
 
-
     ax.set_yscale("log")
     ax.set_xlabel("Magnitude")
     ax.set_ylabel("N")
@@ -119,10 +117,8 @@ def plot_cum_fmd(
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
-
     if legend is not False:
         ax.legend()
-
 
     return ax
 
@@ -184,7 +180,6 @@ def plot_fmd(
 
     if legend is not False:
         ax.legend()
-
 
     return ax
 
