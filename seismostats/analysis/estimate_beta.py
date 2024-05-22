@@ -33,14 +33,15 @@ def estimate_b(
                 above) is returned
         method:     method to use for estimation of beta/b-value. Options
                 are:
-                    - 'tinti', 'utsu' (these are the classic estimators. 'tinti'
-                    is the recommended one, as it is more accurate. It is also
-                    the default method)
-                    - 'positive' (this is b-positive, which applies the 'tinti'
-                    method to the positive differences. To achieve the effect
-                    of reduced STAI, the magnitudes must be ordered in time)
-                    - 'laplace' (this is using the distribution of all
-                    differences, caution, can take long time to compute)
+
+                - 'tinti', 'utsu' (these are the classic estimators. 'tinti' 
+                  is the recommended one, as it is more accurate. It is also
+                  the default method)
+                - 'positive' (this is b-positive, which applies the 'tinti'
+                  method to the positive differences. To achieve the effect
+                  of reduced STAI, the magnitudes must be ordered in time)
+                - 'laplace' (this is using the distribution of all
+                  differences, caution, can take long time to compute)
 
         return_n:   if True the number of events used for the estimation is
                 returned. This is only relevant for the 'positive' method
@@ -116,11 +117,12 @@ def estimate_b_tinti(
     b_parameter: str = "b_value",
     return_std: bool = False,
 ) -> float | tuple[float, float]:
-    """returns the maximum likelihood beta
+    """returns the maximum likelihood beta.
+
     Source:
-        Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
-        Tinti and Mulargia 1987 (Bulletin of the Seismological Society of
-            America, 77(6), 2125-2134.)
+        - Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
+        - Tinti and Mulargia 1987 (Bulletin of the Seismological Society of 
+          America, 77(6), 2125-2134.)
 
     Args:
         magnitudes: vector of magnitudes, unsorted, already cutoff (no
@@ -173,6 +175,7 @@ def estimate_b_utsu(
     return_std: bool = False,
 ) -> float | tuple[float, float]:
     """returns the maximum likelihood beta
+
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University, vol 13, pp
         99-103)
@@ -294,7 +297,7 @@ def estimate_b_laplace(
     return_n: bool = False,
 ) -> float | tuple[float, float]:
     """returns the b-value estimation using the all the  differences of the
-    Magnitudes (this has a little less variance than the estimate_b_positive
+    Magnitudes (this has a little less variance than the :func:`estimate_b_positive`
     method)
 
     Source:
@@ -373,7 +376,7 @@ def estimate_b_weichert(
                     Gutenberg-Richter law is returned, otherwise 'beta'
                     from the exponential distribution [p(M) = exp(-beta*(M-mc))]
 
-    Returns:(
+    Returns:
         b_parameter: maximum likelihood point estimate of 'b-value' or 'beta'
         std_b_parameter: standard error of b_parameter
         rate_at_lmc: maximum likelihood point estimate of earthquake rate
@@ -557,7 +560,7 @@ def _weichert_objective_function(
     return np.abs(left - right)
 
 
-def estimate_b_kijko_smit_2012(
+def estimate_b_kijko_smit(
         magnitudes: np.ndarray,
         dates: list[np.datetime64],
         completeness_table: np.ndarray,
@@ -571,9 +574,10 @@ def estimate_b_kijko_smit_2012(
     values.
 
     Source:
-        Kijko A., Smit A. (2012), Extension of the Aki‐Utsu b‐Value Estimator
-        for Incomplete Catalogs, Bulletin of the Seismological Society of
-        America Vol 102, No. 3, pp. 1283–1287
+        Kijko, A. and Smit, A., 2012. Extension of the Aki‐Utsu b‐value
+        estimator for incomplete catalogs. Bulletin of the Seismological
+        Society of America, 102(3), pp.1283-1287.
+
 
     Args:
         magnitudes: vector of earthquake magnitudes
@@ -585,10 +589,10 @@ def estimate_b_kijko_smit_2012(
             the first column are considered detected. An example is given
             below:
 
-            np.array([[ 3.95, 1980],
-                      [ 4.95, 1920],
-                      [ 5.95, 1810],
-                      [ 6.95, 1520]])
+            >>> np.array([[ 3.95, 1980],
+            ...           [ 4.95, 1920],
+            ...           [ 5.95, 1810],
+            ...           [ 6.95, 1520]])
 
         last_year: last year of observation (the default is None, in which case
               it is set to the latest year in years).
@@ -597,7 +601,7 @@ def estimate_b_kijko_smit_2012(
                     Gutenberg-Richter law is returned, otherwise 'beta'
                     from the exponential distribution [p(M) = exp(-beta*(M-mc))]
 
-    Returns:(
+    Returns:
         b_parameter: maximum likelihood point estimate of 'b-value' or 'beta'
         std_b_parameter: standard error of b_parameter
         rate_at_lmc: maximum likelihood point estimate of earthquake rate
@@ -683,7 +687,7 @@ def shi_bolt_confidence(
     b_parameter: str = "b_value",
 ) -> float:
     """calculates the confidence limit of the b_value or beta (depending on
-        which parameter is given) according to shi and bolt 1982
+    which parameter is given) according to shi and bolt 1982
 
     Source:
         Shi and Bolt, BSSA, Vol. 72, No. 5, pp. 1677-1687, October 1982

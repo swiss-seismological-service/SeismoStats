@@ -2,15 +2,15 @@
 for the estimation of the completeness magnitude.
 """
 
-import numpy as np
-import pandas as pd
 import warnings
 
+import numpy as np
+import pandas as pd
+
 from seismostats.analysis.estimate_beta import estimate_b
-from seismostats.utils.binning import get_fmd, bin_to_precision
-from seismostats.utils.simulate_distributions import (
-    simulated_magnitudes_binned,
-)
+from seismostats.utils.binning import bin_to_precision, get_fmd
+from seismostats.utils.simulate_distributions import \
+    simulated_magnitudes_binned
 
 
 def cdf_discrete_GR(
@@ -127,7 +127,7 @@ def ks_test_gr(
     )
 
     for ii in range(n):
-        simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
+        simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
         _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
         _, y_emp = empirical_cdf(simulated)
 
@@ -157,6 +157,13 @@ def mc_ks(
     """
     Estimate the completeness magnitude (mc) for a given list of completeness
     magnitudes using the K-S distance method.
+
+    Source:
+        - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
+          distributions in empirical data. SIAM review, 51(4), pp.661-703.
+        - Mizrahi, L., Nandan, S. and Wiemer, S., 2021. The effect of 
+          declustering on the size distribution of mainshocks. Seismological 
+          Society of America, 92(4), pp.2333-2342.
 
     Args:
         sample:             Magnitudes to test
@@ -278,8 +285,17 @@ def mc_max_curvature(
     correction_factor: float = 0.2,
 ) -> float:
     """
-    Estimate the completeness magnitude (mc) by maximum curvature (Wiemer and
-    Wyss 2000, Woessner and Wiemer 2005).
+    Estimate the completeness magnitude (mc) by maximum curvature.
+
+    Source:
+        - Wiemer, S. and Wyss, M., 2000. Minimum magnitude of completeness
+          in earthquake catalogs: Examples from Alaska, the western United
+          States, and Japan. Bulletin of the Seismological Society of America,
+          90(4), pp.859-869.
+        - Woessner, J. and Wiemer, S., 2005. Assessing the quality of earthquake
+          catalogues: Estimating the magnitude of completeness and its 
+          uncertainty.
+          Bulletin of the Seismological Society of America, 95(2), pp.684-698.
     Args:
         sample:             Magnitudes to test
         delta_m:            Magnitude bins (sample has to be rounded to bins
