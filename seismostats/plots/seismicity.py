@@ -59,7 +59,7 @@ def plot_in_space(
                         dataset for the legend.
                         Finally, a ``~.ticker.Locator`` can be provided to use
                         a predefined ``matplotlib.ticker`` (e.g.
-                        ``FixedLocator``, which results in the same legend as 
+                        ``FixedLocator``, which results in the same legend as
                         providing a list of values).
     Returns:
         GeoAxis object
