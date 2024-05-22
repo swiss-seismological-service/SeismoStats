@@ -214,7 +214,6 @@ def mc_ks(
     ks_ds = []
     ps = []
     betas = []
-    i = 0
 
     for mc in mcs_test:
 
@@ -223,7 +222,7 @@ def mc_ks(
 
         mc_sample = sample[sample >= mc - delta_m / 2]
 
-        # i no beta is given, estimate beta
+        # if no beta is given, estimate beta
         if beta is None:
             mc_beta = estimate_b(
                 magnitudes=mc_sample,
@@ -243,8 +242,6 @@ def mc_ks(
         ks_ds.append(ks_d)
         ps.append(p)
         betas.append(mc_beta)
-
-        i += 1
 
         if verbose:
             print("..p-value: ", p)
