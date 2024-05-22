@@ -47,10 +47,11 @@ def plot_cum_fmd(
         mc      : completeness magnitude of the theoretical GR distribution
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
-        color   : color of the data. If one value is given, it is used for points
-            and the line of the theoretical GR distribution if it is plotted. If
-            a list of colors is given, the first entry is the color of the points,
-            and the second of the line representing the GR distribution.
+        color   : color of the data. If one value is given, it is used for
+            points, and the line of the theoretical GR distribution if it
+            is plotted. If a list of colors is given, the first entry is
+            the color of the points, and the second of the line representing
+            the GR distribution.
         size    : size of data points
         grid    : whether to include grid lines or not
         bin_position    : position of the bin, options are  'center' and 'left'
@@ -252,8 +253,8 @@ def plot_mags_in_time(
     magnitude shown on the y-axis, but also reflected in the size of dots.
 
     Optionally, adds lines that represent the change in completeness magnitude.
-    For example, ``mc_change_times = [2000, 2005]`` and ``mcs = [3.5, 3.0]`` means
-    that between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
+    For example, ``mc_change_times = [2000, 2005]`` and ``mcs = [3.5, 3.0]``
+    means that between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
 
     Args:
         ax: axis where figure should be plotted
@@ -323,7 +324,7 @@ def dot_size(
     interpolation_power: int = 1,
 ) -> np.array:
     """
-    Auxiliary function, computes dot sizes proportional to a given array of 
+    Auxiliary function, computes dot sizes proportional to a given array of
     magnitudes.
 
     The dot sizes are computed using a power interpolation between the smallest

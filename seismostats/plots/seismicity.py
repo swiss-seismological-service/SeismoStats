@@ -31,7 +31,7 @@ def plot_in_space(
     """
     This function plots seismicity on a surface. If ``include_map`` is
     set to ``True``, a nice natural earth map is used, otherwise the seismicity
-    is just plotted on a blank grid. In the latter case, the grid is stretched to
+    is just plotted on a blank grid. In the latter case, the grid is stretched
     according to the midpoint latitude.
 
     Args:
@@ -50,14 +50,14 @@ def plot_in_space(
         dot_labels:     int, None, "auto" (default), list, or
                         ``~.ticker.Locator``. Determines how labels for
                         magnitudes can be created. Input for matplotlib's
-                        ``PathCollection.legend_elements``. If ``None``, no label 
+                        ``PathCollection.legend_elements``. If ``None``, no label
                         is shown. If an integer, target to use ``dot_labels``
                         elements in the normed range. If "auto", an automatic
                         range is chosen for the labels (default). If a list,
                         use elements of list which are between minimum and
                         maximum magnitude of dataset for the legend.
                         Finally, a ``~.ticker.Locator`` can be provided to use
-                        a predefined ``matplotlib.ticker`` (e.g. ``FixedLocator``,
+                        a predefined ``matplotlib.ticker`` (e.g. ``FixedLocator``
                         which results in the same legend as providing a list
                         of values).
     Returns:
