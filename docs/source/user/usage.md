@@ -4,5 +4,8 @@
 :maxdepth: 1
 
 10minute_intro
+catalogs
+estimate_b
+synthetic
 examples
 ```

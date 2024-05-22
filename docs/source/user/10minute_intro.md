@@ -1,3 +1,7 @@
-# 10 Minnute to SeismoStats
+# 10 Minutes to SeismoStats 
 
-Here is a ten minute intro
+This tutorial covers the most essential usage of the SeismoStats package.
+
+```python 
+your_code = do_some_stuff
+```
