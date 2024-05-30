@@ -1,5 +1,6 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
+
 import warnings
 
 import numpy as np
@@ -441,12 +442,16 @@ def estimate_b_weichert(
     )
     completeness_starts = np.array(
         [
-            completeness_table_years[idx - 1]
-            if idx not in [0, len(completeness_table_years)]
-            else {
-                0: -1,
-                len(completeness_table_years): completeness_table_years[-1],
-            }[idx]
+            (
+                completeness_table_years[idx - 1]
+                if idx not in [0, len(completeness_table_years)]
+                else {
+                    0: -1,
+                    len(completeness_table_years): completeness_table_years[
+                        -1
+                    ],
+                }[idx]
+            )
             for i, idx in enumerate(insertion_indices)
         ]
     )
@@ -577,12 +582,12 @@ def _weichert_objective_function(
 
 
 def estimate_b_kijko_smit(
-        magnitudes: np.ndarray,
-        dates: list[np.datetime64],
-        completeness_table: np.ndarray,
-        last_year: int | float | None = None,
-        delta_m: float = 0.1,
-        b_parameter: str = 'b_value'
+    magnitudes: np.ndarray,
+    dates: list[np.datetime64],
+    completeness_table: np.ndarray,
+    last_year: int | float | None = None,
+    delta_m: float = 0.1,
+    b_parameter: str = "b_value",
 ) -> tuple[float, float, float, float]:
     """Return the b-value estimate calculated using the
     Kijko and Smit (2012) algorithm for the case of unequal
@@ -626,28 +631,35 @@ def estimate_b_kijko_smit(
                magnitude frequency distribution
     """
 
-    assert len(magnitudes) == len(dates), \
-        "the magnitudes and years arrays have different lengths"
+    assert len(magnitudes) == len(
+        dates
+    ), "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
-    assert np.all(np.ediff1d(completeness_table[:, 0]) >= 0), \
-        "magnitudes in completeness table not in ascending order"
-    assert [i - delta_m in np.arange(completeness_table[0, 0],
-                                     np.max(magnitudes) + delta_m + 0.001,
-                                     delta_m)
-            for i in np.unique(magnitudes)], \
-        "magnitude bins not aligned with completeness edges"
+    assert np.all(
+        np.ediff1d(completeness_table[:, 0]) >= 0
+    ), "magnitudes in completeness table not in ascending order"
+    assert [
+        i - delta_m
+        in np.arange(
+            completeness_table[0, 0],
+            np.max(magnitudes) + delta_m + 0.001,
+            delta_m,
+        )
+        for i in np.unique(magnitudes)
+    ], "magnitude bins not aligned with completeness edges"
     if not np.all(magnitudes >= completeness_table[:, 0].min()):
         warnings.warn(
             "magnitudes below %.2f are not covered by the "
-            "completeness table and are discarded" %
-            completeness_table[0, 0])
+            "completeness table and are discarded" % completeness_table[0, 0]
+        )
     assert delta_m > 0, "delta_m cannot be zero"
-    assert b_parameter == 'b_value' or b_parameter == 'beta', \
-        "please choose either 'b_value' or 'beta' as b_parameter"
-    factor = 1 / np.log(10) if b_parameter == 'b_value' else 1
+    assert (
+        b_parameter == "b_value" or b_parameter == "beta"
+    ), "please choose either 'b_value' or 'beta' as b_parameter"
+    factor = 1 / np.log(10) if b_parameter == "b_value" else 1
 
     # convert datetime to integer calendar year
-    years = np.array(dates).astype('datetime64[Y]').astype(int) + 1970
+    years = np.array(dates).astype("datetime64[Y]").astype(int) + 1970
 
     # get last year of catalogue if last_year not defined
     last_year = last_year if last_year else np.max(years)
@@ -664,8 +676,11 @@ def estimate_b_kijko_smit(
     ncomplete = 0
     for idx in range(len(completeness_magnitudes)):
         sub_catalogues.append(
-            magnitudes[(insertion_indices == idx)
-                       & (magnitudes > completeness_magnitudes[idx])])
+            magnitudes[
+                (insertion_indices == idx)
+                & (magnitudes > completeness_magnitudes[idx])
+            ]
+        )
         ncomplete += len(sub_catalogues[-1])
 
     # Equation (7) from Kijko, Smit (2012)
@@ -673,7 +688,8 @@ def estimate_b_kijko_smit(
     for ii, subcat_magnitudes in enumerate(sub_catalogues):
         # get sub-catalogue beta-value as per Aki-Utsu
         sub_beta = 1 / (
-            np.average(subcat_magnitudes) - completeness_magnitudes[ii])
+            np.average(subcat_magnitudes) - completeness_magnitudes[ii]
+        )
         estimator_terms.append((len(subcat_magnitudes) / ncomplete) / sub_beta)
     beta = 1 / np.sum(estimator_terms)
     b_parameter = beta * factor
@@ -690,8 +706,9 @@ def estimate_b_kijko_smit(
         )
 
     rate_at_lmc = ncomplete / denominator_rate
-    a_val = np.log10(rate_at_lmc) + (beta / np.log(10))\
-        * (completeness_magnitudes[0] + delta_m * 0.5)
+    a_val = np.log10(rate_at_lmc) + (beta / np.log(10)) * (
+        completeness_magnitudes[0] + delta_m * 0.5
+    )
 
     return b_parameter, std_b_parameter, rate_at_lmc, a_val
 
