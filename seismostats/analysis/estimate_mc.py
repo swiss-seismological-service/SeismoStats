@@ -155,7 +155,8 @@ def mc_ks(
     n: int = 10000,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
-    Estimate the completeness magnitude (mc) for a given list of completeness
+    Return the completeness magnitude (mc) estimate
+    for a given list of completeness
     magnitudes using the K-S distance method.
 
     Source:
@@ -285,7 +286,8 @@ def mc_max_curvature(
     correction_factor: float = 0.2,
 ) -> float:
     """
-    Estimate the completeness magnitude (mc) by maximum curvature.
+    Return the completeness magnitude (mc) estimate
+    using the maximum curvature method.
 
     Source:
         - Wiemer, S. and Wyss, M., 2000. Minimum magnitude of completeness
