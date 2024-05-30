@@ -54,19 +54,20 @@ def estimate_b(
         delta_m:    discretization of magnitudes. default is no discretization
         weights:    weights of each magnitude can be specified here
         b_parameter:either 'b-value', then the corresponding value  of the
-                Gutenberg-Richter law is returned, otherwise 'beta'
-                from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+                    Gutenberg-Richter law is returned, otherwise 'beta'
+                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
         return_std: if True the standard deviation of beta/b-value (see
                 above) is returned
         method:     method to use for estimation of beta/b-value. Options
                 are:
+
                     - 'tinti',default, this is the is the classic estimator,
-                    see :func:`seismostats.analysis.estimate_b_tinti`
+                      see :func:`seismostats.analysis.estimate_b_tinti`
                     - 'positive' (this is b-positive, which applies the 'tinti'
-                    method to the positive differences, see
-                    :func:`seismostats.analysis.estimate_b_positive`.
-                    To achieve the effect of reduced STAI, the magnitudes must
-                    be ordered in time)
+                      method to the positive differences, see
+                      :func:`seismostats.analysis.estimate_b_positive`. To
+                      achieve the effect of reduced STAI, the magnitudes must
+                      be ordered in time)
         return_n:   if True the number of events used for the estimation is
                 returned. This is only relevant for the 'positive' method
 
