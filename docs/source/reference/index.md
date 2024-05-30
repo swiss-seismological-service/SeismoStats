@@ -6,4 +6,5 @@
 catalog
 config
 plots
+analysis
 ```
