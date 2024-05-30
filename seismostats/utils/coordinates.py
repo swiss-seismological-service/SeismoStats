@@ -11,7 +11,7 @@ class CoordinateTransformer:
     Class to transform between a external geographic (default ESPG:4326,
     also known as WGS84), and a local cartesian CRS.
 
-    Any EPSG code or proj4 string can be used for the local_proj input,
+    Any EPSG code or proj4 string can be used for the ``local_proj`` input,
     for instance 2056 to represent the swiss coordinate system, or
     "+proj=utm +zone=32 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
     to represent a UTM coordinate system.
@@ -30,12 +30,12 @@ class CoordinateTransformer:
             external_proj: int | str = 4326):
         """
         Constructor of CoordinateTransformer object.
-
-        :param local_proj: int (epsg) or string (proj) of local CRS.
-        :param ref_easting: reference easting for local coordinates.
-        :param ref_northing: reference northing for local coordinates.
-        :param ref_altitude: reference altitude for local coordinates.
-        :param external_proj: int or string of geographic coordinates.
+        Args:
+            local_proj: int (epsg) or string (proj) of local CRS.
+            ref_easting: reference easting for local coordinates.
+            ref_northing: reference northing for local coordinates.
+            ref_altitude: reference altitude for local coordinates.
+            external_proj: int or string of geographic coordinates.
         """
         self.ref_easting = ref_easting
         self.ref_northing = ref_northing
@@ -54,11 +54,13 @@ class CoordinateTransformer:
                         altitude: float | list = None):
         """
         Transform geographic coordinates to local coordinates.
+        Args:
+            lon: longitude
+            lat: latitude
+            altitude: altitude
 
-        :param lon: longitude
-        :param lat: latitude
-        :param altitude: altitude
-        :returns: Easting, northing and altitude in local CRS relative to ref.
+        Returns:
+            Easting, northing and altitude in local CRS relative to ref.
         """
         enu = \
             self.transformer_to_local.transform(lon, lat, altitude)
@@ -80,10 +82,13 @@ class CoordinateTransformer:
         """
         Transform local coordinates to geographic coordinates.
 
-        :param easting: easting
-        :param northing: northing
-        :param altitude: altitude
-        :returns: longitude, latitude, altitude in local CRS relative to ref.
+        Args:
+            easting: easting
+            northing: northing
+            altitude: altitude
+
+        Returns:
+            longitude, latitude, altitude in local CRS relative to ref.
         """
         easting_0 = np.array(easting) + self.ref_easting
         northing_0 = np.array(northing) + self.ref_northing
@@ -103,7 +108,13 @@ class CoordinateTransformer:
 
     def polygon_to_local_coords(self, polygon: Polygon) -> Polygon:
         """
-        Transform polygon to local coordinates.
+        Transform polygon from geographic coordinates to local coordinates.
+
+        Args:
+            polygon: shapely polygon
+
+        Returns:
+            shapely polygon in local coordinates
         """
         new_polygon = transform(
             self.transformer_to_local.transform, polygon)
@@ -114,7 +125,13 @@ class CoordinateTransformer:
 
     def polygon_from_local_coords(self, polygon: Polygon) -> Polygon:
         """
-        Transform polygon to local coordinates.
+        Transform polygon from local coordinates to geographic coordinates.
+
+        Args:
+            polygon: shapely polygon
+
+        Returns:
+            shapely polygon in geographic coordinates
         """
         translated_polygon = translate(
             polygon, xoff=self.ref_easting,
@@ -125,6 +142,16 @@ class CoordinateTransformer:
 
 
 def bounding_box_to_polygon(x_min, x_max, y_min, y_max, srid=None) -> Polygon:
+    """
+    Create a shapely Polygon from a bounding box.
+
+    Args:
+        x_min: minimum x coordinate
+        x_max: maximum x coordinate
+        y_min: minimum y coordinate
+        y_max: maximum y coordinate
+        srid: spatial reference system identifier
+    """
     bbox = (x_min, y_min,
             x_max, y_max)
     return geometry.box(*bbox, ccw=True)
@@ -132,5 +159,14 @@ def bounding_box_to_polygon(x_min, x_max, y_min, y_max, srid=None) -> Polygon:
 
 def polygon_to_bounding_box(polygon: Polygon) -> \
         tuple[float, float, float, float]:
+    """
+    Get the bounding box of a Polygon.
+
+    Args:
+        polygon: shapely Polygon
+
+    Returns:
+        tuple: The corner coordinates of the Polygon
+    """
     (minx, miny, maxx, maxy) = polygon.bounds
     return (minx, miny, maxx, maxy)

@@ -40,8 +40,8 @@ def normal_round(x: float, n: int = 0) -> float:
 
 def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
     """
-    Rounds float numbers within the array ``x`` to a given precision. If precision not given,
-    assumes ``delta_x = 0.1``.
+    Rounds float numbers within the array ``x`` to a given precision. If
+    precision not given, assumes ``delta_x = 0.1``.
 
     Args:
         x: list of decimal numbers that needs to be rounded
@@ -65,8 +65,8 @@ def get_fmd(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculates event counts per magnitude bin. Note that the returned bins
-    array contains the center point of each bin unless ``bin_position = 'left'``.
-
+    array contains the center point of each bin unless
+    ``bin_position = 'left'``.
 
     Args:
         mags    : array of magnitudes

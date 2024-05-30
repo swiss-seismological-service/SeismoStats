@@ -2,23 +2,20 @@ import pandas as pd
 from shapely.geometry import Point, Polygon
 
 
-def cat_intersect_polygon(cat: pd.DataFrame, polygon_vertices: list[tuple]
-                          ) -> pd.DataFrame:
-    """Returns a DataFrame containing
-    only the rows with points inside a given polygon.
+def cat_intersect_polygon(
+        cat: pd.DataFrame,
+        polygon_vertices: list[tuple]) -> pd.DataFrame:
+    """
+    Returns a DataFrame containing only the rows with points inside a given
+    polygon.
 
-    Args:
-    -----------
-    cat : pandas.DataFrame
-        DataFrame with columns 'latitude' and 'longitude'
-        containing the points to be checked.
-    polygon_vertices : list of tuples
-        List of (x, y) tuples representing
-        the vertices of the polygon to be checked against.
+        Args:
+        cat : DataFrame with columns 'latitude' and 'longitude' containing the
+              points to be checked.
+        polygon_vertices : List of (x, y) tuples representing
+                           the vertices of the polygon to be checked against.
 
     Returns:
-    --------
-    pandas.DataFrame
         DataFrame containing only the rows with points inside the polygon.
 
     """

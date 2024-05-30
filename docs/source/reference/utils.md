@@ -16,7 +16,7 @@
 
 ```
 
-## Synthetic Magnitudes
+## Synthetic Magnitude Distributions
 
 ```{eval-rst}
 .. autosummary::
@@ -24,5 +24,27 @@
 
     utils.simulate_magnitudes
     utils.simulated_magnitudes_binned
+
+```
+
+## Coordinates
+
+```{eval-rst}
+.. autosummary::
+    :toctree: api/
+
+    utils.CoordinateTransformer
+    utils.bounding_box_to_polygon
+    utils.polygon_to_bounding_box
+
+```
+
+## Spatial Filtering
+
+```{eval-rst}
+.. autosummary::
+    :toctree: api/
+
+    utils.cat_intersect_polygon
 
 ```
