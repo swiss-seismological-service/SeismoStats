@@ -54,6 +54,7 @@ class CoordinateTransformer:
                         altitude: float | list = None):
         """
         Transform geographic coordinates to local coordinates.
+
         Args:
             lon: longitude
             lat: latitude
