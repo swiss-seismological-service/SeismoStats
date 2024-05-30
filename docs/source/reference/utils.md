@@ -34,6 +34,10 @@
     :toctree: api/
 
     utils.CoordinateTransformer
+    [//]: <> utils.CoordinateTransformer.to_local_coords
+    [//]: <> utils.CoordinateTransformer.from_local_coords
+    [//]: <> utils.CoordinateTransformer.polygon_from_local_coords
+    [//]: <> utils.CoordinateTransformer.polygon_to_local_coords
     utils.bounding_box_to_polygon
     utils.polygon_to_bounding_box
 
