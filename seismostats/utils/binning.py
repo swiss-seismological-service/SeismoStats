@@ -41,7 +41,7 @@ def normal_round(x: float, n: int = 0) -> float:
 def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
     """
     Rounds a float number x to a given precision. If precision not given,
-    assumes 0.1 bin size
+    assumes ``delta_x = 0.1``
 
     Args:
         x: decimal number that needs to be rounded
