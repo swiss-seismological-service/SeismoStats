@@ -360,7 +360,7 @@ def estimate_b_weichert(
     b_parameter: str = "b_value",
 ) -> tuple[float, float, float, float, float]:
     """Return the b-value estimate calculated using the
-    Weichert (1980) algorithm, for the case of unequal 
+    Weichert (1980) algorithm, for the case of unequal
     completeness periods for different magnitude values.
 
     Source:
@@ -585,7 +585,7 @@ def estimate_b_kijko_smit(
         b_parameter: str = 'b_value'
 ) -> tuple[float, float, float, float]:
     """Return the b-value estimate calculated using the
-    Kijko and Smit (2012) algorithm for the case of unequal 
+    Kijko and Smit (2012) algorithm for the case of unequal
     completeness periods for different magnitude values.
 
     Source:

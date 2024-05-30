@@ -162,8 +162,8 @@ def mc_ks(
     Source:
         - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
           distributions in empirical data. SIAM review, 51(4), pp.661-703.
-        - Mizrahi, L., Nandan, S. and Wiemer, S., 2021. The effect of 
-          declustering on the size distribution of mainshocks. Seismological 
+        - Mizrahi, L., Nandan, S. and Wiemer, S., 2021. The effect of
+          declustering on the size distribution of mainshocks. Seismological
           Society of America, 92(4), pp.2333-2342.
 
     Args:
@@ -295,7 +295,7 @@ def mc_max_curvature(
           States, and Japan. Bulletin of the Seismological Society of America,
           90(4), pp.859-869.
         - Woessner, J. and Wiemer, S., 2005. Assessing the quality of earthquake
-          catalogues: Estimating the magnitude of completeness and its 
+          catalogues: Estimating the magnitude of completeness and its
           uncertainty.
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
     Args:
