@@ -8,5 +8,6 @@ catalogs
 estimate_b
 estimate_mc
 synthetic
+ks-test
 examples
 ```
