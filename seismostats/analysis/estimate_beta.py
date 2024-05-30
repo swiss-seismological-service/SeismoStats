@@ -1,10 +1,35 @@
 """This module contains functions for the estimation of beta and the b-value.
 """
+
 import warnings
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+
+
+def beta_to_b_value(beta: float) -> float:
+    """converts the beta value to the b-value  of the Gutenberg-Richter law
+
+    Args:
+        beta: beta value
+
+    Returns:
+        b_value: corresponding b-value
+    """
+    return beta / np.log(10)
+
+
+def b_value_to_beta(b_value: float) -> float:
+    """converts the b-value to the beta value of the exponential distribution
+
+    Args:
+        b_value: b-value
+
+    Returns:
+        beta: corresponding beta value
+    """
+    return b_value * np.log(10)
 
 
 def estimate_b(
@@ -33,15 +58,11 @@ def estimate_b(
                 above) is returned
         method:     method to use for estimation of beta/b-value. Options
                 are:
-                    - 'tinti', 'utsu' (these are the classic estimators. 'tinti'
-                    is the recommended one, as it is more accurate. It is also
-                    the default method)
+                    - 'tinti', this is the is the classic estimator and default
+                    method
                     - 'positive' (this is b-positive, which applies the 'tinti'
                     method to the positive differences. To achieve the effect
                     of reduced STAI, the magnitudes must be ordered in time)
-                    - 'laplace' (this is using the distribution of all
-                    differences, caution, can take long time to compute)
-
         return_n:   if True the number of events used for the estimation is
                 returned. This is only relevant for the 'positive' method
 
@@ -78,14 +99,7 @@ def estimate_b(
             b_parameter=b_parameter,
             return_std=return_std,
         )
-    elif method == "utsu":
-        return estimate_b_utsu(
-            magnitudes,
-            mc=mc,
-            delta_m=delta_m,
-            b_parameter=b_parameter,
-            return_std=return_std,
-        )
+
     elif method == "positive":
         return estimate_b_positive(
             magnitudes,
@@ -94,18 +108,9 @@ def estimate_b(
             return_std=return_std,
             return_n=return_n,
         )
-    elif method == "laplace":
-        return estimate_b_laplace(
-            magnitudes,
-            delta_m=delta_m,
-            b_parameter=b_parameter,
-            return_std=return_std,
-        )
 
     else:
-        raise ValueError(
-            "method must be either 'tinti', 'utsu', 'positive' or 'laplace'"
-        )
+        raise ValueError("method must be either 'tinti' or 'positive'")
 
 
 def estimate_b_tinti(
@@ -148,15 +153,14 @@ def estimate_b_tinti(
         beta = 1 / np.average(magnitudes - mc, weights=weights)
 
     if b_parameter == "b_value":
-        factor = 1 / np.log(10)
+        b = beta_to_b_value(beta)
     elif b_parameter == "beta":
-        factor = 1
+        b = beta
     else:
         raise ValueError(
             "please choose either 'b_value' or 'beta' as b_parameter"
         )
 
-    b = beta * factor
     std = shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter)
 
     if return_std is True:
@@ -197,15 +201,14 @@ def estimate_b_utsu(
     beta = 1 / np.mean(magnitudes - mc + delta_m / 2)
 
     if b_parameter == "b_value":
-        factor = 1 / np.log(10)
+        b = beta_to_b_value(beta)
     elif b_parameter == "beta":
-        factor = 1
+        b = beta
     else:
         raise ValueError(
             "please choose either 'b_value' or 'beta' as b_parameter"
         )
 
-    b = beta * factor
     std = shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter)
 
     if return_std is True:
@@ -263,6 +266,7 @@ def estimate_b_positive(
                 input variable 'b_parameter'. Note that the difference is just a
                 factor [b_value = beta * log10(e)]
         std:    Shi and Bolt estimate of the beta/b-value estimate
+        n:      number of events used for the estimation
     """
 
     mag_diffs = np.diff(magnitudes)
@@ -404,7 +408,6 @@ def estimate_b_weichert(
     assert (
         b_parameter == "b_value" or b_parameter == "beta"
     ), "please choose either 'b_value' or 'beta' as b_parameter"
-    factor = 1 / np.log(10) if b_parameter == "b_value" else 1
 
     # convert datetime to integer calendar year
     years = np.array(dates).astype("datetime64[Y]").astype(int) + 1970
@@ -422,12 +425,16 @@ def estimate_b_weichert(
     )
     completeness_starts = np.array(
         [
-            completeness_table_years[idx - 1]
-            if idx not in [0, len(completeness_table_years)]
-            else {
-                0: -1,
-                len(completeness_table_years): completeness_table_years[-1],
-            }[idx]
+            (
+                completeness_table_years[idx - 1]
+                if idx not in [0, len(completeness_table_years)]
+                else {
+                    0: -1,
+                    len(completeness_table_years): completeness_table_years[
+                        -1
+                    ],
+                }[idx]
+            )
             for i, idx in enumerate(insertion_indices)
         ]
     )
@@ -478,7 +485,6 @@ def estimate_b_weichert(
         tol=1e5 * np.finfo(float).eps,
     )
     beta = solution.x[0]
-    b_parameter = beta * factor
 
     # compute rate at lower magnitude of completeness bin
     weichert_multiplier = np.sum(
@@ -521,12 +527,15 @@ def estimate_b_weichert(
         * nominator
         / (denominator_term1 - denominator_term2)
     )
-    std_b_parameter = np.sqrt(var_beta) * factor
+    std_b = np.sqrt(var_beta)
+    if b_parameter == "b_value":
+        b = beta_to_b_value(beta)
+        std_b = beta_to_b_value(std_b)
 
     # compute uncertainty in rate at lower magnitude of completeness
     std_rate_at_lmc = rate_at_lmc / np.sqrt(complete_events.num.sum())
 
-    return b_parameter, std_b_parameter, rate_at_lmc, std_rate_at_lmc, a_val
+    return b, std_b, rate_at_lmc, std_rate_at_lmc, a_val
 
 
 def _weichert_objective_function(
@@ -558,14 +567,14 @@ def _weichert_objective_function(
 
 
 def estimate_b_kijko_smit_2012(
-        magnitudes: np.ndarray,
-        dates: list[np.datetime64],
-        completeness_table: np.ndarray,
-        last_year: int | float | None = None,
-        delta_m: float = 0.1,
-        b_parameter: str = 'b_value'
+    magnitudes: np.ndarray,
+    dates: list[np.datetime64],
+    completeness_table: np.ndarray,
+    last_year: int | float | None = None,
+    delta_m: float = 0.1,
+    b_parameter: str = "b_value",
 ) -> tuple[float, float, float, float]:
-    """ applies the Kijko and Smit (2012) algorithm for estimation of the
+    """applies the Kijko and Smit (2012) algorithm for estimation of the
     Gutenberg-Richter magnitude-frequency distribution parameters in
     the case of unequal completeness periods for different magnitude
     values.
@@ -607,28 +616,34 @@ def estimate_b_kijko_smit_2012(
                magnitude frequency distribution
     """
 
-    assert len(magnitudes) == len(dates), \
-        "the magnitudes and years arrays have different lengths"
+    assert len(magnitudes) == len(
+        dates
+    ), "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
-    assert np.all(np.ediff1d(completeness_table[:, 0]) >= 0), \
-        "magnitudes in completeness table not in ascending order"
-    assert [i - delta_m in np.arange(completeness_table[0, 0],
-                                     np.max(magnitudes) + delta_m + 0.001,
-                                     delta_m)
-            for i in np.unique(magnitudes)], \
-        "magnitude bins not aligned with completeness edges"
+    assert np.all(
+        np.ediff1d(completeness_table[:, 0]) >= 0
+    ), "magnitudes in completeness table not in ascending order"
+    assert [
+        i - delta_m
+        in np.arange(
+            completeness_table[0, 0],
+            np.max(magnitudes) + delta_m + 0.001,
+            delta_m,
+        )
+        for i in np.unique(magnitudes)
+    ], "magnitude bins not aligned with completeness edges"
     if not np.all(magnitudes >= completeness_table[:, 0].min()):
         warnings.warn(
             "magnitudes below %.2f are not covered by the "
-            "completeness table and are discarded" %
-            completeness_table[0, 0])
+            "completeness table and are discarded" % completeness_table[0, 0]
+        )
     assert delta_m > 0, "delta_m cannot be zero"
-    assert b_parameter == 'b_value' or b_parameter == 'beta', \
-        "please choose either 'b_value' or 'beta' as b_parameter"
-    factor = 1 / np.log(10) if b_parameter == 'b_value' else 1
+    assert (
+        b_parameter == "b_value" or b_parameter == "beta"
+    ), "please choose either 'b_value' or 'beta' as b_parameter"
 
     # convert datetime to integer calendar year
-    years = np.array(dates).astype('datetime64[Y]').astype(int) + 1970
+    years = np.array(dates).astype("datetime64[Y]").astype(int) + 1970
 
     # get last year of catalogue if last_year not defined
     last_year = last_year if last_year else np.max(years)
@@ -645,8 +660,11 @@ def estimate_b_kijko_smit_2012(
     ncomplete = 0
     for idx in range(len(completeness_magnitudes)):
         sub_catalogues.append(
-            magnitudes[(insertion_indices == idx)
-                       & (magnitudes > completeness_magnitudes[idx])])
+            magnitudes[
+                (insertion_indices == idx)
+                & (magnitudes > completeness_magnitudes[idx])
+            ]
+        )
         ncomplete += len(sub_catalogues[-1])
 
     # Equation (7) from Kijko, Smit (2012)
@@ -654,13 +672,17 @@ def estimate_b_kijko_smit_2012(
     for ii, subcat_magnitudes in enumerate(sub_catalogues):
         # get sub-catalogue beta-value as per Aki-Utsu
         sub_beta = 1 / (
-            np.average(subcat_magnitudes) - completeness_magnitudes[ii])
+            np.average(subcat_magnitudes) - completeness_magnitudes[ii]
+        )
         estimator_terms.append((len(subcat_magnitudes) / ncomplete) / sub_beta)
     beta = 1 / np.sum(estimator_terms)
-    b_parameter = beta * factor
 
     # standard deviation of b/beta (Equation 8)
-    std_b_parameter = factor * beta / np.sqrt(ncomplete)
+    std_b = beta / np.sqrt(ncomplete)
+
+    if b_parameter == "b_value":
+        b = beta_to_b_value(beta)
+        std_b = beta_to_b_value(std_b)
 
     # get rate assuming Poisson process (Equation 10)
     denominator_rate = 0
@@ -671,10 +693,11 @@ def estimate_b_kijko_smit_2012(
         )
 
     rate_at_lmc = ncomplete / denominator_rate
-    a_val = np.log10(rate_at_lmc) + (beta / np.log(10))\
-        * (completeness_magnitudes[0] + delta_m * 0.5)
+    a_val = np.log10(rate_at_lmc) + (beta / np.log(10)) * (
+        completeness_magnitudes[0] + delta_m * 0.5
+    )
 
-    return b_parameter, std_b_parameter, rate_at_lmc, a_val
+    return b, std_b, rate_at_lmc, a_val
 
 
 def shi_bolt_confidence(
@@ -694,20 +717,18 @@ def shi_bolt_confidence(
         b_parameter:either either 'b_value' or 'beta'
 
     Returns:
-        std:  confidence limit of the b-value/beta value (depending on input)
+        std_b:  confidence limit of the b-value/beta value (depending on input)
     """
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
-    if b_parameter == "b_value":
-        factor = 1 / np.log(10)
-    elif b_parameter == "beta":
-        factor = 1
-    else:
-        raise ValueError(
-            "please choose either 'b_value' or 'beta' as b_parameter"
-        )
+    assert (
+        b_parameter == "b_value" or b_parameter == "beta"
+    ), "please choose either 'b_value' or 'beta' as b_parameter"
 
-    std = np.std(magnitudes, ddof=1) / np.sqrt(len(magnitudes))
-    std = 1 / factor * b**2 * std
+    std_b = (
+        np.log(10) * b**2 * np.std(magnitudes) / np.sqrt(len(magnitudes) - 1)
+    )
+    if b_parameter == "beta":
+        std_b = (std_b) / np.log(10)
 
-    return std
+    return std_b
