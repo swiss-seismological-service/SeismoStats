@@ -77,7 +77,7 @@ def get_fmd(
     Returns:
         bins    : array of bin centers (left to right)
         counts  : counts for each bin
-        mags    : array of magnitudes binned to delta_m
+        mags    : array of magnitudes binned to ``delta_m``
     """
     mags = bin_to_precision(mags, delta_m)
     mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
@@ -121,7 +121,7 @@ def get_cum_fmd(
     Returns:
         bins    : array of bin centers (left to right)
         c_counts: cumulative counts for each bin
-        mags    : array of magnitudes binned to delta_m
+        mags    : array of magnitudes binned to ``delta_m``
     """
 
     if delta_m == 0:

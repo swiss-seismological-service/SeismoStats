@@ -6,7 +6,8 @@ from seismostats.utils.binning import bin_to_precision
 def simulate_magnitudes(
     n: int, beta: float, mc: float, mag_max: float | None = None
 ) -> np.ndarray:
-    """Generates a vector of n elements drawn from an exponential distribution
+    """
+    Generates a vector of ``n`` elements drawn from an exponential distribution
     exp(-beta*M)
 
     Args:
@@ -42,14 +43,15 @@ def simulated_magnitudes_binned(
     mag_max: float = None,
     b_parameter: str = "b_value",
 ) -> np.ndarray:
-    """simulate magnitudes and bin them to a given precision. input 'b' can be
-    specified to be beta or the b-value, depending on the 'b_parameter' input
+    """
+    Simulate magnitudes and bin them to a given precision ``delta_m``. Input ``b`` can be
+    specified to be 'beta' or the 'b-value', depending on the ``b_parameter`` input.
 
     Args:
         n:              number of magnitudes to simulate
         b:              b-value or beta of the distribution from which
-                magnitudes are simulated. If b is np.ndarray, it must have the
-                length n. Then each magnitude is simulated from the
+                magnitudes are simulated. If ``b`` is np.ndarray, it must have the
+                length ``n``. Then each magnitude is simulated from the
                 corresponding b-value
         mc:             completeness magnitude
         delta_m:        magnitude bin width

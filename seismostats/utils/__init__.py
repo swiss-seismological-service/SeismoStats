@@ -3,6 +3,8 @@ import functools
 import pandas as pd
 from jinja2 import Template, select_autoescape
 from seismostats.utils.binning import bin_to_precision, get_cum_fmd, get_fmd
+from seismostats.utils.simulate_distributions import (simulate_magnitudes,
+                                                      simulated_magnitudes_binned)  # noqa
 
 
 def _check_required_cols(df: pd.DataFrame,
