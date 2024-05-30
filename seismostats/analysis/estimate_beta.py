@@ -379,10 +379,10 @@ def estimate_b_weichert(
             the first column are considered detected. An example is given
             below:
 
-            np.array([[ 3.95, 1980],
-                      [ 4.95, 1920],
-                      [ 5.95, 1810],
-                      [ 6.95, 1520]])
+            >>> np.array([[ 3.95, 1980],
+            ...          [ 4.95, 1920],
+            ...          [ 5.95, 1810],
+            ...          [ 6.95, 1520]])
 
         mag_max: maximum possible magnitude
         last_year: last year of observation (the default is None, in which case
