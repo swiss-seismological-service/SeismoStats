@@ -29,37 +29,38 @@ def plot_in_space(
     dot_labels: str = "auto",
 ) -> cartopy.mpl.geoaxes.GeoAxes:
     """
-     Function plots seismicity on the surface. If include_map is chosen True,
-    a nice natural earth map is used, otherwise the seismicity is just
-    plotted on a blank grid. In the latter case, the grid is stretched to
+    This function plots seismicity on a surface. If ``include_map`` is
+    set to ``True``, a nice natural earth map is used, otherwise the seismicity
+    is just plotted on a blank grid. In the latter case, the grid is stretched
     according to the midpoint latitude.
 
     Args:
-        cat:            dataframe- needs to have latitude, longitude and
+        cat:            dataframe - needs to have latitude, longitude and
                         depth as entries
-        resolution:     resolution of map, '10m', '50m' and '110m' available
+        resolution:     resolution of map, "10m", "50m" and "110m" available
         include_map:    if True, seismicity will be plotted on natural earth
                         map, otherwise it will be plotted on a blank grid.
         country:        name of country, if None map will fit to data points
         colors:         color of background. if None is chosen, is will be
                         either white or standard natural earth colors.
-        style:          style of map, 'satellite' or 'street' are available
+        style:          style of map, "satellite" or "street" are available
         dot_smallest:   smallest dot size for magnitude scaling
         dot_largest:    largest dot size for magnitude scaling
         dot_interpolation_power: interpolation power for scaling
         dot_labels:     int, None, "auto" (default), list, or
-                        `~.ticker.Locator`. Determines, how labels for
-                        magnitudes can be created. Input for matplotlib
-                        PathCollection.legend_elements. If None, no label is
-                        shown. If an integer, target to use dot_labels
-                        elements in the normed range. If "auto", an automatic
-                        range is chosen for the labels (default). If a list,
-                        use elements of list which are between minimum and
-                        maximum magnitude of dataset for the legend.
-                        Finally, a `~.ticker.Locator` can be provided to use
-                        a predefined matplotlib.ticker (e.g. FixedLocator,
-                        which results in the same legend as providing a list
-                        of values).
+                        ``~.ticker.Locator``. Determines how labels for
+                        magnitudes can be created. Input for matplotlib's
+                        ``PathCollection.legend_elements``. If ``None``, no
+                        label is shown. If an integer, target to use
+                        ``dot_labels`` elements in the normed range.
+                        If "auto", an automatic range is chosen for the
+                        labels (default). If a list, uses elements of list
+                        which are between minimum and maximum magnitude of
+                        dataset for the legend.
+                        Finally, a ``~.ticker.Locator`` can be provided to use
+                        a predefined ``matplotlib.ticker`` (e.g.
+                        ``FixedLocator``, which results in the same legend as
+                        providing a list of values).
     Returns:
         GeoAxis object
     """

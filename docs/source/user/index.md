@@ -5,5 +5,4 @@
 
 usage
 docs
-examples
 ```

@@ -5,4 +5,6 @@
 
 catalog
 config
+plots
+analysis
 ```
