@@ -2,6 +2,15 @@ import functools
 
 import pandas as pd
 from jinja2 import Template, select_autoescape
+from seismostats.utils.binning import (bin_to_precision,   # noqa
+                                       get_cum_fmd,
+                                       get_fmd)
+from seismostats.utils.simulate_distributions import (  # noqa
+    simulate_magnitudes, simulated_magnitudes_binned)
+from seismostats.utils.filtering import cat_intersect_polygon  # noqa
+from seismostats.utils.coordinates import (CoordinateTransformer,  # noqa
+                                           bounding_box_to_polygon,
+                                           polygon_to_bounding_box)
 
 
 def _check_required_cols(df: pd.DataFrame,

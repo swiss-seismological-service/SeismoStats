@@ -23,7 +23,7 @@ def normal_round_to_int(x: float) -> int:
 
 def normal_round(x: float, n: int = 0) -> float:
     """
-    Rounds a float number x to n number of decimals. If the number
+    Rounds a float number ``x`` to n number of decimals. If the number
     of decimals is not given, we round to an integer.
 
     Args:
@@ -40,11 +40,11 @@ def normal_round(x: float, n: int = 0) -> float:
 
 def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
     """
-    Rounds a float number x to a given precision. If precision not given,
-    assumes 0.1 bin size
+    Rounds float numbers within the array ``x`` to a given precision. If
+    precision not given, assumes ``delta_x = 0.1``.
 
     Args:
-        x: decimal number that needs to be rounded
+        x: list of decimal numbers that needs to be rounded
         delta_x: size of the bin, optional
 
     Returns:
@@ -63,9 +63,10 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
 def get_fmd(
     mags: np.ndarray, delta_m: float, bin_position: str = "center"
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Calculates event counts per magnitude bin. Note that the returned bins
-        array contains the center point of each bin unless bin_position is
-        'left'.
+    """
+    Calculates event counts per magnitude bin. Note that the returned bins
+    array contains the center point of each bin unless
+    ``bin_position = 'left'``.
 
     Args:
         mags    : array of magnitudes
@@ -75,8 +76,8 @@ def get_fmd(
                         returned.
     Returns:
         bins    : array of bin centers (left to right)
-        counts  : counts for each bin ("")
-        mags    : array of magnitudes binned to delta_m
+        counts  : counts for each bin
+        mags    : array of magnitudes binned to ``delta_m``
     """
     mags = bin_to_precision(mags, delta_m)
     mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
@@ -105,9 +106,10 @@ def get_fmd(
 def get_cum_fmd(
     mags: np.ndarray, delta_m: float, bin_position: str = "center"
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Calculates cumulative event counts across all magnitude units
+    """
+    Calculates cumulative event counts across all magnitude units
     (summed from the right). Note that the returned bins array contains
-    the center point of each bin unless left is True.
+    the center point of each bin unless ``bin_position = 'left'``.
 
     Args:
         mags    : array of magnitudes
@@ -118,8 +120,8 @@ def get_cum_fmd(
 
     Returns:
         bins    : array of bin centers (left to right)
-        c_counts: cumulative counts for each bin ("")
-        mags    : array of magnitudes binned to delta_m
+        c_counts: cumulative counts for each bin
+        mags    : array of magnitudes binned to ``delta_m``
     """
 
     if delta_m == 0:

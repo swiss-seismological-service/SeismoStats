@@ -5,7 +5,7 @@ User Guide <user/index>
 API reference <reference/index>
 ```
 
-# Seismo Stats
+# SeismoStats
 
 Analyse your seismic catalogues with **SeismoStats**, a Python package for seismicity analysis.
 
