@@ -2,19 +2,24 @@ import functools
 
 import pandas as pd
 from jinja2 import Template, select_autoescape
-from seismostats.utils.binning import (bin_to_precision,   # noqa
-                                       get_cum_fmd,
-                                       get_fmd)
+from seismostats.utils.binning import (  # noqa
+    bin_to_precision,
+    get_cum_fmd,
+    get_fmd,
+)
 from seismostats.utils.simulate_distributions import (  # noqa
-    simulate_magnitudes, simulated_magnitudes_binned)
+    simulate_magnitudes,
+    simulate_magnitudes_binned,
+)
 from seismostats.utils.filtering import cat_intersect_polygon  # noqa
-from seismostats.utils.coordinates import (CoordinateTransformer,  # noqa
-                                           bounding_box_to_polygon,
-                                           polygon_to_bounding_box)
+from seismostats.utils.coordinates import (  # noqa
+    CoordinateTransformer,
+    bounding_box_to_polygon,
+    polygon_to_bounding_box,
+)
 
 
-def _check_required_cols(df: pd.DataFrame,
-                         required_cols: list[str]):
+def _check_required_cols(df: pd.DataFrame, required_cols: list[str]):
     """
     Check if a DataFrame has the required columns.
 
@@ -34,9 +39,7 @@ def _check_required_cols(df: pd.DataFrame,
     return True
 
 
-def require_cols(_func=None, *,
-                 require: list[str],
-                 exclude: list[str] = None):
+def require_cols(_func=None, *, require: list[str], exclude: list[str] = None):
     """
     Decorator to check if a Class has the required columns for a method.
 
@@ -48,6 +51,7 @@ def require_cols(_func=None, *,
         exclude : list of str, optional
             List of columns to exclude from the required columns.
     """
+
     def decorator_require(func):
         @functools.wraps(func)
         def wrapper_require(self, *args, **kwargs):
@@ -56,11 +60,13 @@ def require_cols(_func=None, *,
                 require = [col for col in require if col not in exclude]
             if not _check_required_cols(self, require):
                 raise AttributeError(
-                    'Catalog is missing the following columns '
+                    "Catalog is missing the following columns "
                     f'for execution of the method "{func.__name__}": '
-                    f'{set(require).difference(set(self.columns))}.')
+                    f"{set(require).difference(set(self.columns))}."
+                )
             value = func(self, *args, **kwargs)
             return value
+
         return wrapper_require
 
     if _func is None:
