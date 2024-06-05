@@ -1,11 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import warnings
 
 # Own functions
 from seismostats.utils.binning import get_cum_fmd, get_fmd
-from seismostats.utils._config import get_option
 
 
 def gutenberg_richter(
