@@ -7,4 +7,5 @@ catalog
 config
 plots
 analysis
+utils
 ```
