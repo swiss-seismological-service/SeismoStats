@@ -49,9 +49,7 @@ def test_estimate_b(
     )
 
     # assert that the correct number of values are returned
-    assert np.size(out) == 1 + return_std + (
-        return_n * (1 - (method == "utsu")) * (1 - (method == "tinti"))
-    )
+    assert np.size(out) == 1 + return_std + (return_n * (method == "positive"))
 
     # test that uncorrect binninng leads to error
     with pytest.raises(AssertionError) as excinfo:
