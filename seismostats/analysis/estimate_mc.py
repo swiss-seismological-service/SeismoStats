@@ -9,8 +9,10 @@ import pandas as pd
 
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.utils.binning import bin_to_precision, get_fmd
-from seismostats.utils.simulate_distributions import \
-    simulate_magnitudes_binned
+from seismostats.utils.simulate_distributions import (
+    simulate_magnitudes_binned,
+)
+from seismostats.utils._config import get_option
 
 
 def cdf_discrete_GR(
@@ -107,27 +109,27 @@ def ks_test_gr(
         ks_d_obs:   KS distance of the sample
         ks_ds:      list of KS distances
     """
+    if get_option("warnings") is True:
+        if np.min(sample) < mc - delta_m / 2:
+            warnings.warn("sample contains values below mc - delta_m / 2")
 
-    if np.min(sample) < mc - delta_m / 2:
-        warnings.warn("sample contains values below mc - delta_m / 2")
+        if len(sample) == 0:
+            warnings.warn("no sample")
+            return 0, 1, []
 
-    if len(sample) == 0:
-        warnings.warn("no sample")
-        return 0, 1, []
-
-    if len(np.unique(sample)) == 1:
-        warnings.warn("sample contains only one value")
-        return 0, 1, []
+        if len(np.unique(sample)) == 1:
+            warnings.warn("sample contains only one value")
+            return 0, 1, []
 
     ks_ds = []
 
     n_sample = len(sample)
-    simulate_all = simulate_magnitudes_binned(
+    simulated_all = simulate_magnitudes_binned(
         n * n_sample, beta, mc, delta_m, b_parameter="beta"
     )
 
     for ii in range(n):
-        simulated = simulate_all[n_sample * ii: n_sample * (ii + 1)]
+        simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
         _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
         _, y_emp = empirical_cdf(simulated)
 
@@ -195,25 +197,28 @@ def mc_ks(
         )
     else:
         # check that they are ordered by size
-        if not np.all(np.diff(mcs_test) > 0):
-            warnings.warn("mcs_test are being re-ordered by size.")
-            mcs_test = np.sort(np.unique(mcs_test))
+        if get_option("warnings") is True:
+            if not np.all(np.diff(mcs_test) > 0):
+                warnings.warn("mcs_test are being re-ordered by size.")
+                mcs_test = np.sort(np.unique(mcs_test))
 
-    # check if binning is correct
-    if not np.allclose(sample, bin_to_precision(sample, delta_m)):
-        warnings.warn(
-            "Magnitudes are not binned correctly. "
-            "Test might fail because of this."
-        )
+    if get_option("warnings") is True:
+        # check if binning is correct
+        if not np.allclose(sample, bin_to_precision(sample, delta_m)):
+            warnings.warn(
+                "Magnitudes are not binned correctly. "
+                "Test might fail because of this."
+            )
 
-    if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
-        warnings.warn(
-            "Mcs to test are not binned correctly. "
-            "Test might fail because of this."
-        )
+        if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
+            warnings.warn(
+                "Mcs to test are not binned correctly. "
+                "Test might fail because of this."
+            )
 
-    if beta is not None and b_method is not None:
-        warnings.warn("Both beta and b_method are given. Using beta.")
+        # check if beta is given (then b_method is not needed)
+        if beta is not None and b_method is not None:
+            warnings.warn("Both beta and b_method are given. Using beta.")
 
     if beta is None and b_method is None:
         b_method = "tinti"

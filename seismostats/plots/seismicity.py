@@ -94,7 +94,9 @@ def plot_in_space(
             poly[0].bounds[1] - pad_lon,
             poly[0].bounds[3] + pad_lon,
         ]
-        msk = Polygon(rect_from_bound(*exts)).difference(poly[0].simplify(0.01))
+        msk = Polygon(rect_from_bound(*exts)).difference(
+            poly[0].simplify(0.01)
+        )
         msk_stm = tile_proj.project_geometry(msk, ll_proj)
         ax.add_geometries(
             msk_stm, tile_proj, facecolor="white", edgecolor=None, alpha=0.6
@@ -161,8 +163,6 @@ def plot_in_space(
                 x,
                 min(cat["magnitude"]),
                 max(cat["magnitude"]),
-                dot_smallest,
-                dot_largest,
                 dot_interpolation_power,
             ),
         )

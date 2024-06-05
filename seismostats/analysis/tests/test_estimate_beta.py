@@ -5,26 +5,17 @@ import numpy as np
 import pytest
 
 # import functions to be tested
-from seismostats.analysis.estimate_beta import (differences, estimate_b,
-                                                estimate_b_laplace,
-                                                estimate_b_positive,
-                                                estimate_b_tinti,
-                                                estimate_b_utsu,
-                                                estimate_b_weichert,
-                                                shi_bolt_confidence)
-from seismostats.utils.binning import bin_to_precision
-# import functions from other modules
-from seismostats.utils.simulate_distributions import simulate_magnitudes
-
-
-def simulate_magnitudes_w_offset(
-    n: int, beta: float, mc: float, delta_m: float, mag_max: float = None
-) -> np.ndarray:
-    """This function simulates the magnitudes with the correct offset"""
-    mags = simulate_magnitudes(n, beta, mc - delta_m / 2, mag_max)
-    if delta_m > 0:
-        mags = bin_to_precision(mags, delta_m)
-    return mags
+from seismostats.analysis.estimate_beta import (
+    differences,
+    estimate_b,
+    estimate_b_laplace,
+    estimate_b_positive,
+    estimate_b_tinti,
+    estimate_b_utsu,
+    estimate_b_weichert,
+    shi_bolt_confidence,
+)
+from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
 @pytest.mark.parametrize(
@@ -32,14 +23,10 @@ def simulate_magnitudes_w_offset(
     [
         ("tinti", True, True, "beta"),
         ("tinti", False, False, "b_value"),
-        ("utsu", True, False, "beta"),
-        ("utsu", False, True, "b_value"),
         ("positive", True, True, "beta"),
         ("positive", False, False, "b_value"),
         ("positive", True, False, "beta"),
         ("positive", False, True, "b_value"),
-        ("laplace", True, True, "beta"),
-        ("laplace", False, False, "b_value"),
     ],
 )
 def test_estimate_b(
@@ -50,9 +37,7 @@ def test_estimate_b(
 ):
     """this test only checks if the number of output is correct. the actual
     values are tested in the individual tests for each method"""
-    mags = simulate_magnitudes_w_offset(
-        n=100, beta=np.log(10), mc=0, delta_m=0.1
-    )
+    mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
     out = estimate_b(
         mags,
         mc=0,
@@ -64,12 +49,7 @@ def test_estimate_b(
     )
 
     # assert that the correct number of values are returned
-    assert np.size(out) == 1 + return_std + (
-        return_n
-        * (1 - (method == "utsu"))
-        * (1 - (method == "tinti"))
-        * (1 - (method == "laplace"))
-    )
+    assert np.size(out) == 1 + return_std + (return_n * (method == "positive"))
 
     # test that uncorrect binninng leads to error
     with pytest.raises(AssertionError) as excinfo:
@@ -114,7 +94,7 @@ def test_estimate_b(
 @pytest.mark.parametrize(
     "n,b,mc,delta_m,b_parameter,precision",
     [
-        (1000000, 1.2 * np.log(10), 3, 0, "beta", 0.005),
+        (1000000, 1.2, 3, 0, "b_value", 0.005),
         (1000000, np.log(10), 3, 0.1, "beta", 0.01),
     ],
 )
@@ -126,33 +106,32 @@ def test_estimate_b_tinti(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    mags = simulate_magnitudes_binned(
+        n, b, mc, delta_m, b_parameter=b_parameter
+    )
     b_estimate = estimate_b_tinti(mags, mc, delta_m, b_parameter=b_parameter)
 
     assert abs(b - b_estimate) / b <= precision
 
 
 @pytest.mark.parametrize(
-    "n,beta,mc,delta_m,b_parameter,precision",
+    "n,b,mc,delta_m,b_parameter,precision",
     [
         (1000000, 1.2 * np.log(10), 3, 0, "beta", 0.005),
-        (1000000, np.log(10), 3, 0.1, "b_value", 0.01),
+        (1000000, 0.8, 3, 0.1, "b_value", 0.01),
     ],
 )
 def test_estimate_b_utsu(
     n: int,
-    beta: float,
+    b: float,
     mc: float,
     delta_m: float,
     b_parameter: str,
     precision: float,
 ):
-    mags = simulate_magnitudes_w_offset(n, beta, mc, delta_m)
-
-    if b_parameter == "b_value":
-        b = beta / np.log(10)
-    else:
-        b = beta
+    mags = simulate_magnitudes_binned(
+        n, b, mc, delta_m, b_parameter=b_parameter
+    )
 
     b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
     assert abs(b - b_estimate) / b <= precision
@@ -182,7 +161,9 @@ def test_estimate_b_positive(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    mags = simulate_magnitudes_binned(
+        n, b, mc, delta_m, b_parameter=b_parameter
+    )
     b_estimate = estimate_b_positive(
         mags, delta_m=delta_m, b_parameter=b_parameter
     )
@@ -193,7 +174,7 @@ def test_estimate_b_positive(
     "n,b,mc,delta_m,b_parameter,precision",
     [
         (1000, 1.2 * np.log(10), 3, 0, "beta", 0.15),
-        (1000, np.log(10), 3, 0.1, "beta", 0.2),
+        (1000, 1, 3, 0.1, "b_value", 0.2),
     ],
 )
 def test_estimate_b_laplace(
@@ -204,16 +185,16 @@ def test_estimate_b_laplace(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulate_magnitudes_w_offset(n, b, mc, delta_m)
+    mags = simulate_magnitudes_binned(
+        n, b, mc, delta_m, b_parameter=b_parameter
+    )
     b_estimate = estimate_b_laplace(
         mags, delta_m=delta_m, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
 
 
-def _create_test_catalog_poisson(
-        a_val_true: float,
-        b_val_true: float):
+def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
     """
     creates a synthetic catalog with magnitudes
     between 4 and 7.9 with unequal completeness periods. To be used
@@ -222,10 +203,9 @@ def _create_test_catalog_poisson(
 
     # assume a catalog from year 1000 to end of 1999
     # with completeness as follows:
-    completeness_table = np.array([[3.95, 1940],
-                                   [4.95, 1880],
-                                   [5.95, 1500],
-                                   [6.95, 1000]])
+    completeness_table = np.array(
+        [[3.95, 1940], [4.95, 1880], [5.95, 1500], [6.95, 1000]]
+    )
 
     end_year = 2000
     mmax = 7.95
@@ -240,32 +220,41 @@ def _create_test_catalog_poisson(
             bin_upper_edge, _ = completeness_table[ii + 1]
 
         # get expected annual rates in completeness bin
-        exp_rate = 10 ** (a_val_true - b_val_true
-                          * bin_lower_edge) \
-            - 10 ** (a_val_true - b_val_true
-                     * bin_upper_edge)
+        exp_rate = 10 ** (a_val_true - b_val_true * bin_lower_edge) - 10 ** (
+            a_val_true - b_val_true * bin_upper_edge
+        )
 
         # sample observed earthquakes over 1,000 year period
         obs_countsi = np.random.poisson(exp_rate * (end_year - cyear_lower))
-        obs_mags.append(simulate_magnitudes_w_offset(
-            n=obs_countsi, beta=np.log(10), mc=bin_lower_edge + 0.05,
-            delta_m=0.1,
-            mag_max=bin_upper_edge))
+        obs_mags.append(
+            simulate_magnitudes_binned(
+                n=obs_countsi,
+                b=1,
+                mc=bin_lower_edge + 0.05,
+                delta_m=0.1,
+                mag_max=bin_upper_edge,
+            )
+        )
         obs_yearsi = np.random.randint(cyear_lower, end_year, obs_countsi)
         obs_dates.append(
-            np.array(['%d-06-15' % i for i in obs_yearsi], dtype='datetime64'))
+            np.array(["%d-06-15" % i for i in obs_yearsi], dtype="datetime64")
+        )
 
     # add some earthquakes in incomplete years
-    mags_inc = np.concatenate([
-        np.random.randint(40, 50, 100) / 10,
-        np.random.randint(50, 60, 10) / 10,
-        np.random.randint(60, 70, 1) / 10,
-    ])
-    years_inc = np.concatenate([
-        np.random.randint(1000, 1940, 100),
-        np.random.randint(1000, 1880, 10),
-        np.random.randint(1000, 1500, 1),
-    ])
+    mags_inc = np.concatenate(
+        [
+            np.random.randint(40, 50, 100) / 10,
+            np.random.randint(50, 60, 10) / 10,
+            np.random.randint(60, 70, 1) / 10,
+        ]
+    )
+    years_inc = np.concatenate(
+        [
+            np.random.randint(1000, 1940, 100),
+            np.random.randint(1000, 1880, 10),
+            np.random.randint(1000, 1500, 1),
+        ]
+    )
     dates_inc = np.array(
         ["%d-06-15" % i for i in years_inc], dtype="datetime64"
     )
@@ -276,46 +265,50 @@ def _create_test_catalog_poisson(
     return mags, dates
 
 
-@pytest.mark.parametrize(
-    "a_val_true,b_val_true,precision",
-    [(7, 1, 0.01)]
-)
-def test_estimate_b_weichert(a_val_true: float,
-                             b_val_true: float,
-                             precision: float):
-    mags, dates = _create_test_catalog_poisson(
-        a_val_true, b_val_true)
+@pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
+def test_estimate_b_weichert(
+    a_val_true: float, b_val_true: float, precision: float
+):
+    mags, dates = _create_test_catalog_poisson(a_val_true, b_val_true)
 
-    (b_val, std_b_val, rate_at_mref, std_rate_at_mref, a_val,) = \
-        estimate_b_weichert(magnitudes=mags,
-                            dates=dates,
-                            completeness_table=np.array(
-                                [[3.95, 1940],
-                                 [4.95, 1880],
-                                 [5.95, 1500],
-                                 [6.95, 1000]]
-                            ),
-                            mag_max=7.95,
-                            last_year=2000,
-                            delta_m=0.1,
-                            b_parameter="b_value",
-                            )
+    (
+        b_val,
+        std_b_val,
+        rate_at_mref,
+        std_rate_at_mref,
+        a_val,
+    ) = estimate_b_weichert(
+        magnitudes=mags,
+        dates=dates,
+        completeness_table=np.array(
+            [[3.95, 1940], [4.95, 1880], [5.95, 1500], [6.95, 1000]]
+        ),
+        mag_max=7.95,
+        last_year=2000,
+        delta_m=0.1,
+        b_parameter="b_value",
+    )
 
     assert abs(b_val_true - b_val) / b_val_true <= precision
     assert abs(a_val_true - a_val) / a_val_true <= precision
 
 
 # load data for test_shi_bolt_confidence
-with open("seismostats/analysis/tests/data/test_shi_bolt_confidence.p",
-          "rb") as f:
+with open(
+    "seismostats/analysis/tests/data/test_shi_bolt_confidence.p", "rb"
+) as f:
     data = pickle.load(f)
 
 
-@pytest.mark.parametrize("magnitudes,b,b_parameter,std",
-                         [data["values_test1"], data["values_test2"]],)
-def test_shi_bolt_confidence(magnitudes: np.ndarray,
-                             b: float, b_parameter: str,
-                             std: float):
+@pytest.mark.parametrize(
+    "magnitudes,b,b_parameter,std",
+    [data["values_test1"], data["values_test2"]],
+)
+def test_shi_bolt_confidence(
+    magnitudes: np.ndarray, b: float, b_parameter: str, std: float
+):
     precision = 1e-10
-    assert (shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter) - std
-            < precision)
+    assert (
+        shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter) - std
+        < precision
+    )
