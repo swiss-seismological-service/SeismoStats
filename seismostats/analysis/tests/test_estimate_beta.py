@@ -15,9 +15,7 @@ from seismostats.analysis.estimate_beta import (
     estimate_b_weichert,
     shi_bolt_confidence,
 )
-from seismostats.utils.simulate_distributions import (
-    simulated_magnitudes_binned,
-)
+from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
 @pytest.mark.parametrize(
@@ -39,7 +37,7 @@ def test_estimate_b(
 ):
     """this test only checks if the number of output is correct. the actual
     values are tested in the individual tests for each method"""
-    mags = simulated_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
+    mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
     out = estimate_b(
         mags,
         mc=0,
@@ -110,7 +108,7 @@ def test_estimate_b_tinti(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulated_magnitudes_binned(
+    mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
     b_estimate = estimate_b_tinti(mags, mc, delta_m, b_parameter=b_parameter)
@@ -133,7 +131,7 @@ def test_estimate_b_utsu(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulated_magnitudes_binned(
+    mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
 
@@ -165,7 +163,7 @@ def test_estimate_b_positive(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulated_magnitudes_binned(
+    mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
     b_estimate = estimate_b_positive(
@@ -189,7 +187,7 @@ def test_estimate_b_laplace(
     b_parameter: str,
     precision: float,
 ):
-    mags = simulated_magnitudes_binned(
+    mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
     b_estimate = estimate_b_laplace(
@@ -231,7 +229,7 @@ def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
         # sample observed earthquakes over 1,000 year period
         obs_countsi = np.random.poisson(exp_rate * (end_year - cyear_lower))
         obs_mags.append(
-            simulated_magnitudes_binned(
+            simulate_magnitudes_binned(
                 n=obs_countsi,
                 b=1,
                 mc=bin_lower_edge + 0.05,

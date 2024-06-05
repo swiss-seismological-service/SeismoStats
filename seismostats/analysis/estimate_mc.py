@@ -9,7 +9,10 @@ import pandas as pd
 
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.utils.binning import bin_to_precision, get_fmd
-from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
+from seismostats.utils.simulate_distributions import (
+    simulate_magnitudes_binned,
+)
+from seismostats.utils._config import get_option
 
 
 def cdf_discrete_GR(
@@ -121,12 +124,12 @@ def ks_test_gr(
     ks_ds = []
 
     n_sample = len(sample)
-    simulate_all = simulate_magnitudes_binned(
+    simulated_all = simulate_magnitudes_binned(
         n * n_sample, beta, mc, delta_m, b_parameter="beta"
     )
 
     for ii in range(n):
-        simulated = simulate_all[n_sample * ii : n_sample * (ii + 1)]
+        simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
         _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
         _, y_emp = empirical_cdf(simulated)
 
