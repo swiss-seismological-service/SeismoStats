@@ -34,7 +34,7 @@ def simulate_magnitudes(
     return mags
 
 
-def simulated_magnitudes_binned(
+def simulate_magnitudes_binned(
     n: int,
     b: float | np.ndarray,
     mc: float,
