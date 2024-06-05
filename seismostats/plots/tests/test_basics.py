@@ -50,8 +50,6 @@ def test_dot_size():
 def test_reverse_dot_size():
     # Example input data
     sizes = np.array([10.0, 21.875, 57.5, 116.875, 200.0])
-    smallest = 10
-    largest = 200
     interpolation_power = 2
 
     # Expected output based on input data
@@ -60,8 +58,6 @@ def test_reverse_dot_size():
         sizes,
         min_mag=expected_magnitudes[0],
         max_mag=expected_magnitudes[-1],
-        smallest=smallest,
-        largest=largest,
         interpolation_power=interpolation_power,
     )
 

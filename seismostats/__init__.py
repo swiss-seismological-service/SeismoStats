@@ -1,4 +1,5 @@
 """All functions that are to be used externally are initialized here"""
+
 # flake8: noqa
 
 # analysis

@@ -5,6 +5,7 @@ import warnings
 
 # Own functions
 from seismostats.utils.binning import get_cum_fmd, get_fmd
+from seismostats.utils._config import get_option
 
 
 def gutenberg_richter(
@@ -63,7 +64,9 @@ def plot_cum_fmd(
     """
 
     mags = mags[~np.isnan(mags)]
-    bins, c_counts, mags = get_cum_fmd(mags, delta_m, bin_position=bin_position)
+    bins, c_counts, mags = get_cum_fmd(
+        mags, delta_m, bin_position=bin_position
+    )
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -369,8 +372,6 @@ def reverse_dot_size(
     sizes: np.ndarray,
     min_mag: np.float_,
     max_mag: np.float_,
-    smallest: int = 10,
-    largest: int = 200,
     interpolation_power: int = 1,
 ) -> np.ndarray:
     """Compute magnitudes proportional to a given array of dot sizes.
@@ -401,19 +402,9 @@ def reverse_dot_size(
         The magnitudes corresponding to the given dot sizes.
     """
     if interpolation_power == 0:
-        warnings.warn(
-            "interpolation_power is 0, so all dots have the same size,"
-            "returning original dot sizes"
-        )
-        return sizes
+        raise ValueError("interpolation_power cannot be 0")
 
-    if largest <= smallest:
-        print(
-            "largest value is not larger than smallest, "
-            "setting it to whatever I think is better"
-        )
-        largest = 50 * max(smallest, 2)
-    size_norm = (sizes - smallest) / (largest - smallest)
+    size_norm = (sizes - min(sizes)) / (max(sizes) - min(sizes))
     size_powered = np.power(size_norm, 1 / interpolation_power)
     magnitudes = size_powered * (max_mag - min_mag) + min_mag
     return magnitudes

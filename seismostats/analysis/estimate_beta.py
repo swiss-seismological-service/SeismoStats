@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 
+from seismostats.utils._config import get_option
+
 
 def beta_to_b_value(beta: float) -> float:
     """converts the beta value to the b-value  of the Gutenberg-Richter law
@@ -89,11 +91,12 @@ def estimate_b(
         np.min(magnitudes) >= mc
     ), "magnitudes below mc are present in the data"
     # test if lowest magnitude is much larger than mc
-    if np.min(magnitudes) - mc > delta_m / 2:
-        warnings.warn(
-            "no magnitudes in the lowest magnitude bin are present."
-            "check if mc is chosen correctly"
-        )
+    if get_option("warnings") is True:
+        if np.min(magnitudes) - mc > delta_m / 2:
+            warnings.warn(
+                "no magnitudes in the lowest magnitude bin are present."
+                "check if mc is chosen correctly"
+            )
 
     if method == "tinti":
         return estimate_b_tinti(
@@ -414,11 +417,13 @@ def estimate_b_weichert(
         in np.arange(completeness_table[0, 0], mag_max + 0.001, delta_m)
         for i in np.unique(magnitudes)
     ], "magnitude bins not aligned with completeness edges"
-    if not np.all(magnitudes >= completeness_table[:, 0].min()):
-        warnings.warn(
-            "magnitudes below %.2f are not covered by the "
-            "completeness table and are discarded" % completeness_table[0, 0]
-        )
+    if get_option("warnings") is True:
+        if not np.all(magnitudes >= completeness_table[:, 0].min()):
+            warnings.warn(
+                "magnitudes below %.2f are not covered by the "
+                "completeness table and are discarded"
+                % completeness_table[0, 0]
+            )
     assert delta_m > 0, "delta_m cannot be zero"
     assert (
         b_parameter == "b_value" or b_parameter == "beta"
@@ -647,11 +652,13 @@ def estimate_b_kijko_smit(
         )
         for i in np.unique(magnitudes)
     ], "magnitude bins not aligned with completeness edges"
-    if not np.all(magnitudes >= completeness_table[:, 0].min()):
-        warnings.warn(
-            "magnitudes below %.2f are not covered by the "
-            "completeness table and are discarded" % completeness_table[0, 0]
-        )
+    if get_option("warnings") is True:
+        if not np.all(magnitudes >= completeness_table[:, 0].min()):
+            warnings.warn(
+                "magnitudes below %.2f are not covered by the "
+                "completeness table and are discarded"
+                % completeness_table[0, 0]
+            )
     assert delta_m > 0, "delta_m cannot be zero"
     assert (
         b_parameter == "b_value" or b_parameter == "beta"
