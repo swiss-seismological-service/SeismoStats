@@ -37,13 +37,3 @@ pip install git+https://github.com/swiss-seismological-service/SeismoStats.git@f
 # update it once the repo has changed:
 pip install --force-reinstall git+https://github.com/swiss-seismological-service/SeismoStats.git
 ```
-
-## Problems with geos
-
-```
-1. geos_c.h not found
-Solutions (Mac):
-brew install geos
-Solutions:
-sudo apt-get libgeos-dev
-```
