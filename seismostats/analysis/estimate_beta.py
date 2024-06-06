@@ -382,8 +382,23 @@ def make_more_incomplete(
     times: dt.datetime,
     delta_t: np.timedelta64 = np.timedelta64(60, "s"),
 ) -> tuple[np.ndarray, np.ndarray]:
-    # filter out events where the previous event is larger and less than
-    # delta_t seconds away
+    """Return filtered magnitudes and times. Filter the magnitudes and times in
+    the following way: If an earthquake is smaller than the previous one and
+    less than ``delta_t`` away, the earthquake is removed.
+
+    Args:
+        magnitudes: array of magnitudes, sorted in time (first
+                entry is the earliest earthquake).
+        times:      array of datetime objects of occurrence of each earthquake
+        delta_t:    time window in seconds to filter out events. default is 60
+                seconds.
+
+    Returns:
+        magnitudes: filtered array of magnitudes
+        times:      filtered array of datetime objects
+
+    """
+
     incomplete = False
     while incomplete is False:
         incomplete = True
@@ -414,8 +429,8 @@ def estimate_b_more_incomplete(
 ) -> float | tuple[float, float] | tuple[float, float, float]:
     """Return the b-value estimate calculated using the b-more-incomplete
     method proposed by Lippiello and Petrillo (2024). This method first filters
-    out events where the previous event is larger and less than delta_t seconds
-    away and then calculates the b-value using b-more-positive.
+    out events where the previous event is larger and less than ``delta_t``
+    seconds away and then calculates the b-value using b-more-positive.
 
     Source:
         E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid

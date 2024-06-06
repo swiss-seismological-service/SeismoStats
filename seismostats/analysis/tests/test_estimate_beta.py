@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pytest
+import datetime as dt
 
 # import functions to be tested
 from seismostats.analysis.estimate_beta import (
@@ -14,6 +15,8 @@ from seismostats.analysis.estimate_beta import (
     estimate_b_utsu,
     estimate_b_weichert,
     shi_bolt_confidence,
+    estimate_b_more_positive,
+    make_more_incomplete,
 )
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
@@ -192,6 +195,58 @@ def test_estimate_b_laplace(
         mags, delta_m=delta_m, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
+
+
+@pytest.mark.parametrize(
+    "n,b,mc,delta_m,b_parameter,precision",
+    [
+        (100000, 1.2 * np.log(10), 3, 0, "beta", 0.01),
+        (100000, 1, 3, 0.1, "b_value", 0.02),
+    ],
+)
+def test_estimate_b_more_positive(
+    n: int,
+    b: float,
+    mc: float,
+    delta_m: float,
+    b_parameter: str,
+    precision: float,
+):
+    mags = simulate_magnitudes_binned(
+        n, b, mc, delta_m, b_parameter=b_parameter
+    )
+    b_estimate = estimate_b_more_positive(
+        mags, delta_m=delta_m, b_parameter=b_parameter
+    )
+    assert abs(b - b_estimate) / b <= precision
+
+
+def test_make_more_incomplete():
+    magnitudes = [1, 2, 20, 3, 4, 9, 3]
+    times = [
+        dt.datetime(2020, 1, 1),
+        dt.datetime(2020, 1, 2),
+        dt.datetime(2020, 1, 3),
+        dt.datetime(2020, 1, 4),
+        dt.datetime(2020, 1, 5),
+        dt.datetime(2020, 1, 6),
+        dt.datetime(2020, 1, 7),
+    ]
+
+    mags_inc, times_inc = make_more_incomplete(
+        magnitudes, times, delta_t=np.timedelta64(49, "h")
+    )
+
+    assert (mags_inc == [1, 2, 20, 9]).all()
+    assert (
+        times_inc
+        == [
+            dt.datetime(2020, 1, 1),
+            dt.datetime(2020, 1, 2),
+            dt.datetime(2020, 1, 3),
+            dt.datetime(2020, 1, 6),
+        ]
+    ).all()
 
 
 def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
