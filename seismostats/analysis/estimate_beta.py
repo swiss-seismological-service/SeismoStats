@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+import datetime as dt
 
 from seismostats.utils._config import get_option
 
@@ -307,6 +308,161 @@ def estimate_b_positive(
         return out
 
 
+def estimate_b_more_positive(
+    magnitudes: np.ndarray,
+    delta_m: float = 0,
+    b_parameter: str = "b_value",
+    return_std: bool = False,
+    return_n: bool = False,
+) -> float | tuple[float, float] | tuple[float, float, float]:
+    """Return the b-value estimate calculated using the
+    next positive differences (this means that almost every magnitude has a
+    difference, as opposed to the b-positive method which results in half the
+    data).
+
+    Source:
+        E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
+        Earth, 129(2):e2023JB027849, 2024.
+
+    Args:
+        magnitudes: array of magnitudes, sorted in time (first
+                    entry is the earliest earthquake).
+                    To achieve the effect
+                    of reduced STAI, the magnitudes must be ordered in time.
+        delta_m:    discretization of magnitudes. default is no discretization.
+        b_parameter:either 'b-value', then the corresponding value  of the
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))].
+        return_std: if True the standard deviation of beta/b-value (see above)
+                is returned.
+        return_n:   if True the number of events used for the estimation is
+                returned.
+
+    Returns:
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'b_parameter'. Note that the difference is just a
+                factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
+        n:      number of events used for the estimation
+    """
+    mag_diffs = np.zeros(len(magnitudes) - 1)
+    for ii in range(len(magnitudes) - 1):
+        for jj in range(ii + 1, len(magnitudes)):
+            mag_diff_loop = magnitudes[jj] - magnitudes[ii]
+            # print(mag_diff_loop, "diff loop")
+            if mag_diff_loop > 0:
+                mag_diffs[ii] = mag_diff_loop
+                # print("take the value")
+                break
+
+    # print(mag_diffs)
+
+    # only take the values where the next earthquake is larger
+    mag_diffs = abs(mag_diffs[mag_diffs > 0])
+
+    out = estimate_b_tinti(
+        mag_diffs,
+        mc=delta_m,
+        delta_m=delta_m,
+        b_parameter=b_parameter,
+        return_std=return_std,
+    )
+
+    if return_n:
+        if type(out) is tuple:
+            return out + tuple([len(mag_diffs)])
+        else:
+            return out, len(mag_diffs)
+    else:
+        return out
+
+
+def make_more_incomplete(
+    magnitudes: np.ndarray,
+    times: dt.datetime,
+    delta_t: np.timedelta64 = np.timedelta64(60, "s"),
+) -> tuple[np.ndarray, np.ndarray]:
+    # filter out events where the previous event is larger and less than
+    # delta_t seconds away
+    incomplete = False
+    while incomplete is False:
+        incomplete = True
+        idx_del = []
+        for ii in range(1, len(magnitudes)):
+            if magnitudes[ii] < magnitudes[ii - 1]:
+                if times[ii] - times[ii - 1] < delta_t:
+                    idx_del.append(ii)
+                    incomplete = False
+
+        magnitudes = np.delete(magnitudes, idx_del)
+        times = np.delete(times, idx_del)
+
+        if len(magnitudes) < 2:
+            break
+
+    return magnitudes, times
+
+
+def estimate_b_more_incomplete(
+    magnitudes: np.ndarray,
+    times: dt.datetime,
+    delta_t: np.timedelta64 = np.timedelta64(60, "s"),
+    delta_m: float = 0,
+    b_parameter: str = "b_value",
+    return_std: bool = False,
+    return_n: bool = False,
+) -> float | tuple[float, float] | tuple[float, float, float]:
+    """Return the b-value estimate calculated using the b-more-incomplete
+    method proposed by Lippiello and Petrillo (2024). This method first filters
+    out events where the previous event is larger and less than delta_t seconds
+    away and then calculates the b-value using b-more-positive.
+
+    Source:
+        E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
+        Earth, 129(2):e2023JB027849, 2024.
+
+    Args:
+        magnitudes: array of magnitudes, sorted in time (first
+                entry is the earliest earthquake).
+                To achieve the effect of reduced STAI, the magnitudes must be
+                ordered in time.
+        times:      array of datetime objects of occurrence of each earthquake
+        delta_t:    time window in seconds to filter out events. default is 60
+                seconds.
+        delta_m:    discretization of magnitudes. default is no discretization.
+        b_parameter:either 'b-value', then the corresponding value  of the
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))].
+        return_std: if True the standard deviation of beta/b-value (see above)
+                is returned.
+        return_n:   if True the number of events used for the estimation is
+                returned.
+
+    Returns:
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'b_parameter'. Note that the difference is just a
+                factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
+        n:      number of events used for the estimation
+    """
+
+    # filter out events where the previous event is larger and less than
+    # delta_t seconds away
+
+    magnitudes, times = make_more_incomplete(magnitudes, times, delta_t)
+
+    if len(magnitudes) < 2:
+        raise ValueError("not enough events to estimate b-value")
+
+    return estimate_b_more_positive(
+        magnitudes,
+        delta_m=delta_m,
+        b_parameter=b_parameter,
+        return_std=return_std,
+        return_n=return_n,
+    )
+
+
 def estimate_b_laplace(
     magnitudes: np.ndarray,
     delta_m: float = 0,
@@ -344,13 +500,21 @@ def estimate_b_laplace(
     mag_diffs = abs(mag_diffs)
     mag_diffs = mag_diffs[mag_diffs > 0]
 
-    return estimate_b_tinti(
+    out = estimate_b_tinti(
         mag_diffs,
         mc=delta_m,
         delta_m=delta_m,
         b_parameter=b_parameter,
         return_std=return_std,
     )
+
+    if return_n:
+        if type(out) is tuple:
+            return out + tuple([len(mag_diffs)])
+        else:
+            return out, len(mag_diffs)
+    else:
+        return out
 
 
 def estimate_b_weichert(
