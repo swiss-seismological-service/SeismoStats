@@ -254,7 +254,7 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
 def estimate_b_positive(
     magnitudes: np.ndarray,
     delta_m: float = 0,
-    d_mc: float | None = None,
+    dmc: float | None = None,
     b_parameter: str = "b_value",
     return_std: bool = False,
     return_n: bool = False,
@@ -272,7 +272,7 @@ def estimate_b_positive(
                     To achieve the effect
                     of reduced STAI, the magnitudes must be ordered in time.
         delta_m:    discretization of magnitudes. default is no discretization.
-        d_mc:       cutoff value for the differences (diffferences below this
+        dmc:       cutoff value for the differences (diffferences below this
                 value are not considered). If None, the cutoff is set to delta_m
         b_parameter:either 'b-value', then the corresponding value  of the
                 Gutenberg-Richter law is returned, otherwise 'beta' from the
@@ -290,17 +290,17 @@ def estimate_b_positive(
         n:      number of events used for the estimation
     """
 
-    if d_mc is None:
-        d_mc = delta_m
+    if dmc is None:
+        dmc = delta_m
 
     mag_diffs = np.diff(magnitudes)
     # only take the values where the next earthquake is d_mc larger than the
     # previous one. delta_m is added to avoid numerical errors
-    mag_diffs = abs(mag_diffs[mag_diffs > d_mc - delta_m / 2])
+    mag_diffs = abs(mag_diffs[mag_diffs > dmc - delta_m / 2])
 
     out = estimate_b_tinti(
         mag_diffs,
-        mc=d_mc,
+        mc=dmc,
         delta_m=delta_m,
         b_parameter=b_parameter,
         return_std=return_std,

@@ -150,10 +150,10 @@ def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
 
 
 @pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,precision",
+    "n,b,mc,delta_m,b_parameter,dmc,precision",
     [
-        (1000000, 1.2 * np.log(10), 3, 0, "beta", 0.005),
-        (1000000, np.log(10), 3, 0.1, "beta", 0.01),
+        (1000000, 1.2, 3, 0, "b_value", None, 0.005),
+        (1000000, np.log(10), 3, 0.1, "beta", 1, 0.01),
     ],
 )
 def test_estimate_b_positive(
@@ -162,13 +162,14 @@ def test_estimate_b_positive(
     mc: float,
     delta_m: float,
     b_parameter: str,
+    dmc: float,
     precision: float,
 ):
     mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
     b_estimate = estimate_b_positive(
-        mags, delta_m=delta_m, b_parameter=b_parameter
+        mags, delta_m=delta_m, dmc=dmc, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
 
