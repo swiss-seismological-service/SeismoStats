@@ -365,8 +365,8 @@ class Catalog(pd.DataFrame):
         if method == "positive":
             # dataframe needs 'time' column to be sorted
             if 'time' not in self.columns:
-                raise ValueError('"time" column needs to be set in order to use \
-                                 b-positive method')
+                raise ValueError('"time" column needs to be set in order to \
+                                 use the b-positive method')
             mags = self.sort_values("time").magnitude
         else:
             mags = self.magnitude
