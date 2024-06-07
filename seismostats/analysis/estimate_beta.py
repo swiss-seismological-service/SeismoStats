@@ -393,6 +393,10 @@ def make_more_incomplete(
     the following way: If an earthquake is smaller than the previous one and
     less than ``delta_t`` away, the earthquake is removed.
 
+    Source:
+        E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
+-       Earth, 129(2):e2023JB027849, 2024.
+
     Args:
         magnitudes: array of magnitudes, sorted in time (first
                 entry is the earliest earthquake).
@@ -423,66 +427,6 @@ def make_more_incomplete(
             break
 
     return magnitudes, times
-
-
-def estimate_b_more_incomplete(
-    magnitudes: np.ndarray,
-    times: dt.datetime,
-    delta_t: np.timedelta64 = np.timedelta64(60, "s"),
-    delta_m: float = 0,
-    b_parameter: str = "b_value",
-    return_std: bool = False,
-    return_n: bool = False,
-) -> float | tuple[float, float] | tuple[float, float, float]:
-    """Return the b-value estimate calculated using the b-more-incomplete
-    method proposed by Lippiello and Petrillo (2024). This method first filters
-    out events where the previous event is larger and less than ``delta_t``
-    seconds away and then calculates the b-value using b-more-positive.
-
-    Source:
-        E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
-        Earth, 129(2):e2023JB027849, 2024.
-
-    Args:
-        magnitudes: array of magnitudes, sorted in time (first
-                entry is the earliest earthquake).
-                To achieve the effect of reduced STAI, the magnitudes must be
-                ordered in time.
-        times:      array of datetime objects of occurrence of each earthquake
-        delta_t:    time window in seconds to filter out events. default is 60
-                seconds.
-        delta_m:    discretization of magnitudes. default is no discretization.
-        b_parameter:either 'b-value', then the corresponding value  of the
-                Gutenberg-Richter law is returned, otherwise 'beta' from the
-                exponential distribution [p(M) = exp(-beta*(M-mc))].
-        return_std: if True the standard deviation of beta/b-value (see above)
-                is returned.
-        return_n:   if True the number of events used for the estimation is
-                returned.
-
-    Returns:
-        b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'b_parameter'. Note that the difference is just a
-                factor [b_value = beta * log10(e)]
-        std:    Shi and Bolt estimate of the beta/b-value estimate
-        n:      number of events used for the estimation
-    """
-
-    # filter out events where the previous event is larger and less than
-    # delta_t seconds away
-
-    magnitudes, times = make_more_incomplete(magnitudes, times, delta_t)
-
-    if len(magnitudes) < 2:
-        raise ValueError("not enough events to estimate b-value")
-
-    return estimate_b_more_positive(
-        magnitudes,
-        delta_m=delta_m,
-        b_parameter=b_parameter,
-        return_std=return_std,
-        return_n=return_n,
-    )
 
 
 def estimate_b_laplace(
