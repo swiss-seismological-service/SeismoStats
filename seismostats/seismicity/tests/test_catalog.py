@@ -1,7 +1,9 @@
 import os
 import re
 import uuid
+import pytest
 
+import numpy as np
 import pandas as pd
 
 from seismostats.seismicity.catalog import (REQUIRED_COLS_CATALOG, Catalog,
@@ -77,19 +79,62 @@ def test_forecast_catalog_strip():
     assert isinstance(dropped, Catalog)
 
 
-def test_catalog_bin():
-    mag_values = [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]
-    delta_m = 0.1
-
+@pytest.mark.parametrize(
+    "mag_values, delta_m",
+    [
+        (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
+         0.1),
+        (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
+         None),
+        (np.array([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6]),
+         0.2),
+        ([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6],
+         0.2)
+    ]
+)
+def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
     catalog = Catalog({'magnitude': mag_values})
 
     assert (catalog.bin_magnitudes(
         delta_m)['magnitude'].tolist()
         == bin_to_precision(mag_values, delta_m)).all()
 
-    catalog.bin_magnitudes(delta_m, inplace=True)
+    return_value = catalog.bin_magnitudes(delta_m, inplace=True)
     assert (catalog['magnitude'].tolist()
             == bin_to_precision(mag_values, delta_m)).all()
+    assert return_value is None
+
+    assert catalog.delta_m == delta_m
+
+
+@pytest.mark.parametrize(
+    "mag_values, delta_m",
+    [
+        (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
+         0),
+    ]
+)
+def test_catalog_bin_none(mag_values: np.ndarray, delta_m: float):
+    catalog = Catalog({'magnitude': mag_values})
+
+    with pytest.raises(ValueError):
+        catalog.bin_magnitudes(delta_m=delta_m)
+
+
+def test_catalog_estimate_mc():
+    catalog = Catalog({'magnitude': [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]})
+
+    with pytest.raises(ValueError):
+        catalog.estimate_mc()
+
+
+def test_catalog_estimate_b():
+    catalog = Catalog({'magnitude': [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]})
+
+    with pytest.raises(ValueError):
+        catalog.estimate_b(mc=None, delta_m=None)
+        catalog.estimate_b(mc=1.0, delta_m=None)
+        catalog.estimate_b(mc=None, delta_m=0.1)
 
 
 def test_to_quakeml():

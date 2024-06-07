@@ -30,6 +30,9 @@ def test_normal_round(x: float, n: int, rounded_value: float):
         (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
          0.1,
          np.array([0.2, -0.2, 4.5, 4.5, 6, 0.1, 1.6])),
+        (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
+         None,
+         np.array([0.2, -0.2, 4.5, 4.5, 6, 0.1, 1.6])),
         (np.array([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6]),
          0.2,
          np.array([0.2, -0.2, 4.4, 5.6, 6, 0.2, 1.6])),
@@ -47,6 +50,7 @@ def test_bin_to_precision(x: np.ndarray, delta_x: float,
 def test_bin_to_precision_none():
     with pytest.raises(ValueError):
         bin_to_precision(None)
+        bin_to_precision([], 0)
 
 
 @pytest.mark.parametrize(

@@ -52,9 +52,13 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
     """
     if x is None:
         raise ValueError("x cannot be None")
+    if delta_x == 0:
+        raise ValueError("delta_x cannot be 0")
 
     if isinstance(x, list):
         x = np.array(x)
+    if delta_x is None:
+        delta_x = 0.1
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
     return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
