@@ -300,7 +300,7 @@ def estimate_b_positive(
 
     out = estimate_b_tinti(
         mag_diffs,
-        mc=delta_m,
+        mc=d_mc,
         delta_m=delta_m,
         b_parameter=b_parameter,
         return_std=return_std,
