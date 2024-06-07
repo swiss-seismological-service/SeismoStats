@@ -199,10 +199,10 @@ def test_estimate_b_laplace(
 
 
 @pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,precision",
+    "n,b,mc,delta_m,b_parameter,dmc,precision",
     [
-        (100000, 1.2 * np.log(10), 3, 0, "beta", 0.01),
-        (100000, 1, 3, 0.1, "b_value", 0.02),
+        (100000, 1.2 * np.log(10), 3, 0, "beta", None, 0.01),
+        (100000, 1, 3, 0.1, "b_value", 1, 0.02),
     ],
 )
 def test_estimate_b_more_positive(
@@ -211,13 +211,14 @@ def test_estimate_b_more_positive(
     mc: float,
     delta_m: float,
     b_parameter: str,
+    dmc: float,
     precision: float,
 ):
     mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
     b_estimate = estimate_b_more_positive(
-        mags, delta_m=delta_m, b_parameter=b_parameter
+        mags, delta_m=delta_m, dmc=dmc, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
 

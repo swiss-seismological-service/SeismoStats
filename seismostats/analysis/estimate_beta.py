@@ -318,6 +318,7 @@ def estimate_b_positive(
 def estimate_b_more_positive(
     magnitudes: np.ndarray,
     delta_m: float = 0,
+    dmc: float | None = None,
     b_parameter: str = "b_value",
     return_std: bool = False,
     return_n: bool = False,
@@ -352,12 +353,16 @@ def estimate_b_more_positive(
         std:    Shi and Bolt estimate of the beta/b-value estimate
         n:      number of events used for the estimation
     """
+
+    if dmc is None:
+        dmc = delta_m
+
     mag_diffs = np.zeros(len(magnitudes) - 1)
     for ii in range(len(magnitudes) - 1):
         for jj in range(ii + 1, len(magnitudes)):
             mag_diff_loop = magnitudes[jj] - magnitudes[ii]
             # print(mag_diff_loop, "diff loop")
-            if mag_diff_loop > 0:
+            if mag_diff_loop > dmc - delta_m / 2:
                 mag_diffs[ii] = mag_diff_loop
                 # print("take the value")
                 break
@@ -369,7 +374,7 @@ def estimate_b_more_positive(
 
     out = estimate_b_tinti(
         mag_diffs,
-        mc=delta_m,
+        mc=dmc,
         delta_m=delta_m,
         b_parameter=b_parameter,
         return_std=return_std,
