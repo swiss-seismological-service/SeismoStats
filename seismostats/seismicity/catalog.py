@@ -362,7 +362,16 @@ class Catalog(pd.DataFrame):
         if delta_m is None:
             delta_m = self.delta_m
 
-        b_estimate = estimate_b(self.magnitude,
+        if method == "positive":
+            # dataframe needs 'time' column to be sorted
+            if 'time' not in self.columns:
+                raise ValueError('"time" column needs to be set in order to use \
+                                 b-positive method')
+            mags = self.sort_values("time").magnitude
+        else:
+            mags = self.magnitude
+
+        b_estimate = estimate_b(mags,
                                 mc,
                                 delta_m,
                                 weights,
