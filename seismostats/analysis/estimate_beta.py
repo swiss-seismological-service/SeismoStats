@@ -393,6 +393,7 @@ def make_more_incomplete(
     magnitudes: np.ndarray,
     times: dt.datetime,
     delta_t: np.timedelta64 = np.timedelta64(60, "s"),
+    return_idx: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return filtered magnitudes and times. Filter the magnitudes and times in
     the following way: If an earthquake is smaller than the previous one and
@@ -408,10 +409,13 @@ def make_more_incomplete(
         times:      array of datetime objects of occurrence of each earthquake
         delta_t:    time window in seconds to filter out events. default is 60
                 seconds.
+        return_idx: if True the indices of the events that were removed are
+                returned
 
     Returns:
         magnitudes: filtered array of magnitudes
         times:      filtered array of datetime objects
+        idx:        indices of the events that were removed
 
     """
 
@@ -435,6 +439,9 @@ def make_more_incomplete(
 
         if len(magnitudes) < 2:
             break
+
+    if return_idx is True:
+        return magnitudes, times, idx_del
 
     return magnitudes, times
 
