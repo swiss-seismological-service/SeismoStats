@@ -424,21 +424,20 @@ def make_more_incomplete(
     magnitudes = magnitudes[idx_sort]
     times = times[idx_sort]
 
-    incomplete = False
-    while incomplete is False:
-        incomplete = True
-        idx_del = []
-        for ii in range(1, len(magnitudes)):
-            if magnitudes[ii] < magnitudes[ii - 1]:
-                if times[ii] - times[ii - 1] < delta_t:
-                    idx_del.append(ii)
-                    incomplete = False
+    idx_del = []
+    for ii in range(1, len(magnitudes)):
+        # get all times that are closer than delta_t
+        idx_close = np.where(times[ii] - times[:ii] < delta_t)[0]
 
-        magnitudes = np.delete(magnitudes, idx_del)
-        times = np.delete(times, idx_del)
+        # check if these events are larger than the current event
+        idx_del_loop = np.where(magnitudes[idx_close] > magnitudes[ii])[0]
 
-        if len(magnitudes) < 2:
-            break
+        # if there are any, remove the current event
+        if len(idx_del_loop) > 0:
+            idx_del.append(ii)
+
+    magnitudes = np.delete(magnitudes, idx_del)
+    times = np.delete(times, idx_del)
 
     if return_idx is True:
         return magnitudes, times, idx_del
