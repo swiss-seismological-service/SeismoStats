@@ -224,8 +224,8 @@ def test_estimate_b_more_positive(
 
 
 def test_make_more_incomplete():
-    magnitudes = [1, 2, 20, 3, 4, 9, 3]
-    times = [
+    magnitudes = np.array([1, 2, 20, 3, 4, 9, 3])
+    times = np.array([
         dt.datetime(2020, 1, 1),
         dt.datetime(2020, 1, 2),
         dt.datetime(2020, 1, 3),
@@ -233,7 +233,7 @@ def test_make_more_incomplete():
         dt.datetime(2020, 1, 5),
         dt.datetime(2020, 1, 6),
         dt.datetime(2020, 1, 7),
-    ]
+    ])
 
     mags_inc, times_inc = make_more_incomplete(
         magnitudes, times, delta_t=np.timedelta64(49, "h")

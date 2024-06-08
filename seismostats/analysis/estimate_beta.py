@@ -415,6 +415,11 @@ def make_more_incomplete(
 
     """
 
+    # sort magnitudes in time
+    idx_sort = np.argsort(times)
+    magnitudes = magnitudes[idx_sort]
+    times = times[idx_sort]
+
     incomplete = False
     while incomplete is False:
         incomplete = True
