@@ -253,6 +253,7 @@ def differences(magnitudes: np.ndarray) -> np.ndarray:
 def estimate_b_positive(
     magnitudes: np.ndarray,
     delta_m: float = 0,
+    dmc: float | None = None,
     b_parameter: str = "b_value",
     return_std: bool = False,
     return_n: bool = False,
@@ -263,6 +264,76 @@ def estimate_b_positive(
     Source:
         Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
         2)
+
+    Args:
+        magnitudes: array of magnitudes, sorted in time (first
+                    entry is the earliest earthquake).
+                    To achieve the effect
+                    of reduced STAI, the magnitudes must be ordered in time.
+        delta_m:    discretization of magnitudes. default is no discretization.
+        dmc:       cutoff value for the differences (diffferences below this
+                value are not considered). If None, the cutoff is set to delta_m
+        b_parameter:either 'b-value', then the corresponding value  of the
+                Gutenberg-Richter law is returned, otherwise 'beta' from the
+                exponential distribution [p(M) = exp(-beta*(M-mc))].
+        return_std: if True the standard deviation of beta/b-value (see above)
+                is returned.
+        return_n:   if True the number of events used for the estimation is
+                returned.
+
+    Returns:
+        b:      maximum likelihood beta or b-value, depending on value of
+                input variable 'b_parameter'. Note that the difference is just a
+                factor [b_value = beta * log10(e)]
+        std:    Shi and Bolt estimate of the beta/b-value estimate
+        n:      number of events used for the estimation
+    """
+
+    if dmc is None:
+        dmc = delta_m
+    elif dmc < 0:
+        raise ValueError("dmc must be larger or equal to 0")
+    elif dmc < delta_m:
+        warnings.warn("dmc is smaller than delta_m, not recommended")
+
+    mag_diffs = np.diff(magnitudes)
+    # only take the values where the next earthquake is d_mc larger than the
+    # previous one. delta_m is added to avoid numerical errors
+    mag_diffs = abs(mag_diffs[mag_diffs > dmc - delta_m / 2])
+
+    out = estimate_b_tinti(
+        mag_diffs,
+        mc=dmc,
+        delta_m=delta_m,
+        b_parameter=b_parameter,
+        return_std=return_std,
+    )
+
+    if return_n:
+        if type(out) is tuple:
+            return out + tuple([len(mag_diffs)])
+        else:
+            return out, len(mag_diffs)
+    else:
+        return out
+
+
+def estimate_b_more_positive(
+    magnitudes: np.ndarray,
+    delta_m: float = 0,
+    dmc: float | None = None,
+    b_parameter: str = "b_value",
+    return_std: bool = False,
+    return_n: bool = False,
+) -> float | tuple[float, float] | tuple[float, float, float]:
+    """Return the b-value estimate calculated using the
+    next positive differences (this means that almost every magnitude has a
+    difference, as opposed to the b-positive method which results in half the
+    data).
+
+    Source:
+        E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
+        Earth, 129(2):e2023JB027849, 2024.
 
     Args:
         magnitudes: array of magnitudes, sorted in time (first
@@ -286,13 +357,27 @@ def estimate_b_positive(
         n:      number of events used for the estimation
     """
 
-    mag_diffs = np.diff(magnitudes)
+    if dmc is None:
+        dmc = delta_m
+    elif dmc < 0:
+        raise ValueError("dmc must be larger or equal to 0")
+    elif dmc < delta_m:
+        warnings.warn("dmc is smaller than delta_m, not recommended")
+
+    mag_diffs = - np.ones(len(magnitudes) - 1) * delta_m
+    for ii in range(len(magnitudes) - 1):
+        for jj in range(ii + 1, len(magnitudes)):
+            mag_diff_loop = magnitudes[jj] - magnitudes[ii]
+            if mag_diff_loop > dmc - delta_m / 2:
+                mag_diffs[ii] = mag_diff_loop
+                break
+
     # only take the values where the next earthquake is larger
-    mag_diffs = abs(mag_diffs[mag_diffs > 0])
+    mag_diffs = abs(mag_diffs[mag_diffs > - delta_m / 2])
 
     out = estimate_b_tinti(
         mag_diffs,
-        mc=delta_m,
+        mc=dmc,
         delta_m=delta_m,
         b_parameter=b_parameter,
         return_std=return_std,
@@ -305,6 +390,62 @@ def estimate_b_positive(
             return out, len(mag_diffs)
     else:
         return out
+
+
+def make_more_incomplete(
+    magnitudes: np.ndarray,
+    times: np.array,
+    delta_t: np.timedelta64 = np.timedelta64(60, "s"),
+    return_idx: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return filtered magnitudes and times. Filter the magnitudes and times in
+    the following way: If an earthquake is smaller than the previous one and
+    less than ``delta_t`` away, the earthquake is removed.
+
+    Source:
+        E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
+-       Earth, 129(2):e2023JB027849, 2024.
+
+    Args:
+        magnitudes: array of magnitudes, sorted in time (first
+                entry is the earliest earthquake).
+        times:      array of datetime objects of occurrence of each earthquake
+        delta_t:    time window in seconds to filter out events. default is 60
+                seconds.
+        return_idx: if True the indices of the events that were kept are
+                returned
+
+    Returns:
+        magnitudes: filtered array of magnitudes
+        times:      filtered array of datetime objects
+        idx:        indices of the events that were kept
+
+    """
+
+    # sort magnitudes in time
+    idx_sort = np.argsort(times)
+    magnitudes = magnitudes[idx_sort]
+    times = times[idx_sort]
+
+    idx = np.full(len(magnitudes), True)
+    for ii in range(1, len(magnitudes)):
+        # get all times that are closer than delta_t
+        idx_close = np.where(times[ii] - times[:ii] < delta_t)[0]
+
+        # check if these events are larger than the current event
+        idx_loop = magnitudes[idx_close] > magnitudes[ii]
+
+        # if there are any, remove the current event
+        if sum(idx_loop) > 0:
+            idx[ii] = False
+
+    magnitudes = magnitudes[idx]
+    times = times[idx]
+
+    if return_idx is True:
+        return magnitudes, times, idx
+
+    return magnitudes, times
 
 
 def estimate_b_laplace(
@@ -344,13 +485,21 @@ def estimate_b_laplace(
     mag_diffs = abs(mag_diffs)
     mag_diffs = mag_diffs[mag_diffs > 0]
 
-    return estimate_b_tinti(
+    out = estimate_b_tinti(
         mag_diffs,
         mc=delta_m,
         delta_m=delta_m,
         b_parameter=b_parameter,
         return_std=return_std,
     )
+
+    if return_n:
+        if type(out) is tuple:
+            return out + tuple([len(mag_diffs)])
+        else:
+            return out, len(mag_diffs)
+    else:
+        return out
 
 
 def estimate_b_weichert(
