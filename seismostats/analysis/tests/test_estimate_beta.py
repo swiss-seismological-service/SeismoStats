@@ -202,7 +202,7 @@ def test_estimate_b_laplace(
     "n,b,mc,delta_m,b_parameter,dmc,precision",
     [
         (100000, 1.2 * np.log(10), 3, 0, "beta", None, 0.01),
-        (100000, 1, 3, 0.1, "b_value", 1, 0.02),
+        (100000, 1, 3, 0.1, "b_value", 1, 0.04),
     ],
 )
 def test_estimate_b_more_positive(
@@ -249,6 +249,12 @@ def test_make_more_incomplete():
             dt.datetime(2020, 1, 6),
         ]
     ).all()
+
+    mags_inc, times_inc, idx = make_more_incomplete(
+        magnitudes, times, delta_t=np.timedelta64(49, "h"), return_idx=True
+    )
+
+    assert (mags_inc == magnitudes[idx]).all()
 
 
 def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):

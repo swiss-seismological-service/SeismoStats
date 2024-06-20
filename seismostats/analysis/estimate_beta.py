@@ -6,7 +6,6 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-import datetime as dt
 
 from seismostats.utils._config import get_option
 
@@ -292,6 +291,10 @@ def estimate_b_positive(
 
     if dmc is None:
         dmc = delta_m
+    elif dmc < 0:
+        raise ValueError("dmc must be larger or equal to 0")
+    elif dmc < delta_m:
+        warnings.warn("dmc is smaller than delta_m, not recommended")
 
     mag_diffs = np.diff(magnitudes)
     # only take the values where the next earthquake is d_mc larger than the
@@ -356,21 +359,21 @@ def estimate_b_more_positive(
 
     if dmc is None:
         dmc = delta_m
+    elif dmc < 0:
+        raise ValueError("dmc must be larger or equal to 0")
+    elif dmc < delta_m:
+        warnings.warn("dmc is smaller than delta_m, not recommended")
 
-    mag_diffs = np.zeros(len(magnitudes) - 1)
+    mag_diffs = - np.ones(len(magnitudes) - 1) * delta_m
     for ii in range(len(magnitudes) - 1):
         for jj in range(ii + 1, len(magnitudes)):
             mag_diff_loop = magnitudes[jj] - magnitudes[ii]
-            # print(mag_diff_loop, "diff loop")
             if mag_diff_loop > dmc - delta_m / 2:
                 mag_diffs[ii] = mag_diff_loop
-                # print("take the value")
                 break
 
-    # print(mag_diffs)
-
     # only take the values where the next earthquake is larger
-    mag_diffs = abs(mag_diffs[mag_diffs > 0])
+    mag_diffs = abs(mag_diffs[mag_diffs > - delta_m / 2])
 
     out = estimate_b_tinti(
         mag_diffs,
@@ -391,7 +394,7 @@ def estimate_b_more_positive(
 
 def make_more_incomplete(
     magnitudes: np.ndarray,
-    times: dt.datetime,
+    times: np.array,
     delta_t: np.timedelta64 = np.timedelta64(60, "s"),
     return_idx: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -409,13 +412,13 @@ def make_more_incomplete(
         times:      array of datetime objects of occurrence of each earthquake
         delta_t:    time window in seconds to filter out events. default is 60
                 seconds.
-        return_idx: if True the indices of the events that were removed are
+        return_idx: if True the indices of the events that were kept are
                 returned
 
     Returns:
         magnitudes: filtered array of magnitudes
         times:      filtered array of datetime objects
-        idx:        indices of the events that were removed
+        idx:        indices of the events that were kept
 
     """
 
@@ -424,23 +427,23 @@ def make_more_incomplete(
     magnitudes = magnitudes[idx_sort]
     times = times[idx_sort]
 
-    idx_del = []
+    idx = np.full(len(magnitudes), True)
     for ii in range(1, len(magnitudes)):
         # get all times that are closer than delta_t
         idx_close = np.where(times[ii] - times[:ii] < delta_t)[0]
 
         # check if these events are larger than the current event
-        idx_del_loop = np.where(magnitudes[idx_close] > magnitudes[ii])[0]
+        idx_loop = magnitudes[idx_close] > magnitudes[ii]
 
         # if there are any, remove the current event
-        if len(idx_del_loop) > 0:
-            idx_del.append(ii)
+        if sum(idx_loop) > 0:
+            idx[ii] = False
 
-    magnitudes = np.delete(magnitudes, idx_del)
-    times = np.delete(times, idx_del)
+    magnitudes = magnitudes[idx]
+    times = times[idx]
 
     if return_idx is True:
-        return magnitudes, times, idx_del
+        return magnitudes, times, idx
 
     return magnitudes, times
 
