@@ -192,7 +192,7 @@ def plot_fmd(
 def plot_cum_count(
     cat: pd.DataFrame,
     ax: plt.Axes | None = None,
-    mcs: np.ndarray | None = np.ndarray([0]),
+    mcs: np.ndarray = np.array([0]),
     delta_m: float | None = 0.1,
 ) -> plt.Axes:
     """
