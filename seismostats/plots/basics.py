@@ -192,7 +192,7 @@ def plot_fmd(
 def plot_cum_count(
     cat: pd.DataFrame,
     ax: plt.Axes | None = None,
-    mcs: np.ndarray | None = np.array([0]),
+    mcs: np.ndarray | None = np.ndarray([0]),
     delta_m: float | None = 0.1,
 ) -> plt.Axes:
     """
@@ -319,11 +319,11 @@ def plot_mags_in_time(
 
 
 def dot_size(
-    magnitudes: np.array,
+    magnitudes: np.ndarray,
     smallest: float = 10,
     largest: float = 200,
     interpolation_power: int = 1,
-) -> np.array:
+) -> np.ndarray:
     """
     Auxiliary function, computes dot sizes proportional to a given array of
     magnitudes.
@@ -368,8 +368,8 @@ def dot_size(
 
 def reverse_dot_size(
     sizes: np.ndarray,
-    min_mag: np.float_,
-    max_mag: np.float_,
+    min_mag: float,
+    max_mag: float,
     interpolation_power: int = 1,
 ) -> np.ndarray:
     """Compute magnitudes proportional to a given array of dot sizes.
