@@ -129,7 +129,7 @@ def ks_test_gr(
     )
 
     for ii in range(n):
-        simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
+        simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
         _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
         _, y_emp = empirical_cdf(simulated)
 
@@ -317,3 +317,86 @@ def mc_max_curvature(
     )
     mc = bins[count.argmax()] + correction_factor
     return mc
+
+
+def mc_by_bvalue_stability(
+        sample: np.ndarray, delta_m: float, stability_factor: float = 0.1):
+    """
+    Estimates Mc using a test of stability.
+    The stability of the b-value is tested by default on half a magnitude unit
+    (in line with the 5x0.1 in the orginial paper). Users can change the range
+    for the stability test by changing the stability_factor (which gives the
+    size of the magnitude bin to use).
+
+    Source:
+        Cao, A., & Gao, S. S. (2002). Temporal variation of seismic b-values
+            beneath northeastern Japan island arc. Geophysical Research
+            Letters, 29(9), 1–3. https://doi.org/10.1029/2001gl013775
+
+    Args:
+        sample : np.array Vector of magnitudes
+        delta_m : float. Discretization of the magnitudes.
+        stability_factor : float. Magnitude bin to consider for the
+            stability test. Default is 0.1 to consider half a magnitude unit.
+
+    Returns:
+        mcs_test : np.ndarray. Tested completeness magnitudes
+        mc : float. Single best magnitude of completeness estimate
+        b : float. b-value associated with best_mc
+        n : int. Number of events greater than or equal to best_mc
+        sb_b_err : np.ndarray. Standard error of the b-value for all tested Mc
+        diff_b : np.ndarray. Difference between b-estimate and b-avg for each Mc
+        b_avgs : np.ndarray. Average b-value looking forward 5*stability_factor
+            for each step in Mc
+        bs : np.ndarray. Estimated b-value for each step in Mc
+        """
+    sample = bin_to_precision(sample, delta_x=delta_m)
+    # Define mc_span
+    mcs_test = bin_to_precision(np.arange(np.min(sample),
+                                          np.max(sample),
+                                          delta_m), delta_m)
+    mcs_test = mcs_test[:-4]
+    bs = []
+    sb_b_err = []
+    b_avgs = []
+
+    # bin sample to precision
+    sample = bin_to_precision(sample, delta_m)
+
+    for mc in mcs_test:
+        b, err = estimate_b(sample[sample >= mc - delta_m / 2], mc, delta_m,
+                            b_parameter='b_value', return_std=True,
+                            method="tinti")
+        bs.append(b)
+        sb_b_err.append(err)
+        mc_plus = bin_to_precision(np.arange(mc, bin_to_precision(
+            mc + 5 * stability_factor, delta_m), stability_factor), delta_m)
+        b_ex = []
+        # truncate mc_plus to remove all values larger than the maximum
+        # magnitude in the sample
+        mc_plus = mc_plus[mc_plus <= np.max(sample)]
+
+        for mcp in mc_plus:
+            b = estimate_b(sample[sample >= mcp - delta_m / 2],
+                           mcp, delta_m, b_parameter='b_value', method="tinti")
+            b_ex.append(b)
+        b_avg = np.sum(b_ex) / 5
+        b_avgs.append(b_avg)
+    bs, sb_b_err, b_avgs = np.array(bs), np.array(sb_b_err), np.array(b_avgs)
+    diff_b = np.abs(b_avgs - bs)
+
+    # Select Mc
+    for i, mc in enumerate(mcs_test):
+        if diff_b[i] <= sb_b_err[i]:
+            mc_best = mc
+            b_best = bs[i]
+            n = len(sample[sample >= mc_best])
+            value = True
+            break
+        else:
+            value = False
+
+    if value:
+        return mcs_test, mc_best, b_best, n, sb_b_err, diff_b, b_avgs, bs
+    else:
+        raise ValueError("No Mc passes the stability test")

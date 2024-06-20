@@ -2,12 +2,41 @@ from numpy.testing import assert_allclose, assert_equal
 import numpy as np
 import pickle
 import pytest
+from seismostats.io.client import FDSNWSEventClient
+import pandas as pd
 
 from seismostats.analysis.estimate_mc import (
     empirical_cdf,
     mc_max_curvature,
     mc_ks,
+    mc_by_bvalue_stability
 )
+
+
+@pytest.fixture
+def swiss_2023_magnitudes():
+    start_time = pd.to_datetime('2023/01/01')
+    end_time = pd.to_datetime('2024/01/01')
+    min_longitude = 5
+    max_longitude = 11
+    min_latitude = 45
+    max_latitude = 48
+    min_magnitude = 0
+    url = 'http://eida.ethz.ch/fdsnws/event/1/query'
+
+    client = FDSNWSEventClient(url)
+    df_sed = client.get_events(
+        start_time=start_time,
+        end_time=end_time,
+        min_magnitude=min_magnitude,
+        min_longitude=min_longitude,
+        max_longitude=max_longitude,
+        min_latitude=min_latitude,
+        max_latitude=max_latitude)
+
+    magnitudes = df_sed['magnitude'].to_numpy()
+    binsize = 0.01
+    return magnitudes, binsize
 
 
 @pytest.fixture
@@ -209,3 +238,11 @@ def test_estimate_mc_maxc(setup_magnitudes):
     mc = mc_max_curvature(setup_magnitudes, delta_m=0.1, correction_factor=0.2)
 
     assert_equal(1.3, mc)
+
+
+def test_estimate_mc_bvalue_stability(swiss_2023_magnitudes):
+    _, mc, _, _, _, _, _, _ = mc_by_bvalue_stability(
+        swiss_2023_magnitudes[0], delta_m=swiss_2023_magnitudes[1],
+        stability_factor=0.1)
+
+    assert_equal(1.44, mc)
