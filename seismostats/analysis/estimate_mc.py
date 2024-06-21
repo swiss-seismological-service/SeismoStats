@@ -45,7 +45,7 @@ def cdf_discrete_GR(
 def empirical_cdf(
     sample: np.ndarray | pd.Series,
     mc: float = None,
-    delta_m: float = 0.1,
+    delta_m: float = 0,
     weights: np.ndarray | pd.Series | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -76,11 +76,12 @@ def empirical_cdf(
 
     idx = np.argsort(sample)
     x = sample[idx]
-    # the next step is necessary to include all magnitude bins, even if they
-    # are empty
-    x = np.concatenate((x, np.arange(mc, max(x) + delta_m, delta_m)))
-    x = bin_to_precision(x, delta_m)
-    print(x, 'check1')
+
+    if delta_m > 0:
+        # this step is necessary to include all magnitude bins, even if they
+        # are empty. Only done when the magnitudesa are discrete.
+        x = np.concatenate((x, np.arange(mc, max(x) + delta_m, delta_m)))
+        x = bin_to_precision(x, delta_m)
 
     if weights is not None:
         weights_sorted = weights[idx]
@@ -141,14 +142,14 @@ def ks_test_gr(
 
     for ii in range(n):
         simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
-        _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
-        _, y_emp = empirical_cdf(simulated, mc, delta_m)
+        x, y_emp = empirical_cdf(simulated, mc, delta_m)
+        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
         ks_d = np.max(np.abs(y_emp - y_th))
         ks_ds.append(ks_d)
 
-    _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
-    _, y_emp = empirical_cdf(sample, mc, delta_m)
+    x, y_emp = empirical_cdf(sample, mc, delta_m)
+    _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
     ks_d_obs = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
@@ -212,6 +213,11 @@ def mc_ks(
             if not np.all(np.diff(mcs_test) > 0):
                 warnings.warn("mcs_test are being re-ordered by size.")
                 mcs_test = np.sort(np.unique(mcs_test))
+            if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
+                warnings.warn(
+                    "mc_test are not binned correctly,"
+                    "this might affect the test."
+                )
 
     if get_option("warnings") is True:
         # check if binning is correct

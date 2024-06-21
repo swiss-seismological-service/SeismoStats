@@ -119,15 +119,15 @@ def setup_magnitudes():
 
 
 def test_empirical_cdf(setup_magnitudes, delta_m=0.1):
-    x, y = empirical_cdf(setup_magnitudes, delta_m)
+    x, y = empirical_cdf(setup_magnitudes, delta_m=delta_m)
 
     x_expected = bin_to_precision(np.arange(min(setup_magnitudes), max(
         setup_magnitudes) + delta_m, delta_m))
-    print(min(setup_magnitudes))
-    print(x)
-    print(x_expected)
+
     assert_allclose(x, x_expected, rtol=1e-7)
     assert_equal(y[-1], 1)
+    assert_equal(len(x), len(y))
+    assert_equal(y[0], 0.06)
 
 
 # load data for test_estimate_mc
