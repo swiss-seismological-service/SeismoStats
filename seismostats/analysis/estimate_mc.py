@@ -71,17 +71,19 @@ def empirical_cdf(
     except BaseException:
         pass
 
+    if get_option("warnings") is True:
+        # check if binning is correct
+        if not np.allclose(sample, bin_to_precision(sample, delta_m)):
+            warnings.warn(
+                "Magnitudes are not binned correctly. "
+                "Test might fail because of this."
+            )
+
     if mc is None:
         mc = np.min(sample)
 
     idx = np.argsort(sample)
     x = sample[idx]
-
-    if delta_m > 0:
-        # this step is necessary to include all magnitude bins, even if they
-        # are empty. Only done when the magnitudesa are discrete.
-        x = np.concatenate((x, np.arange(mc, max(x) + delta_m, delta_m)))
-        x = bin_to_precision(x, delta_m)
 
     if weights is not None:
         weights_sorted = weights[idx]
@@ -90,9 +92,20 @@ def empirical_cdf(
         y = np.arange(1, len(sample) + 1) / len(sample)
 
     x, y_count = np.unique(x, return_counts=True)
+    # add empty bins
     if delta_m > 0:
-        y_count -= 1
+        for mag_bin in bin_to_precision(
+            np.arange(mc, np.max(sample) + delta_m, delta_m), delta_m
+        ):
+            if mag_bin not in x:
+                x = np.append(x, mag_bin)
+                y_count = np.append(y_count, 0)
+        idx = np.argsort(x)
+        x = x[idx]
+        y_count = y_count[idx]
+
     y = y[np.cumsum(y_count) - 1]
+
     return x, y
 
 
