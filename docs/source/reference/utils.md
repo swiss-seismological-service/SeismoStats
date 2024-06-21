@@ -23,7 +23,7 @@
     :toctree: api/
 
     utils.simulate_magnitudes
-    utils.simulated_magnitudes_binned
+    utils.simulate_magnitudes_binned
 
 ```
 

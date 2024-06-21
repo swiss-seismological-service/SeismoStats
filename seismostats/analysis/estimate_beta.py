@@ -404,7 +404,7 @@ def make_more_incomplete(
 
     Source:
         E. Lippiello and G. Petrillo. Journal of Geophysical Research: Solid
--       Earth, 129(2):e2023JB027849, 2024.
+        Earth, 129(2):e2023JB027849, 2024.
 
     Args:
         magnitudes: array of magnitudes, sorted in time (first
@@ -419,8 +419,7 @@ def make_more_incomplete(
         magnitudes: filtered array of magnitudes
         times:      filtered array of datetime objects
         idx:        indices of the events that were kept
-
-    """
+        """
 
     # sort magnitudes in time
     idx_sort = np.argsort(times)

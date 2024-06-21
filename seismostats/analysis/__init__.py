@@ -8,5 +8,8 @@ from seismostats.analysis.estimate_beta import (estimate_b_kijko_smit,
                                                 estimate_b_weichert,
                                                 estimate_b_kijko_smit,
                                                 estimate_b_more_positive,
-                                                make_more_incomplete)
+                                                make_more_incomplete,
+                                                beta_to_b_value,
+                                                b_value_to_beta
+                                                )
 from seismostats.analysis.estimate_mc import mc_ks, mc_max_curvature
