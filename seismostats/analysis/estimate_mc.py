@@ -129,7 +129,7 @@ def ks_test_gr(
     )
 
     for ii in range(n):
-        simulated = simulated_all[n_sample * ii : n_sample * (ii + 1)]
+        simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
         _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
         _, y_emp = empirical_cdf(simulated)
 
@@ -303,12 +303,13 @@ def mc_max_curvature(
           catalogues: Estimating the magnitude of completeness and its
           uncertainty.
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
+
     Args:
-        sample:             Magnitudes to test
-        delta_m:            Magnitude bins (sample has to be rounded to bins
-                            beforehand)
-        correction_factor:  Correction factor for the maximum curvature method
-        (default 0.2 after Woessner & Wiemer 2005)
+        sample:     Magnitudes to test
+        delta_m:    Magnitude bins (sample has to be rounded to bins beforehand)
+            correction_factor:  Correction factor for the maximum curvature
+            method (default 0.2 after Woessner & Wiemer 2005)
+
     Returns:
         mc:                 estimated completeness magnitude
     """
