@@ -90,7 +90,8 @@ def empirical_cdf(
         y = np.arange(1, len(sample) + 1) / len(sample)
 
     x, y_count = np.unique(x, return_counts=True)
-    y_count -= 1
+    if delta_m > 0:
+        y_count -= 1
     y = y[np.cumsum(y_count) - 1]
     return x, y
 
