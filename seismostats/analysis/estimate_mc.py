@@ -44,6 +44,8 @@ def cdf_discrete_GR(
 
 def empirical_cdf(
     sample: np.ndarray | pd.Series,
+    mc: float,
+    delta_m: float = 0.1,
     weights: np.ndarray | pd.Series | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -70,15 +72,20 @@ def empirical_cdf(
         pass
 
     idx = np.argsort(sample)
-    sample_sorted = sample[idx]
+    x = sample[idx]
+    # the next step is necessary to include all magnitude bins, even if they
+    # are empty
+    x = np.concatenate((x, np.arange(mc, max(x) + delta_m, delta_m)))
+    x = bin_to_precision(x, delta_m)
 
     if weights is not None:
         weights_sorted = weights[idx]
-        x, y = sample_sorted, np.cumsum(weights_sorted) / weights_sorted.sum()
+        y = np.cumsum(weights_sorted) / weights_sorted.sum()
     else:
-        x, y = sample_sorted, np.arange(1, len(sample) + 1) / len(sample)
+        y = np.arange(1, len(sample) + 1) / len(sample)
 
     x, y_count = np.unique(x, return_counts=True)
+    y_count -= 1
     y = y[np.cumsum(y_count) - 1]
     return x, y
 
