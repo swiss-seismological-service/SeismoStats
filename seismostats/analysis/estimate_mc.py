@@ -44,6 +44,8 @@ def cdf_discrete_GR(
 
 def empirical_cdf(
     sample: np.ndarray | pd.Series,
+    mc: float = None,
+    delta_m: float = 0,
     weights: np.ndarray | pd.Series | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -69,17 +71,41 @@ def empirical_cdf(
     except BaseException:
         pass
 
+    if get_option("warnings") is True:
+        # check if binning is correct
+        if not np.allclose(sample, bin_to_precision(sample, delta_m)):
+            warnings.warn(
+                "Magnitudes are not binned correctly. "
+                "Test might fail because of this."
+            )
+
+    if mc is None:
+        mc = np.min(sample)
+
     idx = np.argsort(sample)
-    sample_sorted = sample[idx]
+    x = sample[idx]
 
     if weights is not None:
         weights_sorted = weights[idx]
-        x, y = sample_sorted, np.cumsum(weights_sorted) / weights_sorted.sum()
+        y = np.cumsum(weights_sorted) / weights_sorted.sum()
     else:
-        x, y = sample_sorted, np.arange(1, len(sample) + 1) / len(sample)
+        y = np.arange(1, len(sample) + 1) / len(sample)
 
     x, y_count = np.unique(x, return_counts=True)
+    # add empty bins
+    if delta_m > 0:
+        for mag_bin in bin_to_precision(
+            np.arange(mc, np.max(sample) + delta_m, delta_m), delta_m
+        ):
+            if mag_bin not in x:
+                x = np.append(x, mag_bin)
+                y_count = np.append(y_count, 0)
+        idx = np.argsort(x)
+        x = x[idx]
+        y_count = y_count[idx]
+
     y = y[np.cumsum(y_count) - 1]
+
     return x, y
 
 
@@ -130,14 +156,14 @@ def ks_test_gr(
 
     for ii in range(n):
         simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
-        _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
-        _, y_emp = empirical_cdf(simulated)
+        x, y_emp = empirical_cdf(simulated, mc, delta_m)
+        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
         ks_d = np.max(np.abs(y_emp - y_th))
         ks_ds.append(ks_d)
 
-    _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
-    _, y_emp = empirical_cdf(sample)
+    x, y_emp = empirical_cdf(sample, mc, delta_m)
+    _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
     ks_d_obs = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
@@ -201,6 +227,11 @@ def mc_ks(
             if not np.all(np.diff(mcs_test) > 0):
                 warnings.warn("mcs_test are being re-ordered by size.")
                 mcs_test = np.sort(np.unique(mcs_test))
+            if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
+                warnings.warn(
+                    "mc_test are not binned correctly,"
+                    "this might affect the test."
+                )
 
     if get_option("warnings") is True:
         # check if binning is correct
