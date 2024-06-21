@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
+from seismostats.analysis.estimate_mc import bin_to_precision
 from seismostats.analysis.estimate_mc import (empirical_cdf, mc_ks,
                                               mc_max_curvature)
 
@@ -117,17 +118,16 @@ def setup_magnitudes():
     return mags
 
 
-# load data for test_empirical_cdf
-with open("seismostats/analysis/tests/data/test_empirical_cdf.p", "rb") as f:
-    data = pickle.load(f)
+def test_empirical_cdf(setup_magnitudes, delta_m=0.1):
+    x, y = empirical_cdf(setup_magnitudes, delta_m)
 
-
-@pytest.mark.parametrize("sample,xs,ys", [data["values_test"]])
-def test_empirical_cdf(sample, xs, ys):
-    x, y = empirical_cdf(sample)
-
-    assert_allclose(x, xs, rtol=1e-7)
-    assert_allclose(y, ys, rtol=1e-7)
+    x_expected = bin_to_precision(np.arange(min(setup_magnitudes), max(
+        setup_magnitudes) + delta_m, delta_m))
+    print(min(setup_magnitudes))
+    print(x)
+    print(x_expected)
+    assert_allclose(x, x_expected, rtol=1e-7)
+    assert_equal(y[-1], 1)
 
 
 # load data for test_estimate_mc

@@ -44,7 +44,7 @@ def cdf_discrete_GR(
 
 def empirical_cdf(
     sample: np.ndarray | pd.Series,
-    mc: float,
+    mc: float = None,
     delta_m: float = 0.1,
     weights: np.ndarray | pd.Series | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -71,12 +71,16 @@ def empirical_cdf(
     except BaseException:
         pass
 
+    if mc is None:
+        mc = np.min(sample)
+
     idx = np.argsort(sample)
     x = sample[idx]
     # the next step is necessary to include all magnitude bins, even if they
     # are empty
     x = np.concatenate((x, np.arange(mc, max(x) + delta_m, delta_m)))
     x = bin_to_precision(x, delta_m)
+    print(x, 'check1')
 
     if weights is not None:
         weights_sorted = weights[idx]
@@ -138,13 +142,13 @@ def ks_test_gr(
     for ii in range(n):
         simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
         _, y_th = cdf_discrete_GR(simulated, mc=mc, delta_m=delta_m, beta=beta)
-        _, y_emp = empirical_cdf(simulated)
+        _, y_emp = empirical_cdf(simulated, mc, delta_m)
 
         ks_d = np.max(np.abs(y_emp - y_th))
         ks_ds.append(ks_d)
 
     _, y_th = cdf_discrete_GR(sample, mc=mc, delta_m=delta_m, beta=beta)
-    _, y_emp = empirical_cdf(sample)
+    _, y_emp = empirical_cdf(sample, mc, delta_m)
 
     ks_d_obs = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
