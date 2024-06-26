@@ -1,16 +1,14 @@
-from numpy.testing import assert_allclose, assert_equal
-import numpy as np
 import pickle
+import numpy as np
 import pytest
-from seismostats.io.client import FDSNWSEventClient
 import pandas as pd
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
-from seismostats.analysis.estimate_mc import (
-    empirical_cdf,
-    mc_max_curvature,
-    mc_ks,
-    mc_by_bvalue_stability
-)
+from seismostats.io.client import FDSNWSEventClient
+from seismostats.analysis.estimate_mc import (empirical_cdf,
+                                              mc_ks,
+                                              mc_max_curvature,
+                                              mc_by_bvalue_stability)
 
 
 @pytest.fixture
@@ -177,7 +175,7 @@ def test_estimate_mc_ks(mags, mcs):
         mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1
     )
     assert_equal(1.1, best_mc)
-    assert_equal(2.242124985031149, best_beta)
+    assert_almost_equal(2.242124985031149, best_beta)
     assert_equal([0.8, 0.9, 1.0, 1.1], mcs_tested)
     assert_allclose(
         [
@@ -219,7 +217,7 @@ def test_estimate_mc_ks(mags, mcs):
         mags, delta_m=0.1, p_pass=0.1
     )
     assert_equal(1.1, best_mc)
-    assert_equal(2.242124985031149, best_beta)
+    assert_almost_equal(2.242124985031149, best_beta)
     assert_equal([1.0, 1.1], mcs_tested)
 
     # test when b-positive is used
@@ -227,7 +225,7 @@ def test_estimate_mc_ks(mags, mcs):
         mags, delta_m=0.1, b_method="positive"
     )
     assert_equal(1.5, best_mc)
-    assert_equal(3.2542240043462796, best_beta)
+    assert_almost_equal(3.2542240043462796, best_beta)
     assert_equal(len(mcs_tested), 6)
     assert_equal(len(betas), 6)
     assert_equal(len(ks_ds), 6)

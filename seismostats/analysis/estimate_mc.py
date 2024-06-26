@@ -303,12 +303,13 @@ def mc_max_curvature(
           catalogues: Estimating the magnitude of completeness and its
           uncertainty.
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
+
     Args:
-        sample:             Magnitudes to test
-        delta_m:            Magnitude bins (sample has to be rounded to bins
-                            beforehand)
-        correction_factor:  Correction factor for the maximum curvature method
-        (default 0.2 after Woessner & Wiemer 2005)
+        sample:     Magnitudes to test
+        delta_m:    Magnitude bins (sample has to be rounded to bins beforehand)
+            correction_factor:  Correction factor for the maximum curvature
+            method (default 0.2 after Woessner & Wiemer 2005)
+
     Returns:
         mc:                 estimated completeness magnitude
     """
