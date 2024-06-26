@@ -14,17 +14,22 @@ def estimate_a(magnitudes: np.ndarray,
                delta_T: dt.timedelta | None = None,
                ) -> float:
     """Estimate the a-value of the Gutenberg-Richter (GR) law.
-    N = 10^(a - b * (m - mc)) (1)
+
+    N = 10 ** (a - b * (m - mc)) (1)
+
     where N is the number of events with magnitude greater than m0, T is the
     time interval the magnitudes are observed, delta_T is the time interval
     for the estimation of the a-value.
-    In order to make comparability across different time intervals possible, 
+    In order to make comparability across different time intervals possible,
     the a-value is often estimated at a reference magnitude m0 and a reference
     time interval delta_T. Then, instead of (1), the following equation is used:
-    N T/ delta_T = 10^(a - b * (m0 - mc)) (2)
-    If only the magnitudes are provided, the a value is estimated at the lowest
-    magnitude of the sample, using eq. (1). Otherwise, the a-value is estimated
-    at the reference magnitude m0 and the reference time interval delta_T using
+
+    N T/ delta_T = 10 ** (a - b * (m0 - mc)) (2)
+
+    If only the magnitudes are given, the a-value is estimated at the lowest
+    magnitude in the sample, with mc = min(magnitudes). Eq. (1) then simplifies
+    to N = 10**a. Otherwise, the a-value is estimated at the reference
+    magnitude m0 and the reference time interval delta_T using
     eq. (2).
 
     Args:
