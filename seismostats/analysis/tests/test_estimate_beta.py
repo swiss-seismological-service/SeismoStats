@@ -67,7 +67,7 @@ def test_estimate_b(
         )
     assert str(excinfo.value) == "magnitudes are not binned correctly"
 
-    # test that magnitudes smaller than mc lkead to error
+    # test that magnitudes smaller than mc lead to error
     with pytest.raises(AssertionError) as excinfo:
         estimate_b(
             mags,
