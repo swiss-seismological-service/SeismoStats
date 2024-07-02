@@ -2,7 +2,6 @@
 """
 
 import numpy as np
-import datetime as dt
 import warnings
 
 
@@ -17,7 +16,7 @@ def estimate_a(magnitudes: np.ndarray,
     N = 10 ** (a - b * (m_ref - mc)) (1)
 
     where N is the number of events with magnitude greater than m_ref, which
-    occurred in the time interval T. T should be given as a float- to be 
+    occurred in the time interval T. T should be given as a float- to be
     precise, it should be the time interval scaled to the time-unit of interest.
     E.g., if the number of events per year are of interest, T should be the
     number of years in which the events occurred.
