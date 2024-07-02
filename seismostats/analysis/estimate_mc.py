@@ -45,7 +45,7 @@ def cdf_discrete_GR(
 def empirical_cdf(
     sample: np.ndarray | pd.Series,
     mc: float = None,
-    delta_m: float = 0,
+    delta_m: float = 1e-16,
     weights: np.ndarray | pd.Series | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -54,11 +54,18 @@ def empirical_cdf(
 
     Parameters:
         sample:     Magnitude sample
+        mc:         Completeness magnitude, if None, the minimum of the sample
+                is used
+        delta_m:    Magnitude bin size, by default 1e-16. Its recommended to
+                use the value that the samples are rounded to.
         weights:    Sample weights, by default None
 
     Returns:
-        x:          x-values of the empirical CDF
-        y:          y-values of the empirical CDF
+        x:          x-values of the empirical CDF (i.e. the unique vector of
+                magnitudes from mc to the maximum magnitude in the sample,
+                binned by delta_m)
+        y:          y-values of the empirical CDF (i.e., the empirical
+                frequency observed in the sample corresponding to the x-values)
     """
 
     try:
@@ -71,6 +78,9 @@ def empirical_cdf(
     except BaseException:
         pass
 
+    if delta_m == 0:
+        raise ValueError("delta_m has to be > 0")
+
     if get_option("warnings") is True:
         # check if binning is correct
         if not np.allclose(sample, bin_to_precision(sample, delta_m)):
@@ -78,33 +88,42 @@ def empirical_cdf(
                 "Magnitudes are not binned correctly. "
                 "Test might fail because of this."
             )
+        if delta_m == 1e-16:
+            warnings.warn(
+                "delta_m = 1e-16, this might lead to extended computation time")
 
     if mc is None:
         mc = np.min(sample)
 
     idx = np.argsort(sample)
     x = sample[idx]
+    x, y_count = np.unique(x, return_counts=True)
 
-    if weights is not None:
+    # add empty bins
+    for mag_bin in bin_to_precision(
+        np.arange(mc, np.max(sample) + delta_m, delta_m), delta_m
+    ):
+        if mag_bin not in x:
+            x = np.append(x, mag_bin)
+            y_count = np.append(y_count, 0)
+    idx = np.argsort(x)
+    x = x[idx]
+    y_count = y_count[idx]
+
+    # estimate the CDF
+    if weights is None:
+        y = np.cumsum(y_count) / len(sample)
+    else:
         weights_sorted = weights[idx]
         y = np.cumsum(weights_sorted) / weights_sorted.sum()
-    else:
-        y = np.arange(1, len(sample) + 1) / len(sample)
 
-    x, y_count = np.unique(x, return_counts=True)
-    # add empty bins
-    if delta_m > 0:
-        for mag_bin in bin_to_precision(
-            np.arange(mc, np.max(sample) + delta_m, delta_m), delta_m
-        ):
-            if mag_bin not in x:
-                x = np.append(x, mag_bin)
-                y_count = np.append(y_count, 0)
-        idx = np.argsort(x)
-        x = x[idx]
-        y_count = y_count[idx]
+        # make sure that y is zero if there are no samples in the first bins
+        for ii, y_loop in enumerate(y_count):
+            if y_loop > 0:
+                break
+        leading_zeros = np.zeros(ii)
 
-    y = y[np.cumsum(y_count) - 1]
+        y = leading_zeros.append(y[np.cumsum(y_count[ii:]) - 1])
 
     return x, y
 
@@ -115,6 +134,7 @@ def ks_test_gr(
     delta_m: float,
     beta: float,
     n: int = 10000,
+    ks_ds: list | None = None,
 ) -> tuple[float, float, list[float]]:
     """
     For a given magnitude sample and mc and beta,
@@ -127,8 +147,12 @@ def ks_test_gr(
         mc:         Completeness magnitude
         delta_m:    Magnitude bin size
         beta :      Beta parameter for the Gutenberg-Richter distribution
-        n:          Number of times the KS distance is calculated for
-                    estimating the p-value, by default 10000
+        n:          Number of times the KS distance is calculated from
+                synthetic samples with the given parameters, used for
+                estimating the p-value. By default 10000.
+        ks_ds:      List of KS distances from synthetic data with the given
+                paramters. If None, they will be estimated here (then, n is
+                not needed). By default None.
 
     Returns:
         p_val:      p-value
@@ -147,20 +171,21 @@ def ks_test_gr(
             warnings.warn("sample contains only one value")
             return 0, 1, []
 
-    ks_ds = []
+    if ks_ds is None:
+        ks_ds = []
 
-    n_sample = len(sample)
-    simulated_all = simulate_magnitudes_binned(
-        n * n_sample, beta, mc, delta_m, b_parameter="beta"
-    )
+        n_sample = len(sample)
+        simulated_all = simulate_magnitudes_binned(
+            n * n_sample, beta, mc, delta_m, b_parameter="beta"
+        )
 
-    for ii in range(n):
-        simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
-        x, y_emp = empirical_cdf(simulated, mc, delta_m)
-        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+        for ii in range(n):
+            simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
+            x, y_emp = empirical_cdf(simulated, mc, delta_m)
+            _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
-        ks_d = np.max(np.abs(y_emp - y_th))
-        ks_ds.append(ks_d)
+            ks_d = np.max(np.abs(y_emp - y_th))
+            ks_ds.append(ks_d)
 
     x, y_emp = empirical_cdf(sample, mc, delta_m)
     _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
@@ -181,6 +206,7 @@ def mc_ks(
     beta: float | None = None,
     b_method: str | None = None,
     n: int = 10000,
+    ks_ds_list: list[list] | None = None,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
     Return the completeness magnitude (mc) estimate
@@ -209,6 +235,10 @@ def mc_ks(
         n:                  Number of number of times the KS distance is
                             calculated for estimating the p-value,
                             by default 10000
+        ks_ds_list:         List of list of KS distances from synthetic data
+                        (needed for testing). If None, they will be estimated
+                        in this funciton. By default None
+
     Returns:
         mcs_test:   tested completeness magnitudes
         ks_ds:      KS distances
@@ -259,7 +289,7 @@ def mc_ks(
     ps = []
     betas = []
 
-    for mc in mcs_test:
+    for ii, mc in enumerate(mcs_test):
 
         if verbose:
             print("\ntesting mc", mc)
@@ -278,9 +308,19 @@ def mc_ks(
         else:
             mc_beta = beta
 
-        p, ks_d, _ = ks_test_gr(
-            mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n
-        )
+        if ks_ds_list is None:
+            p, ks_d, _ = ks_test_gr(
+                mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n
+            )
+        else:
+            p, ks_d, _ = ks_test_gr(
+                mc_sample,
+                mc=mc,
+                delta_m=delta_m,
+                beta=mc_beta,
+                n=n,
+                ks_ds=ks_ds_list[ii],
+            )
 
         mcs_tested.append(mc)
         ks_ds.append(ks_d)

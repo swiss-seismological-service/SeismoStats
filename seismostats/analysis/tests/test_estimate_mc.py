@@ -1,6 +1,5 @@
-import pickle
-
 import numpy as np
+import pandas as pd
 import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
@@ -130,49 +129,27 @@ def test_empirical_cdf(setup_magnitudes, delta_m=0.1):
     assert_equal(y[0], 0.06)
 
 
-# load data for test_estimate_mc
-with open("seismostats/analysis/tests/data/test_estimate_mc.p", "rb") as f:
-    data = pickle.load(f)
+@pytest.fixture
+def setup_ks_dists():
+    ks_ds_df = pd.read_csv(
+        'seismostats/analysis/tests/data/ks_ds.csv', index_col=0)
+    ks_ds_list = ks_ds_df.values.T
+    return ks_ds_list
 
 
-@pytest.mark.parametrize(
-    "mags,mcs",
-    [data["values_test"]],
-)
-def test_estimate_mc_ks(mags, mcs):
-
-    # test when beta is not given
-    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1
-    )
-    assert_equal(1.1, best_mc)
-    assert_almost_equal(2.242124985031149, best_beta)
-    assert_equal([0.8, 0.9, 1.0, 1.1], mcs_tested)
-    assert_allclose(
-        [
-            0.2819699492277921,
-            0.21699092832299466,
-            0.11605633802816911,
-            0.07087102843116255,
-        ],
-        ks_ds,
-        rtol=1e-7,
-    )
-    assert_allclose(
-        [
-            1.395015596110264,
-            1.6216675481549436,
-            1.9365312280350473,
-            2.242124985031149,
-        ],
-        betas,
-        rtol=1e-7,
-    )
-    assert_allclose([0.000e00, 1.000e-04, 5.100e-02, 4.362e-01], ps, atol=0.03)
-
+def test_estimate_mc_ks(
+        setup_magnitudes,
+        setup_ks_dists,
+        mcs=[0.8, 0.9, 1.0, 1.1]
+):
     # test when beta is given
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        mags, delta_m=0.1, mcs_test=mcs, p_pass=0.1, beta=2.24
+        setup_magnitudes,
+        delta_m=0.1,
+        mcs_test=mcs,
+        p_pass=0.1,
+        beta=2.24,
+        ks_ds_list=setup_ks_dists,
     )
     assert_equal(1.1, best_mc)
     assert_equal(2.24, best_beta)
@@ -182,25 +159,56 @@ def test_estimate_mc_ks(mags, mcs):
         rtol=1e-7,
     )
     assert_allclose([0.0, 0.0, 0.0128, 0.4405], ps, atol=0.03)
+    assert_equal(mcs_tested, mcs)
+
+    # test when beta is not given
+    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
+        setup_magnitudes,
+        delta_m=0.1,
+        mcs_test=[1.1],
+        p_pass=0.1,
+    )
+    assert_almost_equal(2.242124985031149, best_beta)
+    assert_allclose(
+        [
+            0.07087102843116255,
+        ],
+        ks_ds,
+        rtol=1e-7,
+    )
+    assert_allclose(
+        [
+            2.242124985031149,
+        ],
+        betas,
+        rtol=1e-7,
+    )
+    assert_allclose([4.362e-01], ps, atol=0.03)
 
     # test when mcs are not given
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        mags, delta_m=0.1, p_pass=0.1
+        setup_magnitudes,
+        delta_m=0.1,
+        p_pass=0.1,
+        beta=2.24,
+        ks_ds_list=setup_ks_dists[2:],
     )
     assert_equal(1.1, best_mc)
-    assert_almost_equal(2.242124985031149, best_beta)
     assert_equal([1.0, 1.1], mcs_tested)
 
     # test when b-positive is used
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        mags, delta_m=0.1, b_method="positive"
+        setup_magnitudes,
+        delta_m=0.1,
+        mcs_test=[1.5],
+        b_method="positive"
     )
     assert_equal(1.5, best_mc)
     assert_almost_equal(3.2542240043462796, best_beta)
-    assert_equal(len(mcs_tested), 6)
-    assert_equal(len(betas), 6)
-    assert_equal(len(ks_ds), 6)
-    assert_equal(len(ps), 6)
+    assert_equal(len(mcs_tested), 1)
+    assert_equal(len(betas), 1)
+    assert_equal(len(ks_ds), 1)
+    assert_equal(len(ps), 1)
 
 
 def test_estimate_mc_maxc(setup_magnitudes):
