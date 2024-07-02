@@ -8,42 +8,33 @@ import warnings
 
 def estimate_a(magnitudes: np.ndarray,
                mc: float | None = None,
-               m0: float | None = None,
+               m_ref: float | None = None,
                b_value: float | None = None,
-               T: dt.timedelta | None = None,
-               delta_T: dt.timedelta | None = None,
+               T: float | None = None,
                ) -> float:
     """Estimate the a-value of the Gutenberg-Richter (GR) law.
 
-    N = 10 ** (a - b * (m - mc)) (1)
+    N = 10 ** (a - b * (m_ref - mc)) (1)
 
-    where N is the number of events with magnitude greater than m0, T is the
-    time interval the magnitudes are observed, delta_T is the time interval
-    for the estimation of the a-value.
-    In order to make comparability across different time intervals possible,
-    the a-value is often estimated at a reference magnitude m0 and a reference
-    time interval delta_T. Then, instead of (1), the following equation is used:
-
-    N T/ delta_T = 10 ** (a - b * (m0 - mc)) (2)
+    where N is the number of events with magnitude greater than m_ref, which
+    occurred in the time interval T. T should be given as a float- to be 
+    precise, it should be the time interval scaled to the time-unit of interest.
+    E.g., if the number of events per year are of interest, T should be the
+    number of years in which the events occurred.
 
     If only the magnitudes are given, the a-value is estimated at the lowest
     magnitude in the sample, with mc = min(magnitudes). Eq. (1) then simplifies
-    to N = 10**a. Otherwise, the a-value is estimated at the reference
-    magnitude m0 and the reference time interval delta_T using
-    eq. (2).
+    to N = 10**a.
 
     Args:
         magnitudes: Magnitude sample
         mc:         Completeness magnitude. If None, the lowest magnitude is
                 used as completeness magnitude.
-        m0:         Reference magnitude for which the a-value is estimated. If
+        m_ref:      Reference magnitude for which the a-value is estimated. If
                 None, the a-value is estimated at mc.
         b_value:    b-value of the Gutenberg-Richter distribution
-        T:          Reference time interval for the estimation of the a-value.
-                If None, T is set to the whole interval of the times. Often, T
-                is set to 1 year.
-        delta_T:    Time interval which the magnitudes are observed in. Only
-                needed if T is not None.
+        T:          Relative length of the time interval in which the events
+                occurred (relative to the time unit of interest, e.g., years)
 
     Returns:
         a: a-value of the Gutenberg-Richter distribution
@@ -59,16 +50,14 @@ def estimate_a(magnitudes: np.ndarray,
     a = np.log10(len(magnitudes))
 
     # scale to reference magnitude
-    if m0 is not None:
+    if m_ref is not None:
         if b_value is None:
             raise ValueError(
                 "b_value must be provided if m0 is given")
-        a = a - b_value * (m0 - mc)
+        a = a - b_value * (m_ref - mc)
 
     # scale to reference time-interval
     if T is not None:
-        if delta_T is None:
-            raise ValueError("T must be provided if delta_T is given.")
-        a = a + np.log10(T / delta_T)
+        a = a - np.log10(T)
 
     return a
