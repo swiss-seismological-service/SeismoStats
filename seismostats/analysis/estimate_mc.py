@@ -95,8 +95,8 @@ def empirical_cdf(
     if mc is None:
         mc = np.min(sample)
 
-    idx = np.argsort(sample)
-    x = sample[idx]
+    idx1 = np.argsort(sample)
+    x = sample[idx1]
     x, y_count = np.unique(x, return_counts=True)
 
     # add empty bins
@@ -106,15 +106,15 @@ def empirical_cdf(
         if mag_bin not in x:
             x = np.append(x, mag_bin)
             y_count = np.append(y_count, 0)
-    idx = np.argsort(x)
-    x = x[idx]
-    y_count = y_count[idx]
+    idx2 = np.argsort(x)
+    x = x[idx2]
+    y_count = y_count[idx2]
 
     # estimate the CDF
     if weights is None:
         y = np.cumsum(y_count) / len(sample)
     else:
-        weights_sorted = weights[idx]
+        weights_sorted = weights[idx1]
         y = np.cumsum(weights_sorted) / weights_sorted.sum()
 
         # make sure that y is zero if there are no samples in the first bins
@@ -122,8 +122,7 @@ def empirical_cdf(
             if y_loop > 0:
                 break
         leading_zeros = np.zeros(ii)
-
-        y = leading_zeros.append(y[np.cumsum(y_count[ii:]) - 1])
+        y = np.append(leading_zeros, y[np.cumsum(y_count[ii:]) - 1])
 
     return x, y
 

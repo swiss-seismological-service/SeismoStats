@@ -128,6 +128,21 @@ def test_empirical_cdf(setup_magnitudes, delta_m=0.1):
     assert_equal(len(x), len(y))
     assert_equal(y[0], 0.06)
 
+    # test that weights function the way that they should
+    # 1. with equal weights
+    magnitudes = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
+    weights = np.array([1, 1, 1, 1, 1])
+    x, y = empirical_cdf(magnitudes, mc=0, delta_m=0.1, weights=weights)
+    assert_almost_equal(x, np.arange(0, 1, 0.1))
+    assert_almost_equal(y, [0, 0, 0, 0, 0, 0.2, 0.4, 0.6, 0.8, 1])
+
+    # 2. with different weights
+    magnitudes = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
+    weights = np.array([0.5, 0.5, 0.5, 0.5, 3])
+    x, y = empirical_cdf(magnitudes, mc=0, delta_m=0.1, weights=weights)
+    assert_almost_equal(x, np.arange(0, 1, 0.1))
+    assert_almost_equal(y, [0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4, 1])
+
 
 @pytest.fixture
 def setup_ks_dists():
