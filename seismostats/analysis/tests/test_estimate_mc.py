@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import pandas as pd
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 from seismostats.analysis.estimate_mc import bin_to_precision
@@ -240,9 +239,18 @@ def test_estimate_mc_maxc(setup_magnitudes):
     assert_equal(1.3, mc)
 
 
-def test_estimate_mc_bvalue_stability(swiss_2023_magnitudes):
+@pytest.fixture
+def setup_catalog():
+    swiss_catalog = pd.read_csv(
+        'seismostats/analysis/tests/data/catalog_sed.csv', index_col=0)
+    return swiss_catalog, 0.01
+
+
+def test_estimate_mc_bvalue_stability(setup_catalog):
+    swiss_catalog = setup_catalog[0]
+    delta_m = setup_catalog[1]
     _, mc, _, _, _, _, _, _ = mc_by_bvalue_stability(
-        swiss_2023_magnitudes[0], delta_m=swiss_2023_magnitudes[1],
+        swiss_catalog['magnitude'], delta_m=delta_m,
         stability_factor=0.1)
 
     assert_equal(1.44, mc)
