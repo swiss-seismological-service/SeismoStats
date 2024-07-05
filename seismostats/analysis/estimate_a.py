@@ -108,7 +108,9 @@ def estimate_a_positive(
             warnings.warn(
                 "Completeness magnitude is higher than the lowest magnitude."
                 "Cutting the magnitudes to the completeness magnitude.")
-        magnitudes = magnitudes[magnitudes >= mc]
+        idx = magnitudes >= mc
+        magnitudes = magnitudes[idx]
+        times = times[idx]
 
     if dmc is None:
         dmc = delta_m
@@ -120,7 +122,7 @@ def estimate_a_positive(
     # differences
     mag_diffs = np.diff(magnitudes)
     time_diffs = np.diff(times)
-    if not np.all(time_diffs >= 0):
+    if not np.all(time_diffs >= 0 * time_diffs[0]):
         raise ValueError("Times are not ordered correctly.")
 
     # only consider events with magnitude difference >= dmc
@@ -131,7 +133,7 @@ def estimate_a_positive(
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0] + np.mean(np.diff(times))
     total_time_pos = sum(time_diffs) + np.mean(time_diffs)
-    n_pos = len(mag_diffs) / total_time_pos * total_time
+    n_pos = total_time / total_time_pos * len(mag_diffs)
 
     # estimate a-value
     a = np.log10(n_pos)
@@ -146,3 +148,5 @@ def estimate_a_positive(
     # scale to reference time-interal or volume of interest
     if scaling is not None:
         a = a - np.log10(scaling)
+
+    return a
