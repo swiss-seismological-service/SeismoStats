@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import uuid
 from collections import defaultdict
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -38,16 +39,18 @@ class Catalog(pd.DataFrame):
     columns: longitude, latitude, depth, time, and magnitude.
 
     Args:
-        data : array-like, Iterable, dict, or DataFrame, optional
-            Data to initialize the catalog with.
-        name : str, optional
-            Name of the catalog.
-        args : optional
-            Additional arguments to pass to pandas
-            DataFrame constructor.
-        kwargs: optional
-            Additional keyword arguments to pass to pandas
-            DataFrame constructor.
+        data:       array-like, Iterable, dict, or DataFrame, optional
+                    Data to initialize the catalog with.
+        name:       Name of the catalog.
+        args:       Additional arguments to pass to pandas
+                    DataFrame constructor.
+        starttime:  Start time of the catalog.
+        endtime:    End time of the catalog.
+        mc:         Completeness magnitude of the catalog.
+        delta_m:    Magnitude binning of the catalog.
+        kwargs:     Additional keyword arguments to pass to pandas
+                    DataFrame constructor.
+
     Notes:
         The Catalog class is a subclass of pandas DataFrame, and inherits
         all of its methods and attributes.
@@ -78,14 +81,14 @@ class Catalog(pd.DataFrame):
 
     def __init__(
         self,
-        data=None,
+        data: Any | None = None,
         *args,
-        name=None,
-        starttime=None,
-        endtime=None,
-        mc=None,
-        delta_m=None,
-        b_value=None,
+        name: str | None = None,
+        starttime: pd.Timestamp | None = None,
+        endtime: pd.Timestamp | None = None,
+        mc: float | None = None,
+        delta_m: float | None = None,
+        b_value: float | None = None,
         **kwargs
     ):
         if data is None and 'columns' not in kwargs:
@@ -118,8 +121,16 @@ class Catalog(pd.DataFrame):
         Create a Catalog from a QuakeML file.
 
         Args:
-            quakeml : str
-                Path to a QuakeML file or QuakeML as a string.
+            quakeml:                Path to a QuakeML file or QuakeML
+                                    as a string.
+            include_all_magnitudes: Whether all available magnitude types
+                                    should be included.
+            include_uncertainties:  Whether value columns with uncertainties
+                                    should be included.
+            include_ids:            Whether event, origin, and magnitude IDs
+                                    should be included.
+            include_quality:        Whether columns with quality information
+                                    should be included.
 
         Returns:
             Catalog
@@ -144,8 +155,12 @@ class Catalog(pd.DataFrame):
         Create a Catalog from a list of dictionaries.
 
         Args:
-            data : list[dict]
-                A list of earthquake event information dictionaries.
+            data:                   A list of earthquake event information
+                                    dictionaries.
+            include_uncertainties:  Whether value columns with uncertainties
+                                    should be included.
+            include_ids:            Whether event, origin, and magnitude IDs
+                                    should be included.
 
         Returns:
             Catalog
@@ -181,9 +196,15 @@ class Catalog(pd.DataFrame):
 
         return df
 
-    def drop_uncertainties(self):
+    def drop_uncertainties(self) -> Catalog:
         """
         Drop uncertainty columns from the catalog.
+
+        Drops columns with names ending in '_uncertainty', '_lowerUncertainty',
+        '_upperUncertainty', and '_confidenceLevel'.
+
+        Returns:
+            catalog: Catalog with uncertainty columns removed.
         """
 
         rgx = "(_uncertainty|_lowerUncertainty|" \
@@ -193,9 +214,14 @@ class Catalog(pd.DataFrame):
         df = self.drop(columns=cols)
         return df
 
-    def drop_ids(self):
+    def drop_ids(self) -> Catalog:
         """
         Drop event, origin, and magnitude IDs from the catalog.
+
+        Drops columns named 'eventid', 'originid', and 'magnitudeid'.
+
+        Returns:
+            catalog: Catalog with ID columns removed.
         """
 
         rgx = "(eventid|originid|magnitudeid)$"
@@ -210,16 +236,14 @@ class Catalog(pd.DataFrame):
     @require_cols(require=_required_cols)
     def strip(self, inplace: bool = False) -> Catalog | None:
         """
-        Remove all columns except the required ones.
+        Remove all columns except the required ones
+        defined in ``_required_cols``.
 
         Args:
-            inplace : bool, optional
-                If True, do operation inplace.
+            inplace:    Whether to perform the operation in place on the data.
 
         Returns:
-            Catalog or None
-                If inplace is True, returns None. Otherwise, returns a new
-                Catalog with the stripped columns.
+            catalog:    Catalog with the stripped columns.
         """
         df = self.drop(columns=set(self.columns).difference(
             set(self._required_cols)), inplace=inplace)
@@ -227,19 +251,18 @@ class Catalog(pd.DataFrame):
             return df
 
     @require_cols(require=['magnitude'])
-    def bin_magnitudes(
-            self, delta_m: float, inplace: bool = False) -> Catalog | None:
+    def bin_magnitudes(self, delta_m: float = 0.1, inplace: bool = False) \
+            -> Catalog | None:
         """
-        Bin magnitudes to a given precision.
+        Rounds values in the ``magnitude`` column of the catalog to a given
+        precision ``delta_m``.
 
         Args:
-            delta_m : float
-                Magnitude bin size.
-            inplace : bool, optional
-                If True, do operation inplace.
+            delta_m:    size of the bin, optional
+            inplace:    Whether to perform the operation in place on the data.
 
         Returns:
-            Catalog or None
+            catalog:    Catalog with rounded magnitudes.
         """
         if inplace:
             df = self
@@ -269,24 +292,22 @@ class Catalog(pd.DataFrame):
         in the catalog.
 
         Args:
-            mcs_test:           Completeness magnitudes to test
+            mcs_test:           Completeness magnitudes to test.
             delta_m:            Magnitude bins (sample has to be rounded to bins
-                            beforehand)
-            p_pass:             P-value with which the test is passed
-            stop_when_passed:   Stop calculations when first mc passes the test,
-                            by default True
-            verbose:            Verbose output, by default False
-            beta:               If beta is 'known', only estimate mc,
-                            by default None
+                                beforehand).
+            p_pass:             P-value with which the test is passed.
+            stop_when_passed:   Stop calculations when first mc passes the test.
+            verbose:            Verbose output.
+            beta:               If beta is 'known', only estimate mc.
             n_samples:          Number of magnitude samples to be generated in
-                            p-value calculation of KS distance, default 10000
+                                p-value calculation of KS distance.
 
         Returns:
-            mcs_test:   tested completeness magnitudes
-            ks_ds:      KS distances
-            ps:         p-values
-            best_mc:    best mc
-            beta:       corresponding best beta
+            mcs_test:   Tested completeness magnitudes.
+            ks_ds:      KS distances.
+            ps:         p-values.
+            best_mc:    Best mc.
+            beta:       Corresponding best beta.
         """
         if delta_m is None and self.delta_m is None:
             raise ValueError("binning (delta_m) needs to be set")
@@ -329,27 +350,29 @@ class Catalog(pd.DataFrame):
         to estimate the b-value.
 
         Args:
-            mc:         completeness magnitude, etiher given as parameter or
-                    taken from the object attribute
-            delta_m:    discretization of magnitudes, etiher given as parameter
-                    or taken from the object attribute
-            weights:    weights of each magnitude can be specified here
-            b_parameter:either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
-            return_std: if True the standard deviation of beta/b-value (see
-                    above) is returned
-            method:     method to use for estimation of beta/b-value. Options
-                    are: 'tinti', 'utsu', 'positive', 'laplace'
-            return_n:   if True, the number of events used for the estimation is
-                    returned. This is only relevant for the 'positive' method
+            mc:         Completeness magnitude, etiher given as parameter or
+                        taken from the object attribute.
+            delta_m:    Discretization of magnitudes, etiher given as parameter
+                        or taken from the object attribute.
+            weights:    Weights of each magnitude can be specified here.
+            b_parameter:Either 'b-value', then the corresponding value  of the
+                        Gutenberg-Richter law is returned, otherwise 'beta'
+                        from the exponential distribution
+                        :math:`p(M) = exp(-beta*(M-mc))`
+            return_std: If True the standard deviation of beta/b-value (see
+                        above) is returned.
+            method:     Method to use for estimation of beta/b-value. Options
+                        are: 'tinti', 'utsu', 'positive', 'laplace'.
+            return_n:   If True, the number of events used for the estimation is
+                        returned. This is only relevant for the 'positive'
+                        method.
 
         Returns:
-            b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'b_parameter'. Note that the difference
-                is just a factor [b_value = beta * log10(e)]
+            b:      Maximum likelihood beta or b-value, depending on value of
+                    input variable 'b_parameter'. Note that the difference
+                    is just a factor :math:`b = beta * log10(e)`.
             std:    Shi and Bolt estimate of the beta/b-value error estimate
-            n:      number of events used for the estimation
+            n:      number of events used for the estimation.
         """
 
         if mc is None and self.mc is None:
@@ -392,6 +415,9 @@ class Catalog(pd.DataFrame):
         Get a list of secondary magnitude keys in the catalog.
 
         This will always include also the preferred magnitude type.
+
+        Returns:
+            keys: List of secondary magnitude keys in the catalog.
         """
 
         vals = ['_uncertainty',
@@ -440,14 +466,11 @@ class Catalog(pd.DataFrame):
         Convert the catalog to QuakeML format.
 
         Args:
-            agencyID : str, optional
-                Agency ID.
-            author : str, optional
-                Author of the catalog.
+            agencyID:   Agency ID with which to store the catalog.
+            author:     Author of the catalog.
 
         Returns:
-            str
-                The catalog in QuakeML format.
+            catalog:    The catalog in QuakeML format.
         """
 
         df = self.copy()
@@ -473,9 +496,17 @@ class Catalog(pd.DataFrame):
 
         return _render_template(data, QML_TEMPLATE)
 
-    def __finalize__(self, other, method=None, **kwargs):
-        """ propagate metadata from other to self
+    def __finalize__(self, other, method=None, **kwargs) -> Catalog:
+        """ Propagate metadata from other to self.
             Source: https://github.com/geopandas/geopandas
+
+        Args:
+            other:  The other object to finalize with.
+            method: The method used to finalize the objects.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            self:   The finalized object.
         """
         self = super().__finalize__(other, method=method, **kwargs)
 
@@ -501,19 +532,23 @@ class ForecastCatalog(Catalog):
     catalog_id.
 
     Args:
-        data : array-like, Iterable, dict, or DataFrame, optional
-            Data to initialize the catalog with.
-        name : str, optional
-            Name of the catalog.
-        n_catalogs : int, optional
-            Total number of catalogs represented, including empty catalogs.
-        *args, **kwargs : optional
-            Additional arguments and keyword arguments to pass to pandas
-            DataFrame constructor.
+        data: array-like, Iterable, dict, or DataFrame, optional.
+                    Data to initialize the catalog with.
+        name:       Name of the catalog.
+        n_catalogs: Total number of catalogs represented,
+                    including empty catalogs.
+        args:       Additional arguments to pass to pandas
+                    DataFrame constructor.
+        starttime:  Start time of the catalog.
+        endtime:    End time of the catalog.
+        mc:         Completeness magnitude of the catalog.
+        delta_m:    Magnitude binning of the catalog.
+        kwargs:     Additional keyword arguments to pass to pandas
+                    DataFrame constructor.
 
     Notes:
-        The ForecastCatalog class is a subclass of pandas DataFrame, and
-        inherits all of its methods and attributes.
+        The Catalog class is a subclass of pandas DataFrame, and inherits
+        all of its methods and attributes.
     """
 
     _required_cols = REQUIRED_COLS_CATALOG + ['catalog_id']
@@ -525,7 +560,17 @@ class ForecastCatalog(Catalog):
         self.n_catalogs = n_catalogs
 
     @require_cols(require=_required_cols)
-    def to_quakeml(self, agencyID=' ', author=' ') -> str:
+    def to_quakeml(self, agencyID: str = ' ', author: str = ' ') -> list[str]:
+        """
+        Convert the catalogs to QuakeML format.
+
+        Args:
+            agencyID:   Agency ID.
+            author:     Author of the catalog.
+
+        Returns:
+            catalogs:   List of catalogs in QuakeML format.
+        """
         catalogs = []
         for _, group in self.groupby('catalog_id'):
             catalogs.append(Catalog(group).to_quakeml(agencyID, author))
