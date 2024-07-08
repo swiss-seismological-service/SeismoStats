@@ -122,38 +122,32 @@ class GRRateGrid(pd.DataFrame):
         return df
 
     @require_cols(require=_required_cols)
-    def reindex_cell_id(self) -> GRRateGrid:
+    def reindex_cell_id(self) -> None:
         """
         If the RateGrid has a MultiIndex which includes `cell_id`
         as a level, this method will update the RateGrid's index to use
         unique cell_id values.
-
-        Returns:
-            rategrid:    A new RateGrid with the updated index.
         """
-        df = self.copy()
 
-        if 'cell_id' in df.index.names:
-            cell_bounds = df[['longitude_min', 'longitude_max',
-                              'latitude_min', 'latitude_max',
-                              'depth_min', 'depth_max']]
+        if 'cell_id' in self.index.names:
+            cell_bounds = self[['longitude_min', 'longitude_max',
+                                'latitude_min', 'latitude_max',
+                                'depth_min', 'depth_max']]
 
-            df['cell'] = np.unique(
+            self['cell'] = np.unique(
                 cell_bounds, axis=0, return_inverse=True, equal_nan=True)[1]
 
-            df.set_index('cell', append=True, drop=True, inplace=True)
-            df.index = df.index.droplevel('cell_id')
+            self.set_index('cell', append=True, drop=True, inplace=True)
+            self.index = self.index.droplevel('cell_id')
 
-            df.index.set_names('cell_id', level='cell', inplace=True)
+            self.index.set_names('cell_id', level='cell', inplace=True)
 
-        if 'starttime' in df.index.names:
-            df.starttime = df.index.get_level_values('starttime').min()
-            if 'endtime' in df.index.names:
-                df.endtime = df.index.get_level_values('endtime').max()
+        if 'starttime' in self.index.names:
+            self.starttime = self.index.get_level_values('starttime').min()
+            if 'endtime' in self.index.names:
+                self.endtime = self.index.get_level_values('endtime').max()
             else:
-                df.endtime = df.index.get_level_values('starttime').max()
-
-        return df
+                self.endtime = self.index.get_level_values('starttime').max()
 
     def __finalize__(self, other, method=None, **kwargs):
         """ Propagate metadata from other to self.
