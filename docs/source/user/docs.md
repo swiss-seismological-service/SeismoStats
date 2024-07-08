@@ -113,7 +113,54 @@ def _example():
 **Output**  
 ```{eval-rst}
 .. module:: seismostats.utils.docs
+    :noindex:
 ```
 ```{eval-rst}
 .. autofunction:: _example
+```
+
+### Add Mathematical Equations
+Mathematical expressions can be added to the documentation using LaTeX. 
+The expressions can be added in text or in docstrings.
+
+
+#### In Text
+
+**Code**
+```
+$$
+\frac{\partial u}{\partial t}=-u \frac{\partial u}{\partial x}- \\
+v \frac{\partial u}{\partial y}-w \frac{\partial u}{\partial z}
+$$
+```
+
+**Output**
+$$
+\frac{\partial u}{\partial t}=-u \frac{\partial u}{\partial x}- \\
+v \frac{\partial u}{\partial y}-w \frac{\partial u}{\partial z}
+$$
+
+
+#### In Docstrings
+
+**Code**
+```python
+def _math():
+    """
+    This function is purely used as an example for the documentation.
+
+    Formulas inside docstrings can be used like this 
+    :math:`\\frac{\\partial u}{\\partial t} = 1`. Note that backslashes 
+    need to be escaped by doubling them up.
+    """
+    pass
+```
+
+**Output**  
+```{eval-rst}
+.. module:: seismostats.utils.docs
+    :noindex:
+```
+```{eval-rst}
+.. autofunction:: _math
 ```
