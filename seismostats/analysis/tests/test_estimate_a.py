@@ -19,7 +19,7 @@ def test_estimate_a():
         assert str(e) == "b_value must be provided if m_ref is given"
 
     # reference time is given
-    a = estimate_a(mags, T=10)
+    a = estimate_a(mags, scaling_factor=10)
     assert a == 0.0
 
     # magnitudes not cut at mc
