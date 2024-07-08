@@ -14,8 +14,8 @@ def set_option(key: str, value: Any):
                 If True, warnings will be shown.
 
     Args:
-        key : str, The option to set.
-        value : Any, The value to set the option to.
+        key :   The option to set.
+        value : The value to set the option to.
 
     Raises:
         KeyError: If the key is not in the available options.
@@ -28,7 +28,7 @@ def set_option(key: str, value: Any):
         raise KeyError(f'Key "{key}" not in config.')
 
 
-def get_option(key: str):
+def get_option(key: str) -> Any:
     """
     Gets the value of the specified option.
 
@@ -37,10 +37,10 @@ def get_option(key: str):
                 If True, warnings will be shown.
 
     Args:
-        key : str, The option to get.
+        key :   The option to get.
 
     Returns:
-        Any, The value of the option.
+        value:  The value of the option.
     """
 
     return __options[key]
