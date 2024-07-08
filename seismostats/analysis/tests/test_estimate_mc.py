@@ -251,6 +251,6 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     delta_m = setup_catalog[1]
     _, mc, _, _, _, _, _, _ = mc_by_bvalue_stability(
         swiss_catalog['magnitude'], delta_m=delta_m,
-        stability_factor=0.1)
+        stability_range=0.1)
 
     assert_equal(1.44, mc)
