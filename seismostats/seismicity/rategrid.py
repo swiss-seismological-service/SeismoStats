@@ -97,7 +97,7 @@ class GRRateGrid(pd.DataFrame):
             return df
 
     @require_cols(require=_required_cols)
-    def add_time_index(self, endtime=True):
+    def add_time_index(self, endtime=True) -> GRRateGrid:
         """
         Create MultiIndex using starttime, optionally endtime and a cell
         number for each spatial block.
@@ -115,47 +115,48 @@ class GRRateGrid(pd.DataFrame):
             raise AttributeError(
                 'starttime and endtime must be set to use this method')
 
-        index = (self.starttime, self.endtime) if endtime else self.starttime
+        df = self.copy()
+
+        index = (df.starttime, df.endtime) if endtime else df.starttime
         names = ['starttime', 'endtime'] if endtime else ['starttime']
 
         # rename the index to cell_id, will be set in constructor
-        self.index.name = 'cell_id'
+        df.index.name = 'cell_id'
 
-        df = pd.concat({index: self}, names=names)
-
-        # manually set the metadata attributes
-        for arg in self._metadata:
-            setattr(df, arg, getattr(self, arg))
+        df = pd.concat({index: df}, names=names)
 
         return df
 
     @require_cols(require=_required_cols)
-    def reindex_cell_id(self):
+    def reindex_cell_id(self) -> GRRateGrid:
         """
         If the RateGrid has a MultiIndex which includes `cell_id`
         as a level, this method will update the RateGrid's index to use
         unique cell_id values.
         """
+        df = self.copy()
 
-        if 'cell_id' in self.index.names:
-            cell_bounds = self[['longitude_min', 'longitude_max',
-                                'latitude_min', 'latitude_max',
-                                'depth_min', 'depth_max']]
+        if 'cell_id' in df.index.names:
+            cell_bounds = df[['longitude_min', 'longitude_max',
+                              'latitude_min', 'latitude_max',
+                              'depth_min', 'depth_max']]
 
-            self['cell'] = np.unique(
+            df['cell'] = np.unique(
                 cell_bounds, axis=0, return_inverse=True, equal_nan=True)[1]
 
-            self.set_index('cell', append=True, drop=True, inplace=True)
-            self.index = self.index.droplevel('cell_id')
+            df.set_index('cell', append=True, drop=True, inplace=True)
+            df.index = df.index.droplevel('cell_id')
 
-            self.index.set_names('cell_id', level='cell', inplace=True)
+            df.index.set_names('cell_id', level='cell', inplace=True)
 
-        if 'starttime' in self.index.names:
-            self.starttime = self.index.get_level_values('starttime').min()
-            if 'endtime' in self.index.names:
-                self.endtime = self.index.get_level_values('endtime').max()
+        if 'starttime' in df.index.names:
+            df.starttime = df.index.get_level_values('starttime').min()
+            if 'endtime' in df.index.names:
+                df.endtime = df.index.get_level_values('endtime').max()
             else:
-                self.endtime = self.index.get_level_values('starttime').max()
+                df.endtime = df.index.get_level_values('starttime').max()
+
+        return df
 
     def __finalize__(self, other, method=None, **kwargs):
         """ propagate metadata from other to self

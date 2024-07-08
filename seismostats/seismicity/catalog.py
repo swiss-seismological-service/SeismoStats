@@ -406,32 +406,33 @@ class Catalog(pd.DataFrame):
                                        in mag for val in vals])]
         return secondary_mags
 
-    def _create_ids(self):
+    def _create_ids(self) -> Catalog:
         """
         Create missing event, origin, and magnitude IDs for the catalog.
 
         Will fill in missing IDs with UUIDs.
         """
+        df = self.copy()
 
-        if 'eventid' not in self.columns:
-            self['eventid'] = uuid.uuid4()
-        if 'originid' not in self.columns:
-            self['originid'] = uuid.uuid4()
-        if 'magnitudeid' not in self.columns:
-            self['magnitudeid'] = uuid.uuid4()
+        if 'eventid' not in df.columns:
+            df['eventid'] = uuid.uuid4()
+        if 'originid' not in df.columns:
+            df['originid'] = uuid.uuid4()
+        if 'magnitudeid' not in df.columns:
+            df['magnitudeid'] = uuid.uuid4()
 
         mag_types = set([mag.split('_')[1]
-                        for mag in self._secondary_magnitudekeys()])
+                        for mag in df._secondary_magnitudekeys()])
 
         for mag_type in mag_types:
-            if f'magnitude_{mag_type}_magnitudeid' not in self.columns:
-                self[f'magnitude_{mag_type}_magnitudeid'] = \
-                    self.apply(
+            if f'magnitude_{mag_type}_magnitudeid' not in df.columns:
+                df[f'magnitude_{mag_type}_magnitudeid'] = \
+                    df.apply(
                         lambda x: uuid.uuid4()
                         if not mag_type == x['magnitude_type']
                         else x['magnitudeid'], axis=1)
 
-        return self
+        return df
 
     @require_cols(require=_required_cols + ['magnitude_type'])
     def to_quakeml(self, agencyID=' ', author=' ') -> str:
