@@ -111,8 +111,8 @@ class Catalog(pd.DataFrame):
     @classmethod
     def from_quakeml(cls, quakeml: str,
                      include_all_magnitudes: bool = True,
-                     includeuncertainties: bool = False,
-                     includeids: bool = False,
+                     include_uncertainties: bool = False,
+                     include_ids: bool = False,
                      include_quality: bool = False) -> Catalog:
         """
         Create a Catalog from a QuakeML file.
@@ -131,15 +131,15 @@ class Catalog(pd.DataFrame):
             catalog = parse_quakeml(
                 quakeml, include_all_magnitudes, include_quality)
 
-        df = cls.from_dict(catalog, includeuncertainties, includeids)
+        df = cls.from_dict(catalog, include_uncertainties, include_ids)
 
         return df
 
     @classmethod
     def from_dict(cls,
                   data: list[dict],
-                  includeuncertainty: bool = True,
-                  includeids: bool = True, *args, **kwargs) -> Catalog:
+                  include_uncertainties: bool = True,
+                  include_ids: bool = True, *args, **kwargs) -> Catalog:
         """
         Create a Catalog from a list of dictionaries.
 
@@ -168,9 +168,9 @@ class Catalog(pd.DataFrame):
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
 
-        if not includeuncertainty and isinstance(df, Catalog):
+        if not include_uncertainties and isinstance(df, Catalog):
             df = df.drop_uncertainties()
-        if not includeids and isinstance(df, Catalog):
+        if not include_ids and isinstance(df, Catalog):
             df = df.drop_ids()
 
         if not isinstance(df, Catalog):
