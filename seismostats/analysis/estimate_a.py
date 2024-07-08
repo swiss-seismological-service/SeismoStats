@@ -75,7 +75,7 @@ def estimate_a_positive(
         dmc: float | None = None,
         m_ref: float | None = None,
         b_value: float | None = None,
-        scaling: float | None = None,
+        scaling_factor: float | None = None,
 ) -> float:
     """Estimate the a-value of the Gutenberg-Richter (GR) law using only the
     earthquakes whose magnitude m_i >= m_i-1 + dmc.
@@ -94,9 +94,9 @@ def estimate_a_positive(
                 None, the a-value is estimated at mc.
         b_value:    b-value of the Gutenberg-Richter distribution. Only needed
                 if m_ref is given.
-        scaling:    Scaling factor. This should be chosen such that the number
-                of events observed can be normalized, e.g., to the time and
-                region of interest.
+        scaling_factor:    Scaling factor. This should be chosen such that the
+                number of events observed can be normalized, e.g., to the time
+                and region of interest.
 
     Returns:
         a_pos: a-value of the Gutenberg-Richter distribution
@@ -148,6 +148,6 @@ def estimate_a_positive(
 
     # scale to reference time-interal or volume of interest
     if scaling_factor is not None:
-        a = a - np.log10(scaling)
+        a = a - np.log10(scaling_factor)
 
     return a
