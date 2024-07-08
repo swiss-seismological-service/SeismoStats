@@ -17,11 +17,11 @@ def estimate_a(magnitudes: np.ndarray,
     N = 10 ** (a - b * (m_ref - mc)) (1)
 
     where N is the number of events with magnitude greater than m_ref, which
-    occurred in the timeframe of the catalogue. The scaling_factor should be 
-    given as a float- to be precise, and most of the time stands for the time 
-    interval scaled to the time-unit of interest. E.g., if the number of events 
-    per year are of interest, scaling_factor should be the number of years in 
-    which the events occurred. The a-value can also be scaled by volume or area 
+    occurred in the timeframe of the catalogue. The scaling_factor should be
+    given as a float- to be precise, and most of the time stands for the time
+    interval scaled to the time-unit of interest. E.g., if the number of events
+    per year are of interest, scaling_factor should be the number of years in
+    which the events occurred. The a-value can also be scaled by volume or area
     using scaling_factor.
 
     If only the magnitudes are given, the a-value is estimated at the lowest
@@ -35,9 +35,9 @@ def estimate_a(magnitudes: np.ndarray,
         m_ref:      Reference magnitude for which the a-value is estimated. If
                 None, the a-value is estimated at mc.
         b_value:    b-value of the Gutenberg-Richter distribution
-        scaling_factor:  Scaling factor. For example: Relative length of the time 
-                interval in which the events occurred (relative to the time unit 
-                of interest, e.g., years)
+        scaling_factor:  Scaling factor. For example: Relative length of the
+                time interval in which the events occurred (relative to the
+                time unit of interest, e.g., years)
 
     Returns:
         a: a-value of the Gutenberg-Richter distribution
