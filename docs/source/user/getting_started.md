@@ -8,11 +8,11 @@ We didn't reinvent the wheel and rely on existing libraries and packages to perf
 
 ### GEOS
 The plotting of the seismicity requires [GEOS](https://libgeos.org/), a C/C++ library for computational geometry. If `GEOS` is not installed on your machine, you will need to get it, for example on a linux machine with 
-```terminal
+```console
 sudo apt-get libgeos-dev
 ```
 or on a mac with
-```terminal
+```console
 brew install geos
 ```
 
@@ -20,16 +20,16 @@ brew install geos
 
 ### Install from source
 This way of installing `SeismoStats` in another environement allows you to use the static version. 
-```terminal
+```console
 pip install git+https://github.com/swiss-seismological-service/SeismoStats.git
 ```
 
 If you want to install a specific branch:
-```terminal
+```console
 pip install git+https://github.com/swiss-seismological-service/SeismoStats.git@feature/branch
 ```
 
 To update your environment to the latest version of `SeismoStats`:
-```terminal
+```console
 pip install --force-reinstall git+https://github.com/swiss-seismological-service/SeismoStats.git
 ```
