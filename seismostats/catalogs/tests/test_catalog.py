@@ -4,8 +4,8 @@ import uuid
 
 import pandas as pd
 
-from seismostats.seismicity.catalog import (REQUIRED_COLS_CATALOG, Catalog,
-                                            ForecastCatalog)
+from seismostats.catalogs.catalog import (REQUIRED_COLS_CATALOG, Catalog,
+                                          ForecastCatalog)
 from seismostats.utils.binning import bin_to_precision
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
