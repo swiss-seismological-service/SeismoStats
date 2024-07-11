@@ -32,19 +32,15 @@ class GRRateGrid(pd.DataFrame):
     depth_min, depth_max, number_events, a, b, and mc.
 
     Args:
-        data : array-like, Iterable, dict, or DataFrame, optional
-            Data to initialize the catalog with.
-        name : str, optional
-            Name of the catalog.
-        starttime : str or datetime-like, optional
-            Start time of the catalog. If a string, it must be in a format
-            that can be parsed by pandas.to_datetime.
-        endtime : str or datetime-like, optional
-            End time of the catalog. If a string, it must be in a format
-            that can be parsed by pandas.to_datetime.
-        *args, **kwargs : optional
-            Additional arguments and keyword arguments to pass to pandas
-            DataFrame constructor.
+        data: array-like, Iterable, dict, or DataFrame, optional
+                    Data to initialize the catalog with.
+        name:       Name of the catalog.
+        starttime:  Start time of the catalog. If a string, it must be in a
+                    format that can be parsed by pandas.to_datetime.
+        endtime:    End time of the catalog. If a string, it must be in a
+                    format that can be parsed by pandas.to_datetime.
+        kwargs:     Additional arguments and keyword arguments to pass to pandas
+                    DataFrame constructor.
 
     Notes:
         The RateGrid class is a subclass of pandas DataFrame, and inherits
@@ -54,8 +50,8 @@ class GRRateGrid(pd.DataFrame):
     _required_cols = REQUIRED_COLS_RATEGRID
 
     def __init__(self, data=None, *args, name=None,
-                 starttime=None,
-                 endtime=None,
+                 starttime: pd.Timestamp | None = None,
+                 endtime: pd.Timestamp | None = None,
                  **kwargs):
         super().__init__(data, *args, **kwargs)
 
@@ -80,57 +76,53 @@ class GRRateGrid(pd.DataFrame):
     @require_cols(require=_required_cols)
     def strip(self, inplace: bool = False) -> GRRateGrid | None:
         """
-        Remove all columns except the required ones.
+        Remove all columns except the required ones
+        defined in ``_required_cols``.
 
         Args:
-            inplace : bool, optional
-                If True, do operation inplace.
+            inplace:    Whether to perform the operation in place on the data.
 
         Returns:
-            Catalog or None
-                If inplace is True, returns None. Otherwise, returns a new
-                Catalog with the stripped columns.
+            rategrid:    GRRateGrid with the stripped columns.
         """
         df = self.drop(columns=set(self.columns).difference(
             set(self._required_cols)), inplace=inplace)
+
         if not inplace:
             return df
 
     @require_cols(require=_required_cols)
-    def add_time_index(self, endtime=True):
+    def add_time_index(self, endtime=True) -> GRRateGrid:
         """
         Create MultiIndex using starttime, optionally endtime and a cell
         number for each spatial block.
 
         Args:
-            endtime : bool, optional
-                If True, create MultiIndex with starttime and endtime.
-                Otherwise, create MultiIndex with only starttime.
+            endtime:    If True, create MultiIndex with starttime and endtime.
+                        Otherwise, create MultiIndex with only starttime.
 
         Returns:
-            RateGrid
+            rategrid:   A new RateGrid with the MultiIndex set.
         """
         if not getattr(self, 'starttime', None) or \
                 not getattr(self, 'endtime', None):
             raise AttributeError(
                 'starttime and endtime must be set to use this method')
 
-        index = (self.starttime, self.endtime) if endtime else self.starttime
+        df = self.copy()
+
+        index = (df.starttime, df.endtime) if endtime else df.starttime
         names = ['starttime', 'endtime'] if endtime else ['starttime']
 
         # rename the index to cell_id, will be set in constructor
-        self.index.name = 'cell_id'
+        df.index.name = 'cell_id'
 
-        df = pd.concat({index: self}, names=names)
-
-        # manually set the metadata attributes
-        for arg in self._metadata:
-            setattr(df, arg, getattr(self, arg))
+        df = pd.concat({index: df}, names=names)
 
         return df
 
     @require_cols(require=_required_cols)
-    def reindex_cell_id(self):
+    def reindex_cell_id(self) -> None:
         """
         If the RateGrid has a MultiIndex which includes `cell_id`
         as a level, this method will update the RateGrid's index to use
@@ -158,8 +150,16 @@ class GRRateGrid(pd.DataFrame):
                 self.endtime = self.index.get_level_values('starttime').max()
 
     def __finalize__(self, other, method=None, **kwargs):
-        """ propagate metadata from other to self
+        """ Propagate metadata from other to self.
             Source: https://github.com/geopandas/geopandas
+
+        Args:
+            other:  The other object to finalize with.
+            method: The method used to finalize the objects.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            self:   The finalized object.
         """
         self = super().__finalize__(other, method=method, **kwargs)
 
@@ -186,19 +186,15 @@ class ForecastGRRateGrid(GRRateGrid):
     depth_min, depth_max, number_events, a, b, mc, and grid_id.
 
     Args:
-        data : array-like, Iterable, dict, or DataFrame, optional
-            Data to initialize the catalog with.
-        name : str, optional
-            Name of the catalog.
-        starttime : str or datetime-like, optional
-            Start time of the catalog. If a string, it must be in a format
-            that can be parsed by pandas.to_datetime.
-        endtime : str or datetime-like, optional
-            End time of the catalog. If a string, it must be in a format
-            that can be parsed by pandas.to_datetime.
-        *args, **kwargs : optional
-            Additional arguments and keyword arguments to pass to pandas
-            DataFrame constructor.
+        data: array-like, Iterable, dict, or DataFrame, optional
+                    Data to initialize the catalog with.
+        name:       Name of the catalog.
+        starttime:  Start time of the catalog. If a string, it must be in a
+                    format that can be parsed by pandas.to_datetime.
+        endtime:    End time of the catalog. If a string, it must be in a
+                    format that can be parsed by pandas.to_datetime.
+        kwargs: Additional arguments and keyword arguments to pass to pandas
+                DataFrame constructor.
 
     Notes:
         The ForecastRateGrid class is a subclass of pandas DataFrame, and
