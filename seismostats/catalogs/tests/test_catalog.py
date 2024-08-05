@@ -176,7 +176,8 @@ def test_empty_catalog():
 
     catalog = Catalog.from_dict({})
     assert catalog.empty
-    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG
+    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG + \
+        ['magnitude_type']
 
     catalog = Catalog.from_dict({'magnitude': []}, include_ids=False)
     assert isinstance(catalog, Catalog)
