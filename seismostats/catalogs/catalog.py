@@ -192,7 +192,7 @@ class Catalog(pd.DataFrame):
             df = Catalog(df)
 
         if df.empty:
-            df = Catalog(columns=REQUIRED_COLS_CATALOG)
+            df = Catalog(columns=REQUIRED_COLS_CATALOG + ['magnitude_type'])
 
         return df
 
