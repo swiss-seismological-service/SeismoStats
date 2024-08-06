@@ -293,7 +293,7 @@ def estimate_b_positive(
         dmc = delta_m
     elif dmc < 0:
         raise ValueError("dmc must be larger or equal to 0")
-    elif dmc < delta_m:
+    elif dmc < delta_m and get_option("warnings") is True:
         warnings.warn("dmc is smaller than delta_m, not recommended")
 
     mag_diffs = np.diff(magnitudes)
@@ -361,7 +361,7 @@ def estimate_b_more_positive(
         dmc = delta_m
     elif dmc < 0:
         raise ValueError("dmc must be larger or equal to 0")
-    elif dmc < delta_m:
+    elif dmc < delta_m and get_option("warnings") is True:
         warnings.warn("dmc is smaller than delta_m, not recommended")
 
     mag_diffs = - np.ones(len(magnitudes) - 1) * delta_m

@@ -13,3 +13,4 @@ from seismostats.analysis.estimate_beta import (estimate_b_kijko_smit,
                                                 b_value_to_beta
                                                 )
 from seismostats.analysis.estimate_mc import mc_ks, mc_max_curvature
+from seismostats.analysis.estimate_a import estimate_a_positive
