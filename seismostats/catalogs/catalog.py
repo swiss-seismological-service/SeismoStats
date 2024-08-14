@@ -92,6 +92,8 @@ class Catalog(pd.DataFrame):
         delta_m: float | None = None,
         b_value: float | None = None,
         bounding_polygon: Polygon | str | None = None,
+        depth_min: float | None = None,
+        depth_max: float | None = None,
         **kwargs
     ):
         if data is None and 'columns' not in kwargs:
@@ -115,6 +117,8 @@ class Catalog(pd.DataFrame):
             endtime, pd.Timestamp) else pd.to_datetime(endtime)
 
         self.bounding_polygon = bounding_polygon
+        self.depth_min = depth_min
+        self.depth_max = depth_max
 
     @classmethod
     def from_quakeml(cls, quakeml: str,
