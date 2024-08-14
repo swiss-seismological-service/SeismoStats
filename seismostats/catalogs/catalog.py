@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from shapely import Polygon
 
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.analysis.estimate_mc import mc_ks
@@ -76,7 +77,8 @@ class Catalog(pd.DataFrame):
     """
 
     _metadata = ['name', '_required_cols', 'mc',
-                 'delta_m', 'b_value', 'starttime', 'endtime']
+                 'delta_m', 'b_value', 'starttime', 'endtime',
+                 'bounding_polygon']
     _required_cols = REQUIRED_COLS_CATALOG
 
     def __init__(
@@ -89,6 +91,7 @@ class Catalog(pd.DataFrame):
         mc: float | None = None,
         delta_m: float | None = None,
         b_value: float | None = None,
+        bounding_polygon: Polygon | str | None = None,
         **kwargs
     ):
         if data is None and 'columns' not in kwargs:
@@ -110,6 +113,8 @@ class Catalog(pd.DataFrame):
 
         self.endtime = endtime if isinstance(
             endtime, pd.Timestamp) else pd.to_datetime(endtime)
+
+        self.bounding_polygon = bounding_polygon
 
     @classmethod
     def from_quakeml(cls, quakeml: str,
