@@ -195,11 +195,11 @@ def estimate_a_positive(
 
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0]
-    total_time_pos = sum(time_diffs)
+    total_time_pos = sum(time_diffs / total_time)
     if correction:
-        total_time += 2 * np.mean(np.diff(times))
-        total_time_pos += np.mean(time_diffs)
-    n_pos = total_time / total_time_pos * len(mag_diffs)
+        total_time += 2 * np.mean(np.diff(times) / total_time)
+        total_time_pos += np.mean(time_diffs / total_time)
+    n_pos = 1 / total_time_pos * len(mag_diffs)
 
     # estimate a-value
     a = np.log10(n_pos)
