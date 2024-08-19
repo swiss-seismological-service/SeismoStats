@@ -2,9 +2,10 @@
 
 # flake8: noqa
 
-from seismostats.analysis.estimate_a import estimate_a
 # analysis
 from seismostats.analysis.estimate_beta import estimate_b, shi_bolt_confidence
+from seismostats.analysis.estimate_a import estimate_a
+
 # seismicity
 from seismostats.catalogs.catalog import Catalog, ForecastCatalog
 from seismostats.catalogs.rategrid import ForecastGRRateGrid, GRRateGrid

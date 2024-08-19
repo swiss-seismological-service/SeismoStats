@@ -11,7 +11,7 @@ from seismostats.analysis.estimate_beta import (
     estimate_b,
     estimate_b_laplace,
     estimate_b_positive,
-    estimate_b_tinti,
+    estimate_b_classic,
     estimate_b_utsu,
     estimate_b_weichert,
     shi_bolt_confidence,
@@ -24,8 +24,8 @@ from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 @pytest.mark.parametrize(
     "method, return_std, return_n, b_parameter",
     [
-        ("tinti", True, True, "beta"),
-        ("tinti", False, False, "b_value"),
+        ("classic", True, True, "beta"),
+        ("classic", False, False, "b_value"),
         ("positive", True, True, "beta"),
         ("positive", False, False, "b_value"),
         ("positive", True, False, "beta"),
@@ -112,7 +112,7 @@ def test_estimate_b_tinti(
     mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
-    b_estimate = estimate_b_tinti(mags, mc, delta_m, b_parameter=b_parameter)
+    b_estimate = estimate_b_classic(mags, mc, delta_m, b_parameter=b_parameter)
 
     assert abs(b - b_estimate) / b <= precision
 
