@@ -38,8 +38,6 @@ def test_estimate_a_positive():
     times = np.arange(datetime(2000, 1, 1), datetime(
         2000, 1, 12), timedelta(days=1)).astype(datetime)
 
-    print(times)
-    print(type(times))
     a = estimate_a_positive(mags, times, delta_m=1)
     assert_almost_equal(10**a, 10.0)
 
