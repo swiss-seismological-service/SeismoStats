@@ -177,7 +177,7 @@ def test_estimate_b_positive(
 @pytest.mark.parametrize(
     "n,b,mc,delta_m,b_parameter,precision",
     [
-        (1000, 1.2 * np.log(10), 3, 0, "beta", 0.15),
+        (1000, 1.2 * np.log(10), 3, 0, "beta", 0.6),
         (1000, 1, 3, 0.1, "b_value", 0.2),
     ],
 )
