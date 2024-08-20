@@ -6,8 +6,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from seismostats.seismicity.catalog import (REQUIRED_COLS_CATALOG, Catalog,
-                                            ForecastCatalog)
+from seismostats.catalogs.catalog import (REQUIRED_COLS_CATALOG, Catalog,
+                                          ForecastCatalog)
 from seismostats.utils.binning import bin_to_precision
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
@@ -143,7 +143,7 @@ def test_to_quakeml():
         xml_content = file.read()
 
     catalog = Catalog.from_quakeml(
-        xml_file, includeuncertainties=True, includeids=True)
+        xml_file, include_uncertainties=True, include_ids=True)
     catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
     catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
 
@@ -154,7 +154,7 @@ def test_to_quakeml():
     assert catalog_xml == xml
 
     catalog2 = catalog.from_quakeml(
-        xml_content, includeuncertainties=True, includeids=True)
+        xml_content, include_uncertainties=True, include_ids=True)
     assert catalog.equals(catalog2)
 
 
@@ -186,7 +186,7 @@ def test_to_quakeml_forecast():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
 
     catalog1 = Catalog.from_quakeml(
-        xml_file, includeuncertainties=True, includeids=True)
+        xml_file, include_uncertainties=True, include_ids=True)
     catalog1.name = 'Catalog 1'
     catalog2 = catalog1.copy()
     catalog2.name = 'Catalog 2'
@@ -221,7 +221,8 @@ def test_empty_catalog():
 
     catalog = Catalog.from_dict({})
     assert catalog.empty
-    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG
+    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG + \
+        ['magnitude_type']
 
-    catalog = Catalog.from_dict({'magnitude': []}, includeids=False)
+    catalog = Catalog.from_dict({'magnitude': []}, include_ids=False)
     assert isinstance(catalog, Catalog)
