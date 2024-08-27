@@ -41,7 +41,7 @@ def estimate_b(
     weights: list | None = None,
     b_parameter: str = "b_value",
     return_std: bool = False,
-    method="tinti",
+    method="classic",
     return_n: bool = False,
 ) -> float | tuple[float, float] | tuple[float, float, float]:
     """Return the maximum likelihood estimator for the Gutenberg-Richter
@@ -63,9 +63,9 @@ def estimate_b(
         method:     method to use for estimation of beta/b-value. Options
                 are:
 
-                - 'tinti',default, this is the is the classic estimator, see
-                  :func:`seismostats.analysis.estimate_b_tinti`
-                - 'positive' (this is b-positive, which applies the 'tinti'
+                - 'classic',default, this is the is the classic estimator, see
+                  :func:`seismostats.analysis.estimate_b_classic`
+                - 'positive' (this is b-positive, which applies the 'classic'
                   method to the positive differences, see
                   :func:`seismostats.analysis.estimate_b_positive`. To
                   achieve the effect of reduced STAI, the magnitudes must
@@ -98,8 +98,8 @@ def estimate_b(
                 "check if mc is chosen correctly"
             )
 
-    if method == "tinti":
-        return estimate_b_tinti(
+    if method == "classic":
+        return estimate_b_classic(
             magnitudes,
             mc=mc,
             delta_m=delta_m,
@@ -118,10 +118,10 @@ def estimate_b(
         )
 
     else:
-        raise ValueError("method must be either 'tinti' or 'positive'")
+        raise ValueError("method must be either 'classic' or 'positive'")
 
 
-def estimate_b_tinti(
+def estimate_b_classic(
     magnitudes: np.ndarray,
     mc: float,
     delta_m: float = 0,
@@ -293,7 +293,7 @@ def estimate_b_positive(
         dmc = delta_m
     elif dmc < 0:
         raise ValueError("dmc must be larger or equal to 0")
-    elif dmc < delta_m:
+    elif dmc < delta_m and get_option("warnings") is True:
         warnings.warn("dmc is smaller than delta_m, not recommended")
 
     mag_diffs = np.diff(magnitudes)
@@ -301,7 +301,7 @@ def estimate_b_positive(
     # previous one. delta_m is added to avoid numerical errors
     mag_diffs = abs(mag_diffs[mag_diffs > dmc - delta_m / 2])
 
-    out = estimate_b_tinti(
+    out = estimate_b_classic(
         mag_diffs,
         mc=dmc,
         delta_m=delta_m,
@@ -361,7 +361,7 @@ def estimate_b_more_positive(
         dmc = delta_m
     elif dmc < 0:
         raise ValueError("dmc must be larger or equal to 0")
-    elif dmc < delta_m:
+    elif dmc < delta_m and get_option("warnings") is True:
         warnings.warn("dmc is smaller than delta_m, not recommended")
 
     mag_diffs = - np.ones(len(magnitudes) - 1) * delta_m
@@ -375,7 +375,7 @@ def estimate_b_more_positive(
     # only take the values where the next earthquake is larger
     mag_diffs = abs(mag_diffs[mag_diffs > - delta_m / 2])
 
-    out = estimate_b_tinti(
+    out = estimate_b_classic(
         mag_diffs,
         mc=dmc,
         delta_m=delta_m,
@@ -484,7 +484,7 @@ def estimate_b_laplace(
     mag_diffs = abs(mag_diffs)
     mag_diffs = mag_diffs[mag_diffs > 0]
 
-    out = estimate_b_tinti(
+    out = estimate_b_classic(
         mag_diffs,
         mc=delta_m,
         delta_m=delta_m,

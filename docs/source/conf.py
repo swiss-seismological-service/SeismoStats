@@ -51,3 +51,4 @@ navigation_with_keys = True
 html_context = {
     "default_mode": "light",
 }
+suppress_warnings = ['autosectionlabel.*']
