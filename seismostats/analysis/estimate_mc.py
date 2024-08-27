@@ -282,7 +282,7 @@ def mc_ks(
             warnings.warn("Both beta and b_method are given. Using beta.")
 
     if beta is None and b_method is None:
-        b_method = "tinti"
+        b_method = "classic"
 
     mcs_tested = []
     ks_ds = []

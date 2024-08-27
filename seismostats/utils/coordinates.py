@@ -16,8 +16,9 @@ class CoordinateTransformer:
     "+proj=utm +zone=32 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
     to represent a UTM coordinate system.
 
-    Caveat: 4326 as well as eg 2056 are 2D coordinate systems, so altitude
-    is not taken into account and only calculated in reference to the ref.
+    Notes:
+        4326 as well as eg 2056 are 2D coordinate systems, so altitude
+        is not taken into account and only calculated in reference to the ref.
 
     """
 
@@ -30,12 +31,13 @@ class CoordinateTransformer:
             external_proj: int | str = 4326):
         """
         Constructor of CoordinateTransformer object.
+
         Args:
-            local_proj: int (epsg) or string (proj) of local CRS.
-            ref_easting: reference easting for local coordinates.
-            ref_northing: reference northing for local coordinates.
-            ref_altitude: reference altitude for local coordinates.
-            external_proj: int or string of geographic coordinates.
+            local_proj:     int (epsg) or string (proj) of local CRS.
+            ref_easting:    reference easting for local coordinates.
+            ref_northing:   reference northing for local coordinates.
+            ref_altitude:   reference altitude for local coordinates.
+            external_proj:  int or string of geographic coordinates.
         """
         self.ref_easting = ref_easting
         self.ref_northing = ref_northing
@@ -56,12 +58,12 @@ class CoordinateTransformer:
         Transform geographic coordinates to local coordinates.
 
         Args:
-            lon: longitude
-            lat: latitude
-            altitude: altitude
+            lon:        longitude
+            lat:        latitude
+            altitude:   altitude
 
         Returns:
-            Easting, northing and altitude in local CRS relative to ref.
+            x: Easting, northing and altitude in local CRS relative to ref.
         """
         enu = \
             self.transformer_to_local.transform(lon, lat, altitude)
@@ -84,12 +86,12 @@ class CoordinateTransformer:
         Transform local coordinates to geographic coordinates.
 
         Args:
-            easting: easting
-            northing: northing
-            altitude: altitude
+            easting:    easting
+            northing:   northing
+            altitude:   altitude
 
         Returns:
-            longitude, latitude, altitude in local CRS relative to ref.
+            x: longitude, latitude, altitude in local CRS relative to ref.
         """
         easting_0 = np.array(easting) + self.ref_easting
         northing_0 = np.array(northing) + self.ref_northing
@@ -115,7 +117,7 @@ class CoordinateTransformer:
             polygon: shapely polygon
 
         Returns:
-            shapely polygon in local coordinates
+            x: shapely polygon in local coordinates
         """
         new_polygon = transform(
             self.transformer_to_local.transform, polygon)
@@ -132,7 +134,7 @@ class CoordinateTransformer:
             polygon: shapely polygon
 
         Returns:
-            shapely polygon in geographic coordinates
+            x: shapely polygon in geographic coordinates
         """
         translated_polygon = translate(
             polygon, xoff=self.ref_easting,
@@ -147,11 +149,14 @@ def bounding_box_to_polygon(x_min, x_max, y_min, y_max, srid=None) -> Polygon:
     Create a shapely Polygon from a bounding box.
 
     Args:
-        x_min: minimum x coordinate
-        x_max: maximum x coordinate
-        y_min: minimum y coordinate
-        y_max: maximum y coordinate
-        srid: spatial reference system identifier
+        x_min:  minimum x coordinate
+        x_max:  maximum x coordinate
+        y_min:  minimum y coordinate
+        y_max:  maximum y coordinate
+        srid:   spatial reference system identifier
+
+    Returns:
+        x: shapely polygon in geographic coordinates
     """
     bbox = (x_min, y_min,
             x_max, y_max)

@@ -8,7 +8,7 @@ from scipy.stats import norm
 # Own functions
 from seismostats.analysis.estimate_beta import (
     estimate_b_positive,
-    estimate_b_tinti,
+    estimate_b_classic,
 )
 
 
@@ -16,7 +16,7 @@ def plot_mc_vs_b(
     magnitudes: np.ndarray,
     mcs: np.ndarray,
     delta_m: float = 0.1,
-    method: str = "tinti",
+    method: str = "classic",
     confidence_intvl: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
@@ -27,7 +27,7 @@ def plot_mc_vs_b(
         magnitudes: magnitudes of the catalog
         mcs:        completeness magnitudes (list or numpy array)
         delta_m:    discretization of the magnitudes
-        method:     method used for b-value estimation, either 'tinti' or
+        method:     method used for b-value estimation, either 'classic' or
                     'positive' or 'positive_postcut'. positive_postcut is the
                     same as 'positive' but with the postcut method (differences
                     are taken before cutting the magnitudes below the
@@ -43,9 +43,9 @@ def plot_mc_vs_b(
 
     # try except
     try:
-        if method == "tinti":
+        if method == "classic":
             results = [
-                estimate_b_tinti(
+                estimate_b_classic(
                     magnitudes[magnitudes >= mc],
                     mc,
                     delta_m=delta_m,
@@ -66,7 +66,7 @@ def plot_mc_vs_b(
             mag_diffs = np.diff(magnitudes)
             mag_diffs = mag_diffs[mag_diffs > 0]
             results = [
-                estimate_b_tinti(
+                estimate_b_classic(
                     mag_diffs[mag_diffs >= mc],
                     mc=mc,
                     delta_m=delta_m,

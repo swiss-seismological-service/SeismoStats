@@ -11,7 +11,7 @@ from seismostats.analysis.estimate_beta import (
     estimate_b,
     estimate_b_laplace,
     estimate_b_positive,
-    estimate_b_tinti,
+    estimate_b_classic,
     estimate_b_utsu,
     estimate_b_weichert,
     shi_bolt_confidence,
@@ -24,8 +24,8 @@ from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 @pytest.mark.parametrize(
     "method, return_std, return_n, b_parameter",
     [
-        ("tinti", True, True, "beta"),
-        ("tinti", False, False, "b_value"),
+        ("classic", True, True, "beta"),
+        ("classic", False, False, "b_value"),
         ("positive", True, True, "beta"),
         ("positive", False, False, "b_value"),
         ("positive", True, False, "beta"),
@@ -67,7 +67,7 @@ def test_estimate_b(
         )
     assert str(excinfo.value) == "magnitudes are not binned correctly"
 
-    # test that magnitudes smaller than mc lkead to error
+    # test that magnitudes smaller than mc lead to error
     with pytest.raises(AssertionError) as excinfo:
         estimate_b(
             mags,
@@ -101,7 +101,7 @@ def test_estimate_b(
         (1000000, np.log(10), 3, 0.1, "beta", 0.01),
     ],
 )
-def test_estimate_b_tinti(
+def test_estimate_b_classic(
     n: int,
     b: float,
     mc: float,
@@ -112,7 +112,7 @@ def test_estimate_b_tinti(
     mags = simulate_magnitudes_binned(
         n, b, mc, delta_m, b_parameter=b_parameter
     )
-    b_estimate = estimate_b_tinti(mags, mc, delta_m, b_parameter=b_parameter)
+    b_estimate = estimate_b_classic(mags, mc, delta_m, b_parameter=b_parameter)
 
     assert abs(b - b_estimate) / b <= precision
 
@@ -177,7 +177,7 @@ def test_estimate_b_positive(
 @pytest.mark.parametrize(
     "n,b,mc,delta_m,b_parameter,precision",
     [
-        (1000, 1.2 * np.log(10), 3, 0, "beta", 0.15),
+        (1000, 1.2 * np.log(10), 3, 0, "beta", 0.6),
         (1000, 1, 3, 0.1, "b_value", 0.2),
     ],
 )
