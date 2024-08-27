@@ -4,6 +4,15 @@
 .. currentmodule:: seismostats
 ```
 
+## Estimating the Completeness Magnitude
+```{eval-rst}
+.. autosummary::
+    :toctree: api/
+
+    analysis.mc_ks
+    analysis.mc_max_curvature
+```
+
 ## Estimating b-Values
 
 ```{eval-rst}
@@ -12,7 +21,7 @@
 
     estimate_b
     shi_bolt_confidence
-    analysis.estimate_b_tinti
+    analysis.estimate_b_classic
     analysis.estimate_b_positive
     analysis.estimate_b_more_positive
     analysis.estimate_b_utsu
@@ -21,13 +30,15 @@
     analysis.estimate_b_kijko_smit
 ```
 
-## Estimating the Completeness Magnitude
+## Estimating a-Values
+
 ```{eval-rst}
 .. autosummary::
     :toctree: api/
 
-    analysis.mc_ks
-    analysis.mc_max_curvature
+    estimate_a
+    analysis.estimate_a_classic
+    analysis.estimate_a_positive
 ```
 
 ## Other
