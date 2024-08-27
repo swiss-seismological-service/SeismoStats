@@ -17,12 +17,12 @@ def estimate_a(magnitudes: np.ndarray,
                times=None,
                method: str = "classic",
                ) -> float:
-    """Return the a-value of the Gutenberg-Richter (GR) law.
+    r"""Return the a-value of the Gutenberg-Richter (GR) law.
 
     .. math::
         N(m) = 10 ^ {a - b \cdot (m - m_{ref})}
 
-    where N(m) is the number of events with magnitude larger or equal to m 
+    where N(m) is the number of events with magnitude larger or equal to m
     that occurred in the timeframe of the catalog.
 
     Args:
@@ -36,13 +36,13 @@ def estimate_a(magnitudes: np.ndarray,
         mc:         completeness magnitude.
                 If given, magnitudes below mc are disregarded.
                 If None, the catalog is assumed to be complete and
-                mc is set to the smallest magnitude in the catalog. 
+                mc is set to the smallest magnitude in the catalog.
                 This is only relevant when m_ref is not None.
         b_value:    b-value of the Gutenberg-Richter law. Only relevant
                 when m_ref is not None.
         delta_m:    discretization of magnitudes. default is no discretization
-        times:      vector of times of the events, in any format (datetime, float, etc.)
-                Only needed when method is "positive".
+        times:      vector of times of the events, in any format (datetime,
+                float, etc.) Only needed when method is "positive".
         method:     Method to estimate the a-value. Options are "classic" and
                 "positive".
 
@@ -72,12 +72,12 @@ def estimate_a_classic(magnitudes: np.ndarray,
                        b_value: float | None = None,
                        delta_m: float = None,
                        ) -> float:
-    """Return the a-value of the Gutenberg-Richter (GR) law.
+    r"""Return the a-value of the Gutenberg-Richter (GR) law.
 
     .. math::
         N(m) = 10 ^ {a - b \cdot (m - m_{ref})}
 
-    where N(m) is the number of events with magnitude larger or equal to m 
+    where N(m) is the number of events with magnitude larger or equal to m
     that occurred in the timeframe of the catalog.
 
     Args:
@@ -91,7 +91,7 @@ def estimate_a_classic(magnitudes: np.ndarray,
         mc:         completeness magnitude.
                 If given, magnitudes below mc are disregarded.
                 If None, the catalog is assumed to be complete and
-                mc is set to the smallest magnitude in the catalog. 
+                mc is set to the smallest magnitude in the catalog.
                 This is only relevant when m_ref is not None.
         b_value:    b-value of the Gutenberg-Richter law. Only relevant
                 when m_ref is not None.
@@ -143,8 +143,10 @@ def estimate_a_positive(
 
     Args:
         magnitudes: vector of magnitudes, unsorted
-        times:      vector of times of the events, in any format (datetime, float, etc.)
-        delta_m:    discretization of the magnitudes. default is no discretization
+        times:      vector of times of the events, in any format (datetime,
+                float, etc.)
+        delta_m:    discretization of the magnitudes.
+                default is no discretization
         dmc:        minimum magnitude difference between consecutive events.
                 If None, the default value is delta_m.
         scaling_factor:    scaling factor. If given, this is used to normalize
@@ -156,7 +158,7 @@ def estimate_a_positive(
         mc:         completeness magnitude.
                 If given, magnitudes below mc are disregarded.
                 If None, the catalog is assumed to be complete and
-                mc is set to the smallest magnitude in the catalog. 
+                mc is set to the smallest magnitude in the catalog.
                 This is only relevant when m_ref is not None.
         b_value:    b-value of the Gutenberg-Richter law. Only relevant
                 when m_ref is not None.
