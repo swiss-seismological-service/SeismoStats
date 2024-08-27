@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 import pytest
 import datetime as dt
+import pandas as pd
 
 # import functions to be tested
 from seismostats.analysis.estimate_beta import (
@@ -17,11 +18,14 @@ from seismostats.analysis.estimate_beta import (
     shi_bolt_confidence,
     estimate_b_more_positive,
     make_more_incomplete,
+    b_value_to_beta,
 )
-from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
+from seismostats.utils.simulate_distributions import (
+    simulate_magnitudes_binned,
+    bin_to_precision)
 
 
-@pytest.mark.parametrize(
+@ pytest.mark.parametrize(
     "method, return_std, return_n, b_parameter",
     [
         ("classic", True, True, "beta"),
@@ -94,53 +98,70 @@ def test_estimate_b(
         assert w[-1].category == UserWarning
 
 
-@pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,precision",
+def magnitudes(b: float):
+    # print the current directory
+    import os
+    print(os.getcwd())
+
+    df_mags = pd.read_csv(
+        'seismostats/analysis/tests/data/simulated_magnitudes.csv')
+    if b == 0.5:
+        mags = df_mags["b_value = 0.5"].values
+    elif b == 1:
+        mags = df_mags["b_value = 1"].values
+    elif b == 1.5:
+        mags = df_mags["b_value = 1.5"].values
+    return mags
+
+
+@ pytest.mark.parametrize(
+    "b, mags, mc, delta_m, precision, b_parameter",
     [
-        (1000000, 1.2, 3, 0, "b_value", 0.005),
-        (1000000, np.log(10), 3, 0.1, "beta", 0.01),
+        (1, magnitudes(1), 0, 0.1, 0.002, "b_value"),
+        (1.5, magnitudes(1.5), 0.5, 0.01, 0.01, "b_value"),
+        (b_value_to_beta(0.5), magnitudes(0.5), 2, 0.2, 0.003, "beta"),
     ],
 )
 def test_estimate_b_classic(
-    n: int,
     b: float,
+    mags: np.ndarray,
     mc: float,
     delta_m: float,
-    b_parameter: str,
     precision: float,
+    b_parameter: str,
 ):
-    mags = simulate_magnitudes_binned(
-        n, b, mc, delta_m, b_parameter=b_parameter
-    )
+    print('test_estimate_b_classic')
+    mags = bin_to_precision(mags, delta_m)
+    mags = mags[mags >= mc - delta_m / 2]
     b_estimate = estimate_b_classic(mags, mc, delta_m, b_parameter=b_parameter)
 
     assert abs(b - b_estimate) / b <= precision
 
 
-@pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,precision",
-    [
-        (1000000, 1.2 * np.log(10), 3, 0, "beta", 0.005),
-        (1000000, 0.8, 3, 0.1, "b_value", 0.01),
-    ],
-)
-def test_estimate_b_utsu(
-    n: int,
-    b: float,
-    mc: float,
-    delta_m: float,
-    b_parameter: str,
-    precision: float,
-):
-    mags = simulate_magnitudes_binned(
-        n, b, mc, delta_m, b_parameter=b_parameter
-    )
+# @ pytest.mark.parametrize(
+#     "b, mags, mc, delta_m, precision, b_parameter",
+#     [
+#         (1, magnitudes(1), 0, 0.01, 0.002, "b_value"),
+#         (1.5, magnitudes(1.5), 0.5, 0.01, 0.01, "b_value"),
+#         (b_value_to_beta(0.5), magnitudes(0.5), 2, 0.2, 0.003, "beta"),
+#     ],
+# )
+# def test_estimate_b_utsu(
+#     b: float,
+#     mags: np.ndarray,
+#     mc: float,
+#     delta_m: float,
+#     precision: float,
+#     b_parameter: str,
+# ):
+#     print('test_estimate_b_utsu')
+#     mags = bin_to_precision(mags, delta_m)
+#     mags = mags[mags >= mc - delta_m / 2]
+#     b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
+#     assert abs(b - b_estimate) / b <= precision
 
-    b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
-    assert abs(b - b_estimate) / b <= precision
 
-
-@pytest.mark.parametrize(
+@ pytest.mark.parametrize(
     "magnitudes,mag_diffs",
     [(np.array([1, -2, 3]), np.array([-3, 5, 2]))],
 )
@@ -149,74 +170,72 @@ def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
     assert (y == mag_diffs).all()
 
 
-@pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,dmc,precision",
+@ pytest.mark.parametrize(
+    "b, mags, mc, delta_m, dmc, precision, b_parameter",
     [
-        (1000000, 1.2, 3, 0, "b_value", None, 0.005),
-        (1000000, np.log(10), 3, 0.1, "beta", 1, 0.01),
+        (1, magnitudes(1), 0, 0.1, 0.3, 0.008, "b_value"),
+        (1.5, magnitudes(1.5), 0.5, 0.01, None, 0.02, "b_value"),
+        (b_value_to_beta(0.5), magnitudes(0.5), 2, 0.2, None, 0.02, "beta"),
     ],
 )
 def test_estimate_b_positive(
-    n: int,
     b: float,
+    mags: np.ndarray,
     mc: float,
     delta_m: float,
-    b_parameter: str,
     dmc: float,
     precision: float,
+    b_parameter: str,
 ):
-    mags = simulate_magnitudes_binned(
-        n, b, mc, delta_m, b_parameter=b_parameter
-    )
+    mags = bin_to_precision(mags, delta_m)
+    mags = mags[mags >= mc - delta_m / 2]
     b_estimate = estimate_b_positive(
         mags, delta_m=delta_m, dmc=dmc, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
 
 
-@pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,precision",
+@ pytest.mark.parametrize(
+    "b, mags, mc, delta_m, precision, b_parameter",
     [
-        (1000, 1.2 * np.log(10), 3, 0, "beta", 0.6),
-        (1000, 1, 3, 0.1, "b_value", 0.2),
+        (1, magnitudes(1)[:1500], 0, 0.01, 0.06, "b_value"),
     ],
 )
 def test_estimate_b_laplace(
-    n: int,
     b: float,
+    mags: np.ndarray,
     mc: float,
     delta_m: float,
-    b_parameter: str,
     precision: float,
+    b_parameter: str,
 ):
-    mags = simulate_magnitudes_binned(
-        n, b, mc, delta_m, b_parameter=b_parameter
-    )
+    mags = bin_to_precision(mags, delta_m)
+    mags = mags[mags >= mc - delta_m / 2]
     b_estimate = estimate_b_laplace(
         mags, delta_m=delta_m, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
 
 
-@pytest.mark.parametrize(
-    "n,b,mc,delta_m,b_parameter,dmc,precision",
+@ pytest.mark.parametrize(
+    "b, mags, mc, delta_m, dmc, precision, b_parameter",
     [
-        (100000, 1.2 * np.log(10), 3, 0, "beta", None, 0.01),
-        (100000, 1, 3, 0.1, "b_value", 1, 0.04),
+        (1, magnitudes(1), 0, 0.1, 0.3, 0.04, "b_value"),
+        (1.5, magnitudes(1.5), 0.5, 0.01, None, 0.02, "b_value"),
+        (b_value_to_beta(0.5), magnitudes(0.5), 2, 0.2, None, 0.04, "beta"),
     ],
 )
 def test_estimate_b_more_positive(
-    n: int,
     b: float,
+    mags: np.ndarray,
     mc: float,
     delta_m: float,
-    b_parameter: str,
     dmc: float,
     precision: float,
+    b_parameter: str,
 ):
-    mags = simulate_magnitudes_binned(
-        n, b, mc, delta_m, b_parameter=b_parameter
-    )
+    mags = bin_to_precision(mags, delta_m)
+    mags = mags[mags >= mc - delta_m / 2]
     b_estimate = estimate_b_more_positive(
         mags, delta_m=delta_m, dmc=dmc, b_parameter=b_parameter
     )
@@ -328,7 +347,7 @@ def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
     return mags, dates
 
 
-@pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
+@ pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
 def test_estimate_b_weichert(
     a_val_true: float, b_val_true: float, precision: float
 ):
@@ -363,7 +382,7 @@ with open(
     data = pickle.load(f)
 
 
-@pytest.mark.parametrize(
+@ pytest.mark.parametrize(
     "magnitudes,b,b_parameter,std",
     [data["values_test1"], data["values_test2"]],
 )

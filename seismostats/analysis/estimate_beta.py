@@ -41,7 +41,7 @@ def estimate_b(
     weights: list | None = None,
     b_parameter: str = "b_value",
     return_std: bool = False,
-    method="classic",
+    method="tinti",
     return_n: bool = False,
 ) -> float | tuple[float, float] | tuple[float, float, float]:
     """Return the maximum likelihood estimator for the Gutenberg-Richter
@@ -63,9 +63,9 @@ def estimate_b(
         method:     method to use for estimation of beta/b-value. Options
                 are:
 
-                - 'classic',default, this is the is the classic estimator, see
-                  :func:`seismostats.analysis.estimate_b_classic`
-                - 'positive' (this is b-positive, which applies the 'classic'
+                - 'tinti',default, this is the is the classic estimator, see
+                  :func:`seismostats.analysis.estimate_b_tinti`
+                - 'positive' (this is b-positive, which applies the 'tinti'
                   method to the positive differences, see
                   :func:`seismostats.analysis.estimate_b_positive`. To
                   achieve the effect of reduced STAI, the magnitudes must
@@ -98,8 +98,8 @@ def estimate_b(
                 "check if mc is chosen correctly"
             )
 
-    if method == "classic":
-        return estimate_b_classic(
+    if method == "tinti":
+        return estimate_b_tinti(
             magnitudes,
             mc=mc,
             delta_m=delta_m,
@@ -118,10 +118,10 @@ def estimate_b(
         )
 
     else:
-        raise ValueError("method must be either 'classic' or 'positive'")
+        raise ValueError("method must be either 'tinti' or 'positive'")
 
 
-def estimate_b_classic(
+def estimate_b_tinti(
     magnitudes: np.ndarray,
     mc: float,
     delta_m: float = 0,
@@ -301,7 +301,7 @@ def estimate_b_positive(
     # previous one. delta_m is added to avoid numerical errors
     mag_diffs = abs(mag_diffs[mag_diffs > dmc - delta_m / 2])
 
-    out = estimate_b_classic(
+    out = estimate_b_tinti(
         mag_diffs,
         mc=dmc,
         delta_m=delta_m,
@@ -375,7 +375,7 @@ def estimate_b_more_positive(
     # only take the values where the next earthquake is larger
     mag_diffs = abs(mag_diffs[mag_diffs > - delta_m / 2])
 
-    out = estimate_b_classic(
+    out = estimate_b_tinti(
         mag_diffs,
         mc=dmc,
         delta_m=delta_m,
@@ -445,60 +445,6 @@ def make_more_incomplete(
         return magnitudes, times, idx
 
     return magnitudes, times
-
-
-def estimate_b_laplace(
-    magnitudes: np.ndarray,
-    delta_m: float = 0,
-    b_parameter: str = "b_value",
-    return_std: bool = False,
-    return_n: bool = False,
-) -> float | tuple[float, float]:
-    """Return the b-value estimate calculated using
-    all the  differences between magnitudes.
-    (This has a little less variance than the
-    :func:`seismostats.analysis.estimate_b_positive`
-    method.)
-
-    Source:
-        Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
-        2)
-
-    Args:
-        magnitudes: vector of magnitudes differences, sorted in time (first
-                    entry is the earliest earthquake)
-        delta_m:    discretization of magnitudes. default is no discretization
-        b_parameter:either 'b-value', then the corresponding value  of the
-                Gutenberg-Richter law is returned, otherwise 'beta' from the
-                exponential distribution [p(M) = exp(-beta*(M-mc))]
-        return_std: if True the standard deviation of beta/b-value (see above)
-                is returned
-
-    Returns:
-        b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'b_parameter'. Note that the difference is just a
-                factor [b_value = beta * log10(e)]
-        std:    Shi and Bolt estimate of the beta/b-value estimate
-    """
-    mag_diffs = differences(magnitudes)
-    mag_diffs = abs(mag_diffs)
-    mag_diffs = mag_diffs[mag_diffs > 0]
-
-    out = estimate_b_classic(
-        mag_diffs,
-        mc=delta_m,
-        delta_m=delta_m,
-        b_parameter=b_parameter,
-        return_std=return_std,
-    )
-
-    if return_n:
-        if type(out) is tuple:
-            return out + tuple([len(mag_diffs)])
-        else:
-            return out, len(mag_diffs)
-    else:
-        return out
 
 
 def estimate_b_weichert(
