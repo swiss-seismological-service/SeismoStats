@@ -458,7 +458,8 @@ def mc_by_bvalue_stability(
 
         for mcp in mc_plus:
             b = estimate_b(sample[sample >= mcp - delta_m / 2],
-                           mcp, delta_m, b_parameter='b_value', method="classic")
+                           mcp, delta_m, b_parameter='b_value',
+                           method="classic")
             b_ex.append(b)
         b_avg = np.sum(b_ex) / 5
         b_avgs.append(b_avg)
