@@ -1,91 +1,104 @@
 """This module contains functions for the estimation of a-value.
 """
 
-import numpy as np
 import warnings
+
+import numpy as np
+
 from seismostats.utils._config import get_option
 
 
 def estimate_a(magnitudes: np.ndarray,
-               times=None,
-               mc: float | None = None,
-               delta_m: float = None,
-               m_ref: float | None = None,
-               b_value: float | None = None,
                scaling_factor: float | None = None,
+               m_ref: float | None = None,
+               mc: float | None = None,
+               b_value: float | None = None,
+               delta_m: float = None,
+               times=None,
                method: str = "classic",
                ) -> float:
-    """Estimate the a-value of the Gutenberg-Richter (GR) law.
+    """Return the a-value of the Gutenberg-Richter (GR) law.
+
+    .. math::
+        N(m) = 10 ^ {a - b \cdot (m - m_{ref})}
+
+    where N(m) is the number of events with magnitude larger or equal to m 
+    that occurred in the timeframe of the catalog.
 
     Args:
-        magnitudes: Magnitude sample
-        times:      Times of the events, in any format (datetime, float, etc.)
-        mc:         Completeness magnitude. If None, the lowest magnitude is
-                used as completeness magnitude.
-        delta_m:    Discretization of the magnitudes.
-        m_ref:      Reference magnitude for which the a-value is estimated. If
-                None, the a-value is estimated at mc.
-        b_value:    b-value of the Gutenberg-Richter distribution. Only needed
-                if m_ref is given.
-        scaling_factor:    Scaling factor. This should be chosen such that the
-                number of events observed can be normalized. For example:
-                Relative length of the time interval in which the events
-                occurred (relative to the time unit of interest, e.g., years).
+        magnitudes: vector of magnitudes, unsorted
+        scaling_factor:    scaling factor. If given, this is used to normalize
+                the number of observed events. For example:
+                Volume or area of the region considered
+                or length of the time interval, given in the unit of interest.
+        m_ref:      reference magnitude for which the a-value is estimated. If
+                None, m_ref is set to the smallest magnitude in the catalog.
+        mc:         completeness magnitude.
+                If given, magnitudes below mc are disregarded.
+                If None, the catalog is assumed to be complete and
+                mc is set to the smallest magnitude in the catalog. 
+                This is only relevant when m_ref is not None.
+        b_value:    b-value of the Gutenberg-Richter law. Only relevant
+                when m_ref is not None.
+        delta_m:    discretization of magnitudes. default is no discretization
+        times:      vector of times of the events, in any format (datetime, float, etc.)
+                Only needed when method is "positive".
         method:     Method to estimate the a-value. Options are "classic" and
                 "positive".
+
+        Returns:
+        a: a-value of the Gutenberg-Richter law
 
     """
     if method == "classic":
         return estimate_a_classic(
-            magnitudes, mc, delta_m, m_ref, b_value, scaling_factor)
+            magnitudes, scaling_factor, m_ref, mc, b_value, delta_m)
     elif method == "positive":
         return estimate_a_positive(
             magnitudes,
             times,
-            mc,
             delta_m,
-            m_ref,
-            b_value,
-            scaling_factor,
+            scaling_factor=scaling_factor,
+            m_ref=m_ref,
+            mc=mc,
+            b_value=b_value,
             correction=False)
 
 
 def estimate_a_classic(magnitudes: np.ndarray,
-                       mc: float | None = None,
-                       delta_m: float = None,
-                       m_ref: float | None = None,
-                       b_value: float | None = None,
                        scaling_factor: float | None = None,
+                       m_ref: float | None = None,
+                       mc: float | None = None,
+                       b_value: float | None = None,
+                       delta_m: float = None,
                        ) -> float:
-    """Estimate the a-value of the Gutenberg-Richter (GR) law.
+    """Return the a-value of the Gutenberg-Richter (GR) law.
 
-    N = 10 ** (a - b * (m_ref - mc)) (1)
+    .. math::
+        N(m) = 10 ^ {a - b \cdot (m - m_{ref})}
 
-    where N is the number of events with magnitude greater than m_ref, which
-    occurred in the timeframe of the catalogue.
-
-    If only the magnitudes are given, the a-value is estimated at the lowest
-    magnitude in the sample, with mc = min(magnitudes). Eq. (1) then simplifies
-    to N = 10**a.
+    where N(m) is the number of events with magnitude larger or equal to m 
+    that occurred in the timeframe of the catalog.
 
     Args:
-        magnitudes: Magnitude sample
-        mc:         Completeness magnitude. If None, the lowest magnitude is
-                used as completeness magnitude.
-        delta_m:    Discretization of the magnitudes. This is needed solely to
-                avoid rounding errors. By default rounding errors are not
-                considered. This is adequate if the megnitudes are either
-                coninuous or do not contain rounding errors.
-        m_ref:      Reference magnitude for which the a-value is estimated. If
-                None, the a-value is estimated at mc.
-        b_value:    b-value of the Gutenberg-Richter distribution
-        scaling factor. This should be chosen such that the
-                number of events observed can be normalized. For example:
-                Relative length of the time interval in which the events
-                occurred (relative to the time unit of interest, e.g., years).
+        magnitudes: vector of magnitudes, unsorted
+        scaling_factor:    scaling factor. If given, this is used to normalize
+                the number of observed events. For example:
+                Volume or area of the region considered
+                or length of the time interval, given in the unit of interest.
+        m_ref:      reference magnitude for which the a-value is estimated. If
+                None, m_ref is set to the smallest magnitude in the catalog.
+        mc:         completeness magnitude.
+                If given, magnitudes below mc are disregarded.
+                If None, the catalog is assumed to be complete and
+                mc is set to the smallest magnitude in the catalog. 
+                This is only relevant when m_ref is not None.
+        b_value:    b-value of the Gutenberg-Richter law. Only relevant
+                when m_ref is not None.
+        delta_m:    discretization of magnitudes. default is no discretization
 
     Returns:
-        a: a-value of the Gutenberg-Richter distribution
+        a: a-value of the Gutenberg-Richter law
     """
     if delta_m is None:
         delta_m = 0
@@ -118,35 +131,35 @@ def estimate_a_positive(
         magnitudes: np.ndarray,
         times: np.ndarray,
         delta_m: float,
-        mc: float | None = None,
         dmc: float | None = None,
-        m_ref: float | None = None,
-        b_value: float | None = None,
         scaling_factor: float | None = None,
+        m_ref: float | None = None,
+        mc: float | None = None,
+        b_value: float | None = None,
         correction: bool = False,
 ) -> float:
-    """Estimate the a-value of the Gutenberg-Richter (GR) law using only the
-    earthquakes whose magnitude m_i >= m_i-1 + dmc.
+    """Return the a-value of the Gutenberg-Richter (GR) law using only the
+    earthquakes with magnitude m_i >= m_i-1 + dmc.
 
     Args:
-        magnitudes: Magnitude sample
-        times:      Times of the events. They should be sorted in ascending
-                order. Also, it is important that each time is scaled to the
-                time unit of interest (e.g., years). That is, in this case
-                each time should be a float and represent the time in years.
-        delta_m:    Discretization of the magnitudes.
-        dmc:        Minimum magnitude difference between consecutive events.
+        magnitudes: vector of magnitudes, unsorted
+        times:      vector of times of the events, in any format (datetime, float, etc.)
+        delta_m:    discretization of the magnitudes. default is no discretization
+        dmc:        minimum magnitude difference between consecutive events.
                 If None, the default value is delta_m.
-        mc:         Completeness magnitude. If None, the lowest magnitude is
-                used as completeness magnitude.
-        m_ref:      Reference magnitude for which the a-value is estimated. If
-                None, the a-value is estimated at mc.
-        b_value:    b-value of the Gutenberg-Richter distribution. Only needed
-                if m_ref is given.
-        scaling factor. This should be chosen such that the
-                number of events observed can be normalized. For example:
-                Relative length of the time interval in which the events
-                occurred (relative to the time unit of interest, e.g., years).
+        scaling_factor:    scaling factor. If given, this is used to normalize
+                the number of observed events. For example:
+                Volume or area of the region considered
+                or length of the time interval, given in the unit of interest.
+        m_ref:      reference magnitude for which the a-value is estimated. If
+                None, m_ref is set to the smallest magnitude in the catalog.
+        mc:         completeness magnitude.
+                If given, magnitudes below mc are disregarded.
+                If None, the catalog is assumed to be complete and
+                mc is set to the smallest magnitude in the catalog. 
+                This is only relevant when m_ref is not None.
+        b_value:    b-value of the Gutenberg-Richter law. Only relevant
+                when m_ref is not None.
         correction: If True, the a-value is corrected for the bias introduced
                 by the observation period being larger than the time interval
                 between the first and last event. This is only relevant if the
