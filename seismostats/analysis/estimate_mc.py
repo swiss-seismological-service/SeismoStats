@@ -438,7 +438,7 @@ def mc_by_bvalue_stability(
     for mc in mcs_test:
         b, err = estimate_b(sample[sample >= mc - delta_m / 2], mc, delta_m,
                             b_parameter='b_value', return_std=True,
-                            method="tinti")
+                            method="classic")
         # raise warning if number of events above Mc is less than 30
         if len(sample[sample >= mc]) < 30:
             warnings.warn(
@@ -458,7 +458,7 @@ def mc_by_bvalue_stability(
 
         for mcp in mc_plus:
             b = estimate_b(sample[sample >= mcp - delta_m / 2],
-                           mcp, delta_m, b_parameter='b_value', method="tinti")
+                           mcp, delta_m, b_parameter='b_value', method="classic")
             b_ex.append(b)
         b_avg = np.sum(b_ex) / 5
         b_avgs.append(b_avg)
