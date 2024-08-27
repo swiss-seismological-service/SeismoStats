@@ -439,6 +439,12 @@ def mc_by_bvalue_stability(
         b, err = estimate_b(sample[sample >= mc - delta_m / 2], mc, delta_m,
                             b_parameter='b_value', return_std=True,
                             method="tinti")
+        # raise warning if number of events above Mc is less than 30
+        if len(sample[sample >= mc]) < 30:
+            warnings.warn(
+                "Number of events above tested Mc is less than 30. "
+                "This might affect the stability test."
+            )
         bs.append(b)
         sb_b_err.append(err)
         discretisation = 10**- \
