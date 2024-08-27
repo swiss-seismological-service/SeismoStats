@@ -101,7 +101,7 @@ def test_estimate_b(
         (1000000, np.log(10), 3, 0.1, "beta", 0.01),
     ],
 )
-def test_estimate_b_tinti(
+def test_estimate_b_classic(
     n: int,
     b: float,
     mc: float,

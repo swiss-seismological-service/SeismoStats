@@ -65,7 +65,7 @@ def estimate_b(
 
                 - 'classic',default, this is the is the classic estimator, see
                   :func:`seismostats.analysis.estimate_b_classic`
-                - 'positive' (this is b-positive, which applies the 'tinti'
+                - 'positive' (this is b-positive, which applies the 'classic'
                   method to the positive differences, see
                   :func:`seismostats.analysis.estimate_b_positive`. To
                   achieve the effect of reduced STAI, the magnitudes must
