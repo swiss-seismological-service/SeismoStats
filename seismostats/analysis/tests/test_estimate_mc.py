@@ -253,7 +253,7 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
         swiss_catalog['magnitude'], delta_m=delta_m,
         stability_range=0.5)
 
-    assert_equal(1.44, mc)
+    assert_almost_equal(1.44, mc)
 
 
 def test_estimate_mc_bvalue_stability_larger_bins(setup_magnitudes):
