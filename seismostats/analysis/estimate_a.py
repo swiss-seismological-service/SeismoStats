@@ -141,6 +141,13 @@ def estimate_a_positive(
     """Return the a-value of the Gutenberg-Richter (GR) law using only the
     earthquakes with magnitude m_i >= m_i-1 + dmc.
 
+    Source:
+        Following the idea of positivity of
+        van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
+        2).
+        Note: This is *not* a-positive as defined by van der Elst and Page 2023
+        (JGR: Solid Earth, Vol 128, Issue 10).
+
     Args:
         magnitudes: vector of magnitudes, unsorted
         times:      vector of times of the events, in any format (datetime,

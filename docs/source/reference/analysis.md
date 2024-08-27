@@ -21,7 +21,7 @@
 
     estimate_b
     shi_bolt_confidence
-    analysis.estimate_b_tinti
+    analysis.estimate_b_classic
     analysis.estimate_b_positive
     analysis.estimate_b_more_positive
     analysis.estimate_b_utsu
