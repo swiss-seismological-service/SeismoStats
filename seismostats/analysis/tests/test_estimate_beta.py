@@ -8,9 +8,7 @@ import pandas as pd
 
 # import functions to be tested
 from seismostats.analysis.estimate_beta import (
-    differences,
     estimate_b,
-    estimate_b_laplace,
     estimate_b_positive,
     estimate_b_classic,
     estimate_b_utsu,
@@ -99,10 +97,6 @@ def test_estimate_b(
 
 
 def magnitudes(b: float):
-    # print the current directory
-    import os
-    print(os.getcwd())
-
     df_mags = pd.read_csv(
         'seismostats/analysis/tests/data/simulated_magnitudes.csv')
     if b == 0.5:
@@ -130,7 +124,6 @@ def test_estimate_b_classic(
     precision: float,
     b_parameter: str,
 ):
-    print('test_estimate_b_classic')
     mags = bin_to_precision(mags, delta_m)
     mags = mags[mags >= mc - delta_m / 2]
     b_estimate = estimate_b_classic(mags, mc, delta_m, b_parameter=b_parameter)
@@ -138,36 +131,26 @@ def test_estimate_b_classic(
     assert abs(b - b_estimate) / b <= precision
 
 
-# @ pytest.mark.parametrize(
-#     "b, mags, mc, delta_m, precision, b_parameter",
-#     [
-#         (1, magnitudes(1), 0, 0.01, 0.002, "b_value"),
-#         (1.5, magnitudes(1.5), 0.5, 0.01, 0.01, "b_value"),
-#         (b_value_to_beta(0.5), magnitudes(0.5), 2, 0.2, 0.003, "beta"),
-#     ],
-# )
-# def test_estimate_b_utsu(
-#     b: float,
-#     mags: np.ndarray,
-#     mc: float,
-#     delta_m: float,
-#     precision: float,
-#     b_parameter: str,
-# ):
-#     print('test_estimate_b_utsu')
-#     mags = bin_to_precision(mags, delta_m)
-#     mags = mags[mags >= mc - delta_m / 2]
-#     b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
-#     assert abs(b - b_estimate) / b <= precision
-
-
 @ pytest.mark.parametrize(
-    "magnitudes,mag_diffs",
-    [(np.array([1, -2, 3]), np.array([-3, 5, 2]))],
+    "b, mags, mc, delta_m, precision, b_parameter",
+    [
+        (1, magnitudes(1), 0, 0.01, 0.002, "b_value"),
+        (1.5, magnitudes(1.5), 0.5, 0.01, 0.01, "b_value"),
+        (b_value_to_beta(0.5), magnitudes(0.5), 2, 0.2, 0.003, "beta"),
+    ],
 )
-def test_differences(magnitudes: np.ndarray, mag_diffs: np.ndarray):
-    y = differences(magnitudes)
-    assert (y == mag_diffs).all()
+def test_estimate_b_utsu(
+    b: float,
+    mags: np.ndarray,
+    mc: float,
+    delta_m: float,
+    precision: float,
+    b_parameter: str,
+):
+    mags = bin_to_precision(mags, delta_m)
+    mags = mags[mags >= mc - delta_m / 2]
+    b_estimate = estimate_b_utsu(mags, mc, delta_m, b_parameter=b_parameter)
+    assert abs(b - b_estimate) / b <= precision
 
 
 @ pytest.mark.parametrize(
@@ -191,28 +174,6 @@ def test_estimate_b_positive(
     mags = mags[mags >= mc - delta_m / 2]
     b_estimate = estimate_b_positive(
         mags, delta_m=delta_m, dmc=dmc, b_parameter=b_parameter
-    )
-    assert abs(b - b_estimate) / b <= precision
-
-
-@ pytest.mark.parametrize(
-    "b, mags, mc, delta_m, precision, b_parameter",
-    [
-        (1, magnitudes(1)[:1500], 0, 0.01, 0.06, "b_value"),
-    ],
-)
-def test_estimate_b_laplace(
-    b: float,
-    mags: np.ndarray,
-    mc: float,
-    delta_m: float,
-    precision: float,
-    b_parameter: str,
-):
-    mags = bin_to_precision(mags, delta_m)
-    mags = mags[mags >= mc - delta_m / 2]
-    b_estimate = estimate_b_laplace(
-        mags, delta_m=delta_m, b_parameter=b_parameter
     )
     assert abs(b - b_estimate) / b <= precision
 
