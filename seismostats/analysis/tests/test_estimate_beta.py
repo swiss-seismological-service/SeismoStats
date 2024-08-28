@@ -23,7 +23,7 @@ from seismostats.utils.simulate_distributions import (
     bin_to_precision)
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "method, return_std, return_n, b_parameter",
     [
         ("classic", True, True, "beta"),
@@ -108,7 +108,7 @@ def magnitudes(b: float):
     return mags
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "b, mags, mc, delta_m, precision, b_parameter",
     [
         (1, magnitudes(1), 0, 0.1, 0.002, "b_value"),
@@ -131,7 +131,7 @@ def test_estimate_b_classic(
     assert abs(b - b_estimate) / b <= precision
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "b, mags, mc, delta_m, precision, b_parameter",
     [
         (1, magnitudes(1), 0, 0.01, 0.002, "b_value"),
@@ -153,7 +153,7 @@ def test_estimate_b_utsu(
     assert abs(b - b_estimate) / b <= precision
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "b, mags, mc, delta_m, dmc, precision, b_parameter",
     [
         (1, magnitudes(1), 0, 0.1, 0.3, 0.008, "b_value"),
@@ -178,7 +178,7 @@ def test_estimate_b_positive(
     assert abs(b - b_estimate) / b <= precision
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "b, mags, mc, delta_m, dmc, precision, b_parameter",
     [
         (1, magnitudes(1), 0, 0.1, 0.3, 0.04, "b_value"),
@@ -308,7 +308,7 @@ def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
     return mags, dates
 
 
-@ pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
+@pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
 def test_estimate_b_weichert(
     a_val_true: float, b_val_true: float, precision: float
 ):
@@ -343,7 +343,7 @@ with open(
     data = pickle.load(f)
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     "magnitudes,b,b_parameter,std",
     [data["values_test1"], data["values_test2"]],
 )
