@@ -187,7 +187,7 @@ class Catalog(pd.DataFrame):
 
         for num in numeric_cols:
             if num in df.columns:
-                df[num] = pd.to_numeric(df[num])
+                df[num] = pd.to_numeric(df[num], errors='coerce')
 
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)

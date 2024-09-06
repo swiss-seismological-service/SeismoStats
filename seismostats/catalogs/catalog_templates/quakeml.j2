@@ -14,8 +14,8 @@
                     <author>{{ author }}</author>
                 </creationInfo>
                 <mag>
-                    <value>{{ event.magnitude }}</value>
-                    <uncertainty>{{ event.magnitude_uncertainty }}</uncertainty>
+                    <value>{{ event.magnitude if not event.magnitude is nan else ''}}</value>
+                    <uncertainty>{{ event.magnitude_uncertainty if not event.magnitude_uncertainty is nan else '' }}</uncertainty>
                 </mag>
                 <type>{{ event.magnitude_type }}</type>
                 <originID>{{ event.originid }}</originID>
@@ -28,8 +28,8 @@
                     <author>{{ author }}</author>
                 </creationInfo>
                 <mag>
-                    <value>{{ magnitude.magnitude }}</value>
-                    <uncertainty>{{ magnitude.magnitude_uncertainty }}</uncertainty>
+                    <value>{{ magnitude.magnitude if not magnitude.magnitude is nan else ''}}</value>
+                    <uncertainty>{{ magnitude.magnitude_uncertainty if not magnitude.magnitude_uncertainty is nan else ''}}</uncertainty>
                 </mag>
                 <type>{{ type }}</type>
                 <originID>{{ event.originid }}</originID>
@@ -41,12 +41,12 @@
                     <value>{{ event.time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}</value>
                 </time>
                 <longitude>
-                    <value>{{ event.longitude }}</value>
-                    <uncertainty> {{ event.longitude_uncertainty }}</uncertainty>
+                    <value>{{ event.longitude if not event.longitude is nan else ''}}</value>
+                    <uncertainty> {{ event.longitude_uncertainty if not event.longitude_uncertainty is nan else ''}}</uncertainty>
                 </longitude>
                 <latitude>
-                    <value>{{ event.latitude }}</value>
-                    <uncertainty>{{ event.latitude_uncertainty }}</uncertainty>
+                    <value>{{ event.latitude if not event.latitude is nan else ''}}</value>
+                    <uncertainty>{{ event.latitude_uncertainty if not event.latitude_uncertainty is nan else '' }}</uncertainty>
                 </latitude>
                 <evaluationMode>{{ event.evaluationmode }}</evaluationMode>
                 <creationInfo>
@@ -54,8 +54,8 @@
                     <author>{{ author }}</author>
                 </creationInfo>
                 <depth>
-                    <value>{{ event.depth }}</value>
-                    <uncertainty>{{ event.depth_uncertainty }}</uncertainty>
+                    <value>{{ event.depth if not event.depth is nan else ''}}</value>
+                    <uncertainty>{{ event.depth_uncertainty if not event.depth_uncertainty is nan else '' }}</uncertainty>
                 </depth>
             </origin>
 
