@@ -98,7 +98,7 @@ def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
         delta_m)['magnitude'].tolist()
         == bin_to_precision(mag_values, delta_m)).all()
     assert (catalog.bin_magnitudes()['magnitude'].tolist()
-        == bin_to_precision(mag_values, 0.1)).all()
+            == bin_to_precision(mag_values, 0.1)).all()
 
     return_value = catalog.bin_magnitudes(delta_m, inplace=True)
     assert (catalog['magnitude'].tolist()
@@ -114,11 +114,12 @@ def test_catalog_estimate_mc():
     with pytest.raises(ValueError):
         catalog.estimate_mc()
 
+
 @pytest.mark.parametrize(
     "mag_values, delta_m, mc",
     [
         (np.array([0.0, 0.235, 0.238, 4.499, 4.5, 6, 0.1, 1.6]),
-        0.001, 0.0)
+         0.001, 0.0)
     ]
 )
 def test_catalog_estimate_b(mag_values, delta_m, mc):
@@ -130,7 +131,10 @@ def test_catalog_estimate_b(mag_values, delta_m, mc):
         catalog.estimate_b(mc=None, delta_m=0.1)
         catalog.estimate_b(mc=1.0, delta_m=0.1, method='positive')
 
-    b_value = estimate_b(catalog['magnitude'], mc=mc, delta_m=delta_m, method="classic")
+    b_value = estimate_b(catalog['magnitude'],
+                         mc=mc,
+                         delta_m=delta_m,
+                         method="classic")
     return_value = catalog.estimate_b(mc=mc, delta_m=delta_m, method="classic")
     assert catalog.b_value == b_value
     assert return_value == b_value
