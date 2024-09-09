@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import uuid
 from collections import defaultdict
@@ -104,7 +105,7 @@ class Catalog(pd.DataFrame):
         if self.columns.empty:
             self = self.reindex(self.columns.union(
                 REQUIRED_COLS_CATALOG), axis=1)
-
+        self.logger = logging.getLogger(__name__)
         self.name = name
         self.mc = mc
         self.b_value = b_value
@@ -199,6 +200,18 @@ class Catalog(pd.DataFrame):
 
         if not isinstance(df, Catalog):
             df = Catalog(df)
+
+        full_len = len(df)
+
+        df = df.dropna(subset=['latitude',
+                               'longitude',
+                               'time',
+                               'magnitude',
+                               'magnitude_type'])
+
+        if len(df) < full_len:
+            df.logger.info(
+                f"Dropped {full_len - len(df)} rows with missing values")
 
         if df.empty:
             df = Catalog(columns=REQUIRED_COLS_CATALOG + ['magnitude_type'])
@@ -484,6 +497,14 @@ class Catalog(pd.DataFrame):
 
         df = self.copy()
         df = df._create_ids()
+        df = df.dropna(subset=['latitude',
+                               'longitude',
+                               'time',
+                               'magnitude',
+                               'magnitude_type'])
+        if len(df) != len(self):
+            self.logger.info(
+                f"Dropped {len(self) - len(df)} rows with missing values")
 
         secondary_mags = self._secondary_magnitudekeys()
 
