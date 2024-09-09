@@ -201,20 +201,16 @@ class Catalog(pd.DataFrame):
         if not isinstance(df, Catalog):
             df = Catalog(df)
 
+        if df.empty:
+            df = Catalog(columns=REQUIRED_COLS_CATALOG + ['magnitude_type'])
+
         full_len = len(df)
 
-        df = df.dropna(subset=['latitude',
-                               'longitude',
-                               'time',
-                               'magnitude',
-                               'magnitude_type'])
+        df = df.dropna(subset=['latitude', 'longitude', 'time'])
 
         if len(df) < full_len:
             df.logger.info(
                 f"Dropped {full_len - len(df)} rows with missing values")
-
-        if df.empty:
-            df = Catalog(columns=REQUIRED_COLS_CATALOG + ['magnitude_type'])
 
         return df
 
@@ -497,11 +493,7 @@ class Catalog(pd.DataFrame):
 
         df = self.copy()
         df = df._create_ids()
-        df = df.dropna(subset=['latitude',
-                               'longitude',
-                               'time',
-                               'magnitude',
-                               'magnitude_type'])
+        df = df.dropna(subset=['latitude', 'longitude', 'time'])
         if len(df) != len(self):
             self.logger.info(
                 f"Dropped {len(self) - len(df)} rows with missing values")
@@ -514,7 +506,7 @@ class Catalog(pd.DataFrame):
         for event in data['events']:
             event['sec_mags'] = defaultdict(dict)
             for mag in secondary_mags:
-                if pd.notna(event[mag]) \
+                if pd.notna(event[mag]) and pd.notna(event['magnitude_type']) \
                         and event['magnitude_type'] not in mag:
 
                     mag_type = mag.split('_')[1]
