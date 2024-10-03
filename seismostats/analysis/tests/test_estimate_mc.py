@@ -9,7 +9,7 @@ from seismostats.analysis.estimate_mc import (empirical_cdf, mc_ks,
 
 
 @pytest.fixture
-def setup_magnitudes():
+def magnitudes():
     mags = np.array(
         [
             2.3,
@@ -117,11 +117,11 @@ def setup_magnitudes():
     return mags
 
 
-def test_empirical_cdf(setup_magnitudes, delta_m=0.1):
-    x, y = empirical_cdf(setup_magnitudes, delta_m=delta_m)
+def test_empirical_cdf(magnitudes, delta_m=0.1):
+    x, y = empirical_cdf(magnitudes, delta_m=delta_m)
 
-    x_expected = bin_to_precision(np.arange(min(setup_magnitudes), max(
-        setup_magnitudes) + delta_m, delta_m))
+    x_expected = bin_to_precision(np.arange(min(magnitudes), max(
+        magnitudes) + delta_m, delta_m))
 
     assert_allclose(x, x_expected, rtol=1e-7)
     assert_equal(y[-1], 1)
@@ -150,7 +150,7 @@ def test_empirical_cdf(setup_magnitudes, delta_m=0.1):
 
 
 @pytest.fixture
-def setup_ks_dists():
+def ks_dists():
     ks_ds_df = pd.read_csv(
         'seismostats/analysis/tests/data/ks_ds.csv', index_col=0)
     ks_ds_list = ks_ds_df.values.T
@@ -158,18 +158,18 @@ def setup_ks_dists():
 
 
 def test_estimate_mc_ks(
-        setup_magnitudes,
-        setup_ks_dists,
+        magnitudes,
+        ks_dists,
         mcs=[0.8, 0.9, 1.0, 1.1]
 ):
     # test when beta is given
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        setup_magnitudes,
+        magnitudes,
         delta_m=0.1,
         mcs_test=mcs,
         p_pass=0.1,
         beta=2.24,
-        ks_ds_list=setup_ks_dists,
+        ks_ds_list=ks_dists,
     )
     assert_equal(1.1, best_mc)
     assert_equal(2.24, best_beta)
@@ -183,7 +183,7 @@ def test_estimate_mc_ks(
 
     # test when beta is not given
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        setup_magnitudes,
+        magnitudes,
         delta_m=0.1,
         mcs_test=[1.1],
         p_pass=0.1,
@@ -207,18 +207,18 @@ def test_estimate_mc_ks(
 
     # test when mcs are not given
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        setup_magnitudes,
+        magnitudes,
         delta_m=0.1,
         p_pass=0.1,
         beta=2.24,
-        ks_ds_list=setup_ks_dists[2:],
+        ks_ds_list=ks_dists[2:],
     )
     assert_equal(1.1, best_mc)
     assert_equal([1.0, 1.1], mcs_tested)
 
     # test when b-positive is used
     best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
-        setup_magnitudes,
+        magnitudes,
         delta_m=0.1,
         mcs_test=[1.5],
         b_method="positive"
@@ -231,7 +231,7 @@ def test_estimate_mc_ks(
     assert_equal(len(ps), 1)
 
 
-def test_estimate_mc_maxc(setup_magnitudes):
-    mc = mc_max_curvature(setup_magnitudes, delta_m=0.1, correction_factor=0.2)
+def test_estimate_mc_maxc(magnitudes):
+    mc = mc_max_curvature(magnitudes, delta_m=0.1, correction_factor=0.2)
 
     assert_equal(1.3, mc)
