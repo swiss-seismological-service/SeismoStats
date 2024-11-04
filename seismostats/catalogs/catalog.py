@@ -11,6 +11,7 @@ from math import log10
 
 import numpy as np
 import pandas as pd
+
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
@@ -18,6 +19,12 @@ from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
 from shapely import Polygon
+try:
+    from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
+except ImportError:
+    _openquake_available = False
+else:
+    _openquake_available = True
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -217,23 +224,25 @@ class Catalog(pd.DataFrame):
         return df
 
     @classmethod
-    def from_openquake(cls, data: dict, keep_time_cols=False) -> Catalog:
+    def from_openquake(cls, oq_catalogue: OQCatalogue,
+                       keep_time_cols=False) -> Catalog:
         """
-        Create a Catalog from openquake.hmtk.seismicity.catalogue.Catalogue data
-
+        Create a (seismostats) Catalog from an openquake Catalogue.
+        The optional dependency group openquake is required for this method.
 
         Args:
-            data:               The data dictionary from an openquake Catalogue.
-                                Can be obtained from the 'data' attribute.
-            keep_time_cols:     Whether the time columns    'year', 'month',
+            oq_catalogue:       The openquake catalogue.
+            keep_time_cols:     Whether the time columns: 'year', 'month',
                                 'day', 'hour', 'minute', 'second'
-                                should be kept.
+                                should be kept (they are converted to 'time').
         Returns:
             Catalog
 
         Raises:
             ValueError:         If the Catalog is empty.
         """
+        if not _openquake_available:
+            raise ImportError("the optional openquake package is not available")
         pd_time_columns = ['year', 'month', 'day', 'hour',
                            'minute', 'second', 'microsecond']
 
@@ -244,11 +253,9 @@ class Catalog(pd.DataFrame):
                             row.hour,
                             row.minute,
                             row.second)
-
-        # clone = copy.deepcopy(hmtk_catalogue.data)
+        data = oq_catalogue.data
         clone = copy.deepcopy(data)
-        # n = hmtk_catalogue.get_number_events()
-        length = max((len(v) for v in clone.values()), default=0)
+        length = oq_catalogue.get_number_events()
         if length == 0:
             raise ValueError("Conversion for an empty Catalog is not supported")
         cat = cls(
@@ -269,19 +276,19 @@ class Catalog(pd.DataFrame):
         return cat
 
     @require_cols(require=REQUIRED_COLS_CATALOG)
-    def to_openquake(self) -> dict:
+    def to_openquake(self) -> OQCatalogue:
         """
-        Creates a data dictionary compatible with
-        openquake.hmtk.seismicity.catalogue.Catalogue
-        With it you can create an openquake catalogue:
-        >>> Catalogue.make_from_dict(data)
+        Converts the Catalog to an openquake Catalogue
+        The optional dependency group openquake is required for this method.
 
         Returns:
-            dict:               The data dictionary.
+            OQCatalogue:        the converted Catalogue
 
         Raises:
             ValueError:         If the Catalog is empty.
         """
+        if not _openquake_available:
+            raise ImportError("the optional openquake package is not available")
         if len(self) == 0:
             raise ValueError("Conversion for an empty Catalog is not supported")
         data = dict()
@@ -307,7 +314,7 @@ class Catalog(pd.DataFrame):
                 data[time_unit] = getattr(
                     time.dt, time_unit).to_numpy(copy=True)
         data["second"] = data["second"] + data["microsecond"] / 1e6
-        return data
+        return OQCatalogue.make_from_dict(data)
 
     def drop_uncertainties(self) -> Catalog:
         """

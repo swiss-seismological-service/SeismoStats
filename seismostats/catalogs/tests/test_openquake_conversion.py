@@ -9,6 +9,10 @@ from seismostats import Catalog as SeismoCatalog
 from seismostats.catalogs.catalog import REQUIRED_COLS_CATALOG
 from seismostats.utils import _check_required_cols
 
+pytest.importorskip("openquake.hmtk.seismicity.catalogue",
+                    reason="Testing OpenQuake conversion requires\
+                    the optional dependency openquake to be installed")
+from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
 
 PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'data')
@@ -36,7 +40,7 @@ fdsnws = SeismoCatalog(pd.read_csv(csv_file))
 fdsnws["time"] = pd.to_datetime(fdsnws["time"])
 
 
-simple_hmtk_data = {
+simple_oq_catalogue = OQCatalog.make_from_dict({
     'eventID': ["event0", "event1", "event2"],
     'longitude': np.array([42.35, 1.35, 2.35], dtype=float),
     'latitude': np.array([3.34444, 5.135, 2.134], dtype=float),
@@ -48,9 +52,9 @@ simple_hmtk_data = {
     'minute': np.array([5, 7, 30], dtype=int),
     'second': np.array([13.1234, 15.0, 59.9999], dtype=float),
     'magnitude': np.array([1.0, 2.5, 3.9], dtype=float)
-}
+})
 
-historical_hmtk_data = {
+historical_oq_catalogue = OQCatalog.make_from_dict({
     'eventID': ["event0", "event1", "event2"],
     'longitude': np.array([42.35, 1.35, 2.35], dtype=float),
     'latitude': np.array([3.34444, 5.135, 2.134], dtype=float),
@@ -62,7 +66,7 @@ historical_hmtk_data = {
     'minute': np.array([5, 7, 30], dtype=int),
     'second': np.array([0, 15, 59], dtype=float),
     'magnitude': np.array([1.0, 2.5, 3.9], dtype=float)
-}
+})
 
 
 @pytest.mark.parametrize("df", [simple_df, fdsnws])
@@ -100,7 +104,9 @@ HMTK_TOTAL_ATTRIBUTE_LIST = list(
 )
 
 
-def compare_hmtk(data1: dict, data2: dict):
+def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
+    data1 = cat1.data
+    data2 = cat2.data
     for attribute in HMTK_TOTAL_ATTRIBUTE_LIST:
         has1 = attribute in data1 and len(data1[attribute]) > 0
         has2 = attribute in data2 and len(data2[attribute]) > 0
@@ -118,11 +124,12 @@ def compare_hmtk(data1: dict, data2: dict):
             assert col1 == col2 and "String attribute mismatch"
 
 
-@pytest.mark.parametrize("data", [simple_hmtk_data, historical_hmtk_data])
-def test_hmtk_full_round(data: dict):
-    df = SeismoCatalog.from_openquake(data)
+@pytest.mark.parametrize("oq_catalogue", [simple_oq_catalogue,
+                                          historical_oq_catalogue])
+def test_hmtk_full_round(oq_catalogue: OQCatalog):
+    df = SeismoCatalog.from_openquake(oq_catalogue)
     reconstructed = df.to_openquake()
-    compare_hmtk(data, reconstructed)
+    compare_hmtk(oq_catalogue, reconstructed)
 
 
 def test_to_openquake_simple():
@@ -139,25 +146,25 @@ def test_to_openquake_simple():
 
 
 def test_from_openquake_simple():
-    df = SeismoCatalog.from_openquake(simple_hmtk_data)
+    df = SeismoCatalog.from_openquake(simple_oq_catalogue)
     assert _check_required_cols(df, REQUIRED_COLS_CATALOG)
     for col in COMMON_COLS:
-        np.testing.assert_allclose(df[col], simple_hmtk_data[col],
+        np.testing.assert_allclose(df[col], simple_oq_catalogue[col],
                                    rtol=1e-5, atol=1e-8)
 
 
 def test_from_openquake_modify():
-    original_long = simple_hmtk_data['longitude'].copy()
-    df = SeismoCatalog.from_openquake(simple_hmtk_data)
+    original_long = simple_oq_catalogue['longitude'].copy()
+    df = SeismoCatalog.from_openquake(simple_oq_catalogue)
     df['longitude'] = 0
     assert (df['longitude'].to_numpy() == 0).all()
-    assert (simple_hmtk_data['longitude'] == original_long).all()
+    assert (simple_oq_catalogue['longitude'] == original_long).all()
 
 
 def test_to_openquake_modify():
     original_long = simple_df['longitude'].copy()
     converted = simple_df.to_openquake()
-    converted['longitude'] = np.zeros(len(simple_df))
+    converted.data['longitude'] = np.zeros(len(simple_df))
     assert (converted['longitude'] == 0).all()
     assert simple_df['longitude'].equals(original_long)
 
@@ -179,10 +186,10 @@ def test_to_openquake_extra_col():
 
 
 def test_from_openquake_extra_col():
-    data = deepcopy(simple_hmtk_data)
+    data = deepcopy(simple_oq_catalogue.data)
     agencies = ["SED", "NA", "MarsQuakeService"]
-    catalogue_data = {**data, 'Agency': agencies}
-    df = SeismoCatalog.from_openquake(catalogue_data)
+    catalogue = OQCatalog.make_from_dict({**data, 'Agency': agencies})
+    df = SeismoCatalog.from_openquake(catalogue)
     assert _check_required_cols(df, REQUIRED_COLS_CATALOG)
     assert (df['Agency'] == agencies).all()
 
