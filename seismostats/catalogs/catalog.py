@@ -3,8 +3,11 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+import copy
+from datetime import datetime
 from collections import defaultdict
 from typing import Any
+from math import log10
 
 import numpy as np
 import pandas as pd
@@ -212,6 +215,99 @@ class Catalog(pd.DataFrame):
                 f"Dropped {full_len - len(df)} rows with missing values")
 
         return df
+
+    @classmethod
+    def from_openquake(cls, data: dict, keep_time_cols=False) -> Catalog:
+        """
+        Create a Catalog from openquake.hmtk.seismicity.catalogue.Catalogue data
+
+
+        Args:
+            data:               The data dictionary from an openquake Catalogue.
+                                Can be obtained from the 'data' attribute.
+            keep_time_cols:     Whether the time columns    'year', 'month',
+                                'day', 'hour', 'minute', 'second'
+                                should be kept.
+        Returns:
+            Catalog
+
+        Raises:
+            ValueError:         If the Catalog is empty.
+        """
+        pd_time_columns = ['year', 'month', 'day', 'hour',
+                           'minute', 'second', 'microsecond']
+
+        def _convert_to_datetime(row):
+            return datetime(row.year,
+                            row.month,
+                            row.day,
+                            row.hour,
+                            row.minute,
+                            row.second)
+
+        # clone = copy.deepcopy(hmtk_catalogue.data)
+        clone = copy.deepcopy(data)
+        # n = hmtk_catalogue.get_number_events()
+        length = max((len(v) for v in clone.values()), default=0)
+        if length == 0:
+            raise ValueError("Conversion for an empty Catalog is not supported")
+        cat = cls(
+            {k: v for k, v in clone.items() if len(v) > 0 or length == 0})
+        # hmtk stores seconds as floats, but pandas requires them as integers
+        us = ((cat["second"] % 1) * 1e6)
+        cat["microsecond"] = us.round().astype(np.int32)
+        cat["second"] = cat["second"].astype(np.int32)
+        try:
+            cat.loc[:, "time"] = pd.to_datetime(cat[pd_time_columns])
+        except ValueError:
+            # if the time is out of bounds, we have to store
+            # datetime with a resolution of seconds.
+            dt = cat.apply(_convert_to_datetime, axis=1)
+            cat['time'] = dt.astype('datetime64[s]')
+        if not keep_time_cols:
+            cat.drop(columns=pd_time_columns, inplace=True)
+        return cat
+
+    @require_cols(require=REQUIRED_COLS_CATALOG)
+    def to_openquake(self) -> dict:
+        """
+        Creates a data dictionary compatible with
+        openquake.hmtk.seismicity.catalogue.Catalogue
+        With it you can create an openquake catalogue:
+        >>> Catalogue.make_from_dict(data)
+
+        Returns:
+            dict:               The data dictionary.
+
+        Raises:
+            ValueError:         If the Catalog is empty.
+        """
+        if len(self) == 0:
+            raise ValueError("Conversion for an empty Catalog is not supported")
+        data = dict()
+        for col, dtype in zip(self.columns, self.dtypes):
+            if np.issubdtype(dtype, np.number):
+                data[col] = self[col].to_numpy(dtype=dtype, copy=True)
+            else:
+                data[col] = self[col].to_list()
+        # hmtk requires an "eventID" column, create it from the index if missing
+        # in the test files, they are of the form "10000001","10000002"
+        # dynamically start with a large enough number
+        if "eventID" not in data:
+            exp = max(int(log10(len(self))) + 1, 7)
+            self.index.map(lambda i: f"1{i:0{exp}d}").to_list()
+            data["eventID"] = self.index.astype(str).to_list()
+
+        time = self['time']
+        for time_unit in ['year', 'month', 'day', 'hour',
+                          'minute', 'second', 'microsecond']:
+            if len(time) == 0:
+                data[time_unit] = np.array([], dtype=int)
+            else:
+                data[time_unit] = getattr(
+                    time.dt, time_unit).to_numpy(copy=True)
+        data["second"] = data["second"] + data["microsecond"] / 1e6
+        return data
 
     def drop_uncertainties(self) -> Catalog:
         """
