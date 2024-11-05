@@ -82,6 +82,12 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         """
         Apply the Gardner-Knopoff declustering algorithm to the catalogue.
 
+        The catalogue must contain the following columns:
+        - magnitude, longitude, latitude
+        - and either one of the following combinations:
+            - time
+            - year, month, day
+
         The configuration dictionary must contain the following
         - time_distance_window: BaseDistanceTimeWindow
         - fs_time_prop: float in the interval [0,1], expressing
@@ -100,28 +106,48 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
             shock_types: array with shock types for each event
                         (foreshock=-1, mainshock=0, aftershock-1)
         """
-        # Get relevant parameters    
-        neq = len(catalogue.data["magnitude"])  # Number of earthquakes
-        # Get decimal year (needed for time windows)
-        year_dec = decimal_year(
-            catalogue.data["year"],
-            catalogue.data["month"],
-            catalogue.data["day"],
-        )
+        # TODO in the end we want to work on the df directly
+        # instead of converting to numpy arrays
+        magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
+        longitude = catalogue["longitude"].to_numpy(dtype=np.float64)
+        latitude = catalogue["latitude"].to_numpy(dtype=np.float64)
+
+        use_time_columns = all(c in catalogue.columns for c in
+                               ["year", "month", "day"])
+
+        if use_time_columns:
+            year = catalogue["year"].to_numpy(dtype=int)
+            month = catalogue["month"].to_numpy(dtype=int)
+            day = catalogue["day"].to_numpy(dtype=int)
+            year_dec = decimal_year(
+                year,
+                month,
+                day,
+            )
+        elif "time" in catalogue.columns:
+            year_dec = catalogue["time"].dt.year + \
+                catalogue["time"].dt.dayofyear / 365
+        else:
+            raise ValueError(
+                "Catalogue must contain either year, month, day columns "
+                "or a time column")
+
+        neq = len(magnitude)  # Number of earthquakes
+
         # Get space and time windows corresponding to each event
         # Initial Position Identifier
         sw_space, sw_time = config["time_distance_window"].calc(
-            catalogue.data["magnitude"], config.get("time_cutoff")
+            magnitude, config.get("time_cutoff")
         )
         eqid = np.arange(0, neq, 1)
         # Pre-allocate cluster index vectors
         cluster_ids = np.zeros(neq, dtype=int)
         # Sort magnitudes into descending order
         id0 = np.flipud(
-            np.argsort(catalogue.data["magnitude"], kind="heapsort")
+            np.argsort(magnitude, kind="heapsort")
         )
-        longitude = catalogue.data["longitude"][id0]
-        latitude = catalogue.data["latitude"][id0]
+        longitude = longitude[id0]
+        latitude = latitude[id0]
         sw_space = sw_space[id0]
         sw_time = sw_time[id0]
         year_dec = year_dec[id0]
