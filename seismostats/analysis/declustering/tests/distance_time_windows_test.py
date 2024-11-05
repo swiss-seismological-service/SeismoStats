@@ -49,7 +49,7 @@ import unittest
 import os
 import numpy as np
 
-from openquake.hmtk.seismicity.declusterer.distance_time_windows import (
+from seismostats.analysis.declustering import (
     GardnerKnopoffWindow,
     GruenthalWindow,
     UhrhammerWindow,
