@@ -50,9 +50,7 @@
 
 import abc
 import numpy as np
-from openquake.baselib.general import CallableDict
 
-TIME_DISTANCE_WINDOW_FUNCTIONS = CallableDict()
 DAYS = 364.75
 
 
@@ -92,7 +90,6 @@ class BaseDistanceTimeWindow(object):
         return
 
 
-@TIME_DISTANCE_WINDOW_FUNCTIONS.add("GardnerKnopoff")
 class GardnerKnopoffWindow(BaseDistanceTimeWindow):
     """
     Gardner Knopoff method for calculating distance and time windows
@@ -109,7 +106,6 @@ class GardnerKnopoffWindow(BaseDistanceTimeWindow):
         return sw_space, sw_time
 
 
-@TIME_DISTANCE_WINDOW_FUNCTIONS.add("Gruenthal")
 class GruenthalWindow(BaseDistanceTimeWindow):
     """
     Gruenthal method for calculating distance and time windows
@@ -128,7 +124,6 @@ class GruenthalWindow(BaseDistanceTimeWindow):
         return sw_space, sw_time
 
 
-@TIME_DISTANCE_WINDOW_FUNCTIONS.add("UrhammerWindow")
 class UhrhammerWindow(BaseDistanceTimeWindow):
     """
     Uhrhammer method for calculating distance and time windows
