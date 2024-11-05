@@ -51,6 +51,7 @@ defines the Gardner and Knopoff declustering algorithm
 """
 
 import numpy as np
+import pandas as pd
 
 from seismostats.analysis.declustering.base import BaseCatalogueDecluster
 from seismostats.analysis.declustering.utils import decimal_year, haversine
@@ -71,25 +72,22 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
     Seism. Soc. Am., 64(5): 1363-1367.
     """
 
-    def decluster(self, catalogue, config):
-        """
-        The configuration of this declustering algorithm requires two
+    def decluster(self, catalogue: pd.DataFrame, config) -> tuple[np.ndarray,
+                                                                  np.ndarray]:
+        """The configuration of this declustering algorithm requires two
         objects:
         - A time-distance window object (key is 'time_distance_window')
         - A value in the interval [0,1] expressing the fraction of the
         time window used for aftershocks (key is 'fs_time_prop')
+        
+        Args:
+            catalogue: the catalogue of earthquakes
+            config: configuration parameters
 
-        :param catalogue:
-            Catalogue of earthquakes
-        :type catalogue: Dictionary
-        :param config:
-            Configuration parameters
-        :type config: Dictionary
-
-        :returns:
-          **vcl vector** indicating cluster number,
-          **flagvector** indicating which eq events belong to a cluster
-        :rtype: numpy.ndarray
+        Returns:
+            cluster_ids: array with cluster numbers for each event
+            shock_types: array with shock types for each event
+                        (foreshock=-1, mainshock=0, aftershock-1)
         """
         # Get relevant parameters
         neq = len(catalogue.data["magnitude"])  # Number of earthquakes
@@ -106,7 +104,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         )
         eqid = np.arange(0, neq, 1)
         # Pre-allocate cluster index vectors
-        vcl = np.zeros(neq, dtype=int)
+        cluster_ids = np.zeros(neq, dtype=int)
         # Sort magnitudes into descending order
         id0 = np.flipud(
             np.argsort(catalogue.data["magnitude"], kind="heapsort")
@@ -117,15 +115,15 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         sw_time = sw_time[id0]
         year_dec = year_dec[id0]
         eqid = eqid[id0]
-        flagvector = np.zeros(neq, dtype=int)
+        shock_types = np.zeros(neq, dtype=int)
         # Begin cluster identification
         clust_index = 0
         for i in range(0, neq - 1):
-            if vcl[i] == 0:
+            if cluster_ids[i] == 0:
                 # Find Events inside both fore- and aftershock time windows
                 dt = year_dec - year_dec[i]
                 vsel = np.logical_and(
-                    vcl == 0,
+                    cluster_ids == 0,
                     np.logical_and(
                         dt >= (-sw_time[i] * config["fs_time_prop"]),
                         dt <= sw_time[i],
@@ -147,19 +145,19 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                 temp_vsel[i] = False
                 if any(temp_vsel):
                     # Allocate a cluster number
-                    vcl[vsel] = clust_index + 1
-                    flagvector[vsel] = 1
+                    cluster_ids[vsel] = clust_index + 1
+                    shock_types[vsel] = 1
                     # For those events in the cluster before the main event,
                     # flagvector is equal to -1
                     temp_vsel[dt >= 0.0] = False
-                    flagvector[temp_vsel] = -1
-                    flagvector[i] = 0
+                    shock_types[temp_vsel] = -1
+                    shock_types[i] = 0
                     clust_index += 1
 
         # Re-sort the catalog_matrix into original order
         id1 = np.argsort(eqid, kind="heapsort")
         eqid = eqid[id1]
-        vcl = vcl[id1]
-        flagvector = flagvector[id1]
+        cluster_ids = cluster_ids[id1]
+        shock_types = shock_types[id1]
 
-        return vcl, flagvector
+        return cluster_ids, shock_types
