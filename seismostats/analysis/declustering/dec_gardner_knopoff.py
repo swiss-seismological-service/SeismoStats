@@ -52,21 +52,16 @@ defines the Gardner and Knopoff declustering algorithm
 
 import numpy as np
 
-from seismostats.analysis.declustering.base import (
-    BaseCatalogueDecluster,
-    DECLUSTERER_METHODS,
-)
+from seismostats.analysis.declustering.base import BaseCatalogueDecluster
 from openquake.hmtk.seismicity.utils import decimal_year, haversine
-from openquake.hmtk.seismicity.declusterer.distance_time_windows import (
-    TIME_DISTANCE_WINDOW_FUNCTIONS,
-)
 
 
-@DECLUSTERER_METHODS.add(
-    "decluster",
-    time_distance_window=TIME_DISTANCE_WINDOW_FUNCTIONS,
-    fs_time_prop=float,
-)
+# TODO type the config instead
+# @DECLUSTERER_METHODS.add(
+#     "decluster",
+#     time_distance_window=TIME_DISTANCE_WINDOW_FUNCTIONS,
+#     fs_time_prop=float,
+# )
 class GardnerKnopoffType1(BaseCatalogueDecluster):
     """
     This class implements the Gardner Knopoff algorithm as described in

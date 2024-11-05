@@ -47,21 +47,17 @@
 
 import numpy as np
 
-from seismostats.analysis.declustering.base import (
-    BaseCatalogueDecluster,
-    DECLUSTERER_METHODS,
-)
+from seismostats.analysis.declustering.base import BaseCatalogueDecluster
+    
 from openquake.hmtk.seismicity.utils import decimal_year, haversine
-from openquake.hmtk.seismicity.declusterer.distance_time_windows import (
-    TIME_DISTANCE_WINDOW_FUNCTIONS,
-)
 
 
-@DECLUSTERER_METHODS.add(
-    "decluster",
-    time_distance_window=TIME_DISTANCE_WINDOW_FUNCTIONS,
-    time_window=float,
-)
+# TODO type the config instead
+# @DECLUSTERER_METHODS.add(
+#     "decluster",
+#     time_distance_window=TIME_DISTANCE_WINDOW_FUNCTIONS,
+#     time_window=float,
+# )
 class Afteran(BaseCatalogueDecluster):
     """
     This implements the Afteran algorithm as described in this paper:
