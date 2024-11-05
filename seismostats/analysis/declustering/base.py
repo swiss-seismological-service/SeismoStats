@@ -37,8 +37,8 @@
 # directed to the hazard scientific staff of the GEM Model Facility
 # (hazard@globalquakemodel.org).
 #
-# The Hazard Modeller's Toolkit (openquake.hmtk) is therefore distributed WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# The Hazard Modeller's Toolkit (openquake.hmtk) is therefore distributed
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 #
@@ -46,8 +46,8 @@
 # liability for use of the software.
 
 """
-Module :mod:`openquake.hmtk.parsers.catalogue.base` defines an abstract base class
-for :class:`CatalogueParser <BaseCatalogueDecluster>`.
+Module :mod:`openquake.hmtk.parsers.catalogue.base` defines an abstract
+base class for :class:`CatalogueParser <BaseCatalogueDecluster>`.
 """
 import abc
 

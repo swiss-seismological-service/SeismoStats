@@ -37,8 +37,8 @@
 # directed to the hazard scientific staff of the GEM Model Facility
 # (hazard@globalquakemodel.org).
 #
-# The Hazard Modeller's Toolkit (openquake.hmtk) is therefore distributed WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# The Hazard Modeller's Toolkit (openquake.hmtk) is therefore distributed
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 #
@@ -69,8 +69,8 @@ class Afteran(BaseCatalogueDecluster):
         catalogue_matrix, window_opt=TDW_GARDNERKNOPOFF, time_window=60.):
 
         :param catalogue: a catalogue object
-        :type catalogue: Instance of the openquake.hmtk.seismicity.catalogue.Catalogue()
-                         class
+        :type catalogue: Instance of
+                         openquake.hmtk.seismicity.catalogue.Catalogue
         :keyword window_opt: method used in calculating distance and time
             windows
         :type window_opt: string
