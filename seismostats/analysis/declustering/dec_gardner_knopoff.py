@@ -54,15 +54,20 @@ import numpy as np
 import pandas as pd
 
 from seismostats.analysis.declustering.base import BaseCatalogueDecluster
+from seismostats.analysis.declustering.distance_time_windows import (
+    BaseDistanceTimeWindow
+)
 from seismostats.analysis.declustering.utils import decimal_year, haversine
 
+from typing import TypedDict
 
-# TODO type the config instead
-# @DECLUSTERER_METHODS.add(
-#     "decluster",
-#     time_distance_window=TIME_DISTANCE_WINDOW_FUNCTIONS,
-#     fs_time_prop=float,
-# )
+
+class GKConfig(TypedDict):
+    time_distance_window: BaseDistanceTimeWindow
+    fs_time_prop: float
+    time_cutoff: int
+
+
 class GardnerKnopoffType1(BaseCatalogueDecluster):
     """
     This class implements the Gardner Knopoff algorithm as described in
@@ -72,24 +77,30 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
     Seism. Soc. Am., 64(5): 1363-1367.
     """
 
-    def decluster(self, catalogue: pd.DataFrame, config) -> tuple[np.ndarray,
-                                                                  np.ndarray]:
-        """The configuration of this declustering algorithm requires two
-        objects:
-        - A time-distance window object (key is 'time_distance_window')
-        - A value in the interval [0,1] expressing the fraction of the
-        time window used for aftershocks (key is 'fs_time_prop')
-        
+    def decluster(self, catalogue: pd.DataFrame,
+                  config: GKConfig) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Apply the Gardner-Knopoff declustering algorithm to the catalogue.
+
+        The configuration dictionary must contain the following
+        - time_distance_window: BaseDistanceTimeWindow
+        - fs_time_prop: float in the interval [0,1], expressing
+        the size of the time window used for searching for foreshocks,
+        as a fractional proportion of the size of the aftershock window.
+        Optional:
+        - time_cutoff: for the time distance window
+
         Args:
             catalogue: the catalogue of earthquakes
             config: configuration parameters
 
         Returns:
             cluster_ids: array with cluster numbers for each event
+                         Events not in a cluster are assigned 0
             shock_types: array with shock types for each event
                         (foreshock=-1, mainshock=0, aftershock-1)
         """
-        # Get relevant parameters
+        # Get relevant parameters    
         neq = len(catalogue.data["magnitude"])  # Number of earthquakes
         # Get decimal year (needed for time windows)
         year_dec = decimal_year(
