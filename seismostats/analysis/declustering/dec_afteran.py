@@ -47,7 +47,7 @@
 
 import numpy as np
 
-from openquake.hmtk.seismicity.declusterer.base import (
+from seismostats.analysis.declustering.base import (
     BaseCatalogueDecluster,
     DECLUSTERER_METHODS,
 )

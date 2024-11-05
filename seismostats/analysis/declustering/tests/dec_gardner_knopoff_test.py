@@ -52,12 +52,11 @@ import unittest
 import os
 import numpy as np
 
-from openquake.hmtk.seismicity.declusterer.dec_gardner_knopoff import (
+from seismostats.analysis.declustering import (
     GardnerKnopoffType1,
+    GardnerKnopoffWindow
 )
-from openquake.hmtk.seismicity.declusterer.distance_time_windows import (
-    GardnerKnopoffWindow,
-)
+
 from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
 
 

@@ -52,10 +52,11 @@ import unittest
 import os
 import numpy as np
 
-from openquake.hmtk.seismicity.declusterer.dec_afteran import Afteran
-from openquake.hmtk.seismicity.declusterer.distance_time_windows import (
-    GardnerKnopoffWindow,
+from seismostats.analysis.declustering import (
+    Afteran,
+    GardnerKnopoffWindow
 )
+
 from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
 
 
