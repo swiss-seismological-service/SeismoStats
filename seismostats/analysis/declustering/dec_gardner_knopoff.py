@@ -53,7 +53,7 @@ defines the Gardner and Knopoff declustering algorithm
 import numpy as np
 
 from seismostats.analysis.declustering.base import BaseCatalogueDecluster
-from openquake.hmtk.seismicity.utils import decimal_year, haversine
+from seismostats.analysis.declustering.utils import decimal_year, haversine
 
 
 # TODO type the config instead
