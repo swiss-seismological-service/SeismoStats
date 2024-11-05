@@ -50,7 +50,6 @@ Module :mod:`openquake.hmtk.parsers.catalogue.base` defines an abstract base cla
 for :class:`CatalogueParser <BaseCatalogueDecluster>`.
 """
 import abc
-from openquake.hmtk.registry import CatalogueFunctionRegistry
 
 
 class BaseCatalogueDecluster(object):
@@ -73,6 +72,3 @@ class BaseCatalogueDecluster(object):
         Returns two vectors
         """
         return
-
-
-DECLUSTERER_METHODS = CatalogueFunctionRegistry()
