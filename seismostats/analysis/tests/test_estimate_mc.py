@@ -2,10 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
+import warnings
 
 from seismostats.analysis.estimate_mc import bin_to_precision
-from seismostats.analysis.estimate_mc import (empirical_cdf, mc_ks,
-                                              mc_max_curvature)
+from seismostats.analysis.estimate_mc import (empirical_cdf,
+                                              mc_ks,
+                                              mc_max_curvature,
+                                              mc_by_bvalue_stability)
 
 
 @pytest.fixture
@@ -235,3 +238,32 @@ def test_estimate_mc_maxc(magnitudes):
     mc = mc_max_curvature(magnitudes, delta_m=0.1, correction_factor=0.2)
 
     assert_equal(1.3, mc)
+
+
+@pytest.fixture
+def setup_catalog():
+    swiss_catalog = pd.read_csv(
+        'seismostats/analysis/tests/data/catalog_sed.csv', index_col=0)
+    return swiss_catalog, 0.01
+
+
+def test_estimate_mc_bvalue_stability(setup_catalog):
+    swiss_catalog = setup_catalog[0]
+    mags = swiss_catalog['magnitude'].values
+    delta_m = setup_catalog[1]
+    # make sure that the warning of no mags in lowest bin is not raised
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mc, _, _, _, _ = mc_by_bvalue_stability(
+            mags, delta_m=delta_m,
+            stability_range=0.5,
+            mcs_test=np.arange(0.12, 2.0, delta_m))
+
+    assert_almost_equal(1.44, mc)
+
+
+def test_estimate_mc_bvalue_stability_larger_bins(setup_magnitudes):
+    mc, _, _, _, _ = mc_by_bvalue_stability(
+        setup_magnitudes, delta_m=0.1, stability_range=0.5)
+
+    assert_almost_equal(1.1, mc)

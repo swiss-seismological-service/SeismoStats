@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import uuid
 from collections import defaultdict
@@ -7,14 +8,13 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from shapely import Polygon
-
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
+from shapely import Polygon
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
@@ -78,7 +78,7 @@ class Catalog(pd.DataFrame):
 
     _metadata = ['name', '_required_cols', 'mc',
                  'delta_m', 'b_value', 'starttime', 'endtime',
-                 'bounding_polygon']
+                 'bounding_polygon', 'depth_min', 'depth_max']
     _required_cols = REQUIRED_COLS_CATALOG
 
     def __init__(
@@ -104,7 +104,7 @@ class Catalog(pd.DataFrame):
         if self.columns.empty:
             self = self.reindex(self.columns.union(
                 REQUIRED_COLS_CATALOG), axis=1)
-
+        self.logger = logging.getLogger(__name__)
         self.name = name
         self.mc = mc
         self.b_value = b_value
@@ -187,7 +187,7 @@ class Catalog(pd.DataFrame):
 
         for num in numeric_cols:
             if num in df.columns:
-                df[num] = pd.to_numeric(df[num])
+                df[num] = pd.to_numeric(df[num], errors='coerce')
 
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
@@ -202,6 +202,14 @@ class Catalog(pd.DataFrame):
 
         if df.empty:
             df = Catalog(columns=REQUIRED_COLS_CATALOG + ['magnitude_type'])
+
+        full_len = len(df)
+
+        df = df.dropna(subset=['latitude', 'longitude', 'time'])
+
+        if len(df) < full_len:
+            df.logger.info(
+                f"Dropped {full_len - len(df)} rows with missing values")
 
         return df
 
@@ -484,6 +492,10 @@ class Catalog(pd.DataFrame):
 
         df = self.copy()
         df = df._create_ids()
+        df = df.dropna(subset=['latitude', 'longitude', 'time'])
+        if len(df) != len(self):
+            self.logger.info(
+                f"Dropped {len(self) - len(df)} rows with missing values")
 
         secondary_mags = self._secondary_magnitudekeys()
 
@@ -493,7 +505,7 @@ class Catalog(pd.DataFrame):
         for event in data['events']:
             event['sec_mags'] = defaultdict(dict)
             for mag in secondary_mags:
-                if pd.notna(event[mag]) \
+                if pd.notna(event[mag]) and pd.notna(event['magnitude_type']) \
                         and event['magnitude_type'] not in mag:
 
                     mag_type = mag.split('_')[1]

@@ -88,7 +88,7 @@ def estimate_b(
     ), "magnitudes are not binned correctly"
     # test that smallest magnitude is not below mc
     assert (
-        np.min(magnitudes) >= mc
+        np.min(magnitudes) >= mc - delta_m / 2
     ), "magnitudes below mc are present in the data"
     # test if lowest magnitude is much larger than mc
     if get_option("warnings") is True:
