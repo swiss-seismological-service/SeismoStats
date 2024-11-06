@@ -232,24 +232,6 @@ def estimate_b_utsu(
         return b
 
 
-def differences(magnitudes: np.ndarray) -> np.ndarray:
-    """returns all the differences between the magnitudes, only counting each
-    difference once
-
-    Args:
-        magnitudes: vector of magnitudes differences, sorted in time (first
-                    entry is the earliest earthquake)
-
-    Returns: array of all differences of the elements of the input
-    """
-    mag_diffs = np.array([])
-    for ii in range(1, len(magnitudes)):
-        loop_mag1 = magnitudes[ii:]
-        loop_mag2 = magnitudes[:-ii]
-        mag_diffs = np.append(mag_diffs, loop_mag1 - loop_mag2)
-    return mag_diffs
-
-
 def estimate_b_positive(
     magnitudes: np.ndarray,
     delta_m: float = 0,
@@ -445,60 +427,6 @@ def make_more_incomplete(
         return magnitudes, times, idx
 
     return magnitudes, times
-
-
-def estimate_b_laplace(
-    magnitudes: np.ndarray,
-    delta_m: float = 0,
-    b_parameter: str = "b_value",
-    return_std: bool = False,
-    return_n: bool = False,
-) -> float | tuple[float, float]:
-    """Return the b-value estimate calculated using
-    all the  differences between magnitudes.
-    (This has a little less variance than the
-    :func:`seismostats.analysis.estimate_b_positive`
-    method.)
-
-    Source:
-        Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
-        2)
-
-    Args:
-        magnitudes: vector of magnitudes differences, sorted in time (first
-                    entry is the earliest earthquake)
-        delta_m:    discretization of magnitudes. default is no discretization
-        b_parameter:either 'b-value', then the corresponding value  of the
-                Gutenberg-Richter law is returned, otherwise 'beta' from the
-                exponential distribution [p(M) = exp(-beta*(M-mc))]
-        return_std: if True the standard deviation of beta/b-value (see above)
-                is returned
-
-    Returns:
-        b:      maximum likelihood beta or b-value, depending on value of
-                input variable 'b_parameter'. Note that the difference is just a
-                factor [b_value = beta * log10(e)]
-        std:    Shi and Bolt estimate of the beta/b-value estimate
-    """
-    mag_diffs = differences(magnitudes)
-    mag_diffs = abs(mag_diffs)
-    mag_diffs = mag_diffs[mag_diffs > 0]
-
-    out = estimate_b_classic(
-        mag_diffs,
-        mc=delta_m,
-        delta_m=delta_m,
-        b_parameter=b_parameter,
-        return_std=return_std,
-    )
-
-    if return_n:
-        if type(out) is tuple:
-            return out + tuple([len(mag_diffs)])
-        else:
-            return out, len(mag_diffs)
-    else:
-        return out
 
 
 def estimate_b_weichert(
