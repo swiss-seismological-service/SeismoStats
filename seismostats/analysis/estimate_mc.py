@@ -388,3 +388,107 @@ def mc_max_curvature(
     )
     mc = bins[count.argmax()] + correction_factor
     return mc
+
+
+def mc_by_bvalue_stability(
+        sample: np.ndarray,
+        delta_m: float,
+        stability_range: float = 0.5,
+        mcs_test: np.ndarray | None = None,
+        stop_when_passed: bool = True,
+):
+    """
+    Estimates Mc using a test of stability.
+
+    The stability of the b-value is tested by default on half a magnitude unit
+    (in line with the 5x0.1 in the orginial paper). Users can change the range
+    for the stability test by changing the stability_range.
+
+    Source:
+        Woessner, J, and Stefan W. "Assessing the quality of earthquake
+        catalogues: Estimating the magnitude of completeness and its
+        uncertainty." Bulletin of the Seismological Society of America 95.2
+        (2005): 684-698.
+
+    Args:
+        sample:             Vector of magnitudes.
+        delta_m:            Discretization of the magnitudes.
+        stability_range:    Magnitude range to consider for the
+            stability test. Default is 0.5 to consider half a magnitude unit,
+            this is compatible with the original definition of Cao & Gao 2002.
+        mcs_test:           Array of tested completeness magnitudes.
+            If None, it will be generated automatically based on the sample and
+            delta_m.
+        stop_when_passed:   Whether to stop the stability test
+            when a passing completeness magnitude (Mc) is found. Default is
+            True.
+
+    Returns:
+        - best_mc:  Single best magnitude of completeness estimate.
+        - best_b:   b-value associated with best_mc.
+        - mcs_test: Array of tested completeness magnitudes.
+        - bs:       Array of b-values associated to tested mcs
+        - diff_bs:  Array of differences divided by std, associated with tested
+            mcs. If a value is smaller than one, this means that the stability
+            criterion is met.
+    """
+    # TODO: include a test if the sample is tested the correct way
+    # instead of binning it here
+    sample = bin_to_precision(sample, delta_x=delta_m)
+    steps = len(np.arange(0, stability_range, delta_m))
+
+    if mcs_test is None:
+        mcs_test = np.arange(np.min(sample), np.max(sample), delta_m)
+        mcs_test = bin_to_precision(mcs_test, delta_m)
+        if len(mcs_test) <= steps:
+            raise ValueError(
+                "The range of magnitudes is smaller than the stability range."
+            )
+        mcs_test = mcs_test[:-steps + 1]
+    else:
+        mcs_test = mcs_test[mcs_test + stability_range <= np.max(sample)]
+        if len(mcs_test) < 1:
+            raise ValueError(
+                "The range of magnitudes is smaller than the stability range."
+            )
+
+    bs = []
+    diff_bs = []
+    for ii, mc in enumerate(mcs_test):
+        # TODO: here, one should be able to choose the method
+        b, std = estimate_b(
+            sample[sample >= mc - delta_m / 2], mc, delta_m,
+            b_parameter='b_value', return_std=True,
+            method="classic")
+        if len(sample[sample >= mc - delta_m / 2]) < 30:
+            warnings.warn(
+                "Number of events above tested Mc is less than 30. "
+                "This might affect the stability test."
+            )
+        bs.append(b)
+
+        mc_plus = np.arange(mc, mc + stability_range, delta_m)
+        mc_plus = mc_plus[mc_plus <= np.max(sample)]
+        b_ex = []
+        for mc_p in mc_plus:
+            # TODO: here, one should be able to choose the method
+            b_p = estimate_b(sample[sample >= mc_p - delta_m / 2],
+                             mc_p, delta_m, b_parameter='b_value',
+                             method="classic")
+            b_ex.append(b_p)
+        b_avg = np.sum(b_ex) / steps
+        diff_b = np.abs(b_avg - b) / std
+        diff_bs.append(diff_b)
+        if diff_b <= 1:
+            value = True
+            if diff_b == min(diff_bs):
+                best_mc = mc
+                best_b = bs[-1]
+            if stop_when_passed:
+                mcs_test = mcs_test[:ii + 1]
+                break
+
+    if value:
+        return bin_to_precision(best_mc, delta_m), best_b, mcs_test, bs, diff_bs
+    else:
+        raise ValueError("No Mc passes the stability test")
