@@ -336,6 +336,7 @@ class Catalog(pd.DataFrame):
                                  self.magnitude.max(),
                                  delta_m)
 
+        # TODO change once we have a global estimate_mc
         mc_est = mc_ks(self.magnitude,
                        mcs_test,
                        delta_m,
@@ -356,7 +357,7 @@ class Catalog(pd.DataFrame):
         weights: list | None = None,
         b_parameter: str = "b_value",
         return_std: bool = False,
-        method: str = "tinti",
+        method: str = "classic",
         return_n: bool = False,
     ) -> float | tuple[float, float] | tuple[float, float, float]:
         """
@@ -402,14 +403,17 @@ class Catalog(pd.DataFrame):
         if delta_m is None:
             delta_m = self.delta_m
 
+        # filter magnitudes above mc without changing the original dataframe
+        df = self[self.magnitude >= mc]
+
         if method == "positive":
             # dataframe needs 'time' column to be sorted
-            if 'time' not in self.columns:
+            if 'time' not in df.columns:
                 raise ValueError('"time" column needs to be set in order to \
                                  use the b-positive method')
-            mags = self.sort_values("time").magnitude
+            mags = df.sort_values("time").magnitude
         else:
-            mags = self.magnitude
+            mags = df.magnitude
 
         b_estimate = estimate_b(mags,
                                 mc,

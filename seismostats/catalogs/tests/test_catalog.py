@@ -1,12 +1,15 @@
 import os
 import re
 import uuid
+import pytest
 
+import numpy as np
 import pandas as pd
 
 from seismostats.catalogs.catalog import (REQUIRED_COLS_CATALOG, Catalog,
                                           ForecastCatalog)
 from seismostats.utils.binning import bin_to_precision
+from seismostats.analysis.estimate_beta import estimate_b
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
             'magnitude': [10.0, 12.5, 8.2],
@@ -77,19 +80,73 @@ def test_forecast_catalog_strip():
     assert isinstance(dropped, Catalog)
 
 
-def test_catalog_bin():
-    mag_values = [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]
-    delta_m = 0.1
-
+@pytest.mark.parametrize(
+    "mag_values, delta_m",
+    [
+        (np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]),
+         0.1),
+        (np.array([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6]),
+         0.2),
+        ([0.235, -0.235, 4.499, 5.5, 6, 0.1, 1.6],
+         0.2)
+    ]
+)
+def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
     catalog = Catalog({'magnitude': mag_values})
 
     assert (catalog.bin_magnitudes(
         delta_m)['magnitude'].tolist()
         == bin_to_precision(mag_values, delta_m)).all()
+    assert (catalog.bin_magnitudes()['magnitude'].tolist()
+            == bin_to_precision(mag_values, 0.1)).all()
 
-    catalog.bin_magnitudes(delta_m, inplace=True)
+    return_value = catalog.bin_magnitudes(delta_m, inplace=True)
     assert (catalog['magnitude'].tolist()
             == bin_to_precision(mag_values, delta_m)).all()
+    assert return_value is None
+    assert catalog.delta_m == delta_m
+
+
+def test_catalog_estimate_mc():
+    # TODO once global_mc method is implemented
+    catalog = Catalog({'magnitude': [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]})
+
+    with pytest.raises(ValueError):
+        catalog.estimate_mc()
+
+
+@pytest.mark.parametrize(
+    "mag_values, delta_m, mc",
+    [
+        (np.array([0.0, 0.235, 0.238, 4.499, 4.5, 6, 0.1, 1.6]),
+         0.001, 0.0)
+    ]
+)
+def test_catalog_estimate_b(mag_values, delta_m, mc):
+    catalog = Catalog({'magnitude': mag_values})
+
+    with pytest.raises(ValueError):
+        catalog.estimate_b(mc=None, delta_m=None)
+    with pytest.raises(ValueError):
+        catalog.estimate_b(mc=1.0, delta_m=None)
+    with pytest.raises(ValueError):
+        catalog.estimate_b(mc=None, delta_m=0.1)
+    with pytest.raises(ValueError):
+        catalog.estimate_b(mc=1.0, delta_m=0.1, method='positive')
+
+    b_value = estimate_b(catalog['magnitude'],
+                         mc=mc,
+                         delta_m=delta_m,
+                         method="classic")
+    return_value = catalog.estimate_b(mc=mc, delta_m=delta_m, method="classic")
+    assert catalog.b_value == b_value
+    assert return_value == b_value
+
+    catalog.mc = mc
+    catalog.delta_m = delta_m
+    return_value = catalog.estimate_b(method="classic")
+    assert catalog.b_value == b_value
+    assert return_value == b_value
 
 
 def test_to_quakeml():
