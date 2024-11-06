@@ -17,6 +17,7 @@ from seismostats.analysis.estimate_beta import (
     shi_bolt_confidence,
     estimate_b_more_positive,
     make_more_incomplete,
+    b_value_to_beta,
 )
 from seismostats.utils.simulate_distributions import (
     simulate_magnitudes_binned,
@@ -332,22 +333,16 @@ def test_estimate_b_weichert(
     assert abs(a_val_true - a_val) / a_val_true <= precision
 
 
-# load data for test_shi_bolt_confidence
-with open(
-    "seismostats/analysis/tests/data/test_shi_bolt_confidence.p", "rb"
-) as f:
-    data = pickle.load(f)
-
-
 @pytest.mark.parametrize(
-    "magnitudes,b,b_parameter,std",
-    [data["values_test1"], data["values_test2"]],
+    "std, mags, b, b_parameter",
+    [
+        (0.09776728958456313, magnitudes(1)[:100], 1, "b_value"),
+        (0.1062329763800726, magnitudes(1.5)[:200], 1.5, "b_value"),
+        (0.100184931569467, magnitudes(0.5)[
+         :100], b_value_to_beta(0.5), "beta"),
+    ],
 )
 def test_shi_bolt_confidence(
-    magnitudes: np.ndarray, b: float, b_parameter: str, std: float
-):
-    precision = 1e-10
-    assert (
-        shi_bolt_confidence(magnitudes, b=b, b_parameter=b_parameter) - std
-        < precision
-    )
+        std: float, mags: np.ndarray, b: float, b_parameter: str):
+    assert_almost_equal(
+        shi_bolt_confidence(mags, b=b, b_parameter=b_parameter), std)
