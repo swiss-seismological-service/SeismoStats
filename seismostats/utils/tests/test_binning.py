@@ -51,7 +51,6 @@ def test_bin_to_precision(x: np.ndarray, delta_x: float,
 def test_bin_to_precision_none():
     with pytest.raises(ValueError):
         bin_to_precision(None)
-        bin_to_precision([], 0)
 
 
 @pytest.mark.parametrize(
