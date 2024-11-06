@@ -262,8 +262,8 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     assert_almost_equal(1.44, mc)
 
 
-def test_estimate_mc_bvalue_stability_larger_bins(setup_magnitudes):
+def test_estimate_mc_bvalue_stability_larger_bins(magnitudes):
     mc, _, _, _, _ = mc_by_bvalue_stability(
-        setup_magnitudes, delta_m=0.1, stability_range=0.5)
+        magnitudes, delta_m=0.1, stability_range=0.5)
 
     assert_almost_equal(1.1, mc)
