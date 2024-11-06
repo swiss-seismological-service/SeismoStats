@@ -38,14 +38,14 @@ def normal_round(x: float, n: int = 0) -> float:
     return normal_round_to_int(x * power) / power
 
 
-def bin_to_precision(x: np.ndarray | list, delta_x: float = 0.1) -> np.ndarray:
+def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
     """
     Rounds float numbers within the array ``x`` to a given precision. If
-    precision not given, assumes ``delta_x = 0.1``.
+    precision not given, throws error.
 
     Args:
         x: list of decimal numbers that needs to be rounded
-        delta_x: size of the bin, optional
+        delta_x: size of the bin
 
     Returns:
         Value rounded to the given precision.
