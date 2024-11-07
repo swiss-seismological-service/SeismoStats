@@ -76,12 +76,17 @@ sera_hist = CsvCatalogueParser(sera_file).read_file()
 df_ids = simple_df.copy()._create_ids()
 
 
-@pytest.mark.parametrize("df", [simple_df, fdsnws, df_ids])
+@pytest.mark.parametrize("df", [simple_df, fdsnws, df_ids, SeismoCatalog()])
 def test_seismo_full_round(df: SeismoCatalog):
+    df = df.copy()
     converted = df.to_openquake()
     reconstructed = SeismoCatalog.from_openquake(converted)
-    if 'eventID' not in df:
+    if 'eventID' not in df and 'eventID' in reconstructed:
         reconstructed = reconstructed.drop(columns=['eventID'])
+    # for the empty case, columns are not sorted (we don't give guarantees)
+    if len(df) == 0:
+        df.sort_index(inplace=True, axis=1)
+        reconstructed.sort_index(inplace=True, axis=1)
     pdt.assert_frame_equal(df, reconstructed)
 
 
@@ -106,7 +111,8 @@ def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
 
 @pytest.mark.parametrize("oq_catalogue", [simple_oq_catalogue,
                                           historical_oq_catalogue,
-                                          sera_hist])
+                                          sera_hist,
+                                          OQCatalog()])
 def test_hmtk_full_round(oq_catalogue: OQCatalog):
     df = SeismoCatalog.from_openquake(oq_catalogue)
     reconstructed = df.to_openquake()
@@ -176,15 +182,14 @@ def test_from_openquake_extra_col():
 
 def test_to_empty():
     df = SeismoCatalog()
-    with pytest.raises(Exception):
-        cat = df.to_openquake()
-        assert cat.get_number_events() == 0
+    cat = df.to_openquake()
+    assert all(len(cat.data[col]) == 0 for col in cat.data)
 
 
 def test_from_empty():
-    with pytest.raises(Exception):
-        df = SeismoCatalog.from_openquake({})
-        assert len(df) == 0
+    empty_catalogue = OQCatalog()
+    df = SeismoCatalog.from_openquake(empty_catalogue)
+    assert len(df) == 0
 
 
 def test_with_eventid():

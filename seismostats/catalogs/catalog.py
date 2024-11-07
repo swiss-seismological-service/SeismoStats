@@ -238,9 +238,6 @@ class Catalog(pd.DataFrame):
                                 should be kept (they are converted to 'time').
         Returns:
             Catalog
-
-        Raises:
-            ValueError:         If the Catalog is empty.
         """
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
@@ -253,11 +250,13 @@ class Catalog(pd.DataFrame):
                             row.minute,
                             row.second)
         data = oq_catalogue.data
-        length = oq_catalogue.get_number_events()
+        # not all items of the data have necessarily the same length
+        length = max((len(c) for c in data.values()), default=0)
+
         if length == 0:
-            raise ValueError("Conversion for an empty Catalog is not supported")
-        cat = cls(
-            {k: v for k, v in data.items() if len(v) > 0 or length == 0})
+            return cls()
+
+        cat = cls({k: v for k, v in data.items() if len(v) > 0})
         # hmtk stores seconds as floats, but pandas requires them as integers
         us = ((cat["second"] % 1) * 1e6)
         cat["microsecond"] = us.round().astype(np.int32)
@@ -278,17 +277,17 @@ class Catalog(pd.DataFrame):
         """
         Converts the Catalog to an openquake Catalogue
         The optional dependency group openquake is required for this method.
+        The required columns are mapped to the openquake columns, except
+        time is converted to 'year', 'month', 'day', 'hour', 'minute', 'second'.
+        'eventID' is created if not present.
 
         Returns:
             OQCatalogue:        the converted Catalogue
-
-        Raises:
-            ValueError:         If the Catalog is empty.
         """
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
         if len(self) == 0:
-            raise ValueError("Conversion for an empty Catalog is not supported")
+            return OQCatalogue()
         data = dict()
         for col, dtype in zip(self.columns, self.dtypes):
             if np.issubdtype(dtype, np.number):
