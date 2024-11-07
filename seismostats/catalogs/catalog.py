@@ -32,6 +32,9 @@ REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
 QML_TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'catalog_templates', 'quakeml.j2')
 
+_PD_TIME_COLS = ['year', 'month', 'day',
+                 'hour', 'minute', 'second', 'microsecond']
+
 
 def _catalog_constructor_with_fallback(*args, **kwargs):
     df = Catalog(*args, **kwargs)
@@ -243,8 +246,6 @@ class Catalog(pd.DataFrame):
         """
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
-        pd_time_columns = ['year', 'month', 'day', 'hour',
-                           'minute', 'second', 'microsecond']
 
         def _convert_to_datetime(row):
             return datetime(row.year,
@@ -265,14 +266,14 @@ class Catalog(pd.DataFrame):
         cat["microsecond"] = us.round().astype(np.int32)
         cat["second"] = cat["second"].astype(np.int32)
         try:
-            cat.loc[:, "time"] = pd.to_datetime(cat[pd_time_columns])
+            cat.loc[:, "time"] = pd.to_datetime(cat[_PD_TIME_COLS])
         except ValueError:
             # if the time is out of bounds, we have to store
             # datetime with a resolution of seconds.
             dt = cat.apply(_convert_to_datetime, axis=1)
             cat['time'] = dt.astype('datetime64[s]')
         if not keep_time_cols:
-            cat.drop(columns=pd_time_columns, inplace=True)
+            cat.drop(columns=_PD_TIME_COLS, inplace=True)
         return cat
 
     @require_cols(require=REQUIRED_COLS_CATALOG)
@@ -306,8 +307,7 @@ class Catalog(pd.DataFrame):
             data["eventID"] = self.index.astype(str).to_list()
 
         time = self['time']
-        for time_unit in ['year', 'month', 'day', 'hour',
-                          'minute', 'second', 'microsecond']:
+        for time_unit in _PD_TIME_COLS:
             if len(time) == 0:
                 data[time_unit] = np.array([], dtype=int)
             else:
