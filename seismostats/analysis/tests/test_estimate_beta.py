@@ -1,26 +1,22 @@
+import datetime as dt
 import warnings
 
 import numpy as np
-from numpy.testing import assert_almost_equal
-import pytest
-import datetime as dt
 import pandas as pd
+import pytest
+from numpy.testing import assert_almost_equal
 
 # import functions to be tested
-from seismostats.analysis.estimate_beta import (
-    estimate_b,
-    estimate_b_positive,
-    estimate_b_classic,
-    estimate_b_utsu,
-    estimate_b_weichert,
-    shi_bolt_confidence,
-    estimate_b_more_positive,
-    make_more_incomplete,
-    b_value_to_beta,
-)
+from seismostats.analysis.estimate_beta import (b_value_to_beta, estimate_b,
+                                                estimate_b_classic,
+                                                estimate_b_more_positive,
+                                                estimate_b_positive,
+                                                estimate_b_utsu,
+                                                estimate_b_weichert,
+                                                make_more_incomplete,
+                                                shi_bolt_confidence)
 from seismostats.utils.simulate_distributions import (
-    simulate_magnitudes_binned,
-    bin_to_precision)
+    bin_to_precision, simulate_magnitudes_binned)
 
 
 @pytest.mark.parametrize(
@@ -250,7 +246,7 @@ def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
     mmax = 7.95
 
     obs_mags = []
-    obs_dates = []
+    obs_times = []
     for ii in range(len(completeness_table)):
         bin_lower_edge, cyear_lower = completeness_table[ii]
         if ii == len(completeness_table) - 1:
@@ -275,7 +271,7 @@ def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
             )
         )
         obs_yearsi = np.random.randint(cyear_lower, end_year, obs_countsi)
-        obs_dates.append(
+        obs_times.append(
             np.array(["%d-06-15" % i for i in obs_yearsi], dtype="datetime64")
         )
 
@@ -294,21 +290,21 @@ def _create_test_catalog_poisson(a_val_true: float, b_val_true: float):
             np.random.randint(1000, 1500, 1),
         ]
     )
-    dates_inc = np.array(
+    times_inc = np.array(
         ["%d-06-15" % i for i in years_inc], dtype="datetime64"
     )
 
     # merge complete and incomplete earthquakes
     mags = np.concatenate([*obs_mags, mags_inc])
-    dates = np.concatenate([*obs_dates, dates_inc])
-    return mags, dates
+    times = np.concatenate([*obs_times, times_inc])
+    return mags, times
 
 
 @pytest.mark.parametrize("a_val_true,b_val_true,precision", [(7, 1, 0.01)])
 def test_estimate_b_weichert(
     a_val_true: float, b_val_true: float, precision: float
 ):
-    mags, dates = _create_test_catalog_poisson(a_val_true, b_val_true)
+    mags, times = _create_test_catalog_poisson(a_val_true, b_val_true)
 
     (
         b_val,
@@ -318,7 +314,7 @@ def test_estimate_b_weichert(
         a_val,
     ) = estimate_b_weichert(
         magnitudes=mags,
-        dates=dates,
+        times=times,
         completeness_table=np.array(
             [[3.95, 1940], [4.95, 1880], [5.95, 1500], [6.95, 1000]]
         ),

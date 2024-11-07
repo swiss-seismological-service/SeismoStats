@@ -431,7 +431,7 @@ def make_more_incomplete(
 
 def estimate_b_weichert(
     magnitudes: np.ndarray,
-    dates: list[np.datetime64],
+    times: list[np.datetime64],
     completeness_table: np.ndarray,
     mag_max: int | float,
     last_year: int | float | None = None,
@@ -482,7 +482,7 @@ def estimate_b_weichert(
                magnitude frequency distribution
     """
     assert len(magnitudes) == len(
-        dates
+        times
     ), "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
     assert np.all(
@@ -506,7 +506,7 @@ def estimate_b_weichert(
     ), "please choose either 'b_value' or 'beta' as b_parameter"
 
     # convert datetime to integer calendar year
-    years = np.array(dates).astype("datetime64[Y]").astype(int) + 1970
+    years = np.array(times).astype("datetime64[Y]").astype(int) + 1970
 
     # get last year of catalogue if last_year not defined
     last_year = last_year if last_year else np.max(years)
@@ -664,7 +664,7 @@ def _weichert_objective_function(
 
 def estimate_b_kijko_smit(
     magnitudes: np.ndarray,
-    dates: list[np.datetime64],
+    times: list[np.datetime64],
     completeness_table: np.ndarray,
     last_year: int | float | None = None,
     delta_m: float = 0.1,
@@ -713,7 +713,7 @@ def estimate_b_kijko_smit(
     """
 
     assert len(magnitudes) == len(
-        dates
+        times
     ), "the magnitudes and years arrays have different lengths"
     assert completeness_table.shape[1] == 2
     assert np.all(
@@ -741,7 +741,7 @@ def estimate_b_kijko_smit(
     ), "please choose either 'b_value' or 'beta' as b_parameter"
 
     # convert datetime to integer calendar year
-    years = np.array(dates).astype("datetime64[Y]").astype(int) + 1970
+    years = np.array(times).astype("datetime64[Y]").astype(int) + 1970
 
     # get last year of catalogue if last_year not defined
     last_year = last_year if last_year else np.max(years)
