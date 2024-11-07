@@ -6,7 +6,6 @@ import uuid
 from datetime import datetime
 from collections import defaultdict
 from typing import Any
-from math import log10
 
 import numpy as np
 import pandas as pd
@@ -296,13 +295,13 @@ class Catalog(pd.DataFrame):
                 data[col] = self[col].to_numpy(dtype=dtype, copy=True)
             else:
                 data[col] = self[col].to_list()
-        # hmtk requires an "eventID" column, create it from the index if missing
-        # in the test files, they are of the form "10000001","10000002"
-        # dynamically start with a large enough number
+        # add required eventID if not present
         if "eventID" not in data:
-            exp = max(int(log10(len(self))) + 1, 7)
-            self.index.map(lambda i: f"1{i:0{exp}d}").to_list()
-            data["eventID"] = self.index.astype(str).to_list()
+            if "eventid" in self.columns:
+                data['eventID'] = self['eventid'].map(str).to_list()
+            else:
+                data['eventID'] = self.index.map(
+                    lambda _: uuid.uuid4()).map(str).to_list()
 
         time = self['time']
         for time_unit in _PD_TIME_COLS:
