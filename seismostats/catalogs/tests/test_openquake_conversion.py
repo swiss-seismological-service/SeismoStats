@@ -1,3 +1,5 @@
+from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
+from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
 from copy import deepcopy
 
 import numpy as np
@@ -12,8 +14,6 @@ from seismostats.utils import _check_required_cols
 pytest.importorskip("openquake.hmtk.seismicity.catalogue",
                     reason="Testing OpenQuake conversion requires\
                     the optional dependency openquake to be installed")
-from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
-from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
 
 PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'data')
@@ -82,35 +82,10 @@ def test_seismo_full_round(df: SeismoCatalog):
     pdt.assert_frame_equal(df, reconstructed)
 
 
-HMTK_FLOAT_ATTRIBUTE_LIST = [
-    "second",
-    "timeError",
-    "longitude",
-    "latitude",
-    "SemiMajor90",
-    "SemiMinor90",
-    "ErrorStrike",
-    "depth",
-    "depthError",
-    "magnitude",
-    "sigmaMagnitude",
-]
-
-HMTK_INT_ATTRIBUTE_LIST = ["year", "month", "day", "hour", "minute", "flag"]
-
-HMTK_STRING_ATTRIBUTE_LIST = ["eventID", "Agency", "magnitudeType", "comment"]
-
-HMTK_TOTAL_ATTRIBUTE_LIST = list(
-    (set(HMTK_FLOAT_ATTRIBUTE_LIST).union(set(HMTK_INT_ATTRIBUTE_LIST))).union(
-        set(HMTK_STRING_ATTRIBUTE_LIST)
-    )
-)
-
-
 def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
     data1 = cat1.data
     data2 = cat2.data
-    for attribute in HMTK_TOTAL_ATTRIBUTE_LIST:
+    for attribute in OQCatalog.TOTAL_ATTRIBUTE_LIST:
         has1 = attribute in data1 and len(data1[attribute]) > 0
         has2 = attribute in data2 and len(data2[attribute]) > 0
         assert has1 == has2 and "Attribute missing in one of the catalogs"
@@ -118,9 +93,9 @@ def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
             continue
         col1 = data1[attribute]
         col2 = data2[attribute]
-        if attribute in HMTK_FLOAT_ATTRIBUTE_LIST:
+        if attribute in OQCatalog.FLOAT_ATTRIBUTE_LIST:
             np.testing.assert_allclose(col1, col2)
-        elif attribute in HMTK_INT_ATTRIBUTE_LIST:
+        elif attribute in OQCatalog.INT_ATTRIBUTE_LIST:
             np.testing.assert_array_equal(col1, col2)
         else:
             assert col1 == col2 and "String attribute mismatch"
