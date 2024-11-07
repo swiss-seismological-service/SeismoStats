@@ -79,7 +79,6 @@ def test_seismo_full_round(df: SeismoCatalog):
     reconstructed = SeismoCatalog.from_openquake(converted)
     if 'eventID' not in df:
         reconstructed = reconstructed.drop(columns=['eventID'])
-    print(df.compare(reconstructed))
     pdt.assert_frame_equal(df, reconstructed, rtol=1e-5, atol=1e-8)
 
 
@@ -114,7 +113,6 @@ def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
     for attribute in HMTK_TOTAL_ATTRIBUTE_LIST:
         has1 = attribute in data1 and len(data1[attribute]) > 0
         has2 = attribute in data2 and len(data2[attribute]) > 0
-        print(attribute, has1, has2)
         assert has1 == has2 and "Attribute missing in one of the catalogs"
         if not has1 or not has2:
             continue
