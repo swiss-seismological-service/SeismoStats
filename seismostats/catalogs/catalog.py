@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 import uuid
-import copy
 from datetime import datetime
 from collections import defaultdict
 from typing import Any
@@ -255,12 +254,11 @@ class Catalog(pd.DataFrame):
                             row.minute,
                             row.second)
         data = oq_catalogue.data
-        clone = copy.deepcopy(data)
         length = oq_catalogue.get_number_events()
         if length == 0:
             raise ValueError("Conversion for an empty Catalog is not supported")
         cat = cls(
-            {k: v for k, v in clone.items() if len(v) > 0 or length == 0})
+            {k: v for k, v in data.items() if len(v) > 0 or length == 0})
         # hmtk stores seconds as floats, but pandas requires them as integers
         us = ((cat["second"] % 1) * 1e6)
         cat["microsecond"] = us.round().astype(np.int32)
