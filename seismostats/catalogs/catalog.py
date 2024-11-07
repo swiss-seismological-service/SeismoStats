@@ -3,11 +3,20 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+from datetime import datetime
 from collections import defaultdict
 from typing import Any
 
 import numpy as np
 import pandas as pd
+try:
+    from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
+except ImportError:
+    _openquake_available = False
+else:
+    _openquake_available = True
+
+
 from seismostats.analysis.estimate_beta import estimate_b
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
@@ -21,6 +30,9 @@ REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
 
 QML_TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'catalog_templates', 'quakeml.j2')
+
+_PD_TIME_COLS = ['year', 'month', 'day',
+                 'hour', 'minute', 'second', 'microsecond']
 
 
 def _catalog_constructor_with_fallback(*args, **kwargs):
@@ -212,6 +224,91 @@ class Catalog(pd.DataFrame):
                 f"Dropped {full_len - len(df)} rows with missing values")
 
         return df
+
+    @classmethod
+    def from_openquake(cls, oq_catalogue: OQCatalogue,
+                       keep_time_cols=False) -> Catalog:
+        """
+        Create a (seismostats) Catalog from an openquake Catalogue.
+        The optional dependency group openquake is required for this method.
+
+        Args:
+            oq_catalogue:       The openquake catalogue.
+            keep_time_cols:     Whether the time columns: 'year', 'month',
+                                'day', 'hour', 'minute', 'second'
+                                should be kept (they are converted to 'time').
+        Returns:
+            Catalog
+        """
+        if not _openquake_available:
+            raise ImportError("the optional openquake package is not available")
+
+        def _convert_to_datetime(row):
+            return datetime(row.year,
+                            row.month,
+                            row.day,
+                            row.hour,
+                            row.minute,
+                            row.second)
+        data = oq_catalogue.data
+        # not all items of the data have necessarily the same length
+        length = max((len(c) for c in data.values()), default=0)
+
+        if length == 0:
+            return cls()
+
+        cat = cls({k: v for k, v in data.items() if len(v) > 0})
+        # hmtk stores seconds as floats, but pandas requires them as integers
+        us = ((cat["second"] % 1) * 1e6)
+        cat["microsecond"] = us.round().astype(np.int32)
+        cat["second"] = cat["second"].astype(np.int32)
+        try:
+            cat.loc[:, "time"] = pd.to_datetime(cat[_PD_TIME_COLS])
+        except ValueError:
+            # if the time is out of bounds, we have to store
+            # datetime with a resolution of seconds.
+            dt = cat.apply(_convert_to_datetime, axis=1)
+            cat['time'] = dt.astype('datetime64[s]')
+        if not keep_time_cols:
+            cat.drop(columns=_PD_TIME_COLS, inplace=True)
+        return cat
+
+    @require_cols(require=REQUIRED_COLS_CATALOG)
+    def to_openquake(self) -> OQCatalogue:
+        """
+        Converts the Catalog to an openquake Catalogue
+        The optional dependency group openquake is required for this method.
+        The required columns are mapped to the openquake columns, except
+        time is converted to 'year', 'month', 'day', 'hour', 'minute', 'second'.
+        'eventID' is created if not present.
+
+        Returns:
+            OQCatalogue:        the converted Catalogue
+        """
+        if not _openquake_available:
+            raise ImportError("the optional openquake package is not available")
+        if len(self) == 0:
+            return OQCatalogue()
+        data = dict()
+        for col, dtype in zip(self.columns, self.dtypes):
+            if np.issubdtype(dtype, np.number):
+                data[col] = self[col].to_numpy(dtype=dtype, copy=True)
+            else:
+                data[col] = self[col].to_list()
+        # add required eventID if not present
+        if "eventID" not in data:
+            if "eventid" in self.columns:
+                data['eventID'] = self['eventid'].map(str).to_list()
+            else:
+                data['eventID'] = self.index.map(
+                    lambda _: uuid.uuid4()).map(str).to_list()
+
+        time = self['time']
+        for time_unit in _PD_TIME_COLS:
+            data[time_unit] = getattr(
+                time.dt, time_unit).to_numpy(copy=True)
+        data["second"] = data["second"] + data["microsecond"] / 1e6
+        return OQCatalogue.make_from_dict(data)
 
     def drop_uncertainties(self) -> Catalog:
         """
