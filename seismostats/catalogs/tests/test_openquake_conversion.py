@@ -1,3 +1,4 @@
+import uuid
 from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
 from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
 from copy import deepcopy
@@ -72,8 +73,10 @@ historical_oq_catalogue = OQCatalog.make_from_dict({
 sera_file = os.path.join(PATH_RESOURCES, 'sera_hist.csv')
 sera_hist = CsvCatalogueParser(sera_file).read_file()
 
+df_ids = simple_df.copy()._create_ids()
 
-@pytest.mark.parametrize("df", [simple_df, fdsnws])
+
+@pytest.mark.parametrize("df", [simple_df, fdsnws, df_ids])
 def test_seismo_full_round(df: SeismoCatalog):
     converted = df.to_openquake()
     reconstructed = SeismoCatalog.from_openquake(converted)
@@ -182,3 +185,21 @@ def test_from_empty():
     with pytest.raises(Exception):
         df = SeismoCatalog.from_openquake({})
         assert len(df) == 0
+
+
+def test_with_eventid():
+    df = simple_df.copy()
+    df['eventid'] = uuid.uuid4()
+    cat = df.to_openquake()
+    assert 'eventID' in cat.data
+    assert len(cat.data['eventID']) == len(df)
+    assert all(isinstance(x, str) for x in cat.data['eventID'])
+    assert [str(e) for e in df['eventid']] == cat.data['eventID']
+
+
+def test_without_eventid():
+    df = simple_df.copy()
+    cat = df.to_openquake()
+    assert 'eventID' in cat.data
+    assert len(cat.data['eventID']) == len(df)
+    assert all(isinstance(x, str) for x in cat.data['eventID'])
