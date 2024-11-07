@@ -304,11 +304,8 @@ class Catalog(pd.DataFrame):
 
         time = self['time']
         for time_unit in _PD_TIME_COLS:
-            if len(time) == 0:
-                data[time_unit] = np.array([], dtype=int)
-            else:
-                data[time_unit] = getattr(
-                    time.dt, time_unit).to_numpy(copy=True)
+            data[time_unit] = getattr(
+                time.dt, time_unit).to_numpy(copy=True)
         data["second"] = data["second"] + data["microsecond"] / 1e6
         return OQCatalogue.make_from_dict(data)
 
