@@ -88,7 +88,7 @@ def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
     for attribute in OQCatalog.TOTAL_ATTRIBUTE_LIST:
         has1 = attribute in data1 and len(data1[attribute]) > 0
         has2 = attribute in data2 and len(data2[attribute]) > 0
-        assert has1 == has2 and "Attribute missing in one of the catalogs"
+        assert has1 == has2, "Attribute missing in one of the catalogs"
         if not has1 or not has2:
             continue
         col1 = data1[attribute]
@@ -98,7 +98,7 @@ def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
         elif attribute in OQCatalog.INT_ATTRIBUTE_LIST:
             np.testing.assert_array_equal(col1, col2)
         else:
-            assert col1 == col2 and "String attribute mismatch"
+            assert col1 == col2, "String attribute mismatch"
 
 
 @pytest.mark.parametrize("oq_catalogue", [simple_oq_catalogue,
