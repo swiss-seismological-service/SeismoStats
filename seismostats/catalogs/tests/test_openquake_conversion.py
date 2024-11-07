@@ -79,7 +79,7 @@ def test_seismo_full_round(df: SeismoCatalog):
     reconstructed = SeismoCatalog.from_openquake(converted)
     if 'eventID' not in df:
         reconstructed = reconstructed.drop(columns=['eventID'])
-    pdt.assert_frame_equal(df, reconstructed, rtol=1e-5, atol=1e-8)
+    pdt.assert_frame_equal(df, reconstructed)
 
 
 HMTK_FLOAT_ATTRIBUTE_LIST = [
@@ -119,7 +119,7 @@ def compare_hmtk(cat1: OQCatalog, cat2: OQCatalog):
         col1 = data1[attribute]
         col2 = data2[attribute]
         if attribute in HMTK_FLOAT_ATTRIBUTE_LIST:
-            np.testing.assert_allclose(col1, col2, rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(col1, col2)
         elif attribute in HMTK_INT_ATTRIBUTE_LIST:
             np.testing.assert_array_equal(col1, col2)
         else:
@@ -152,8 +152,7 @@ def test_from_openquake_simple():
     df = SeismoCatalog.from_openquake(simple_oq_catalogue)
     assert _check_required_cols(df, REQUIRED_COLS_CATALOG)
     for col in COMMON_COLS:
-        np.testing.assert_allclose(df[col], simple_oq_catalogue[col],
-                                   rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(df[col], simple_oq_catalogue[col])
 
 
 def test_from_openquake_modify():
