@@ -127,8 +127,11 @@ def test_catalog_estimate_b(mag_values, delta_m, mc):
 
     with pytest.raises(ValueError):
         catalog.estimate_b(mc=None, delta_m=None)
+    with pytest.raises(ValueError):
         catalog.estimate_b(mc=1.0, delta_m=None)
+    with pytest.raises(ValueError):
         catalog.estimate_b(mc=None, delta_m=0.1)
+    with pytest.raises(ValueError):
         catalog.estimate_b(mc=1.0, delta_m=0.1, method='positive')
 
     b_value = estimate_b(catalog['magnitude'],
