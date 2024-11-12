@@ -235,13 +235,13 @@ class Catalog(pd.DataFrame):
         """
         Drop event, origin, and magnitude IDs from the catalog.
 
-        Drops columns named 'eventID', 'originid', and 'magnitudeid'.
+        Drops columns named 'eventID', 'originid', and 'magnitudeID'.
 
         Returns:
             catalog: Catalog with ID columns removed.
         """
 
-        rgx = "(eventID|originid|magnitudeid)$"
+        rgx = "(eventID|originid|magnitudeID)$"
         cols = self.filter(regex=rgx).columns
         df = self.drop(columns=cols)
         return df
@@ -465,19 +465,19 @@ class Catalog(pd.DataFrame):
             df['eventID'] = uuid.uuid4()
         if 'originid' not in df.columns:
             df['originid'] = uuid.uuid4()
-        if 'magnitudeid' not in df.columns:
-            df['magnitudeid'] = uuid.uuid4()
+        if 'magnitudeID' not in df.columns:
+            df['magnitudeID'] = uuid.uuid4()
 
         mag_types = set([mag.split('_')[1]
                         for mag in df._secondary_magnitudekeys()])
 
         for mag_type in mag_types:
-            if f'magnitude_{mag_type}_magnitudeid' not in df.columns:
-                df[f'magnitude_{mag_type}_magnitudeid'] = \
+            if f'magnitude_{mag_type}_magnitudeID' not in df.columns:
+                df[f'magnitude_{mag_type}_magnitudeID'] = \
                     df.apply(
                         lambda x: uuid.uuid4()
                         if not mag_type == x['magnitude_type']
-                        else x['magnitudeid'], axis=1)
+                        else x['magnitudeID'], axis=1)
 
         return df
 

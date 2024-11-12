@@ -42,7 +42,7 @@ QUALITY_MAPPINGS = {
 MAGNITUDE_MAPPINGS = {
     **_get_realvalue('magnitudemag', 'magnitude'),
     'magnitudetype': 'magnitude_type',
-    'magnitudepublicID': 'magnitudeid',
+    'magnitudepublicID': 'magnitudeID',
 }
 
 DUMMY_MAGNITUDE = {
@@ -61,7 +61,7 @@ DUMMY_ORIGIN = {
 def SECONDARY_MAGNITUDE_MAPPINGS(type):
     return {
         **_get_realvalue('magnitudemag', f'magnitude_{type}'),
-        'magnitudepublicID': f'magnitude_{type}_magnitudeid'}
+        'magnitudepublicID': f'magnitude_{type}_magnitudeID'}
 
 
 def _select_magnitude_by_id(magnitudes: list, id: str | None) \

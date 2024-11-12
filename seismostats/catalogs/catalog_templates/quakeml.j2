@@ -8,7 +8,7 @@
                 <author>{{ author }}</author>
             </creationInfo>
 
-            <magnitude publicID="{{ event.magnitudeid }}">
+            <magnitude publicID="{{ event.magnitudeID }}">
                 <creationInfo>
                     <agencyID>{{ agencyID }}</agencyID>
                     <author>{{ author }}</author>
@@ -22,7 +22,7 @@
             </magnitude>
 
             {% for type, magnitude in event.sec_mags.items() %}
-            <magnitude publicID="{{ magnitude.magnitude_magnitudeid }}">
+            <magnitude publicID="{{ magnitude.magnitude_magnitudeID }}">
                 <creationInfo>
                     <agencyID>{{ agencyID }}</agencyID>
                     <author>{{ author }}</author>
@@ -60,7 +60,7 @@
             </origin>
 
             <preferredOriginID>{{ event.originid }}</preferredOriginID>
-            <preferredMagnitudeID>{{ event.magnitudeid }}</preferredMagnitudeID>
+            <preferredMagnitudeID>{{ event.magnitudeID }}</preferredMagnitudeID>
             <type>{{ event.event_type }}</type>
 
         </event> 
