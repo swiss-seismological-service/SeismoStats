@@ -186,6 +186,8 @@ def test_to_quakeml_without():
 
     catalog = catalog._create_ids()
     event = catalog.iloc[0]
+    event2 = catalog.iloc[1]
+    assert event['eventID'] != event2['eventID'], "eventID should be unique"
     assert uuid.UUID(str(event['magnitudeID']))
     assert uuid.UUID(str(event['originID']))
     assert uuid.UUID(str(event['eventID']))

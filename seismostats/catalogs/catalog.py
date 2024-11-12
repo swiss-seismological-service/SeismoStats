@@ -462,11 +462,11 @@ class Catalog(pd.DataFrame):
         df = self.copy()
 
         if 'eventID' not in df.columns:
-            df['eventID'] = uuid.uuid4()
+            df['eventID'] = df.apply(lambda _: uuid.uuid4(), axis=1)
         if 'originID' not in df.columns:
-            df['originID'] = uuid.uuid4()
+            df['originID'] = df.apply(lambda _: uuid.uuid4(), axis=1)
         if 'magnitudeID' not in df.columns:
-            df['magnitudeID'] = uuid.uuid4()
+            df['magnitudeID'] = df.apply(lambda _: uuid.uuid4(), axis=1)
 
         mag_types = set([mag.split('_')[1]
                         for mag in df._secondary_magnitudekeys()])
