@@ -108,9 +108,9 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         """
         # TODO in the end we want to work on the df directly
         # instead of converting to numpy arrays
-        magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
-        longitude = catalogue["longitude"].to_numpy(dtype=np.float64)
-        latitude = catalogue["latitude"].to_numpy(dtype=np.float64)
+        # magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
+        # longitude = catalogue["longitude"].to_numpy(dtype=np.float64)
+        # latitude = catalogue["latitude"].to_numpy(dtype=np.float64)
 
         use_time_columns = all(c in catalogue.columns for c in
                                ["year", "month", "day"])
@@ -132,30 +132,48 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                 "Catalogue must contain either year, month, day columns "
                 "or a time column")
 
-        neq = len(magnitude)  # Number of earthquakes
+        neq = len(catalogue)  # Number of earthquakes
+
+        # Pre-allocate cluster index vectors
+        cluster_ids = np.zeros(neq, dtype=int)
+        # Sort magnitudes into descending order
+        original_magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
+        
+        # todo: time instead
+        # sorted_cat = catalogue.sort_values(by=["magnitude", "year", "month", "day"],
+        #                                    ascending=False,
+        #                                    kind="heapsort")
+        # id0 = sorted_cat.index
+        # sorted_cat.reindex()
+
+        # id0 = pd.Series(original_magnitude).sort_values(ascending=False).index
+        id0 = np.argsort(original_magnitude, kind="heapsort")[::-1]
+        
+        # CAREFUL: if we sort with pandas we get a different
+        #  order than with numpy (probably because of ties in magnitude)
+        sorted_cat = catalogue.reindex(id0)
+        
+        # TODO why does it not work with to_numpy()?
+        longitude = sorted_cat["longitude"].values  # .to_numpy()
+        latitude = sorted_cat["latitude"].values  # .to_numpy()
+        # magnitude = sorted_cat["magnitude"].values  # .to_numpy()
 
         # Get space and time windows corresponding to each event
         # Initial Position Identifier
         sw_space, sw_time = config["time_distance_window"].calc(
-            magnitude, config.get("time_cutoff")
+            sorted_cat["magnitude"].values, config.get("time_cutoff")
         )
-        eqid = np.arange(0, neq, 1)
-        # Pre-allocate cluster index vectors
-        cluster_ids = np.zeros(neq, dtype=int)
-        # Sort magnitudes into descending order
-        id0 = np.flipud(
-            np.argsort(magnitude, kind="heapsort")
-        )
-        longitude = longitude[id0]
-        latitude = latitude[id0]
-        sw_space = sw_space[id0]
-        sw_time = sw_time[id0]
+        # No need to reindex sw_space and sw_time since we pass the sorted magnitude
+        # sw_space = sw_space[id0]
+        # sw_time = sw_time[id0]
+        # Of course we could also calculate decimal year after sorting
         year_dec = year_dec[id0]
-        eqid = eqid[id0]
         shock_types = np.zeros(neq, dtype=int)
         # Begin cluster identification
         clust_index = 0
-        for i in range(0, neq - 1):
+        for i in range(0, neq - 1):  # TODO why neq - 1 instead of neq? (maybe the )
+            # if cluster_ids[i] != 0:
+            #     pass
             if cluster_ids[i] == 0:
                 # Find Events inside both fore- and aftershock time windows
                 dt = year_dec - year_dec[i]
@@ -177,9 +195,14 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                     )
                     <= sw_space[i]
                 )
-                vsel[vsel] = vsel1[:, 0]
+                # wtf? (basically an and, updates the selection flag only where it was true, to the haversine result)
+                vsel[vsel] = vsel1[:, 0]  # array of array
+                
+                # should be removable later
                 temp_vsel = np.copy(vsel)
                 temp_vsel[i] = False
+                # A isolated mainshock does gets 0 as cluster number
+                # TODO give a new ids (adapt tests)
                 if any(temp_vsel):
                     # Allocate a cluster number
                     cluster_ids[vsel] = clust_index + 1
@@ -192,9 +215,15 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                     clust_index += 1
 
         # Re-sort the catalog_matrix into original order
-        id1 = np.argsort(eqid, kind="heapsort")
-        eqid = eqid[id1]
-        cluster_ids = cluster_ids[id1]
-        shock_types = shock_types[id1]
+        # id1 = np.argsort(eqid, kind="heapsort")
+
+        # id0 is a permutation vector that sorts the catalogue
+        # we can get the original order by inverting the permuation
+        # This is O(n) instead of O(n log n) for sorting
+        inverted = np.zeros(neq, dtype=int)
+        inverted[id0] = np.arange(0, neq, 1)
+
+        cluster_ids = cluster_ids[inverted]
+        shock_types = shock_types[inverted]
 
         return cluster_ids, shock_types

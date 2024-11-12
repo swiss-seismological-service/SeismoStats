@@ -51,13 +51,16 @@
 import unittest
 import os
 import numpy as np
+import pandas as pd
 
 from seismostats.analysis.declustering import (
     GardnerKnopoffType1,
     GardnerKnopoffWindow
 )
 
-from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
+from seismostats.analysis.declustering.dec_gardner_knopoff import (
+    GKConfig
+)
 
 
 class GardnerKnopoffType1TestCase(unittest.TestCase):
@@ -73,37 +76,37 @@ class GardnerKnopoffType1TestCase(unittest.TestCase):
         """
         flnme = "gardner_knopoff_test_catalogue.csv"
         filename = os.path.join(self.BASE_DATA_PATH, flnme)
-        parser = CsvCatalogueParser(filename)
-        self.cat = parser.read_file()
+        self.cat = pd.read_csv(filename)
 
     def test_dec_gardner_knopoff(self):
         # Testing the Gardner and Knopoff algorithm
-        config = {
+        config = GKConfig({
             "time_distance_window": GardnerKnopoffWindow(),
             "fs_time_prop": 1.0,
-        }
+        })
         # Instantiate the declusterer and process the sample catalogue
         dec = GardnerKnopoffType1()
         vcl, flagvector = dec.decluster(self.cat, config)
+        expected_flagvector = self.cat["flag"].to_numpy()
         print("vcl:", vcl)
-        print("flagvector:", flagvector, self.cat.data["flag"])
-        np.testing.assert_allclose(flagvector, self.cat.data["flag"])
+        print("flagvector:", flagvector, expected_flagvector)
+        np.testing.assert_allclose(flagvector, expected_flagvector)
 
     def test_dec_gardner_knopoff_time_cutoff(self):
         """
         Testing the Gardner and Knopoff algorithm using a cutoff
         time of 100 days
         """
-        config = {
+        config = GKConfig({
             "time_distance_window": GardnerKnopoffWindow(),
             "fs_time_prop": 1.0,
             "time_cutoff": 100,
-        }
+        })
         # Instantiate the declusterer and process the sample catalogue
         dec = GardnerKnopoffType1()
         vcl, flagvector = dec.decluster(self.cat, config)
         print("vcl:", vcl)
-        catalog_flag = self.cat.data["flag"]
-        catalog_flag[4] = 0  # event becomes mainshock when time_cutoff = 100
-        print("flagvector:", catalog_flag)
-        np.testing.assert_allclose(flagvector, self.cat.data["flag"])
+        expected_flagvector = self.cat["flag"].copy().to_numpy()
+        expected_flagvector[4] = 0  # event becomes mainshock when time_cutoff = 100
+        print("flagvector:", flagvector, expected_flagvector)
+        np.testing.assert_allclose(flagvector, expected_flagvector)
