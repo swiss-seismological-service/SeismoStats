@@ -18,7 +18,7 @@
                     <uncertainty>{{ event.magnitude_uncertainty if not event.magnitude_uncertainty is nan else '' }}</uncertainty>
                 </mag>
                 <type>{{ event.magnitude_type }}</type>
-                <originID>{{ event.originid }}</originID>
+                <originID>{{ event.originID }}</originID>
             </magnitude>
 
             {% for type, magnitude in event.sec_mags.items() %}
@@ -32,11 +32,11 @@
                     <uncertainty>{{ magnitude.magnitude_uncertainty if not magnitude.magnitude_uncertainty is nan else ''}}</uncertainty>
                 </mag>
                 <type>{{ type }}</type>
-                <originID>{{ event.originid }}</originID>
+                <originID>{{ event.originID }}</originID>
             </magnitude>
             {% endfor %}
 
-            <origin publicID="{{ event.originid }}">
+            <origin publicID="{{ event.originID }}">
                 <time>
                     <value>{{ event.time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}</value>
                 </time>
@@ -59,7 +59,7 @@
                 </depth>
             </origin>
 
-            <preferredOriginID>{{ event.originid }}</preferredOriginID>
+            <preferredOriginID>{{ event.originID }}</preferredOriginID>
             <preferredMagnitudeID>{{ event.magnitudeID }}</preferredMagnitudeID>
             <type>{{ event.event_type }}</type>
 

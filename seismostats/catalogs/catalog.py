@@ -235,13 +235,13 @@ class Catalog(pd.DataFrame):
         """
         Drop event, origin, and magnitude IDs from the catalog.
 
-        Drops columns named 'eventID', 'originid', and 'magnitudeID'.
+        Drops columns named 'eventID', 'originID', and 'magnitudeID'.
 
         Returns:
             catalog: Catalog with ID columns removed.
         """
 
-        rgx = "(eventID|originid|magnitudeID)$"
+        rgx = "(eventID|originID|magnitudeID)$"
         cols = self.filter(regex=rgx).columns
         df = self.drop(columns=cols)
         return df
@@ -463,8 +463,8 @@ class Catalog(pd.DataFrame):
 
         if 'eventID' not in df.columns:
             df['eventID'] = uuid.uuid4()
-        if 'originid' not in df.columns:
-            df['originid'] = uuid.uuid4()
+        if 'originID' not in df.columns:
+            df['originID'] = uuid.uuid4()
         if 'magnitudeID' not in df.columns:
             df['magnitudeID'] = uuid.uuid4()
 

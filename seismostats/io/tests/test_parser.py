@@ -22,7 +22,7 @@ OUT = [
         "depth": "1181.640625",
         "depth_uncertainty": "274.9552879",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080",
         "associatedphasecount": "90",
         "usedphasecount": "77",
@@ -67,7 +67,7 @@ OUT = [
         "depth": "3364.257812",
         "depth_uncertainty": "1036.395075",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045",
         "associatedphasecount": "236",
         "usedphasecount": "44",
@@ -99,7 +99,7 @@ OUT = [
         "depth": "4423.828125",
         "depth_uncertainty": "692.7322216",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20211227163318.114678.110414",
         "associatedphasecount": "390",
         "usedphasecount": "52",
@@ -124,7 +124,7 @@ OUT = [
         "depth": "5136.71875",
         "depth_uncertainty": "570.791371",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228090222.85681.111790",
         "associatedphasecount": "163",
         "usedphasecount": "35",
