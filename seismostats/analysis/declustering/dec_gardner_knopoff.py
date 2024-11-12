@@ -104,7 +104,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
             cluster_ids: array with cluster numbers for each event
                          Events not in a cluster are assigned 0
             shock_types: array with shock types for each event
-                        (foreshock=-1, mainshock=0, aftershock-1)
+                        (foreshock=-1, mainshock=0, aftershock=+1)
         """
         # TODO in the end we want to work on the df directly
         # instead of converting to numpy arrays
