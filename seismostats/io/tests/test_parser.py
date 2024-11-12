@@ -36,24 +36,24 @@ OUT = [
         "magnitude": "2.510115344",
         "magnitude_uncertainty": "0.23854491",
         "magnitude_type": "MLhc",
-        "magnitudeid":
+        "magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206",
         "magnitude_MLhc": "2.510115344",
         "magnitude_MLhc_uncertainty": "0.23854491",
-        "magnitude_MLhc_magnitudeid":
+        "magnitude_MLhc_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206",
         "magnitude_MLv": "2.301758471",
         "magnitude_MLv_uncertainty": "0.2729312832",
-        "magnitude_MLv_magnitudeid":
+        "magnitude_MLv_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.752473.80241",
         "magnitude_MLh": "2.49",
         "magnitude_MLh_uncertainty": "0.23854491",
-        "magnitude_MLh_magnitudeid":
+        "magnitude_MLh_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206.mlhc2mlh",
         "magnitude_MWspec": "2.59",
         "magnitude_MWspec_uncertainty": "0.04",
         "magnitude_MWspec_confidenceLevel": "0.68",
-        "magnitude_MWspec_magnitudeid":
+        "magnitude_MWspec_magnitudeID":
         "smi:ch.ethz.sed/wfa.ethz.ch/magnitude/MWspec/IbD1W8X9zRumJCb"
     },
     {
@@ -81,11 +81,11 @@ OUT = [
         "magnitude": "3.539687307",
         "magnitude_uncertainty": "0.272435385",
         "magnitude_type": "MLhc",
-        "magnitudeid":
+        "magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164",
         "magnitude_MLhc": "3.539687307",
         "magnitude_MLhc_uncertainty": "0.272435385",
-        "magnitude_MLhc_magnitudeid":
+        "magnitude_MLhc_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164"
     },
     {
@@ -138,15 +138,15 @@ OUT = [
         "magnitude": "2.908839011",
         "magnitude_uncertainty": "0.2414400072",
         "magnitude_type": "MLhc",
-        "magnitudeid":
+        "magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228090234.790826.111865",
         "magnitude_MLhc": "2.908839011",
         "magnitude_MLhc_uncertainty": "0.2414400072",
-        "magnitude_MLhc_magnitudeid":
+        "magnitude_MLhc_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228090234.790826.111865",
         "magnitude_MLv": "2.86",
         "magnitude_MLv_uncertainty": "0.2414400072",
-        "magnitude_MLv_magnitudeid":
+        "magnitude_MLv_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228090234.790826.111865.mlhc2mlh"
     }
 ]
