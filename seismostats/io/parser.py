@@ -23,7 +23,7 @@ ORIGIN_MAPPINGS = {
     **_get_realvalue('originlongitude', 'longitude'),
     **_get_realvalue('origindepth', 'depth'),
     'originevaluationMode': 'evaluationmode',
-    'originpublicID': 'originid',
+    'originpublicID': 'originID',
 }
 
 QUALITY_MAPPINGS = {
