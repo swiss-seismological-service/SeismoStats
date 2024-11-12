@@ -12,7 +12,7 @@ from seismostats.io.parser import (QuakeMLHandler, parse_quakeml,
 
 OUT = [
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zqxyri",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zqxyri",
         "event_type": "earthquake",
         "time": "2021-12-30T07:43:14.681975Z",
         "latitude": "46.05144527",
@@ -57,7 +57,7 @@ OUT = [
         "smi:ch.ethz.sed/wfa.ethz.ch/magnitude/MWspec/IbD1W8X9zRumJCb"
     },
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zihlix",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zihlix",
         "event_type": "earthquake",
         "time": "2021-12-25T14:49:40.125942Z",
         "latitude": "47.37175484",
@@ -89,7 +89,7 @@ OUT = [
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164"
     },
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zhdzar",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zhdzar",
         "event_type": "earthquake",
         "time": "2021-12-24T23:59:56.706839Z",
         "latitude": "47.37349438",
@@ -114,7 +114,7 @@ OUT = [
         "magnitude_type": None
     },
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zamwcn",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zamwcn",
         "event_type": "earthquake",
         "time": "2021-12-21T08:56:46.30756Z",
         "latitude": "47.07531705",
@@ -161,8 +161,8 @@ def test_quakeml_handler():
     xml_file = os.path.join(current_dir, 'query.xml')
     parser.parse(xml_file)
 
-    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
-                            sorted(OUT, key=lambda k: k['eventid']))
+    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventID']),
+                            sorted(OUT, key=lambda k: k['eventID']))
 
 
 def test_parse_quakeml():
@@ -173,8 +173,8 @@ def test_parse_quakeml():
 
     catalog = parse_quakeml(xml_str, include_quality=True)
 
-    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
-                            sorted(OUT, key=lambda k: k['eventid']))
+    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventID']),
+                            sorted(OUT, key=lambda k: k['eventID']))
 
     catalog = parse_quakeml('')
     assert catalog == []
@@ -222,8 +222,8 @@ def test_parse_quakeml_response():
 
         catalog = parse_quakeml_response(resp2)
 
-        np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
-                                sorted(OUT, key=lambda k: k['eventid']))
+        np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventID']),
+                                sorted(OUT, key=lambda k: k['eventID']))
 
     # test invalid data
     rsp3 = responses.Response(

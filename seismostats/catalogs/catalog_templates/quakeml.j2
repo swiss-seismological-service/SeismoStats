@@ -2,7 +2,7 @@
 <q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
     <eventParameters publicID="smi:org.gfz-potsdam.de/geofon/EventParameters"> 
         {% for event in events %} 
-        <event publicID="{{ event.eventid }}">
+        <event publicID="{{ event.eventID }}">
             <creationInfo>
                 <agencyID>{{ agencyID }}</agencyID>
                 <author>{{ author }}</author>

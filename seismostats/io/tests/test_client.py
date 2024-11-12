@@ -91,7 +91,7 @@ def test_download_catalog():
     assert is_datetime64_any_dtype(cat.time.dtype)
 
     assert cat.columns.tolist().sort() == \
-        ['evaluationMode', 'eventid', 'event_type', 'time', 'latitude',
+        ['evaluationMode', 'eventID', 'event_type', 'time', 'latitude',
          'longitude', 'depth', 'magnitude', 'magnitude_type'].sort()
 
     cat = client.get_events(
