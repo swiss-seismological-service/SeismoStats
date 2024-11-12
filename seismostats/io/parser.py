@@ -14,7 +14,7 @@ def _get_realvalue(key: str, value: str) -> dict:
     return {f'{key}{k}': f'{value}{v}' for k, v in real_values.items()}
 
 
-EVENT_MAPPINGS = {'publicID': 'eventid',
+EVENT_MAPPINGS = {'publicID': 'eventID',
                   'type': 'event_type'}
 
 ORIGIN_MAPPINGS = {
