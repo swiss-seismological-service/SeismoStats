@@ -457,16 +457,13 @@ class Catalog(pd.DataFrame):
         """
         Create missing event, origin, and magnitude IDs for the catalog.
 
-        Will fill in missing IDs with UUIDs.
+        Will fill in missing IDs with UUIDs, represented as strings.
         """
         df = self.copy()
 
-        if 'eventID' not in df.columns:
-            df['eventID'] = df.apply(lambda _: uuid.uuid4(), axis=1)
-        if 'originID' not in df.columns:
-            df['originID'] = df.apply(lambda _: uuid.uuid4(), axis=1)
-        if 'magnitudeID' not in df.columns:
-            df['magnitudeID'] = df.apply(lambda _: uuid.uuid4(), axis=1)
+        for col in ['eventID', 'originID', 'magnitudeID']:
+            if col not in df.columns:
+                df[col] = df.apply(lambda _: uuid.uuid4().hex, axis=1)
 
         mag_types = set([mag.split('_')[1]
                         for mag in df._secondary_magnitudekeys()])
@@ -475,7 +472,7 @@ class Catalog(pd.DataFrame):
             if f'magnitude_{mag_type}_magnitudeID' not in df.columns:
                 df[f'magnitude_{mag_type}_magnitudeID'] = \
                     df.apply(
-                        lambda x: uuid.uuid4()
+                        lambda x: uuid.uuid4().hex
                         if not mag_type == x['magnitude_type']
                         else x['magnitudeID'], axis=1)
 
