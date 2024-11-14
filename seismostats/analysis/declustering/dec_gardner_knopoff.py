@@ -45,11 +45,6 @@
 # The GEM Foundation, and the authors of the software, assume no
 # liability for use of the software.
 
-"""
-Module :mod:`openquake.hmtk.seismicity.declusterer.dec_gardner_knopoff`
-defines the Gardner and Knopoff declustering algorithm
-"""
-
 import numpy as np
 import pandas as pd
 
@@ -86,25 +81,23 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         The catalogue must contain the following columns:
         - time, magnitude, longitude, latitude
 
-        The configuration dictionary must contain the following
-        - time_distance_window: BaseDistanceTimeWindow
-        - fs_time_prop: float in the interval [0,1], expressing
-        the size of the time window used for searching for foreshocks,
-        as a fractional proportion of the size of the aftershock window.
-        Optional:
-        - time_cutoff: for the time distance window
-
         If there are multiple events with the same magnitude,
         the earliest event is considered as the mainshock first.
 
         Args:
             catalogue: the catalogue of earthquakes
-            config: configuration parameters
+            config: configuration dict with the following keys:
+            - time_distance_window: BaseDistanceTimeWindow
+            - fs_time_prop: float in the interval [0,1], expressing
+            the size of the time window used for searching for foreshocks,
+            as a fractional proportion of the size of the aftershock window.
+            Optional:
+            - time_cutoff: for the time distance window, the time cutoff in days
 
         Returns:
-            cluster_ids: array with cluster numbers for each event
-                         Events not in a cluster are assigned 0
-            shock_types: array with shock types for each event
+            cluster_ids: cluster ids for each event, note that cluster
+                         with a single event are assigned the id 0.
+            shock_types: shock types for each event
                         (foreshock=-1, mainshock=0, aftershock=+1)
         """
 
@@ -124,13 +117,10 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                                     kind="mergesort").index
         catalogue.drop(columns=["__temp_time"], inplace=True)
 
-        # Get space and time windows corresponding to each event
-        # Initial Position Identifier
         sw_space, sw_time = config["time_distance_window"].calc(
             magnitude, config.get("time_cutoff")
         )
         shock_types = np.zeros(len(catalogue), dtype=int)
-        # Begin cluster identification
         clust_index = 0
         for i in id0:
             # If already assigned to a cluster, skip
@@ -159,7 +149,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
             )
             vsel[vsel] = vsel1
 
-            # should be removable later
+            # should be simplified
             temp_vsel = np.copy(vsel)
             temp_vsel[i] = False
             # A isolated mainshock does gets 0 as cluster number
@@ -168,8 +158,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                 # Allocate a cluster number
                 cluster_ids[vsel] = clust_index + 1
                 shock_types[vsel] = ShockTypes.Aftershock
-                # For those events in the cluster before the main event,
-                # flagvector is equal to -1
+                # Events before the mainshock are foreshocks
                 temp_vsel[dt >= 0.0] = False
                 shock_types[temp_vsel] = ShockTypes.Foreshock
                 shock_types[i] = ShockTypes.Mainshock
