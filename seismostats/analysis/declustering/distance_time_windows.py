@@ -45,16 +45,13 @@
 # The GEM Foundation, and the authors of the software, assume no
 # liability for use of the software.
 
-"""
-"""
-
 import abc
 import numpy as np
 
 DAYS = 364.75
 
 
-def time_window_cutoff(sw_time, time_cutoff):
+def time_window_cutoff(sw_time: np.ndarray, time_cutoff: float) -> np.ndarray:
     """
     Allows for cutting the declustering time window at a specific time, outside
     of which an event of any magnitude is no longer identified as a cluster
@@ -68,6 +65,9 @@ def time_window_cutoff(sw_time, time_cutoff):
     return sw_time
 
 
+DistanceTimeWindow = tuple[np.ndarray, np.ndarray]
+
+
 class BaseDistanceTimeWindow(abc.ABC):
     """
     Defines the space and time windows, within which an event is identified
@@ -75,27 +75,32 @@ class BaseDistanceTimeWindow(abc.ABC):
     """
 
     @abc.abstractmethod
-    def calc(self, magnitude, time_cutoff=None):
+    def calc(self, magnitude: np.ndarray,
+             time_cutoff=None) -> DistanceTimeWindow:
         """
-        Allows to calculate distance and time windows (sw_space, sw_time)
-        see reference: `Van Stiphout et al (2011)`.
+        Calculate the space and time windows for given magnitudes
 
-        :param magnitude: magnitude
-        :type magnitude: numpy.ndarray
-        :param time_cutoff: time window cutoff in days (optional)
-        :type time_cutoff: int
-        :returns: distance and time windows
-        :rtype: numpy.ndarray
+        Args:
+            magnitude: array of magnitudes
+            time_cutoff: time window cutoff in days (optional)
+
+        Returns:
+            sw_space: array of space windows
+            sw_time: array of time windows
         """
-        return
+        return NotImplemented
 
 
 class GardnerKnopoffWindow(BaseDistanceTimeWindow):
     """
     Gardner Knopoff method for calculating distance and time windows
+
+    Source:
+        Gardner and Knopoff, 1974
     """
 
-    def calc(self, magnitude, time_cutoff=None):
+    def calc(self, magnitude: np.ndarray,
+             time_cutoff=None) -> DistanceTimeWindow:
         sw_space = np.power(10.0, 0.1238 * magnitude + 0.983)
         sw_time = np.power(10.0, 0.032 * magnitude + 2.7389) / DAYS
         sw_time[magnitude < 6.5] = (
@@ -109,9 +114,13 @@ class GardnerKnopoffWindow(BaseDistanceTimeWindow):
 class GruenthalWindow(BaseDistanceTimeWindow):
     """
     Gruenthal method for calculating distance and time windows
+
+    Source:
+        Gruenthal, 1985; see van Stiphout et al., 2012
     """
 
-    def calc(self, magnitude, time_cutoff=None):
+    def calc(self, magnitude: np.ndarray,
+             time_cutoff=None) -> DistanceTimeWindow:
         sw_space = np.exp(1.77 + np.sqrt(0.037 + 1.02 * magnitude))
         sw_time = np.abs(
             (np.exp(-3.95 + np.sqrt(0.62 + 17.32 * magnitude))) / DAYS
@@ -127,9 +136,13 @@ class GruenthalWindow(BaseDistanceTimeWindow):
 class UhrhammerWindow(BaseDistanceTimeWindow):
     """
     Uhrhammer method for calculating distance and time windows
+
+    Source:
+        Uhrhammer, 1986
     """
 
-    def calc(self, magnitude, time_cutoff=None):
+    def calc(self, magnitude: np.ndarray,
+             time_cutoff=None) -> DistanceTimeWindow:
         sw_space = np.exp(-1.024 + 0.804 * magnitude)
         sw_time = np.exp(-2.87 + 1.235 * magnitude) / DAYS
         if time_cutoff:
