@@ -156,7 +156,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                 )
                 <= sw_space[i]
             )
-            vsel[vsel] = vsel1[:, 0]  # array of array
+            vsel[vsel] = vsel1
 
             # should be removable later
             temp_vsel = np.copy(vsel)

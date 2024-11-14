@@ -122,7 +122,7 @@ class Afteran(BaseCatalogueDecluster):
                     latitude,
                     longitude[imarker],
                     latitude[imarker],
-                ).flatten()
+                )
 
                 # Select earthquakes inside distance window, later than
                 # mainshock and not already assigned to a cluster
