@@ -295,12 +295,9 @@ class Catalog(pd.DataFrame):
             else:
                 data[col] = self[col].to_list()
         # add required eventID if not present
-        if "eventID" not in data:
-            if "eventid" in self.columns:
-                data['eventID'] = self['eventid'].map(str).to_list()
-            else:
-                data['eventID'] = self.index.map(
-                    lambda _: uuid.uuid4()).map(str).to_list()
+        if 'eventID' not in data:
+            data['eventID'] = self.apply(
+                lambda _: uuid.uuid4().hex, axis=1).to_list()
 
         time = self['time']
         for time_unit in _PD_TIME_COLS:
