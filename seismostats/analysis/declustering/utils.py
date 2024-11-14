@@ -49,44 +49,15 @@
 Utility functions for seismicity calculations
 """
 import numpy as np
+import pandas as pd
 
-
-def decimal_year(year, month, day):
+def decimal_year(catalogue: pd.DataFrame) -> np.ndarray:
     """
-    Allows to calculate the decimal year for a vector of dates
-    (TODO this is legacy code kept to maintain comparability with previous
-    declustering algorithms!)
-
-    :param year: year column from catalogue matrix
-    :type year: numpy.ndarray
-    :param month: month column from catalogue matrix
-    :type month: numpy.ndarray
-    :param day: day column from catalogue matrix
-    :type day: numpy.ndarray
-    :returns: decimal year column
-    :rtype: numpy.ndarray
+    Converts the time column of a pandas DataFrame
+    to decimal years.
     """
-    marker = np.array(
-        [
-            0.0,
-            31.0,
-            59.0,
-            90.0,
-            120.0,
-            151.0,
-            181.0,
-            212.0,
-            243.0,
-            273.0,
-            304.0,
-            334.0,
-        ]
-    )
-    tmonth = (month - 1).astype(int)
-    day_count = marker[tmonth] + day - 1.0
-    dec_year = year + (day_count / 365.0)
-
-    return dec_year
+    time = catalogue["time"].astype("datetime64[s]", errors="ignore")
+    return (time.dt.year + time.dt.dayofyear / 365).values
 
 
 def haversine(lon1, lat1, lon2, lat2, radians=False, earth_rad=6371.227):
