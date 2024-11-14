@@ -79,7 +79,7 @@ class Afteran(BaseCatalogueDecluster):
         :keyword time_window: Length (in days) of moving time window
         :type time_window: positive float
         :returns: **vcl vector** indicating cluster number,
-                  **flagvector** indicating which earthquakes belong to a
+                  **shock_types** indicating which earthquakes belong to a
                   cluster
         :rtype: numpy.ndarray
         """
@@ -104,7 +104,7 @@ class Afteran(BaseCatalogueDecluster):
 
         # Pre-allocate cluster index vectors
         vcl = np.zeros(neq, dtype=int)
-        flagvector = np.zeros(neq, dtype=int)
+        shock_types = np.zeros(neq, dtype=int)
         # Rank magnitudes into descending order
         id0 = np.flipud(np.argsort(magnitude, kind="heapsort"))
 
@@ -142,7 +142,7 @@ class Afteran(BaseCatalogueDecluster):
                         vsel1, year_dec, time_window, imarker, neq
                     )
                     if has_aftershocks:
-                        flagvector[temp_vsel1] = 1
+                        shock_types[temp_vsel1] = 1
                         vcl[temp_vsel1] = clust_index + 1
 
                 # Select earthquakes inside distance window, earlier than
@@ -163,14 +163,14 @@ class Afteran(BaseCatalogueDecluster):
                         vsel2, year_dec, time_window, imarker, neq
                     )
                     if has_foreshocks:
-                        flagvector[temp_vsel2] = -1
+                        shock_types[temp_vsel2] = -1
                         vcl[temp_vsel2] = clust_index + 1
 
                 if has_aftershocks or has_foreshocks:
                     # Assign mainshock to cluster
                     vcl[imarker] = clust_index + 1
                     clust_index += 1
-        return vcl, flagvector
+        return vcl, shock_types
 
     def _find_aftershocks(self, vsel, year_dec, time_window, imarker, neq):
         """
