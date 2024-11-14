@@ -194,12 +194,13 @@ def test_from_empty():
 
 def test_with_eventid():
     df = simple_df.copy()
-    df['eventid'] = uuid.uuid4()
+    df['eventID'] = df.apply(
+        lambda _: uuid.uuid4().hex, axis=1)
     cat = df.to_openquake()
     assert 'eventID' in cat.data
     assert len(cat.data['eventID']) == len(df)
     assert all(isinstance(x, str) for x in cat.data['eventID'])
-    assert [str(e) for e in df['eventid']] == cat.data['eventID']
+    assert df['eventID'].to_list() == cat.data['eventID']
 
 
 def test_without_eventid():
