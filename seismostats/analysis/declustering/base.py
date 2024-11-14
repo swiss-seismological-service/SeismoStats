@@ -45,12 +45,10 @@
 # The GEM Foundation, and the authors of the software, assume no
 # liability for use of the software.
 
-"""
-Module :mod:`openquake.hmtk.parsers.catalogue.base` defines an abstract
-base class for :class:`CatalogueParser <BaseCatalogueDecluster>`.
-"""
 import abc
 from enum import IntEnum
+
+import numpy as np
 
 
 class ShockTypes(IntEnum):
@@ -65,17 +63,18 @@ class BaseCatalogueDecluster(abc.ABC):
     """
 
     @abc.abstractmethod
-    def decluster(self, catalogue, config):
+    def decluster(self, catalogue, config) -> tuple[np.array, np.array]:
         """
         Implements declustering algorithms
 
-        :param catalogue:
-            Catalogue of earthquakes
-        :type catalogue:
-        :param config:
-            Declustering configuration dictionary
-        :type config: Dictionary
+        Args:
+            catalogue: Earthquake catalogue
+            config: configuration dictionary for the declustering algorithm
 
-        Returns two vectors
+        Returns:
+            cluster_ids: clusters with a single event are assigned 0,
+                otherwise unique positive integers are used
+            data: defined by the declustering algorithm,
+                for windowed methods it contains ShockTypes
         """
         return
