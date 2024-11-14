@@ -68,7 +68,7 @@ def time_window_cutoff(sw_time, time_cutoff):
     return sw_time
 
 
-class BaseDistanceTimeWindow(object):
+class BaseDistanceTimeWindow(abc.ABC):
     """
     Defines the space and time windows, within which an event is identified
     as a cluster.

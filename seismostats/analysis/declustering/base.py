@@ -52,7 +52,7 @@ base class for :class:`CatalogueParser <BaseCatalogueDecluster>`.
 import abc
 
 
-class BaseCatalogueDecluster(object):
+class BaseCatalogueDecluster(abc.ABC):
     """
     Abstract base class for implementation of declustering algorithms
     """
