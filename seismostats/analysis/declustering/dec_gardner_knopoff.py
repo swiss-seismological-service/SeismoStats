@@ -65,7 +65,7 @@ from typing import TypedDict
 class GKConfig(TypedDict):
     time_distance_window: BaseDistanceTimeWindow
     fs_time_prop: float
-    time_cutoff: int
+    time_cutoff: float
 
 
 class GardnerKnopoffType1(BaseCatalogueDecluster):
