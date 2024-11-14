@@ -51,13 +51,13 @@
 import unittest
 import os
 import numpy as np
+import pandas as pd
+
 
 from seismostats.analysis.declustering import (
     Afteran,
     GardnerKnopoffWindow
 )
-
-from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
 
 
 class AfteranTestCase(unittest.TestCase):
@@ -73,8 +73,7 @@ class AfteranTestCase(unittest.TestCase):
         """
         flnme = "afteran_test_catalogue.csv"
         filename = os.path.join(self.BASE_DATA_PATH, flnme)
-        parser = CsvCatalogueParser(filename)
-        self.cat = parser.read_file()
+        self.cat = pd.read_csv(filename)
         self.dec = Afteran()
 
     def test_dec_afteran(self):
@@ -89,9 +88,10 @@ class AfteranTestCase(unittest.TestCase):
         # self.dec = Afteran()
         print(dir(self.dec))
         vcl, flagvector = self.dec.decluster(self.cat, config)
+        expected_flagvector = self.cat["flag"].to_numpy()
         print("vcl:", vcl)
-        print("flagvector:", flagvector, self.cat.data["flag"])
-        self.assertTrue(np.allclose(flagvector, self.cat.data["flag"]))
+        print("flagvector:", flagvector, expected_flagvector)
+        self.assertTrue(np.allclose(flagvector, expected_flagvector))
 
     def test_find_aftershocks(self):
         """

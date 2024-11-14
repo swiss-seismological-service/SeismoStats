@@ -46,6 +46,7 @@
 # liability for use of the software.
 
 import numpy as np
+import pandas as pd
 
 from seismostats.analysis.declustering.base import BaseCatalogueDecluster
 from seismostats.analysis.declustering.utils import decimal_year, haversine
@@ -64,7 +65,8 @@ class Afteran(BaseCatalogueDecluster):
     Balkan Region, Annali Di Geofisica, 42(6), 1109 - 1124
     """
 
-    def decluster(self, catalogue, config):
+    def decluster(self, catalogue: pd.DataFrame,
+                  config) -> tuple[np.ndarray, np.ndarray]:
         """
         catalogue_matrix, window_opt=TDW_GARDNERKNOPOFF, time_window=60.):
 
@@ -85,24 +87,30 @@ class Afteran(BaseCatalogueDecluster):
         time_window = config["time_window"] / 365.0
         # Pre-processing steps are the same as for Gardner & Knopoff
         # Get relevent parameters
-        mag = catalogue.data["magnitude"]
-        neq = np.shape(mag)[0]  # Number of earthquakes
+
+        neq = len(catalogue)  # Number of earthquakes
         # Get decimal year (needed for time windows)
-        year_dec = decimal_year(
-            catalogue.data["year"],
-            catalogue.data["month"],
-            catalogue.data["day"],
-        )
+
+        if "time" not in catalogue.columns:
+            raise ValueError("Catalogue must contain a time column")
+
+        year_dec = decimal_year(catalogue)
+
+        magnitude = catalogue["magnitude"].values
         # Get space windows corresponding to each event
         sw_space, _ = config["time_distance_window"].calc(
-            catalogue.data["magnitude"]
+            magnitude
         )
 
         # Pre-allocate cluster index vectors
         vcl = np.zeros(neq, dtype=int)
         flagvector = np.zeros(neq, dtype=int)
         # Rank magnitudes into descending order
-        id0 = np.flipud(np.argsort(mag, kind="heapsort"))
+        id0 = np.flipud(np.argsort(magnitude, kind="heapsort"))
+
+        longitude = catalogue["longitude"].values
+        latitude = catalogue["latitude"].values
+        magnitude = catalogue["magnitude"].values
 
         clust_index = 0
         for imarker in id0:
@@ -110,10 +118,10 @@ class Afteran(BaseCatalogueDecluster):
             if vcl[imarker] == 0:
                 # Perform distance calculation
                 mdist = haversine(
-                    catalogue.data["longitude"],
-                    catalogue.data["latitude"],
-                    catalogue.data["longitude"][imarker],
-                    catalogue.data["latitude"][imarker],
+                    longitude,
+                    latitude,
+                    longitude[imarker],
+                    latitude[imarker],
                 ).flatten()
 
                 # Select earthquakes inside distance window, later than
@@ -162,7 +170,6 @@ class Afteran(BaseCatalogueDecluster):
                     # Assign mainshock to cluster
                     vcl[imarker] = clust_index + 1
                     clust_index += 1
-
         return vcl, flagvector
 
     def _find_aftershocks(self, vsel, year_dec, time_window, imarker, neq):
