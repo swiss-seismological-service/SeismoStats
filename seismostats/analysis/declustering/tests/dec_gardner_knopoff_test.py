@@ -107,6 +107,7 @@ class GardnerKnopoffType1TestCase(unittest.TestCase):
         vcl, flagvector = dec.decluster(self.cat, config)
         print("vcl:", vcl)
         expected_flagvector = self.cat["flag"].copy().to_numpy()
-        expected_flagvector[4] = 0  # event becomes mainshock when time_cutoff = 100
+        # event becomes mainshock when time_cutoff = 100
+        expected_flagvector[4] = 0
         print("flagvector:", flagvector, expected_flagvector)
         np.testing.assert_allclose(flagvector, expected_flagvector)

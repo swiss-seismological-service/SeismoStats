@@ -93,6 +93,9 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         Optional:
         - time_cutoff: for the time distance window
 
+        If there are multiple events with the same magnitude,
+        the earliest event is considered as the mainshock first.
+
         Args:
             catalogue: the catalogue of earthquakes
             config: configuration parameters
@@ -130,14 +133,10 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         # id0 = pd.Series(original_magnitude).sort_values(ascending=False).index
         id0 = np.argsort(original_magnitude, kind="heapsort")[::-1]
 
-        # CAREFUL: if we sort with pandas we get a different
-        #  order than with numpy (probably because of ties in magnitude)
-        sorted_cat = catalogue.reindex(id0)
-
-        # TODO why does it not work with to_numpy()?
-        longitude = sorted_cat["longitude"].values  # .to_numpy()
-        latitude = sorted_cat["latitude"].values  # .to_numpy()
-        # magnitude = sorted_cat["magnitude"].values  # .to_numpy()
+        catalogue["__temp_time"] = year_dec
+        id0 = catalogue.sort_values(by=["magnitude", "__temp_time"],
+                                    ascending=False,
+                                    kind="mergesort").index
 
         # Get space and time windows corresponding to each event
         # Initial Position Identifier

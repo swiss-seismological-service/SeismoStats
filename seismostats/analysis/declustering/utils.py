@@ -51,6 +51,7 @@ Utility functions for seismicity calculations
 import numpy as np
 import pandas as pd
 
+
 def decimal_year(catalogue: pd.DataFrame) -> np.ndarray:
     """
     Converts the time column of a pandas DataFrame
