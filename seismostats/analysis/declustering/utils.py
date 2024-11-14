@@ -54,11 +54,12 @@ import pandas as pd
 
 def decimal_year(catalogue: pd.DataFrame) -> np.ndarray:
     """
-    Converts the time column of a pandas DataFrame
-    to decimal years.
+    Converts the column 'time' of the catalogue to decimal years,
+    using a precision of seconds.
     """
     time = catalogue["time"].astype("datetime64[s]", errors="ignore")
-    return (time.dt.year + time.dt.dayofyear / 365).values
+    day = time.dt.dayofyear + time.dt.second / 86400
+    return (time.dt.year + day / 365).values
 
 
 def haversine(lon1, lat1, lon2, lat2, radians=False, earth_rad=6371.227):
