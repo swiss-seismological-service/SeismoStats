@@ -50,6 +50,13 @@ Module :mod:`openquake.hmtk.parsers.catalogue.base` defines an abstract
 base class for :class:`CatalogueParser <BaseCatalogueDecluster>`.
 """
 import abc
+from enum import IntEnum
+
+
+class ShockTypes(IntEnum):
+    Foreshock = -1
+    Mainshock = 0
+    Aftershock = 1
 
 
 class BaseCatalogueDecluster(abc.ABC):

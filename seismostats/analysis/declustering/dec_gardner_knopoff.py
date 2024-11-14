@@ -53,7 +53,8 @@ defines the Gardner and Knopoff declustering algorithm
 import numpy as np
 import pandas as pd
 
-from seismostats.analysis.declustering.base import BaseCatalogueDecluster
+from seismostats.analysis.declustering.base import (BaseCatalogueDecluster,
+                                                    ShockTypes)
 from seismostats.analysis.declustering.distance_time_windows import (
     BaseDistanceTimeWindow
 )
@@ -133,7 +134,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         clust_index = 0
         for i in id0:
             # If already assigned to a cluster, skip
-            if cluster_ids[i] != 0:
+            if cluster_ids[i] != ShockTypes.Mainshock:
                 continue
 
             # Find Events inside both fore- and aftershock time windows
@@ -166,12 +167,12 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
             if any(temp_vsel):
                 # Allocate a cluster number
                 cluster_ids[vsel] = clust_index + 1
-                shock_types[vsel] = 1
+                shock_types[vsel] = ShockTypes.Aftershock
                 # For those events in the cluster before the main event,
                 # flagvector is equal to -1
                 temp_vsel[dt >= 0.0] = False
-                shock_types[temp_vsel] = -1
-                shock_types[i] = 0
+                shock_types[temp_vsel] = ShockTypes.Foreshock
+                shock_types[i] = ShockTypes.Mainshock
                 clust_index += 1
 
         return cluster_ids, shock_types
