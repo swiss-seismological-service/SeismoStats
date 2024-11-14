@@ -83,10 +83,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         Apply the Gardner-Knopoff declustering algorithm to the catalogue.
 
         The catalogue must contain the following columns:
-        - magnitude, longitude, latitude
-        - and either one of the following combinations:
-            - time
-            - year, month, day
+        - time, magnitude, longitude, latitude
 
         The configuration dictionary must contain the following
         - time_distance_window: BaseDistanceTimeWindow
@@ -112,33 +109,17 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         # longitude = catalogue["longitude"].to_numpy(dtype=np.float64)
         # latitude = catalogue["latitude"].to_numpy(dtype=np.float64)
 
-        use_time_columns = all(c in catalogue.columns for c in
-                               ["year", "month", "day"])
+        if "time" not in catalogue.columns:
+            raise ValueError("Catalogue must contain a time column")
 
-        if use_time_columns:
-            year = catalogue["year"].to_numpy(dtype=int)
-            month = catalogue["month"].to_numpy(dtype=int)
-            day = catalogue["day"].to_numpy(dtype=int)
-            year_dec = decimal_year(
-                year,
-                month,
-                day,
-            )
-        elif "time" in catalogue.columns:
-            year_dec = catalogue["time"].dt.year + \
-                catalogue["time"].dt.dayofyear / 365
-        else:
-            raise ValueError(
-                "Catalogue must contain either year, month, day columns "
-                "or a time column")
-
+        year_dec = decimal_year(catalogue)
         neq = len(catalogue)  # Number of earthquakes
 
         # Pre-allocate cluster index vectors
         cluster_ids = np.zeros(neq, dtype=int)
         # Sort magnitudes into descending order
         original_magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
-        
+
         # todo: time instead
         # sorted_cat = catalogue.sort_values(by=["magnitude", "year", "month", "day"],
         #                                    ascending=False,
@@ -148,11 +129,11 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
 
         # id0 = pd.Series(original_magnitude).sort_values(ascending=False).index
         id0 = np.argsort(original_magnitude, kind="heapsort")[::-1]
-        
+
         # CAREFUL: if we sort with pandas we get a different
         #  order than with numpy (probably because of ties in magnitude)
         sorted_cat = catalogue.reindex(id0)
-        
+
         # TODO why does it not work with to_numpy()?
         longitude = sorted_cat["longitude"].values  # .to_numpy()
         latitude = sorted_cat["latitude"].values  # .to_numpy()
@@ -197,7 +178,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                 )
                 # wtf? (basically an and, updates the selection flag only where it was true, to the haversine result)
                 vsel[vsel] = vsel1[:, 0]  # array of array
-                
+
                 # should be removable later
                 temp_vsel = np.copy(vsel)
                 temp_vsel[i] = False
