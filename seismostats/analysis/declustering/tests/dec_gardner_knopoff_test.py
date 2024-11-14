@@ -86,11 +86,11 @@ class GardnerKnopoffType1TestCase(unittest.TestCase):
         })
         # Instantiate the declusterer and process the sample catalogue
         dec = GardnerKnopoffType1()
-        vcl, flagvector = dec.decluster(self.cat, config)
-        expected_flagvector = self.cat["flag"].to_numpy()
+        vcl, shocktype = dec.decluster(self.cat, config)
+        expected_shocktypes = self.cat["shocktype"].to_numpy()
         print("vcl:", vcl)
-        print("flagvector:", flagvector, expected_flagvector)
-        np.testing.assert_allclose(flagvector, expected_flagvector)
+        print("shocktype:", shocktype, expected_shocktypes)
+        np.testing.assert_allclose(shocktype, expected_shocktypes)
 
     def test_dec_gardner_knopoff_time_cutoff(self):
         """
@@ -104,10 +104,10 @@ class GardnerKnopoffType1TestCase(unittest.TestCase):
         })
         # Instantiate the declusterer and process the sample catalogue
         dec = GardnerKnopoffType1()
-        vcl, flagvector = dec.decluster(self.cat, config)
+        vcl, shock_types = dec.decluster(self.cat, config)
         print("vcl:", vcl)
-        expected_flagvector = self.cat["flag"].copy().to_numpy()
+        expected_shocktypes = self.cat["shocktype"].copy().to_numpy()
         # event becomes mainshock when time_cutoff = 100
-        expected_flagvector[4] = 0
-        print("flagvector:", flagvector, expected_flagvector)
-        np.testing.assert_allclose(flagvector, expected_flagvector)
+        expected_shocktypes[4] = 0
+        print("shocktype:", shock_types, expected_shocktypes)
+        np.testing.assert_allclose(shock_types, expected_shocktypes)

@@ -87,11 +87,11 @@ class AfteranTestCase(unittest.TestCase):
         # Instantiate the declusterer and process the sample catalogue
         # self.dec = Afteran()
         print(dir(self.dec))
-        vcl, flagvector = self.dec.decluster(self.cat, config)
-        expected_flagvector = self.cat["flag"].to_numpy()
+        vcl, shock_types = self.dec.decluster(self.cat, config)
+        expected_shocktypes = self.cat["shocktype"].to_numpy()
         print("vcl:", vcl)
-        print("flagvector:", flagvector, expected_flagvector)
-        self.assertTrue(np.allclose(flagvector, expected_flagvector))
+        print("shocktype:", shock_types, expected_shocktypes)
+        self.assertTrue(np.allclose(shock_types, expected_shocktypes))
 
     def test_find_aftershocks(self):
         """
