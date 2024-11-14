@@ -106,104 +106,72 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
             shock_types: array with shock types for each event
                         (foreshock=-1, mainshock=0, aftershock=+1)
         """
-        # TODO in the end we want to work on the df directly
-        # instead of converting to numpy arrays
-        # magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
-        # longitude = catalogue["longitude"].to_numpy(dtype=np.float64)
-        # latitude = catalogue["latitude"].to_numpy(dtype=np.float64)
 
         if "time" not in catalogue.columns:
             raise ValueError("Catalogue must contain a time column")
 
+        cluster_ids = np.zeros(len(catalogue), dtype=int)
+
+        magnitude = catalogue["magnitude"].values
+        longitude = catalogue["longitude"].values
+        latitude = catalogue["latitude"].values
+
         year_dec = decimal_year(catalogue)
-        neq = len(catalogue)  # Number of earthquakes
-
-        # Pre-allocate cluster index vectors
-        cluster_ids = np.zeros(neq, dtype=int)
-        # Sort magnitudes into descending order
-        original_magnitude = catalogue["magnitude"].to_numpy(dtype=np.float64)
-
-        # todo: time instead
-        # sorted_cat = catalogue.sort_values(by=["magnitude", "year", "month", "day"],
-        #                                    ascending=False,
-        #                                    kind="heapsort")
-        # id0 = sorted_cat.index
-        # sorted_cat.reindex()
-
-        # id0 = pd.Series(original_magnitude).sort_values(ascending=False).index
-        id0 = np.argsort(original_magnitude, kind="heapsort")[::-1]
-
         catalogue["__temp_time"] = year_dec
         id0 = catalogue.sort_values(by=["magnitude", "__temp_time"],
                                     ascending=False,
                                     kind="mergesort").index
+        catalogue.drop(columns=["__temp_time"], inplace=True)
 
         # Get space and time windows corresponding to each event
         # Initial Position Identifier
         sw_space, sw_time = config["time_distance_window"].calc(
-            sorted_cat["magnitude"].values, config.get("time_cutoff")
+            magnitude, config.get("time_cutoff")
         )
-        # No need to reindex sw_space and sw_time since we pass the sorted magnitude
-        # sw_space = sw_space[id0]
-        # sw_time = sw_time[id0]
-        # Of course we could also calculate decimal year after sorting
-        year_dec = year_dec[id0]
-        shock_types = np.zeros(neq, dtype=int)
+        shock_types = np.zeros(len(catalogue), dtype=int)
         # Begin cluster identification
         clust_index = 0
-        for i in range(0, neq - 1):  # TODO why neq - 1 instead of neq? (maybe the )
-            # if cluster_ids[i] != 0:
-            #     pass
-            if cluster_ids[i] == 0:
-                # Find Events inside both fore- and aftershock time windows
-                dt = year_dec - year_dec[i]
-                vsel = np.logical_and(
-                    cluster_ids == 0,
-                    np.logical_and(
-                        dt >= (-sw_time[i] * config["fs_time_prop"]),
-                        dt <= sw_time[i],
-                    ),
+        for i in id0:
+            # If already assigned to a cluster, skip
+            if cluster_ids[i] != 0:
+                continue
+
+            # Find Events inside both fore- and aftershock time windows
+            dt = year_dec - year_dec[i]
+            vsel = np.logical_and(
+                cluster_ids == 0,
+                np.logical_and(
+                    dt >= (-sw_time[i] * config["fs_time_prop"]),
+                    dt <= sw_time[i],
+                ),
+            )
+            # Of those events inside time window,
+            # find those inside distance window
+            vsel1 = (
+                haversine(
+                    longitude[vsel],
+                    latitude[vsel],
+                    longitude[i],
+                    latitude[i],
                 )
-                # Of those events inside time window,
-                # find those inside distance window
-                vsel1 = (
-                    haversine(
-                        longitude[vsel],
-                        latitude[vsel],
-                        longitude[i],
-                        latitude[i],
-                    )
-                    <= sw_space[i]
-                )
-                # wtf? (basically an and, updates the selection flag only where it was true, to the haversine result)
-                vsel[vsel] = vsel1[:, 0]  # array of array
+                <= sw_space[i]
+            )
+            vsel[vsel] = vsel1[:, 0]  # array of array
 
-                # should be removable later
-                temp_vsel = np.copy(vsel)
-                temp_vsel[i] = False
-                # A isolated mainshock does gets 0 as cluster number
-                # TODO give a new ids (adapt tests)
-                if any(temp_vsel):
-                    # Allocate a cluster number
-                    cluster_ids[vsel] = clust_index + 1
-                    shock_types[vsel] = 1
-                    # For those events in the cluster before the main event,
-                    # flagvector is equal to -1
-                    temp_vsel[dt >= 0.0] = False
-                    shock_types[temp_vsel] = -1
-                    shock_types[i] = 0
-                    clust_index += 1
-
-        # Re-sort the catalog_matrix into original order
-        # id1 = np.argsort(eqid, kind="heapsort")
-
-        # id0 is a permutation vector that sorts the catalogue
-        # we can get the original order by inverting the permuation
-        # This is O(n) instead of O(n log n) for sorting
-        inverted = np.zeros(neq, dtype=int)
-        inverted[id0] = np.arange(0, neq, 1)
-
-        cluster_ids = cluster_ids[inverted]
-        shock_types = shock_types[inverted]
+            # should be removable later
+            temp_vsel = np.copy(vsel)
+            temp_vsel[i] = False
+            # A isolated mainshock does gets 0 as cluster number
+            # TODO give a new ids (adapt tests)
+            if any(temp_vsel):
+                # Allocate a cluster number
+                cluster_ids[vsel] = clust_index + 1
+                shock_types[vsel] = 1
+                # For those events in the cluster before the main event,
+                # flagvector is equal to -1
+                temp_vsel[dt >= 0.0] = False
+                shock_types[temp_vsel] = -1
+                shock_types[i] = 0
+                clust_index += 1
 
         return cluster_ids, shock_types
