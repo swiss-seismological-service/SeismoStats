@@ -124,7 +124,7 @@ def test_empirical_cdf(magnitudes, delta_m=0.1):
     x, y = empirical_cdf(magnitudes, delta_m=delta_m)
 
     x_expected = bin_to_precision(np.arange(min(magnitudes), max(
-        magnitudes) + delta_m, delta_m))
+        magnitudes) + delta_m, delta_m), delta_m)
 
     assert_allclose(x, x_expected, rtol=1e-7)
     assert_equal(y[-1], 1)
