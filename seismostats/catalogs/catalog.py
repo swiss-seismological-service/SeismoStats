@@ -268,7 +268,7 @@ class Catalog(pd.DataFrame):
             return df
 
     @require_cols(require=['magnitude'])
-    def bin_magnitudes(self, delta_m: float = 0.1, inplace: bool = False) \
+    def bin_magnitudes(self, delta_m: float = None, inplace: bool = False) \
             -> Catalog | None:
         """
         Rounds values in the ``magnitude`` column of the catalog to a given
@@ -281,6 +281,11 @@ class Catalog(pd.DataFrame):
         Returns:
             catalog:    Catalog with rounded magnitudes.
         """
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
+        if delta_m is None:
+            delta_m = self.delta_m
+
         if inplace:
             df = self
         else:

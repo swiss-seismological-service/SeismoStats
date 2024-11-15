@@ -94,6 +94,9 @@ def test_forecast_catalog_strip():
 def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
     catalog = Catalog({'magnitude': mag_values})
 
+    with pytest.raises(ValueError):
+        catalog.bin_magnitudes(delta_m=None)
+
     assert (catalog.bin_magnitudes(
         delta_m)['magnitude'].tolist()
         == bin_to_precision(mag_values, delta_m)).all()
@@ -129,6 +132,10 @@ def test_catalog_estimate_b(mag_values, delta_m, mc):
         catalog.estimate_b(mc=None, delta_m=None)
     with pytest.raises(ValueError):
         catalog.estimate_b(mc=1.0, delta_m=None)
+    with pytest.raises(ValueError):
+        catalog.estimate_b(mc=1.0)
+    with pytest.raises(ValueError):
+        catalog.estimate_b()
     with pytest.raises(ValueError):
         catalog.estimate_b(mc=None, delta_m=0.1)
     with pytest.raises(ValueError):
