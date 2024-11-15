@@ -43,14 +43,14 @@ def test_bin_to_precision(x: np.ndarray, delta_x: float,
     y = bin_to_precision(x, delta_x)
     assert (y == rounded_value).all()
 
-#@pytest.mark.xfail(raises=ValueError)
+
 def test_bin_to_precision_none():
-#    with pytest.raises(ValueError):
-#        bin_to_precision(None, 0.1)
+    with pytest.raises(ValueError):
+        bin_to_precision(None, 0.1)
     with pytest.raises(ValueError):
         bin_to_precision([1,2,3], 0)
-#    with pytest.raises(TypeError):
-#        bin_to_precision([0.23,0.56,0.78])
+    with pytest.raises(TypeError):
+        bin_to_precision([0.23,0.56,0.78])
 
 
 @pytest.mark.parametrize(

@@ -96,11 +96,15 @@ def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
 
     with pytest.raises(ValueError):
         catalog.bin_magnitudes(delta_m=None)
+    with pytest.raises(ValueError):
+        catalog.bin_magnitudes()
 
     assert (catalog.bin_magnitudes(
         delta_m)['magnitude'].tolist()
         == bin_to_precision(mag_values, delta_m)).all()
-    assert (catalog.bin_magnitudes()['magnitude'].tolist()
+    catalog_copy = Catalog({'magnitude': mag_values})
+    catalog_copy.delta_m = 0.1
+    assert (catalog_copy.bin_magnitudes()['magnitude'].tolist()
             == bin_to_precision(mag_values, 0.1)).all()
 
     return_value = catalog.bin_magnitudes(delta_m, inplace=True)
