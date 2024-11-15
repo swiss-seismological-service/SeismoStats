@@ -12,7 +12,7 @@ from seismostats.io.parser import (QuakeMLHandler, parse_quakeml,
 
 OUT = [
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zqxyri",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zqxyri",
         "event_type": "earthquake",
         "time": "2021-12-30T07:43:14.681975Z",
         "latitude": "46.05144527",
@@ -22,7 +22,7 @@ OUT = [
         "depth": "1181.640625",
         "depth_uncertainty": "274.9552879",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080",
         "associatedphasecount": "90",
         "usedphasecount": "77",
@@ -36,28 +36,28 @@ OUT = [
         "magnitude": "2.510115344",
         "magnitude_uncertainty": "0.23854491",
         "magnitude_type": "MLhc",
-        "magnitudeid":
+        "magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206",
         "magnitude_MLhc": "2.510115344",
         "magnitude_MLhc_uncertainty": "0.23854491",
-        "magnitude_MLhc_magnitudeid":
+        "magnitude_MLhc_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206",
         "magnitude_MLv": "2.301758471",
         "magnitude_MLv_uncertainty": "0.2729312832",
-        "magnitude_MLv_magnitudeid":
+        "magnitude_MLv_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.752473.80241",
         "magnitude_MLh": "2.49",
         "magnitude_MLh_uncertainty": "0.23854491",
-        "magnitude_MLh_magnitudeid":
+        "magnitude_MLh_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20220103070310.700951.80206.mlhc2mlh",
         "magnitude_MWspec": "2.59",
         "magnitude_MWspec_uncertainty": "0.04",
         "magnitude_MWspec_confidenceLevel": "0.68",
-        "magnitude_MWspec_magnitudeid":
+        "magnitude_MWspec_magnitudeID":
         "smi:ch.ethz.sed/wfa.ethz.ch/magnitude/MWspec/IbD1W8X9zRumJCb"
     },
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zihlix",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zihlix",
         "event_type": "earthquake",
         "time": "2021-12-25T14:49:40.125942Z",
         "latitude": "47.37175484",
@@ -67,7 +67,7 @@ OUT = [
         "depth": "3364.257812",
         "depth_uncertainty": "1036.395075",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045",
         "associatedphasecount": "236",
         "usedphasecount": "44",
@@ -81,15 +81,15 @@ OUT = [
         "magnitude": "3.539687307",
         "magnitude_uncertainty": "0.272435385",
         "magnitude_type": "MLhc",
-        "magnitudeid":
+        "magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164",
         "magnitude_MLhc": "3.539687307",
         "magnitude_MLhc_uncertainty": "0.272435385",
-        "magnitude_MLhc_magnitudeid":
+        "magnitude_MLhc_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228194308.87278.210164"
     },
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zhdzar",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zhdzar",
         "event_type": "earthquake",
         "time": "2021-12-24T23:59:56.706839Z",
         "latitude": "47.37349438",
@@ -99,7 +99,7 @@ OUT = [
         "depth": "4423.828125",
         "depth_uncertainty": "692.7322216",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20211227163318.114678.110414",
         "associatedphasecount": "390",
         "usedphasecount": "52",
@@ -114,7 +114,7 @@ OUT = [
         "magnitude_type": None
     },
     {
-        "eventid": "smi:ch.ethz.sed/sc20a/Event/2021zamwcn",
+        "eventID": "smi:ch.ethz.sed/sc20a/Event/2021zamwcn",
         "event_type": "earthquake",
         "time": "2021-12-21T08:56:46.30756Z",
         "latitude": "47.07531705",
@@ -124,7 +124,7 @@ OUT = [
         "depth": "5136.71875",
         "depth_uncertainty": "570.791371",
         "evaluationmode": "manual",
-        "originid":
+        "originID":
         "smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228090222.85681.111790",
         "associatedphasecount": "163",
         "usedphasecount": "35",
@@ -138,15 +138,15 @@ OUT = [
         "magnitude": "2.908839011",
         "magnitude_uncertainty": "0.2414400072",
         "magnitude_type": "MLhc",
-        "magnitudeid":
+        "magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228090234.790826.111865",
         "magnitude_MLhc": "2.908839011",
         "magnitude_MLhc_uncertainty": "0.2414400072",
-        "magnitude_MLhc_magnitudeid":
+        "magnitude_MLhc_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228090234.790826.111865",
         "magnitude_MLv": "2.86",
         "magnitude_MLv_uncertainty": "0.2414400072",
-        "magnitude_MLv_magnitudeid":
+        "magnitude_MLv_magnitudeID":
         "smi:ch.ethz.sed/sc20ag/Magnitude/20211228090234.790826.111865.mlhc2mlh"
     }
 ]
@@ -161,8 +161,8 @@ def test_quakeml_handler():
     xml_file = os.path.join(current_dir, 'query.xml')
     parser.parse(xml_file)
 
-    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
-                            sorted(OUT, key=lambda k: k['eventid']))
+    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventID']),
+                            sorted(OUT, key=lambda k: k['eventID']))
 
 
 def test_parse_quakeml():
@@ -173,8 +173,8 @@ def test_parse_quakeml():
 
     catalog = parse_quakeml(xml_str, include_quality=True)
 
-    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
-                            sorted(OUT, key=lambda k: k['eventid']))
+    np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventID']),
+                            sorted(OUT, key=lambda k: k['eventID']))
 
     catalog = parse_quakeml('')
     assert catalog == []
@@ -222,8 +222,8 @@ def test_parse_quakeml_response():
 
         catalog = parse_quakeml_response(resp2)
 
-        np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventid']),
-                                sorted(OUT, key=lambda k: k['eventid']))
+        np.testing.assert_equal(sorted(catalog, key=lambda k: k['eventID']),
+                                sorted(OUT, key=lambda k: k['eventID']))
 
     # test invalid data
     rsp3 = responses.Response(

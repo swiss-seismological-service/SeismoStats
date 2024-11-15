@@ -186,7 +186,7 @@ def test_to_quakeml_without():
 
     catalog = Catalog.from_quakeml(xml_file)
 
-    rgx = "(eventid|originid|magnitudeid)$"
+    rgx = "(eventID|originID|magnitudeID)$"
     cols = catalog.filter(regex=rgx).columns
     assert len(cols) == 0
 
@@ -197,12 +197,14 @@ def test_to_quakeml_without():
 
     catalog = catalog._create_ids()
     event = catalog.iloc[0]
-    assert uuid.UUID(str(event['magnitudeid']))
-    assert uuid.UUID(str(event['originid']))
-    assert uuid.UUID(str(event['eventid']))
-    assert event['magnitudeid'] == event['magnitude_MLhc_magnitudeid']
-    assert event['magnitudeid'] != event['magnitude_MLv_magnitudeid']
-    assert uuid.UUID(str(event['magnitude_MLv_magnitudeid']))
+    event2 = catalog.iloc[1]
+    assert event['eventID'] != event2['eventID'], "eventID should be unique"
+    assert uuid.UUID(str(event['magnitudeID']))
+    assert uuid.UUID(str(event['originID']))
+    assert uuid.UUID(str(event['eventID']))
+    assert event['magnitudeID'] == event['magnitude_MLhc_magnitudeID']
+    assert event['magnitudeID'] != event['magnitude_MLv_magnitudeID']
+    assert uuid.UUID(str(event['magnitude_MLv_magnitudeID']))
 
 
 def test_to_quakeml_forecast():

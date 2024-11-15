@@ -14,7 +14,7 @@ def _get_realvalue(key: str, value: str) -> dict:
     return {f'{key}{k}': f'{value}{v}' for k, v in real_values.items()}
 
 
-EVENT_MAPPINGS = {'publicID': 'eventid',
+EVENT_MAPPINGS = {'publicID': 'eventID',
                   'type': 'event_type'}
 
 ORIGIN_MAPPINGS = {
@@ -23,7 +23,7 @@ ORIGIN_MAPPINGS = {
     **_get_realvalue('originlongitude', 'longitude'),
     **_get_realvalue('origindepth', 'depth'),
     'originevaluationMode': 'evaluationmode',
-    'originpublicID': 'originid',
+    'originpublicID': 'originID',
 }
 
 QUALITY_MAPPINGS = {
@@ -42,7 +42,7 @@ QUALITY_MAPPINGS = {
 MAGNITUDE_MAPPINGS = {
     **_get_realvalue('magnitudemag', 'magnitude'),
     'magnitudetype': 'magnitude_type',
-    'magnitudepublicID': 'magnitudeid',
+    'magnitudepublicID': 'magnitudeID',
 }
 
 DUMMY_MAGNITUDE = {
@@ -61,7 +61,7 @@ DUMMY_ORIGIN = {
 def SECONDARY_MAGNITUDE_MAPPINGS(type):
     return {
         **_get_realvalue('magnitudemag', f'magnitude_{type}'),
-        'magnitudepublicID': f'magnitude_{type}_magnitudeid'}
+        'magnitudepublicID': f'magnitude_{type}_magnitudeID'}
 
 
 def _select_magnitude_by_id(magnitudes: list, id: str | None) \
