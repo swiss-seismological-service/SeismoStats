@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 
-from seismostats.analysis.b_values.utils import b_value_to_beta
+from seismostats.analysis.estimate_b.utils import b_value_to_beta
 from seismostats.analysis.estimate_beta import shi_bolt_confidence
 
 
@@ -20,11 +20,17 @@ class BValueEstimator(ABC):
 
     @abstractmethod
     def _estimate(self):
+        """
+        Specific implementation of the b-value estimator.
+        """
         pass
 
     @classmethod
     @abstractmethod
     def weights_supported(self):
+        """
+        Set to True if the estimator supports weights, False otherwise.
+        """
         pass
 
     def __call__(self,
