@@ -101,8 +101,10 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
                         (foreshock=-1, mainshock=0, aftershock=+1)
         """
 
-        if "time" not in catalogue.columns:
-            raise ValueError("Catalogue must contain a time column")
+        cols = set(("time", "magnitude", "longitude", "latitude"))
+        if not cols.issubset(set(catalogue.columns)):
+            raise ValueError("Catalogue must contain the following columns: "
+                             + ", ".join(cols))
 
         cluster_ids = np.zeros(len(catalogue), dtype=int)
 
