@@ -108,9 +108,9 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
 
         cluster_ids = np.zeros(len(catalogue), dtype=int)
 
-        magnitude = catalogue["magnitude"].values
-        longitude = catalogue["longitude"].values
-        latitude = catalogue["latitude"].values
+        magnitude = catalogue["magnitude"]
+        longitude = catalogue["longitude"]
+        latitude = catalogue["latitude"]
 
         year_dec = decimal_year(catalogue)
         catalogue["__temp_time"] = year_dec
