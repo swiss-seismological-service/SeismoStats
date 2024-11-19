@@ -113,7 +113,7 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
         latitude = catalogue["latitude"]
 
         year_dec = decimal_year(catalogue)
-        catalogue["__temp_time"] = year_dec
+        catalogue["__temp_time"] = -year_dec
         id0 = catalogue.sort_values(by=["magnitude", "__temp_time"],
                                     ascending=False,
                                     kind="mergesort").index
