@@ -3,20 +3,21 @@ from __future__ import annotations
 import logging
 import os
 import uuid
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
 from typing import Any
 
 import numpy as np
 import pandas as pd
+from shapely import Polygon
 
-from seismostats.analysis.estimate_beta import estimate_b
+from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
-from shapely import Polygon
+
 try:
     from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
 except ImportError:

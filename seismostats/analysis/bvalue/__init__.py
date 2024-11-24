@@ -1,10 +1,10 @@
 # flake8: noqa
 import numpy as np
 
-from seismostats.analysis.estimate_b.classic import (ClassicBValueEstimator,
-                                                     UtsuBValueEstimator)
-from seismostats.analysis.estimate_b.positive import (BMorePositiveEstimator,
-                                                      BPositiveEstimator)
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
+from seismostats.analysis.bvalue.more_positive import BMorePositiveEstimator
+from seismostats.analysis.bvalue.positive import BPositiveEstimator
+from seismostats.analysis.bvalue.utsu import UtsuBValueEstimator
 
 
 def estimate_b(

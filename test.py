@@ -1,9 +1,9 @@
 # %%
 from seismostats.analysis import (estimate_b_more_positive,
                                   estimate_b_positive, estimate_b_utsu)
-from seismostats.analysis.estimate_b import (BMorePositiveEstimator,
-                                             BPositiveEstimator,
-                                             UtsuBValueEstimator)
+from seismostats.analysis.bvalue import (BMorePositiveEstimator,
+                                         BPositiveEstimator,
+                                         UtsuBValueEstimator)
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)

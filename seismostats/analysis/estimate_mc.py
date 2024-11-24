@@ -7,12 +7,10 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from seismostats.analysis.estimate_beta import estimate_b
-from seismostats.utils.binning import bin_to_precision, get_fmd
-from seismostats.utils.simulate_distributions import (
-    simulate_magnitudes_binned,
-)
+from seismostats.analysis.bvalue import estimate_b
 from seismostats.utils._config import get_option
+from seismostats.utils.binning import bin_to_precision, get_fmd
+from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
 def cdf_discrete_GR(
