@@ -1,15 +1,11 @@
 # standard
 import matplotlib.pyplot as plt
 import numpy as np
-
 # statistical
 from scipy.stats import norm
 
 # Own functions
-from seismostats.analysis.estimate_beta import (
-    estimate_b_positive,
-    estimate_b_classic,
-)
+from seismostats.analysis.bvalue import BPositiveEstimator, estimate_b
 
 
 def plot_mc_vs_b(
@@ -45,7 +41,7 @@ def plot_mc_vs_b(
     try:
         if method == "classic":
             results = [
-                estimate_b_classic(
+                estimate_b(
                     magnitudes[magnitudes >= mc],
                     mc,
                     delta_m=delta_m,
@@ -55,10 +51,11 @@ def plot_mc_vs_b(
             ]
         elif method == "positive":
             results = [
-                estimate_b_positive(
+                estimate_b(
                     magnitudes[magnitudes >= mc],
                     delta_m=delta_m,
                     return_std=True,
+                    method=BPositiveEstimator
                 )
                 for mc in mcs
             ]
@@ -66,7 +63,7 @@ def plot_mc_vs_b(
             mag_diffs = np.diff(magnitudes)
             mag_diffs = mag_diffs[mag_diffs > 0]
             results = [
-                estimate_b_classic(
+                estimate_b(
                     mag_diffs[mag_diffs >= mc],
                     mc=mc,
                     delta_m=delta_m,
@@ -76,7 +73,7 @@ def plot_mc_vs_b(
             ]
         else:
             raise ValueError(
-                "Method must be either 'tinti', 'positive' or"
+                "Method must be either 'classic', 'positive' or"
                 "'positive_postcut'"
             )
 

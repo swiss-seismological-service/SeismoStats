@@ -3,8 +3,8 @@ from typing import Literal
 
 import numpy as np
 
-from seismostats.analysis.estimate_b.utils import b_value_to_beta
-from seismostats.analysis.estimate_beta import shi_bolt_confidence
+from seismostats.analysis.bvalue.utils import (b_value_to_beta,
+                                               shi_bolt_confidence)
 
 
 class BValueEstimator(ABC):
