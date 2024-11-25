@@ -1,3 +1,4 @@
+import warnings
 from abc import ABC, abstractmethod
 from typing import Literal
 
@@ -5,6 +6,7 @@ import numpy as np
 
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
+from seismostats.utils._config import get_option
 
 
 class BValueEstimator(ABC):
@@ -43,6 +45,8 @@ class BValueEstimator(ABC):
         self.magnitudes = magnitudes
         self.weights = weights
 
+        self._sanity_checks()
+
         self.__b_value = self._estimate()
 
         return self.__b_value
@@ -71,3 +75,23 @@ class BValueEstimator(ABC):
     @property
     def n(self):
         return len(self.magnitudes)
+
+    def _sanity_checks(self):
+        '''
+        Perform sanity checks on the input data.
+        '''
+
+        # test that the magnitudes are binned correctly
+        mags_unique = np.unique(self.magnitudes)
+        assert (
+            max((mags_unique / self.delta_m)
+                - np.round(mags_unique / self.delta_m)) < 1e-4
+        ), "magnitudes are not binned correctly"
+
+        # test if lowest magnitude is much larger than mc
+        if get_option("warnings") is True:
+            if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
+                warnings.warn(
+                    "no magnitudes in the lowest magnitude bin are present."
+                    "check if mc is chosen correctly"
+                )
