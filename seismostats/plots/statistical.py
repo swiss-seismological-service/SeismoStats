@@ -5,7 +5,7 @@ import numpy as np
 from scipy.stats import norm
 
 # Own functions
-from seismostats.analysis.bvalue import BPositiveEstimator, estimate_b
+from seismostats.analysis.bvalue import BPositiveBValueEstimator, estimate_b
 
 
 def plot_mc_vs_b(
@@ -55,7 +55,7 @@ def plot_mc_vs_b(
                     magnitudes[magnitudes >= mc],
                     delta_m=delta_m,
                     return_std=True,
-                    method=BPositiveEstimator
+                    method=BPositiveBValueEstimator
                 )
                 for mc in mcs
             ]

@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
-from seismostats.analysis.bvalue.positive import BPositiveEstimator
+from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.estimate_mc import (bin_to_precision, empirical_cdf,
                                               mc_by_bvalue_stability, mc_ks,
                                               mc_max_curvature)
@@ -224,7 +224,7 @@ def test_estimate_mc_ks(
         magnitudes,
         delta_m=0.1,
         mcs_test=[1.5],
-        b_method=BPositiveEstimator
+        b_method=BPositiveBValueEstimator
     )
     assert_equal(1.5, best_mc)
     assert_almost_equal(3.2542240043462796, best_beta)

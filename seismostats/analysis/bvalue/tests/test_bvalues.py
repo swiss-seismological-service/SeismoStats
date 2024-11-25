@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_almost_equal
 
-from seismostats.analysis.bvalue import (BMorePositiveEstimator,
-                                         BPositiveEstimator,
+from seismostats.analysis.bvalue import (BMorePositiveBValueEstimator,
+                                         BPositiveBValueEstimator,
                                          ClassicBValueEstimator,
                                          UtsuBValueEstimator)
 from seismostats.utils.simulate_distributions import bin_to_precision
@@ -87,7 +87,7 @@ def test_estimate_b_positive(
 ):
     mags = bin_to_precision(mags, delta_m)
     mags = mags[mags >= mc - delta_m / 2]
-    estimator = BPositiveEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
+    estimator = BPositiveBValueEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
     b_estimate = estimator(mags)
     assert_almost_equal(b_estimate, b_est_correct)
 
@@ -109,6 +109,6 @@ def test_estimate_b_more_positive(
 ):
     mags = bin_to_precision(mags, delta_m)
     mags = mags[mags >= mc - delta_m / 2]
-    estimator = BMorePositiveEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
+    estimator = BMorePositiveBValueEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
     b_estimate = estimator(mags)
     assert_almost_equal(b_estimate, b_est_correct)
