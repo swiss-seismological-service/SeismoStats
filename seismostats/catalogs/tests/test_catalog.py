@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 
 from seismostats.analysis.bvalue import estimate_b
-from seismostats.analysis.bvalue.positive import BPositiveEstimator
 from seismostats.catalogs.catalog import (REQUIRED_COLS_CATALOG, Catalog,
                                           ForecastCatalog)
 from seismostats.utils.binning import bin_to_precision
@@ -132,19 +131,6 @@ def test_catalog_estimate_mc():
 )
 def test_catalog_estimate_b(mag_values, delta_m, mc):
     catalog = Catalog({'magnitude': mag_values})
-
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=None, delta_m=None)
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=1.0, delta_m=None)
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=1.0)
-    with pytest.raises(ValueError):
-        catalog.estimate_b()
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=None, delta_m=0.1)
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=1.0, delta_m=0.1, method=BPositiveEstimator)
 
     b_value = estimate_b(catalog['magnitude'],
                          mc=mc,

@@ -12,6 +12,8 @@ import pandas as pd
 from shapely import Polygon
 
 from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
@@ -456,7 +458,7 @@ class Catalog(pd.DataFrame):
         weights: list | None = None,
         b_parameter: str = "b_value",
         return_std: bool = False,
-        method: str = "classic",
+        method: BValueEstimator = ClassicBValueEstimator,
         return_n: bool = False,
     ) -> float | tuple[float, float] | tuple[float, float, float]:
         """

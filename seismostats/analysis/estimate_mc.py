@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 
 from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision, get_fmd
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
@@ -201,7 +203,7 @@ def mc_ks(
     stop_when_passed: bool = True,
     verbose: bool = False,
     beta: float | None = None,
-    b_method: str | None = None,
+    b_method: BValueEstimator = ClassicBValueEstimator,
     n: int = 10000,
     ks_ds_list: list[list] | None = None,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
@@ -275,11 +277,8 @@ def mc_ks(
             )
 
         # check if beta is given (then b_method is not needed)
-        if beta is not None and b_method is not None:
-            warnings.warn("Both beta and b_method are given. Using beta.")
-
-    if beta is None and b_method is None:
-        b_method = "classic"
+        if beta is not None and verbose:
+            print("Using given beta instead of estimating it.")
 
     mcs_tested = []
     ks_ds = []
@@ -295,13 +294,8 @@ def mc_ks(
 
         # if no beta is given, estimate beta
         if beta is None:
-            mc_beta = estimate_b(
-                magnitudes=mc_sample,
-                mc=mc,
-                delta_m=delta_m,
-                b_parameter="beta",
-                method=b_method,
-            )
+            estimator = b_method(mc=mc, delta_m=delta_m)
+            mc_beta = estimator.estimate_beta(magnitudes=mc_sample)
         else:
             mc_beta = beta
 
@@ -456,8 +450,7 @@ def mc_by_bvalue_stability(
         # TODO: here, one should be able to choose the method
         b, std = estimate_b(
             sample[sample >= mc - delta_m / 2], mc, delta_m,
-            b_parameter='b_value', return_std=True,
-            method="classic")
+            return_std=True)
         if len(sample[sample >= mc - delta_m / 2]) < 30:
             warnings.warn(
                 "Number of events above tested Mc is less than 30. "
@@ -471,8 +464,7 @@ def mc_by_bvalue_stability(
         for mc_p in mc_plus:
             # TODO: here, one should be able to choose the method
             b_p = estimate_b(sample[sample >= mc_p - delta_m / 2],
-                             mc_p, delta_m, b_parameter='b_value',
-                             method="classic")
+                             mc_p, delta_m)
             b_ex.append(b_p)
         b_avg = np.sum(b_ex) / steps
         diff_b = np.abs(b_avg - b) / std

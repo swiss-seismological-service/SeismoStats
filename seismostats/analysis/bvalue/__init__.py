@@ -1,6 +1,7 @@
 # flake8: noqa
 import numpy as np
 
+from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.bvalue.more_positive import BMorePositiveEstimator
 from seismostats.analysis.bvalue.positive import BPositiveEstimator
@@ -14,7 +15,7 @@ def estimate_b(
     weights: list | None = None,
     b_parameter: str = 'b_value',
     return_std: bool = False,
-    method=ClassicBValueEstimator,
+    method: BValueEstimator = ClassicBValueEstimator,
     return_n: bool = False,
     *args,
     **kwargs

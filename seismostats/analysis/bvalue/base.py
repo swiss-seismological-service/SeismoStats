@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Literal
 
 import numpy as np
+from typing_extensions import Self
 
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
@@ -13,7 +14,7 @@ class BValueEstimator(ABC):
 
     def __init__(self,
                  mc: float,
-                 delta_m: float):
+                 delta_m: float) -> Self:
         self.mc = mc
         self.delta_m = delta_m
 
@@ -40,7 +41,7 @@ class BValueEstimator(ABC):
                  weights: np.ndarray | list | None = None) -> float:
 
         if not self.weights_supported and weights is not None:
-            raise ValueError('Weights are not supported by this estimator')
+            raise ValueError('Weights are not supported by this estimator.')
 
         self.magnitudes = magnitudes
         self.weights = weights
@@ -67,7 +68,7 @@ class BValueEstimator(ABC):
         '''
         Shi and Bolt estimate of the beta/b-value estimate.
         '''
-        assert self.__b_value is not None, 'Please run the estimator first'
+        assert self.__b_value is not None, 'Please run the estimator first.'
         return shi_bolt_confidence(self.magnitudes,
                                    b=self.__b_value,
                                    b_parameter=self.__b_parameter)
@@ -86,12 +87,12 @@ class BValueEstimator(ABC):
         assert (
             max((mags_unique / self.delta_m)
                 - np.round(mags_unique / self.delta_m)) < 1e-4
-        ), "magnitudes are not binned correctly"
+        ), "Magnitudes are not binned correctly."
 
         # test if lowest magnitude is much larger than mc
         if get_option("warnings") is True:
             if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
                 warnings.warn(
-                    "no magnitudes in the lowest magnitude bin are present."
-                    "check if mc is chosen correctly"
+                    "No magnitudes in the lowest magnitude bin are present. "
+                    "Check if mc is chosen correctly."
                 )
