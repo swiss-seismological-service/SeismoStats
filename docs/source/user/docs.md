@@ -2,7 +2,8 @@
 
 ## Building the Documentation
 1. Install the project including documentation dependencies using `pip install -e .[doc]` from the root of the project.
-2. Go to the `/docs` directory and run `make <arg>`, depending on your goal:
+2. Install Pandoc on your system using `sudo apt-get install pandoc` or `brew install pandoc`, or use the documentation here: [Pandoc Installation](https://pandoc.org/installing.html).
+3. Go to the `/docs` directory and run `make <arg>`, depending on your goal:
     - `make html` to build the documentation.
     - `make server` to build the documentation and start a local server on http://localhost:8000 to view the documentation and rebuild automatically.
     - `make clean` to remove the built documentation.

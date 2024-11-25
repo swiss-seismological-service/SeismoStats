@@ -2,6 +2,7 @@
 
 # flake8: noqa
 
+from seismostats.analysis.bvalue import estimate_b
 # analysis
 from seismostats.analysis.estimate_a import estimate_a
 # seismicity

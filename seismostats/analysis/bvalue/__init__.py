@@ -6,6 +6,9 @@ from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.bvalue.more_positive import \
     BMorePositiveBValueEstimator
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
+from seismostats.analysis.bvalue.utils import (b_value_to_beta,
+                                               beta_to_b_value,
+                                               shi_bolt_confidence)
 from seismostats.analysis.bvalue.utsu import UtsuBValueEstimator
 
 
