@@ -2,6 +2,9 @@
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
 
+>[!IMPORTANT]  
+>We are actively working on a first stable version of `SeismoStats`. The API is not final yet and will still change until the first release coming in the next months. We are happy to receive feedback and suggestions for improvement.
+
 ## Start developing:
 
 ```
