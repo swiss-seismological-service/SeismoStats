@@ -7,4 +7,5 @@ what_is_seismostats
 getting_started
 usage
 docs
+contributing
 ```
