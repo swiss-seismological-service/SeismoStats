@@ -7,7 +7,7 @@ from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.utils._config import get_option
 
 
-class BPositiveEstimator(BValueEstimator):
+class BPositiveBValueEstimator(BValueEstimator):
     '''Return the b-value estimate calculated using the
     positive differences between consecutive magnitudes.
 

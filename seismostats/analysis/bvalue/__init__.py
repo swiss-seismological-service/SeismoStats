@@ -3,8 +3,9 @@ import numpy as np
 
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.bvalue.more_positive import BMorePositiveEstimator
-from seismostats.analysis.bvalue.positive import BPositiveEstimator
+from seismostats.analysis.bvalue.more_positive import \
+    BMorePositiveBValueEstimator
+from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utsu import UtsuBValueEstimator
 
 
