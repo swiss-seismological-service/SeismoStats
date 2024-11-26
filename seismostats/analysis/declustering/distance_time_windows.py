@@ -91,8 +91,8 @@ class BaseDistanceTimeWindow(abc.ABC):
             magnitude: array of magnitudes
 
         Returns:
-            sw_space: array of space windows
-            sw_time: array of time windows
+            sw_space: array of space windows in km
+            sw_time: array of time windows in decimal years
         """
         return NotImplemented
 
@@ -104,8 +104,8 @@ class BaseDistanceTimeWindow(abc.ABC):
             magnitude: array of magnitudes
 
         Returns:
-            sw_space: array of space windows
-            sw_time: array of time windows
+            sw_space: array of space windows in km
+            sw_time: array of time windows in decimal years
         """
         sw_space, sw_time = self._calc(magnitude)
         if self.time_cutoff:
