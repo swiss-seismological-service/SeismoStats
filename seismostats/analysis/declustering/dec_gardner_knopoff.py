@@ -48,23 +48,14 @@
 import numpy as np
 import pandas as pd
 
-from seismostats.analysis.declustering.base import (BaseCatalogueDecluster,
-                                                    ShockTypes)
+from seismostats.analysis.declustering.base import Declusterer
 from seismostats.analysis.declustering.distance_time_windows import (
     BaseDistanceTimeWindow
 )
 from seismostats.analysis.declustering.utils import decimal_year, haversine
 
-from typing import TypedDict
 
-
-class GKConfig(TypedDict):
-    time_distance_window: BaseDistanceTimeWindow
-    fs_time_prop: float
-    time_cutoff: float
-
-
-class GardnerKnopoffType1(BaseCatalogueDecluster):
+class GardnerKnopoffType1(Declusterer):
     """
     This class implements the Gardner Knopoff algorithm as described in
     this paper:
@@ -73,60 +64,62 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
     Seism. Soc. Am., 64(5): 1363-1367.
     """
 
-    def decluster(self, catalogue: pd.DataFrame,
-                  config: GKConfig) -> tuple[np.ndarray, np.ndarray]:
+    def __init__(self, time_distance_window: BaseDistanceTimeWindow,
+                 fs_time_prop: float = 1.0):
         """
-        Apply the Gardner-Knopoff declustering algorithm to the catalogue.
+        Args:
+            time_distance_window: BaseDistanceTimeWindow
+            fs_time_prop: float in the interval [0,1], expressing
+                the size of the time window used for searching for foreshocks,
+                as a fractional proportion of the size of the aftershock window.
+        """
+        self.time_distance_window = time_distance_window
+        self.fs_time_prop = fs_time_prop
 
-        The catalogue must contain the following columns:
+    def _decluster(self, catalog: pd.DataFrame,
+                   ) -> np.ndarray[np.bool_]:
+        """
+        Apply the Gardner-Knopoff declustering algorithm to the catalog.
+
+        The catalog must contain the following columns:
         - time, magnitude, longitude, latitude
 
         If there are multiple events with the same magnitude,
         the earliest event is considered as the mainshock first.
 
         Args:
-            catalogue: the catalogue of earthquakes
-            config: configuration dict with the following keys:
-            - time_distance_window: BaseDistanceTimeWindow
-            - fs_time_prop: float in the interval [0,1], expressing
-            the size of the time window used for searching for foreshocks,
-            as a fractional proportion of the size of the aftershock window.
-            Optional:
-            - time_cutoff: for the time distance window, the time cutoff in days
+            catalog: the catalog of earthquakes
 
         Returns:
-            cluster_ids: cluster ids for each event, note that cluster
-                         with a single event are assigned the id 0.
-            shock_types: shock types for each event
-                        (foreshock=-1, mainshock=0, aftershock=+1)
-        """
+            mainshock_flags: boolean array indicating whether the i'th event
+                             is a mainshock
 
+        Raises:
+            ValueError: if a required column is missing
+        """
         cols = set(("time", "magnitude", "longitude", "latitude"))
-        if not cols.issubset(set(catalogue.columns)):
-            raise ValueError("Catalogue must contain the following columns: "
+        if not cols.issubset(set(catalog.columns)):
+            raise ValueError("catalog must contain the following columns: "
                              + ", ".join(cols))
 
-        cluster_ids = np.zeros(len(catalogue), dtype=int)
+        # each cluster of events is assigned a non-negative integer id
+        cluster_ids = np.zeros(len(catalog), dtype=int)
+        cluster_id = 1
+        magnitude = catalog["magnitude"]
+        longitude = catalog["longitude"]
+        latitude = catalog["latitude"]
 
-        magnitude = catalogue["magnitude"]
-        longitude = catalogue["longitude"]
-        latitude = catalogue["latitude"]
-
-        year_dec = decimal_year(catalogue)
-        catalogue["__temp_time"] = -year_dec
-        id0 = catalogue.sort_values(by=["magnitude", "__temp_time"],
-                                    ascending=False,
-                                    kind="mergesort").index
-        catalogue.drop(columns=["__temp_time"], inplace=True)
-
-        sw_space, sw_time = config["time_distance_window"].calc(
-            magnitude, config.get("time_cutoff")
-        )
-        shock_types = np.zeros(len(catalogue), dtype=int)
-        clust_index = 0
-        for i in id0:
+        year_dec = decimal_year(catalog)
+        space_windows, time_windows = self.time_distance_window(magnitude)
+        ordered = catalog[list(cols)].sort_values(by=["magnitude", "time"],
+                                                  ascending=[False, True],
+                                                  kind="mergesort")
+        mainshock_flags = np.ones(len(catalog), dtype=bool)
+        for i, long, lat in zip(ordered.index,
+                                ordered["longitude"],
+                                ordered["latitude"]):
             # If already assigned to a cluster, skip
-            if cluster_ids[i] != ShockTypes.Mainshock:
+            if cluster_ids[i] != 0:
                 continue
 
             # Find Events inside both fore- and aftershock time windows
@@ -134,36 +127,27 @@ class GardnerKnopoffType1(BaseCatalogueDecluster):
             vsel = np.logical_and(
                 cluster_ids == 0,
                 np.logical_and(
-                    dt >= (-sw_time[i] * config["fs_time_prop"]),
-                    dt <= sw_time[i],
+                    dt >= (-time_windows[i] * self.fs_time_prop),
+                    dt <= time_windows[i],
                 ),
             )
             # Of those events inside time window,
-            # find those inside distance window
+            # find those inside the distance window
             vsel1 = (
                 haversine(
                     longitude[vsel],
                     latitude[vsel],
-                    longitude[i],
-                    latitude[i],
+                    long,
+                    lat,
                 )
-                <= sw_space[i]
+                <= space_windows[i]
             )
             vsel[vsel] = vsel1
+            # Assign id and flags to this cluster
+            cluster_ids[vsel] = cluster_id
+            cluster_id += 1
+            mainshock_flags[vsel] = 0
+            mainshock_flags[i] = 1
 
-            # should be simplified
-            temp_vsel = np.copy(vsel)
-            temp_vsel[i] = False
-            # A isolated mainshock does gets 0 as cluster number
-            # TODO give a new ids (adapt tests)
-            if any(temp_vsel):
-                # Allocate a cluster number
-                cluster_ids[vsel] = clust_index + 1
-                shock_types[vsel] = ShockTypes.Aftershock
-                # Events before the mainshock are foreshocks
-                temp_vsel[dt >= 0.0] = False
-                shock_types[temp_vsel] = ShockTypes.Foreshock
-                shock_types[i] = ShockTypes.Mainshock
-                clust_index += 1
-
-        return cluster_ids, shock_types
+        self.__cluster_ids = cluster_ids
+        return mainshock_flags
