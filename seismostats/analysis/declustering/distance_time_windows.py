@@ -49,14 +49,6 @@ import numpy as np
 import pandas as pd
 
 
-def time_window_cutoff(sw_time: np.ndarray, time_cutoff: float) -> np.ndarray:
-    """
-    Allows for cutting the declustering time window at a specific time, outside
-    of which an event of any magnitude is no longer identified as a cluster
-    """
-    return np.array([time_cutoff if x > time_cutoff else x for x in sw_time])
-
-
 DistanceTimeWindow = tuple[np.ndarray[float], np.ndarray[pd.Timedelta]]
 _DistanceTimeWindow = tuple[np.ndarray[float], np.ndarray[float]]
 
@@ -70,7 +62,8 @@ class BaseDistanceTimeWindow(abc.ABC):
     def __init__(self, time_cutoff: float | None = None):
         """
         Args:
-            time_cutoff: time window cutoff in days (optional)
+            time_cutoff: time window cutoff in days (optional).
+                No time windows larger than time_cutoff are returned.
         """
         self.time_cutoff = time_cutoff
 
@@ -102,7 +95,7 @@ class BaseDistanceTimeWindow(abc.ABC):
         """
         sw_space, sw_time = self._calc(magnitude)
         if self.time_cutoff:
-            sw_time = time_window_cutoff(sw_time, self.time_cutoff)
+            sw_time = np.clip(sw_time, a_min=0, a_max=self.time_cutoff)
         sw_time = np.array([pd.Timedelta(days=t) for t in sw_time])
         return sw_space, sw_time
 
