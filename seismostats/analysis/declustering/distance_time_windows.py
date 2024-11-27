@@ -44,11 +44,9 @@
 #
 # The GEM Foundation, and the authors of the software, assume no
 # liability for use of the software.
-
 import abc
 import numpy as np
-
-DAYS = 364.75
+import pandas as pd
 
 
 def time_window_cutoff(sw_time: np.ndarray, time_cutoff: float) -> np.ndarray:
@@ -56,16 +54,11 @@ def time_window_cutoff(sw_time: np.ndarray, time_cutoff: float) -> np.ndarray:
     Allows for cutting the declustering time window at a specific time, outside
     of which an event of any magnitude is no longer identified as a cluster
     """
-    sw_time = np.array(
-        [
-            (time_cutoff / DAYS) if x > (time_cutoff / DAYS) else x
-            for x in sw_time
-        ]
-    )
-    return sw_time
+    return np.array([time_cutoff if x > time_cutoff else x for x in sw_time])
 
 
-DistanceTimeWindow = tuple[np.ndarray, np.ndarray]
+DistanceTimeWindow = tuple[np.ndarray[float], np.ndarray[pd.Timedelta]]
+_DistanceTimeWindow = tuple[np.ndarray[float], np.ndarray[float]]
 
 
 class BaseDistanceTimeWindow(abc.ABC):
@@ -83,7 +76,7 @@ class BaseDistanceTimeWindow(abc.ABC):
 
     @abc.abstractmethod
     def _calc(self, magnitude: np.ndarray,
-              ) -> DistanceTimeWindow:
+              ) -> _DistanceTimeWindow:
         """
         Calculate the space and time windows for given magnitudes
 
@@ -92,7 +85,7 @@ class BaseDistanceTimeWindow(abc.ABC):
 
         Returns:
             sw_space: array of space windows in km
-            sw_time: array of time windows in decimal years
+            sw_time: array of time windows as decimal days
         """
         return NotImplemented
 
@@ -105,11 +98,12 @@ class BaseDistanceTimeWindow(abc.ABC):
 
         Returns:
             sw_space: array of space windows in km
-            sw_time: array of time windows in decimal years
+            sw_time: array of time windows
         """
         sw_space, sw_time = self._calc(magnitude)
         if self.time_cutoff:
             sw_time = time_window_cutoff(sw_time, self.time_cutoff)
+        sw_time = np.array([pd.Timedelta(days=t) for t in sw_time])
         return sw_space, sw_time
 
 
@@ -121,11 +115,11 @@ class GardnerKnopoffWindow(BaseDistanceTimeWindow):
         Gardner and Knopoff, 1974
     """
 
-    def _calc(self, magnitude: np.ndarray) -> DistanceTimeWindow:
+    def _calc(self, magnitude: np.ndarray) -> _DistanceTimeWindow:
         sw_space = np.power(10.0, 0.1238 * magnitude + 0.983)
-        sw_time = np.power(10.0, 0.032 * magnitude + 2.7389) / DAYS
+        sw_time = np.power(10.0, 0.032 * magnitude + 2.7389)
         sw_time[magnitude < 6.5] = (
-            np.power(10.0, 0.5409 * magnitude[magnitude < 6.5] - 0.547) / DAYS
+            np.power(10.0, 0.5409 * magnitude[magnitude < 6.5] - 0.547)
         )
         return sw_space, sw_time
 
@@ -138,13 +132,13 @@ class GruenthalWindow(BaseDistanceTimeWindow):
         Gruenthal, 1985; see van Stiphout et al., 2012
     """
 
-    def _calc(self, magnitude: np.ndarray) -> DistanceTimeWindow:
+    def _calc(self, magnitude: np.ndarray) -> _DistanceTimeWindow:
         sw_space = np.exp(1.77 + np.sqrt(0.037 + 1.02 * magnitude))
         sw_time = np.abs(
-            (np.exp(-3.95 + np.sqrt(0.62 + 17.32 * magnitude))) / DAYS
+            (np.exp(-3.95 + np.sqrt(0.62 + 17.32 * magnitude)))
         )
         sw_time[magnitude >= 6.5] = (
-            np.power(10, 2.8 + 0.024 * magnitude[magnitude >= 6.5]) / DAYS
+            np.power(10, 2.8 + 0.024 * magnitude[magnitude >= 6.5])
         )
         return sw_space, sw_time
 
@@ -157,7 +151,7 @@ class UhrhammerWindow(BaseDistanceTimeWindow):
         Uhrhammer, 1986
     """
 
-    def _calc(self, magnitude: np.ndarray) -> DistanceTimeWindow:
+    def _calc(self, magnitude: np.ndarray) -> _DistanceTimeWindow:
         sw_space = np.exp(-1.024 + 0.804 * magnitude)
-        sw_time = np.exp(-2.87 + 1.235 * magnitude) / DAYS
+        sw_time = np.exp(-2.87 + 1.235 * magnitude)
         return sw_space, sw_time
