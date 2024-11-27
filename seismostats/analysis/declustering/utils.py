@@ -1,23 +1,4 @@
 import numpy as np
-import pandas as pd
-
-
-def decimal_year(catalogue: pd.DataFrame) -> np.ndarray:
-    """
-    Converts the column 'time' of the catalogue to decimal years,
-    using a precision of seconds.
-
-    Args:
-        catalogue: A pandas DataFrame with a column 'time' in datetime format.
-    Note:
-        Used for comparing time windows from BaseDistanceTimeWindow
-    Returns:
-        A numpy array with the decimal years for each event in the catalogue.
-        Using a precision of seconds.
-    """
-    time = catalogue["time"].astype("datetime64[s]", errors="ignore")
-    day = time.dt.dayofyear + time.dt.second / 86400
-    return (time.dt.year + day / 365).values
 
 
 def haversine(longitudes: np.ndarray, latitudes: np.ndarray,

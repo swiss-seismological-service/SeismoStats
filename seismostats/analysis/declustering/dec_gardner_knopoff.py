@@ -52,7 +52,7 @@ from seismostats.analysis.declustering.base import Declusterer
 from seismostats.analysis.declustering.distance_time_windows import (
     BaseDistanceTimeWindow
 )
-from seismostats.analysis.declustering.utils import decimal_year, haversine
+from seismostats.analysis.declustering.utils import haversine
 
 
 class GardnerKnopoffType1(Declusterer):
@@ -109,7 +109,7 @@ class GardnerKnopoffType1(Declusterer):
         longitude = catalog["longitude"]
         latitude = catalog["latitude"]
 
-        year_dec = decimal_year(catalog)
+        time = catalog["time"].astype("datetime64[s]", errors="ignore").values
         space_windows, time_windows = self.time_distance_window(magnitude)
         ordered = catalog[list(cols)].sort_values(by=["magnitude", "time"],
                                                   ascending=[False, True],
@@ -123,7 +123,7 @@ class GardnerKnopoffType1(Declusterer):
                 continue
 
             # Find Events inside both fore- and aftershock time windows
-            dt = year_dec - year_dec[i]
+            dt = time - time[i]
             vsel = np.logical_and(
                 cluster_ids == 0,
                 np.logical_and(
