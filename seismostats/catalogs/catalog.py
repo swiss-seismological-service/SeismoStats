@@ -199,9 +199,22 @@ class Catalog(pd.DataFrame):
                         'secondaryazimuthalgap', 'maximumdistance',
                         'minimumdistance', 'mediandistance']
 
+        string_cols = ['magnitude_type', 'eventID',
+                       'originID', 'magnitudeID', 'event_type']
+
         for num in numeric_cols:
             if num in df.columns:
                 df[num] = pd.to_numeric(df[num], errors='coerce')
+
+        # make sure empty rows in string columns are NoneType
+        for strc in string_cols:
+            if strc in df.columns:
+                df[strc] = df[strc].astype(str)
+                df[strc] = df[strc].replace(
+                    to_replace=r'(?i)\b(?:'
+                    + '|'.join(['nan', 'none', 'na', 'null', '']) + r')\b',
+                    value=None, regex=True
+                )
 
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
