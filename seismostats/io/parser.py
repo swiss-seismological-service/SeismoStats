@@ -31,6 +31,7 @@ QUALITY_MAPPINGS = {
     'originqualityusedPhaseCount': 'usedphasecount',
     'originqualityassociatedStationCount': 'associatedstationcount',
     'originqualityusedStationCount': 'usedstationcount',
+    'originqualitydepthPhaseCount': 'depthphasecount',
     'originqualitystandardError': 'standarderror',
     'originqualityazimuthalGap': 'azimuthalgap',
     'originqualitysecondaryAzimuthalGap': 'secondaryazimuthalgap',
