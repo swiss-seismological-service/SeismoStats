@@ -1,5 +1,4 @@
 import decimal
-
 import numpy as np
 
 
@@ -61,6 +60,26 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
     return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
+
+
+def binning_test(
+        x: np.ndarray | list,
+        delta_x: float,
+        tolerance: float = 1e-08) -> float:
+    """
+    Finds out to which precision the given array is binned with delta_x.
+
+    Args:
+        x:          list of decimal numbers that are supposeddly binned
+            (with bin-sizes delta_x)
+        delta_x:    size of the bin
+        tolerance:  tolerance for the comparison
+    """
+    if isinstance(x, list):
+        x = np.array(x)
+    x_binned = bin_to_precision(x, delta_x)
+
+    return np.allclose(x_binned, x, atol=tolerance)
 
 
 def get_fmd(

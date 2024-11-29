@@ -7,6 +7,7 @@ from typing_extensions import Self
 
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
+from seismostats.utils.binning import binning_test
 from seismostats.utils._config import get_option
 
 
@@ -83,11 +84,11 @@ class BValueEstimator(ABC):
         '''
 
         # test that the magnitudes are binned correctly
-        mags_unique = np.unique(self.magnitudes)
         assert (
-            max((mags_unique / self.delta_m)
-                - np.round(mags_unique / self.delta_m)) < 1e-4
-        ), "Magnitudes are not binned correctly."
+            binning_test(self.magnitudes, self.delta_m,
+                         tolerance=self.delta_m / 100)
+        )
+        "Magnitudes are not binned correctly."
 
         # test if lowest magnitude is much larger than mc
         if get_option("warnings") is True:
