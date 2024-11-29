@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 
 from seismostats.utils.binning import (bin_to_precision, get_cum_fmd, get_fmd,
-                                       normal_round, normal_round_to_int)
+                                       normal_round, normal_round_to_int,
+                                       binning_test)
 
 
 @pytest.mark.parametrize(
@@ -116,3 +117,13 @@ def test_get_fmd(magnitudes: np.ndarray, delta_m: float,
         errors.append("Incorrect counts.")
 
     assert not errors, "errors occurred:\n{}".format("\n".join(errors))
+
+
+def test_binning_test():
+    a = [0.2, 0.4, 0.6, 0.8, 1.0]
+    assert binning_test(a, 0.1)
+    assert binning_test(a, 0.2)
+    assert not binning_test(a, 0.1, decimal_assumption=False)
+
+    a = [1, 4, 7, 10, 1.3]
+    assert binning_test(a, 0.1)
