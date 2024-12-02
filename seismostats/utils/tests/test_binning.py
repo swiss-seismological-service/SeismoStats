@@ -123,7 +123,7 @@ def test_binning_test():
     a = [0.2, 0.4, 0.6, 0.8, 1.0]
     assert binning_test(a, 0.1)
     assert binning_test(a, 0.2)
-    assert not binning_test(a, 0.1, decimal_assumption=False)
+    assert not binning_test(a, 0.02)
 
     a = [1, 4, 7, 10, 1.3]
     assert binning_test(a, 0.1)

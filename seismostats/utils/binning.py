@@ -65,44 +65,48 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 def binning_test(
         x: np.ndarray | list,
         delta_x: float,
-        tolerance: float = 1e-08,
-        decimal_assumption: bool = True) -> float:
+        tolerance: float = 1e-08) -> float:
     """
     Finds out to which precision the given array is binned with delta_x.
+    The function assumes that the  array is binned to a power of ten.
+    As an example, the function will return True for x =  [0, 0.2, 0.4],
+    delta_x = 0.1, even though the bin size might be 0.2. If delta_x == 0,
+    the function will test if the array is binned to a power of ten larger
+    than the tolerance.
 
     Args:
         x:          list of decimal numbers that are supposeddly binned
             (with bin-sizes delta_x)
         delta_x:    size of the bin
         tolerance:  tolerance for the comparison
-        decimal_assumption:    if True (default), the function assumes that the
-            array is binned to a power of ten. As an example, the function will
-            return True for x =  [0, 0.2, 0.4], delta_x = 0.1, even though the
-            bin size seems to be 0.2. If set to False, the function will be
-            more strict, and only return True if delta_x = 0.2 for the example.
 
     Returns:
         result: True if the array is binned to the given precision, False
             otherwise.
 
     """
-    if isinstance(x, list):
-        x = np.array(x)
-    x_binned = bin_to_precision(x, delta_x)
+    if delta_x == 0:
+        range = np.max(x) - np.min(x)
+        power = np.arange(np.floor(np.log10(tolerance)) + 1, range, 1)
+        delta_x_test = 10**power
+        test = True
+        for delta_x_loop in delta_x_test:
+            test = test and not binning_test(x, delta_x_loop, tolerance)
+    else:
+        if isinstance(x, list):
+            x = np.array(x)
+        x_binned = bin_to_precision(x, delta_x)
 
-    # The first test can only be correct if the bins are <= delta_x
-    test_1 = np.allclose(x_binned, x, atol=tolerance)
-    if test_1:
-        # second test checks if the bins are smaller than delta_x
-        if decimal_assumption:
-            factors = [10]
-        else:
-            factors = np.arange(2, 11)
-        test_2 = True
-        for factor in factors:
-            x_binned = bin_to_precision(x, delta_x * factor)
-            test_2 = test_2 and not np.allclose(x_binned, x, atol=tolerance)
-    return test_1 and test_2
+        # The first test can only be correct if the bins are <= delta_x
+        test_1 = np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
+        if test_1:
+            # second test checks if the bins are smaller than delta_x
+            # For this, we check the next larger power of ten
+            power = np.floor(np.log10(delta_x)) + 1
+            x_binned = bin_to_precision(x, 10**power)
+            test_2 = not np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
+        test = test_1 and test_2
+    return test
 
 
 def get_fmd(
