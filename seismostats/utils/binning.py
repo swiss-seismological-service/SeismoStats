@@ -67,12 +67,17 @@ def binning_test(
         delta_x: float,
         tolerance: float = 1e-08) -> float:
     """
-    Finds out to which precision the given array is binned with delta_x.
-    The function assumes that the  array is binned to a power of ten.
-    As an example, the function will return True for x =  [0, 0.2, 0.4],
-    delta_x = 0.1, even though the bin size might be 0.2. If delta_x == 0,
-    the function will test if the array is binned to a power of ten larger
-    than the tolerance.
+    Finds out to which precision the given array is binned with delta_x,
+      within the given absolute tolerance.
+
+    The function does have the implicit assumption of delta_x being a power
+    of ten. As an example, what this means: the function will return True for
+    x =  [0, 0.2, 0.4], for delta_x = 0.2 but also for delta_x = 0.1. This is
+    because the algorithm will check the next larger power of ten in order
+    to determine if the array is binned to a larger delta_x.
+
+    If delta_x == 0, the function will test if the array is binned to a power
+    of ten larger than the tolerance.
 
     Args:
         x:          list of decimal numbers that are supposeddly binned
