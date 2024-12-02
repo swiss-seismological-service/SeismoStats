@@ -84,8 +84,12 @@ class BValueEstimator(ABC):
         '''
 
         # test that the magnitudes are binned correctly
+        if self.delta_m == 0:
+            tolerance = 1e-08
+        else:
+            tolerance = max(self.delta_m / 100, 1e-08)
         assert (
-            binning_test(self.magnitudes, self.delta_m)
+            binning_test(self.magnitudes, self.delta_m, tolerance)
         )
         "Magnitudes are not binned correctly."
 
