@@ -1,3 +1,37 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=70.0.0", "wheel>=0.43.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["seismostats*"]
+
+[project]
+name = "SeismoStats"
+version = "0.1"
+description = "Library for statistical analysis of seismicity."
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+
+dependencies = ["cartopy", "fiona", "geopandas", "jinja2", "requests", "scipy"]
+
+[project.optional-dependencies]
+dev = ["flake8", "isort", "pytest", "pytest-cov", "responses", "tox"]
+doc = [
+    "docutils==0.19",
+    "sphinx",
+    "myst-parser",
+    "sphinx-autobuild",
+    "pandoc",
+    "pydata-sphinx-theme",
+    "nbsphinx",
+    "nbsphinx-link",
+]
+openquake = [
+    "openquake-engine @ git+https://github.com/gem/oq-engine.git",
+    "numpy < 2",
+]
+jupyter = ["notebook"]
+
+
+[tool.setuptools.package-data]
+"*" = ["*.j2"]
