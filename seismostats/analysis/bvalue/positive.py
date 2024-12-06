@@ -38,6 +38,8 @@ class BPositiveBValueEstimator(BValueEstimator):
         # only take the values where the next earthquake is d_mc larger than the
         # previous one. delta_m is added to avoid numerical errors
         if self.weights is not None:
+            # use weight of second earthquake of a difference
+            self.weights = self.weights[1:]
             self.weights = self.weights[self.magnitudes
                                         > self.dmc - self.delta_m / 2]
         self.magnitudes = abs(
