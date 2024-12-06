@@ -21,7 +21,7 @@ class BPositiveBValueEstimator(BValueEstimator):
                 value are not considered). If None, the cutoff is set to delta_m
     '''
 
-    weights_supported = False
+    weights_supported = True
 
     def __init__(self, dmc: float | None = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,10 +37,15 @@ class BPositiveBValueEstimator(BValueEstimator):
         self.magnitudes = np.diff(self.magnitudes)
         # only take the values where the next earthquake is d_mc larger than the
         # previous one. delta_m is added to avoid numerical errors
+        if self.weights is not None:
+            # use weight of second earthquake of a difference
+            self.weights = self.weights[1:]
+            self.weights = self.weights[self.magnitudes
+                                        > self.dmc - self.delta_m / 2]
         self.magnitudes = abs(
             self.magnitudes[self.magnitudes > self.dmc - self.delta_m / 2])
 
         classic_estimator = ClassicBValueEstimator(mc=self.dmc,
                                                    delta_m=self.delta_m)
 
-        return classic_estimator(self.magnitudes)
+        return classic_estimator(self.magnitudes, self.weights)

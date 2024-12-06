@@ -27,6 +27,7 @@ def b_value_to_beta(b_value: float) -> float:
 
 def shi_bolt_confidence(
     magnitudes: np.ndarray,
+    weights: np.ndarray | None = None,
     b: float | None = None,
     b_parameter: str = "b_value",
 ) -> float:
@@ -38,6 +39,7 @@ def shi_bolt_confidence(
 
     Args:
         magnitudes: numpy array of magnitudes
+        weights:    numpy array of weights for each magnitude
         b:          known or estimated b-value/beta of the magnitudes
         b_parameter:either either 'b_value' or 'beta'
 
@@ -50,8 +52,15 @@ def shi_bolt_confidence(
         b_parameter == "b_value" or b_parameter == "beta"
     ), "please choose either 'b_value' or 'beta' as b_parameter"
 
+    std_mags = np.sqrt(np.average(np.square(
+        magnitudes - np.average(magnitudes, weights=weights)), weights=weights))
+    if weights is None:
+        len_mags = len(magnitudes)
+    else:
+        len_mags = np.sum(weights)
+
     std_b = (
-        np.log(10) * b**2 * np.std(magnitudes) / np.sqrt(len(magnitudes) - 1)
+        np.log(10) * b**2 * std_mags / np.sqrt(len_mags - 1)
     )
     if b_parameter == "beta":
         std_b = (std_b) / np.log(10)
