@@ -45,8 +45,10 @@ def test_estimate_b_classic(
     mags = mags[mags >= mc - delta_m / 2]
     estimator = ClassicBValueEstimator(mc=mc, delta_m=delta_m)
     b_estimate = estimator(mags)
+    b_estimate_weighted = estimator(mags, weights=np.ones(len(mags)))
 
     assert_almost_equal(b_estimate, b_est_correct)
+    assert_almost_equal(b_estimate, b_estimate_weighted)
 
 
 @pytest.mark.parametrize(
@@ -67,7 +69,10 @@ def test_estimate_b_utsu(
     mags = mags[mags >= mc - delta_m / 2]
     estimator = UtsuBValueEstimator(mc=mc, delta_m=delta_m)
     b_estimate = estimator(mags)
+    b_estimate_weighted = estimator(mags, weights=np.ones(len(mags)))
+
     assert_almost_equal(b_estimate, b_est_correct)
+    assert_almost_equal(b_estimate, b_estimate_weighted)
 
 
 @pytest.mark.parametrize(
@@ -89,7 +94,10 @@ def test_estimate_b_positive(
     mags = mags[mags >= mc - delta_m / 2]
     estimator = BPositiveBValueEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
     b_estimate = estimator(mags)
+    b_estimate_weighted = estimator(mags, weights=np.ones(len(mags)))
+
     assert_almost_equal(b_estimate, b_est_correct)
+    assert_almost_equal(b_estimate, b_estimate_weighted)
 
 
 @pytest.mark.parametrize(
@@ -111,4 +119,7 @@ def test_estimate_b_more_positive(
     mags = mags[mags >= mc - delta_m / 2]
     estimator = BMorePositiveBValueEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
     b_estimate = estimator(mags)
+    b_estimate_weighted = estimator(mags, weights=np.ones(len(mags)))
+
     assert_almost_equal(b_estimate, b_est_correct)
+    assert_almost_equal(b_estimate, b_estimate_weighted)
