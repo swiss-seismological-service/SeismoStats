@@ -73,7 +73,8 @@ class BValueEstimator(ABC):
         if get_option('warnings') is True:
             if self.weights is not None:
                 warnings.warn(
-                    'Shi and Bolt confidence with weights considers the magnitudes as '
+                    'Shi and Bolt confidence with weights considers the '
+                    'magnitudes as '
                     'having length {}, the sum of relevant weights.'.format(
                         np.sum(self.weights))
                 )
