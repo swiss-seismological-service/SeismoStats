@@ -94,7 +94,8 @@ class BValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        self.magnitudes = self.magnitudes[self.magnitudes >= self.mc]
+        self.magnitudes = self.magnitudes[self.magnitudes
+                                          >= self.mc - self.delta_m / 2]
 
     def _sanity_checks(self):
         '''
