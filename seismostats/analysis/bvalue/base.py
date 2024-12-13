@@ -50,6 +50,8 @@ class BValueEstimator(ABC):
 
         self._sanity_checks()
 
+        self._filtering()
+
         self.__b_value = self._estimate()
 
         return self.__b_value
@@ -87,6 +89,12 @@ class BValueEstimator(ABC):
     @property
     def n(self):
         return len(self.magnitudes)
+
+    def _filtering(self):
+        '''
+        Filter out magnitudes below the completeness magnitude.
+        '''
+        self.magnitudes = self.magnitudes[self.magnitudes >= self.mc]
 
     def _sanity_checks(self):
         '''

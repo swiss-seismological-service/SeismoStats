@@ -5,14 +5,16 @@ import numpy as np
 from scipy.stats import norm
 
 # Own functions
-from seismostats.analysis.bvalue import BPositiveBValueEstimator, estimate_b
+from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 
 
 def plot_mc_vs_b(
     magnitudes: np.ndarray,
-    mcs: np.ndarray,
+    mcs: float | np.ndarray,
+    dmcs: float | np.ndarray | None = None,
     delta_m: float = 0.1,
-    method: str = "classic",
+    b_method: BValueEstimator = ClassicBValueEstimator,
     confidence_intvl: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
@@ -37,67 +39,50 @@ def plot_mc_vs_b(
         ax that was plotted on
     """
 
-    # try except
-    try:
-        if method == "classic":
-            results = [
-                estimate_b(
-                    magnitudes[magnitudes >= mc],
-                    mc,
-                    delta_m=delta_m,
-                    return_std=True,
-                )
-                for mc in mcs
-            ]
-        elif method == "positive":
-            results = [
-                estimate_b(
-                    magnitudes[magnitudes >= mc],
-                    delta_m=delta_m,
-                    return_std=True,
-                    method=BPositiveBValueEstimator
-                )
-                for mc in mcs
-            ]
-        elif method == "positive_postcut":
-            mag_diffs = np.diff(magnitudes)
-            mag_diffs = mag_diffs[mag_diffs > 0]
-            results = [
-                estimate_b(
-                    mag_diffs[mag_diffs >= mc],
-                    mc=mc,
-                    delta_m=delta_m,
-                    return_std=True,
-                )
-                for mc in mcs
-            ]
-        else:
-            raise ValueError(
-                "Method must be either 'classic', 'positive' or"
-                "'positive_postcut'"
-            )
+    b_values = []
+    b_errors = []
 
-        b_values, b_errors = zip(*results)
-        b_values = np.array(b_values)
-        b_errors = np.array(b_errors)
-    except ValueError as err:
-        print(err)
-        return
+    # if dmc is None, the function just iterates through the mcs
+    if dmcs is None:
+        variable = mcs
+        var_string = 'Completeness magnitude $m_c$'
+        for mc in mcs:
+            estimator = b_method(mc=mc, delta_m=delta_m)
+            b_values.append(estimator(magnitudes))
+            b_errors.append(estimator.std)
+    # if dmc is given, the function iterates though the dmc and mc values
+    else:
+        if isinstance(dmcs, (float, int)):
+            variable = mcs
+            var_string = 'Completeness magnitude $m_c$'
+            dmcs = [dmcs] * len(mcs)
+        elif isinstance(mcs, (float, int)):
+            variable = dmcs
+            var_string = 'Minimum magnitude difference $dm_c$'
+            mcs = [mcs] * len(dmcs)
+
+        for mc, dmc in zip(mcs, dmcs):
+            estimator = b_method(mc=mc, delta_m=delta_m, dmc=dmc)
+            b_values.append(estimator(magnitudes))
+            b_errors.append(estimator.std)
+
+    b_values = np.array(b_values)
+    b_errors = np.array(b_errors)
 
     if ax is None:
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
 
-    # Plotting
+    # Plotting: this either
     error_factor = norm.ppf((1 + confidence_intvl) / 2)
-    ax.plot(mcs, b_values, "-o", color=color)
+    ax.plot(variable, b_values, "-o", color=color)
     ax.fill_between(
-        mcs,
+        variable,
         b_values - error_factor * b_errors,
         b_values + error_factor * b_errors,
         alpha=0.2,
         color=color,
     )
-    ax.set_xlabel("Completeness magnitude $m_c$")
+    ax.set_xlabel(var_string)
     ax.set_ylabel("b-value")
     ax.grid(True)
 
