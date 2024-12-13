@@ -5,7 +5,6 @@ for the estimation of the completeness magnitude.
 import warnings
 
 import numpy as np
-import pandas as pd
 
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
@@ -109,6 +108,13 @@ def ks_test_gr(
 
             ks_d = np.max(np.abs(y_emp - y_th))
             ks_ds.append(ks_d)
+
+    else:
+        max_considered_mag = np.max(sample)
+        x_bins = bin_to_precision(
+            np.arange(mc, max_considered_mag + 3
+                      / 2 * delta_m, delta_m), delta_m
+        )
 
     y_hist, _ = np.histogram(sample, bins=x_bins)
     y_emp = np.cumsum(y_hist) / np.sum(y_hist)
