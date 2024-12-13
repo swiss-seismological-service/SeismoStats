@@ -43,7 +43,7 @@ def test_estimate_b_classic(
 ):
     mags = bin_to_precision(mags, delta_m)
     mags = mags[mags >= mc - delta_m / 2]
-    mags_extended = np.concatenate([mags, mags + 0.1])
+    mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
@@ -62,7 +62,7 @@ def test_estimate_b_classic(
 @pytest.mark.parametrize(
     "b_est_correct, mags, mc, delta_m",
     [
-        (0.9941299341459253, magnitudes(1), 0, 0.1),
+        (0.9941299341459253, magnitudes(1), 0, delta_m),
         (1.485969980462011, magnitudes(1.5), 0.5, 0.01),
         (0.49903218920704306, magnitudes(0.5), 2, 0.2),
     ],
@@ -75,7 +75,7 @@ def test_estimate_b_utsu(
 ):
     mags = bin_to_precision(mags, delta_m)
     mags = mags[mags >= mc - delta_m / 2]
-    mags_extended = np.concatenate([mags, mags + 0.1])
+    mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
@@ -108,7 +108,7 @@ def test_estimate_b_positive(
 ):
     mags = bin_to_precision(mags, delta_m)
     mags = mags[mags >= mc - delta_m / 2]
-    mags_extended = np.concatenate([mags, mags + 0.1])
+    mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
