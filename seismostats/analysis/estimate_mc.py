@@ -42,91 +42,6 @@ def cdf_discrete_GR(
     return x, y
 
 
-def empirical_cdf(
-    sample: np.ndarray | pd.Series,
-    mc: float = None,
-    delta_m: float = 1e-16,
-    weights: np.ndarray | pd.Series | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Calculate the empirical cumulative distribution function (CDF)
-    from a sample.
-
-    Parameters:
-        sample:     Magnitude sample
-        mc:         Completeness magnitude, if None, the minimum of the sample
-                is used
-        delta_m:    Magnitude bin size, by default 1e-16. Its recommended to
-                use the value that the samples are rounded to.
-        weights:    Sample weights, by default None
-
-    Returns:
-        x:          x-values of the empirical CDF (i.e. the unique vector of
-                magnitudes from mc to the maximum magnitude in the sample,
-                binned by delta_m)
-        y:          y-values of the empirical CDF (i.e., the empirical
-                frequency observed in the sample corresponding to the x-values)
-    """
-
-    try:
-        sample = sample.values
-    except BaseException:
-        pass
-
-    try:
-        weights = weights.values
-    except BaseException:
-        pass
-
-    if delta_m == 0:
-        raise ValueError("delta_m has to be > 0")
-
-    if get_option("warnings") is True:
-        # check if binning is correct
-        if not np.allclose(sample, bin_to_precision(sample, delta_m)):
-            warnings.warn(
-                "Magnitudes are not binned correctly. "
-                "Test might fail because of this."
-            )
-        if delta_m == 1e-16:
-            warnings.warn(
-                "delta_m = 1e-16, this might lead to extended computation time")
-
-    if mc is None:
-        mc = np.min(sample)
-
-    idx1 = np.argsort(sample)
-    x = sample[idx1]
-    x, y_count = np.unique(x, return_counts=True)
-
-    # add empty bins
-    for mag_bin in bin_to_precision(
-        np.arange(mc, np.max(sample) + delta_m, delta_m), delta_m
-    ):
-        if mag_bin not in x:
-            x = np.append(x, mag_bin)
-            y_count = np.append(y_count, 0)
-    idx2 = np.argsort(x)
-    x = x[idx2]
-    y_count = y_count[idx2]
-
-    # estimate the CDF
-    if weights is None:
-        y = np.cumsum(y_count) / len(sample)
-    else:
-        weights_sorted = weights[idx1]
-        y = np.cumsum(weights_sorted) / weights_sorted.sum()
-
-        # make sure that y is zero if there are no samples in the first bins
-        for ii, y_loop in enumerate(y_count):
-            if y_loop > 0:
-                break
-        leading_zeros = np.zeros(ii)
-        y = np.append(leading_zeros, y[np.cumsum(y_count[ii:]) - 1])
-
-    return x, y
-
-
 def ks_test_gr(
     sample: np.ndarray,
     mc: float,
@@ -177,17 +92,26 @@ def ks_test_gr(
         simulated_all = simulate_magnitudes_binned(
             n * n_sample, beta, mc, delta_m, b_parameter="beta"
         )
+        max_considered_mag = np.max([np.max(sample), np.max(simulated_all)])
+
+        x_bins = bin_to_precision(
+            np.arange(mc, max_considered_mag + 3
+                      / 2 * delta_m, delta_m), delta_m
+        )
+        x_bins -= delta_m / 2
+        x = bin_to_precision((x_bins[1:] + x_bins[:-1]) / 2, delta_m)
+        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
         for ii in range(n):
             simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
-            x, y_emp = empirical_cdf(simulated, mc, delta_m)
-            _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+            y_hist, _ = np.histogram(simulated, bins=x_bins)
+            y_emp = np.cumsum(y_hist) / np.sum(y_hist)
 
             ks_d = np.max(np.abs(y_emp - y_th))
             ks_ds.append(ks_d)
 
-    x, y_emp = empirical_cdf(sample, mc, delta_m)
-    _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+    y_hist, _ = np.histogram(sample, bins=x_bins)
+    y_emp = np.cumsum(y_hist) / np.sum(y_hist)
 
     ks_d_obs = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
