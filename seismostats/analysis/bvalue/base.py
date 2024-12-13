@@ -96,6 +96,8 @@ class BValueEstimator(ABC):
         '''
         self.magnitudes = self.magnitudes[self.magnitudes
                                           >= self.mc - self.delta_m / 2]
+        self.weights = self.weights[self.magnitudes
+                                    >= self.mc - self.delta_m / 2]
 
     def _sanity_checks(self):
         '''
