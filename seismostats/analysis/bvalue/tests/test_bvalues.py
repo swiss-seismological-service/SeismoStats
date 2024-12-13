@@ -62,7 +62,7 @@ def test_estimate_b_classic(
 @pytest.mark.parametrize(
     "b_est_correct, mags, mc, delta_m",
     [
-        (0.9941299341459253, magnitudes(1), 0, delta_m),
+        (0.9941299341459253, magnitudes(1), 0, 0.1),
         (1.485969980462011, magnitudes(1.5), 0.5, 0.01),
         (0.49903218920704306, magnitudes(0.5), 2, 0.2),
     ],
