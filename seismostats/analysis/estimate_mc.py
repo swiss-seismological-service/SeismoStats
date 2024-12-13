@@ -115,6 +115,8 @@ def ks_test_gr(
             np.arange(mc, max_considered_mag + 3
                       / 2 * delta_m, delta_m), delta_m
         )
+        x = bin_to_precision((x_bins[1:] + x_bins[:-1]) / 2, delta_m)
+        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
     y_hist, _ = np.histogram(sample, bins=x_bins)
     y_emp = np.cumsum(y_hist) / np.sum(y_hist)
