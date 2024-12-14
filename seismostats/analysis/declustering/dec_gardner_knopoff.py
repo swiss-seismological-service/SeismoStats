@@ -73,6 +73,7 @@ class GardnerKnopoffType1(Declusterer):
                 the size of the time window used for searching for foreshocks,
                 as a fractional proportion of the size of the aftershock window.
         """
+        super().__init__()
         self.time_distance_window = time_distance_window
         self.fs_time_prop = fs_time_prop
 
