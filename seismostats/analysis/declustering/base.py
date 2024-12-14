@@ -9,6 +9,10 @@ class Declusterer(ABC):
     Abstract base class for the implementation of declustering algorithms
     """
 
+    def __int__(self):
+        self.__cluster_ids = None
+        self.__results = None
+
     @abstractmethod
     def _decluster(self, catalog: pd.DataFrame) -> np.ndarray[np.bool_]:
         """
