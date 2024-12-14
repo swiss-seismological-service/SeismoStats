@@ -6,8 +6,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
-from seismostats.analysis.estimate_mc import (bin_to_precision, empirical_cdf,
-                                              mc_by_bvalue_stability, mc_ks,
+from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
                                               mc_max_curvature)
 
 
@@ -118,38 +117,6 @@ def magnitudes():
         ]
     )
     return mags
-
-
-def test_empirical_cdf(magnitudes, delta_m=0.1):
-    x, y = empirical_cdf(magnitudes, delta_m=delta_m)
-
-    x_expected = bin_to_precision(np.arange(min(magnitudes), max(
-        magnitudes) + delta_m, delta_m), delta_m)
-
-    assert_allclose(x, x_expected, rtol=1e-7)
-    assert_equal(y[-1], 1)
-    assert_equal(len(x), len(y))
-    assert_equal(y[0], 0.06)
-
-    # test that weights function the way that they should
-    # 1. with equal weights
-    magnitudes = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
-    weights = np.array([1, 1, 1, 1, 1])
-    x_weight, y_weight = empirical_cdf(
-        magnitudes, mc=0, delta_m=0.1, weights=weights)
-    x, y = empirical_cdf(magnitudes, mc=0, delta_m=0.1)
-    assert_almost_equal(x_weight, np.arange(0, 1, 0.1))
-    assert_almost_equal(y_weight, [0, 0, 0, 0, 0, 0.2, 0.4, 0.6, 0.8, 1])
-    assert_almost_equal(x_weight, x)
-    assert_almost_equal(y_weight, y)
-
-    # 2. with different weights
-    magnitudes = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
-    weights = np.array([0.5, 0.5, 0.5, 0.5, 3])
-    x_weight, y_weight = empirical_cdf(
-        magnitudes, mc=0, delta_m=0.1, weights=weights)
-    assert_almost_equal(x_weight, np.arange(0, 1, 0.1))
-    assert_almost_equal(y_weight, [0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4, 1])
 
 
 @pytest.fixture

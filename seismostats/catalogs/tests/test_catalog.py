@@ -152,7 +152,11 @@ def test_to_quakeml():
         xml_content = file.read()
 
     catalog = Catalog.from_quakeml(
-        xml_file, include_uncertainties=True, include_ids=True)
+        xml_file,
+        include_uncertainties=True,
+        include_ids=True,
+        include_quality=True)
+
     catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
     catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
 
@@ -163,7 +167,11 @@ def test_to_quakeml():
     assert catalog_xml == xml
 
     catalog2 = catalog.from_quakeml(
-        xml_content, include_uncertainties=True, include_ids=True)
+        xml_content,
+        include_uncertainties=True,
+        include_ids=True,
+        include_quality=True)
+
     assert catalog.equals(catalog2)
 
 
@@ -197,7 +205,10 @@ def test_to_quakeml_forecast():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
 
     catalog1 = Catalog.from_quakeml(
-        xml_file, include_uncertainties=True, include_ids=True)
+        xml_file,
+        include_uncertainties=True,
+        include_ids=True,
+        include_quality=True)
     catalog1.name = 'Catalog 1'
     catalog2 = catalog1.copy()
     catalog2.name = 'Catalog 2'

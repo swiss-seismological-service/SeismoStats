@@ -8,6 +8,7 @@ from typing_extensions import Self
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
+from seismostats.utils.binning import binning_test
 
 
 class BValueEstimator(ABC):
@@ -69,7 +70,16 @@ class BValueEstimator(ABC):
         Shi and Bolt estimate of the beta/b-value estimate.
         '''
         assert self.__b_value is not None, 'Please run the estimator first.'
+        if get_option('warnings') is True:
+            if self.weights is not None:
+                warnings.warn(
+                    'Shi and Bolt confidence with weights considers the '
+                    'magnitudes as '
+                    'having length {}, the sum of relevant weights.'.format(
+                        np.sum(self.weights))
+                )
         return shi_bolt_confidence(self.magnitudes,
+                                   weights=self.weights,
                                    b=self.__b_value,
                                    b_parameter=self.__b_parameter)
 
@@ -83,11 +93,20 @@ class BValueEstimator(ABC):
         '''
 
         # test that the magnitudes are binned correctly
-        mags_unique = np.unique(self.magnitudes)
+        if self.delta_m == 0:
+            tolerance = 1e-08
+        else:
+            tolerance = max(self.delta_m / 100, 1e-08)
         assert (
-            max((mags_unique / self.delta_m)
-                - np.round(mags_unique / self.delta_m)) < 1e-4
-        ), "Magnitudes are not binned correctly."
+            binning_test(self.magnitudes, self.delta_m, tolerance)
+        )
+        "Magnitudes are not binned correctly."
+
+        if self.weights is not None:
+            assert len(self.magnitudes) == len(self.weights), (
+                "The number of magnitudes and weights must be equal."
+            )
+            assert np.all(self.weights >= 0), "Weights must be nonnegative."
 
         # test if lowest magnitude is much larger than mc
         if get_option("warnings") is True:

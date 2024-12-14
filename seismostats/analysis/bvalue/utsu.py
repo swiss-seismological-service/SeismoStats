@@ -6,7 +6,7 @@ from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 class UtsuBValueEstimator(BValueEstimator):
 
-    weights_supported = False
+    weights_supported = True
 
     def __init__(self, *args, **kwargs):
         """Return the maximum likelihood b-value or beta.
@@ -24,5 +24,6 @@ class UtsuBValueEstimator(BValueEstimator):
         super().__init__(*args, **kwargs)
 
     def _estimate(self):
-        beta = 1 / np.mean(self.magnitudes - self.mc + self.delta_m / 2)
+        beta = 1 / np.average(self.magnitudes - self.mc
+                              + self.delta_m / 2, weights=self.weights)
         return beta_to_b_value(beta)

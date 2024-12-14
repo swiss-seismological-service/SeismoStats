@@ -44,7 +44,6 @@
                 </longitude>
                 <latitude>
                     <value>46.05144527</value>
-                    <uncertainty>0.1222628824</uncertainty>
                 </latitude>
                 <evaluationMode>manual</evaluationMode>
                 <creationInfo>
@@ -55,6 +54,17 @@
                     <value>1181.640625</value>
                     <uncertainty>274.9552879</uncertainty>
                 </depth>
+                <quality>
+                    <associatedPhaseCount>26</associatedPhaseCount>
+                    <usedPhaseCount>26</usedPhaseCount>
+                    <usedStationCount>17</usedStationCount>
+                    <standardError>0.08546773131</standardError>
+                    <azimuthalGap>63.94059789</azimuthalGap>
+                    <secondaryAzimuthalGap>77.73559837</secondaryAzimuthalGap>
+                    <maximumDistance>0.412215673</maximumDistance>
+                    <minimumDistance>0.03725898142</minimumDistance>
+                    <medianDistance>0.2400966303</medianDistance>
+                </quality>
             </origin>
 
             <preferredOriginID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20220103070248.816904.80080</preferredOriginID>
@@ -102,6 +112,7 @@
                     <value>3364.257812</value>
                     <uncertainty>1036.395075</uncertainty>
                 </depth>
+                <quality></quality>
             </origin>
 
             <preferredOriginID>smi:ch.ethz.sed/sc20ag/Origin/NLL.20211228194249.917108.210045</preferredOriginID>

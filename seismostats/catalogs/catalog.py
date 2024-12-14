@@ -199,9 +199,22 @@ class Catalog(pd.DataFrame):
                         'secondaryazimuthalgap', 'maximumdistance',
                         'minimumdistance', 'mediandistance']
 
+        string_cols = ['magnitude_type', 'event_type']
+
         for num in numeric_cols:
             if num in df.columns:
                 df[num] = pd.to_numeric(df[num], errors='coerce')
+
+        # make sure empty rows in string columns are NoneType
+        for strc in string_cols:
+            if strc in df.columns:
+                df[strc] = df[strc].replace(
+                    to_replace=['',
+                                'nan', 'NaN',
+                                'none', 'None',
+                                'na', 'Na', 'NA',
+                                'null', 'Null', 'NULL'],
+                    value=None)
 
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)

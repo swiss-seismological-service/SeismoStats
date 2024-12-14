@@ -1,8 +1,8 @@
-from numpy.testing import assert_almost_equal
 from datetime import datetime
 
 import numpy as np
 import pytest
+from numpy.testing import assert_almost_equal
 
 from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
@@ -55,5 +55,14 @@ def test_make_more_incomplete():
 )
 def test_shi_bolt_confidence(
         std: float, mags: np.ndarray, b: float, b_parameter: str):
-    assert_almost_equal(
-        shi_bolt_confidence(mags, b=b, b_parameter=b_parameter), std)
+    weights = np.ones(len(mags))
+
+    conf = shi_bolt_confidence(mags, b=b, b_parameter=b_parameter)
+    conf_weighted = shi_bolt_confidence(mags, weights=weights, b=b,
+                                        b_parameter=b_parameter)
+    conf_half_weighted = shi_bolt_confidence(
+        mags, weights=weights * 0.5, b=b, b_parameter=b_parameter)
+
+    assert_almost_equal(conf_weighted, std)
+    assert_almost_equal(conf, std)
+    assert (conf_half_weighted > conf)
