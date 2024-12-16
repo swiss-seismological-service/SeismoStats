@@ -137,6 +137,7 @@ def estimate_a_positive(
         mc: float | None = None,
         b_value: float | None = None,
         correction: bool = False,
+        total_time=None,
 ) -> float:
     """Return the a-value of the Gutenberg-Richter (GR) law using only the
     earthquakes with magnitude m_i >= m_i-1 + dmc.
@@ -216,12 +217,14 @@ def estimate_a_positive(
     time_diffs = time_diffs[idx]
 
     # estimate the number of events within the time interval
-    total_time = times[-1] - times[0]
-    total_time_pos = sum(time_diffs / total_time)
-    if correction:
-        total_time += 2 * np.mean(np.diff(times) / total_time)
-        total_time_pos += np.mean(time_diffs / total_time)
-    n_pos = 1 / total_time_pos * len(mag_diffs)
+    if total_time is None:
+        total_time = times[-1] - times[0]
+    total_time_pos = sum(time_diffs) / total_time
+
+    if correction is True:
+        n_pos = 1 / total_time_pos * (len(mag_diffs) - 1)
+    else:
+        n_pos = 1 / total_time_pos * len(mag_diffs)
 
     # estimate a-value
     a = np.log10(n_pos)
