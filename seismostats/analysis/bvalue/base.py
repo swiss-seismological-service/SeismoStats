@@ -44,7 +44,8 @@ class BValueEstimator(ABC):
         if not self.weights_supported and weights is not None:
             raise ValueError('Weights are not supported by this estimator.')
 
-        self.magnitudes = magnitudes
+        self.magnitudes = magnitudes.copy()
+
         self.weights = weights
 
         self._sanity_checks()
