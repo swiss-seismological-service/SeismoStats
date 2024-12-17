@@ -219,7 +219,7 @@ def estimate_a_positive(
     # estimate the number of events within the time interval
     if total_time is None:
         total_time = times[-1] - times[0]
-    total_time_pos = sum(time_diffs) / total_time
+    total_time_pos = sum(time_diffs / total_time)
 
     if correction is True:
         n_pos = 1 / total_time_pos * (len(mag_diffs) - 1)
