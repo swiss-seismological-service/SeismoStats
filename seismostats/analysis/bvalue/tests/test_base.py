@@ -1,5 +1,6 @@
 import warnings
 
+import numpy as np
 import pytest
 
 from seismostats.analysis.bvalue import ClassicBValueEstimator
@@ -19,3 +20,11 @@ def test_estimate_b_warnings():
         estimator = ClassicBValueEstimator(mc=-1, delta_m=0.1)
         estimator(mags)
         assert w[-1].category == UserWarning
+
+
+def test_by_reference():
+    mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
+    estimator = ClassicBValueEstimator(mc=1, delta_m=0.1)
+    estimator(mags)
+    estimator.magnitudes.sort()
+    assert not np.array_equal(mags, estimator.magnitudes)

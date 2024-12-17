@@ -16,6 +16,12 @@ class CoordinateTransformer:
     "+proj=utm +zone=32 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
     to represent a UTM coordinate system.
 
+    It is possible to pass a reference point, which will be used as the
+    origin of the local coordinate system. If no reference point is passed,
+    the origin will be set to (0, 0, 0). The projection of the reference point
+    is assumed to be the same as the local projection, unless specified
+    otherwise in the ``ref_proj`` kwarg.
+
     Notes:
         4326 as well as eg 2056 are 2D coordinate systems, so altitude
         is not taken into account and only calculated in reference to the ref.
@@ -28,22 +34,32 @@ class CoordinateTransformer:
             ref_easting: float = 0.0,
             ref_northing: float = 0.0,
             ref_altitude: float = 0.0,
-            external_proj: int | str = 4326):
+            external_proj: int | str = 4326,
+            ref_proj: int | str | None = None):
         """
         Constructor of CoordinateTransformer object.
 
         Args:
-            local_proj:     int (epsg) or string (proj) of local CRS.
-            ref_easting:    reference easting for local coordinates.
-            ref_northing:   reference northing for local coordinates.
-            ref_altitude:   reference altitude for local coordinates.
-            external_proj:  int or string of geographic coordinates.
+            local_proj:     projection of local CRS,
+                            eg. str('epsg:2056') or int(2056).
+            ref_easting:    reference easting
+            ref_northing:   reference northing
+            ref_altitude:   reference altitude
+            external_proj:  projection of external CRS,
+                            eg. str('epsg:4326') or int(4326).
+            ref_proj:       projection of reference coordinates,
+                            defaults to 'local_proj'.
         """
         self.ref_easting = ref_easting
         self.ref_northing = ref_northing
         self.ref_altitude = ref_altitude
         self.local_proj = local_proj
         self.external_proj = external_proj
+
+        if ref_proj is not None:
+            tr = Transformer.from_proj(ref_proj, local_proj, always_xy=True)
+            self.ref_easting, self.ref_northing = \
+                tr.transform(self.ref_easting, self.ref_northing)
 
         self.transformer_to_local = Transformer.from_proj(
             self.external_proj, self.local_proj, always_xy=True)

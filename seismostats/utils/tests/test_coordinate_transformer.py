@@ -15,6 +15,9 @@ REF_EASTING = 2683295.5134568703
 REF_NORTHING = 1239374.8568319362
 REF_ALTITUDE = 0.0
 
+REF_LON = 8.54
+REF_LAT = 47.3
+
 # Coordinates for Bedretto lab
 BEDRETTO_LAB_ORIGIN_EASTING = 2679720.70
 BEDRETTO_LAB_ORIGIN_NORTHING = 1151600.13
@@ -94,3 +97,25 @@ class TransformationCoordsTestCase(unittest.TestCase):
         self.assertAlmostEqual(lat, MOCK_INJ_LAT)
         self.assertAlmostEqual(lon, MOCK_INJ_LON)
         self.assertAlmostEqual(altitude, MOCK_INJ_ALTITUDE)
+
+    def test_reference_proj(self):
+        """
+        Test transformer with a reference point and a different
+        reference projection. The reference projection is set to
+        WGS84, so the reference point is transformed to the local
+        coordinate system.
+        """
+        transformer = CoordinateTransformer(
+            SWISS_PROJ, ref_easting=REF_LON, ref_northing=REF_LAT,
+            ref_proj=WGS84_PROJ)
+
+        easting, northing, altitude = transformer.\
+            to_local_coords(
+                LON, LAT)
+        self.assertAlmostEqual(easting, 0.0)
+        self.assertAlmostEqual(northing, 0.0)
+
+        lon, lat, _ = transformer.from_local_coords(
+            easting, northing)
+        self.assertAlmostEqual(lat, LAT)
+        self.assertAlmostEqual(lon, LON)
