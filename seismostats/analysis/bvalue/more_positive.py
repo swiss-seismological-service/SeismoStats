@@ -1,10 +1,9 @@
 import warnings
 
-import numpy as np
-
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.utils._config import get_option
+from seismostats.analysis.bvalue.utils import find_next_larger
 
 
 class BMorePositiveBValueEstimator(BValueEstimator):
@@ -37,24 +36,16 @@ class BMorePositiveBValueEstimator(BValueEstimator):
 
     def _estimate(self):
 
-        mag_diffs = - np.ones(len(self.magnitudes) - 1) * self.delta_m
-        if self.weights is not None:
-            # weight vector of same length as mag diffs
-            weights = - np.ones(len(self.magnitudes) - 1) * self.delta_m
-        for ii in range(len(self.magnitudes) - 1):
-            for jj in range(ii + 1, len(self.magnitudes)):
-                mag_diff_loop = self.magnitudes[jj] - self.magnitudes[ii]
-                if mag_diff_loop > self.dmc - self.delta_m / 2:
-                    mag_diffs[ii] = mag_diff_loop
-                    if self.weights is not None:
-                        # use weight of second earthquake of a difference
-                        weights[ii] = self.weights[jj]
-                    break
+        idx_next_larger = find_next_larger(
+            self.magnitudes, self.delta_m, self.dmc)
+        mag_diffs = self.magnitudes[idx_next_larger] - self.magnitudes
 
-        # only take the values where the next earthquake is larger
+        idx_no_next = idx_next_larger == 0
+        self.magnitudes = mag_diffs[~idx_no_next]
+
         if self.weights is not None:
-            self.weights = weights[mag_diffs > - self.delta_m / 2]
-        self.magnitudes = abs(mag_diffs[mag_diffs > - self.delta_m / 2])
+            weights = self.weights[idx_next_larger]
+            self.weights = weights[~idx_no_next]
 
         classic_estimator = ClassicBValueEstimator(mc=self.dmc,
                                                    delta_m=self.delta_m)

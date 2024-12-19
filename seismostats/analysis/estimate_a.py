@@ -5,10 +5,12 @@ import warnings
 
 import numpy as np
 
-from seismostats import bin_to_precision
+from seismostats.utils.binning import bin_to_precision
 from seismostats.utils._config import get_option
 from seismostats.analysis.bvalue.base import BValueEstimator
-from seismostats.analysis.bvalue import ClassicBValueEstimator
+from seismostats.analysis.bvalue import BPositiveBValueEstimator
+from seismostats.utils.binning import binning_test
+from seismostats.analysis.bvalue.utils import find_next_larger
 
 
 def estimate_a(magnitudes: np.ndarray,
@@ -171,14 +173,6 @@ def estimate_a_positive(
                 This is only relevant when m_ref is not None.
         b_value:    b-value of the Gutenberg-Richter law. Only relevant
                 when m_ref is not None.
-        correction: If True, the a-value is corrected for the bias introduced
-                by the observation period being larger than the time interval
-                between the first and last event. This is only relevant if the
-                sample is very small (<30). The assumption is that the blind
-                time in the beginning and end of the catalogue has a similar
-                distribution as the rest of the catalogue. We think that this
-                improves the estimate of the a-value for small samples, however,
-                without proof.
 
     Returns:
         a_pos: a-value of the Gutenberg-Richter distribution
@@ -194,7 +188,16 @@ def estimate_a_positive(
         idx = magnitudes >= mc - delta_m / 2
         magnitudes = magnitudes[idx]
         times = times[idx]
-    # TODO: check for correct binning
+
+    # test that the magnitudes are binned correctly
+        if delta_m == 0:
+            tolerance = 1e-08
+        else:
+            tolerance = max(delta_m / 100, 1e-08)
+        assert (
+            binning_test(magnitudes, delta_m, tolerance)
+        )
+        "Magnitudes are not binned correctly."
 
     if dmc is None:
         dmc = delta_m
@@ -216,8 +219,6 @@ def estimate_a_positive(
     idx = mag_diffs > dmc - delta_m / 2
     mag_diffs = mag_diffs[idx]
     time_diffs = time_diffs[idx]
-
-    print(len(mag_diffs))
 
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0]
@@ -250,7 +251,7 @@ def estimate_a_more_positive(
         m_ref: float | None = None,
         mc: float | None = None,
         b_value: float = None,
-        b_method: BValueEstimator = ClassicBValueEstimator,
+        b_method: BValueEstimator = BPositiveBValueEstimator,
 ) -> float:
     """Return the a-value of the Gutenberg-Richter (GR) law using only the
     earthquakes with magnitude m_i >= m_i-1 + dmc.
@@ -263,7 +264,6 @@ def estimate_a_more_positive(
         times:      vector of times of the events, in any format (datetime,
                 float, etc.)
         delta_m:    discretization of the magnitudes.
-                default is no discretization
         dmc:        minimum magnitude difference between consecutive events.
                 If None, the default value is delta_m.
         scaling_factor:    scaling factor. If given, this is used to normalize
@@ -280,14 +280,6 @@ def estimate_a_more_positive(
         b_value:    b-value of the Gutenberg-Richter law. If not given, it
                 wil be estimated from the sample with the method defined by
                 b_method.
-        correction: If True, the a-value is corrected for the bias introduced
-                by the observation period being larger than the time interval
-                between the first and last event. This is only relevant if the
-                sample is very small (<30). The assumption is that the blind
-                time in the beginning and end of the catalogue has a similar
-                distribution as the rest of the catalogue. We think that this
-                improves the estimate of the a-value for small samples, however,
-                without proof.
 
     Returns:
         a_pos: a-value of the Gutenberg-Richter distribution
@@ -303,7 +295,16 @@ def estimate_a_more_positive(
         idx = magnitudes >= mc - delta_m / 2
         magnitudes = magnitudes[idx]
         times = times[idx]
-    # TODO: check for correct binning
+
+    # test that the magnitudes are binned correctly
+        if delta_m == 0:
+            tolerance = 1e-08
+        else:
+            tolerance = max(delta_m / 100, 1e-08)
+        assert (
+            binning_test(magnitudes, delta_m, tolerance)
+        )
+        "Magnitudes are not binned correctly."
 
     if dmc is None:
         dmc = delta_m
@@ -322,25 +323,19 @@ def estimate_a_more_positive(
     times = times[idx]
 
     # differences
-    mag_diffs = np.zeros(len(magnitudes) - 1)
-    time_diffs = np.zeros(len(magnitudes) - 1)
-    for ii in range(len(magnitudes) - 1):
-        time_diffs[ii] = abs(times[-1] - times[ii]) + np.mean(np.diff(times))
-        for jj in range(ii + 1, len(magnitudes)):
-            mag_diff_loop = magnitudes[jj] - magnitudes[ii]
-            if mag_diff_loop > dmc - delta_m / 2:
-                mag_diffs[ii] = mag_diff_loop
-                time_diffs[ii] = times[jj] - times[ii]
-                break
-    idx = mag_diffs > 0
-    mag_diffs = bin_to_precision(mag_diffs[idx], delta_x=delta_m)
+    idx_next_larger = find_next_larger(magnitudes, delta_m, dmc)
+    mag_diffs = magnitudes[idx_next_larger] - magnitudes
+    time_diffs = times[idx_next_larger] - times
 
-    print(len(mag_diffs))
+    # deal with events which do not have a next larger event
+    idx_no_next = idx_next_larger == 0
+    time_diffs[idx_no_next] = times[-1] - times[idx_no_next]
+    mag_diffs = bin_to_precision(mag_diffs[~idx_no_next], delta_x=delta_m)
 
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0]
     # scale the time
-    tau = time_diffs * 10**(-b_value * (magnitudes[:-1] + dmc))
+    tau = time_diffs * 10**(-b_value * (magnitudes + dmc))
 
     total_time_more_pos = sum(tau / total_time)
     n_more_pos = len(mag_diffs) / total_time_more_pos
