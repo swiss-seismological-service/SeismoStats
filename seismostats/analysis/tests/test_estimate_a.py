@@ -4,7 +4,7 @@ from numpy.testing import assert_almost_equal
 from datetime import datetime, timedelta
 
 from seismostats.analysis.estimate_a import (
-    estimate_a_classic, estimate_a_positive)
+    estimate_a_classic, estimate_a_positive, estimate_a_more_positive)
 
 
 def test_estimate_a_classic():
@@ -59,3 +59,22 @@ def test_estimate_a_positive():
     with warnings.catch_warnings(record=True) as w:
         estimate_a_positive(mags, times, delta_m=1, mc=2)
         assert w[-1].category == UserWarning
+
+
+def test_estimate_a_more_positive():
+    mags = np.array([1, 1, 1, 1, 10])
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 12), timedelta(days=1)).astype(datetime)
+
+    a = estimate_a_more_positive(mags, times, delta_m=1, b_value=1)
+    assert_almost_equal(10**a, 10.0)
+
+    a = estimate_a_more_positive(
+        mags, times, delta_m=1, mc=1, m_ref=0, b_value=1)
+    assert_almost_equal(10**a, 100.0)
+
+    # no b-value given
+    try:
+        a = estimate_a_more_positive(mags, times, delta_m=1)
+    except ValueError as e:
+        assert str(e) == "b_value must be provided"

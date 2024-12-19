@@ -7,8 +7,6 @@ import numpy as np
 
 from seismostats.utils.binning import bin_to_precision
 from seismostats.utils._config import get_option
-from seismostats.analysis.bvalue.base import BValueEstimator
-from seismostats.analysis.bvalue import BPositiveBValueEstimator
 from seismostats.utils.binning import binning_test
 from seismostats.analysis.bvalue.utils import find_next_larger
 
@@ -251,7 +249,6 @@ def estimate_a_more_positive(
         m_ref: float | None = None,
         mc: float | None = None,
         b_value: float = None,
-        b_method: BValueEstimator = BPositiveBValueEstimator,
 ) -> float:
     """Return the a-value of the Gutenberg-Richter (GR) law using only the
     earthquakes with magnitude m_i >= m_i-1 + dmc.
@@ -314,8 +311,7 @@ def estimate_a_more_positive(
         warnings.warn("dmc is smaller than delta_m, not recommended")
 
     if b_value is None:
-        estimator = b_method(mc=mc, delta_m=delta_m, dmc=dmc)
-        b_value = estimator(magnitudes)
+        raise ValueError("b_value must be provided")
 
     # order the magnitudes and times
     idx = np.argsort(times)
