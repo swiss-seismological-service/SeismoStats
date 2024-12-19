@@ -66,15 +66,15 @@ def test_estimate_a_more_positive():
     times = np.arange(datetime(2000, 1, 1), datetime(
         2000, 1, 6), timedelta(days=1)).astype(datetime)
 
-    a = estimate_a_more_positive(mags, times, delta_m=1, b_value=1)
+    a = estimate_a_more_positive(mags, times, delta_m=0.1, b_value=1)
     assert_almost_equal(10**a, 16.0)
 
     a = estimate_a_more_positive(
-        mags, times, delta_m=1, mc=0, m_ref=-1, b_value=1)
+        mags, times, delta_m=0.1, mc=0, m_ref=-1, b_value=1)
     assert_almost_equal(10**a, 160.0)
 
     # no b-value given
     try:
-        a = estimate_a_more_positive(mags, times, delta_m=1)
+        a = estimate_a_more_positive(mags, times, delta_m=0.1)
     except ValueError as e:
         assert str(e) == "b_value must be provided"
