@@ -5,14 +5,16 @@ import numpy as np
 from scipy.stats import norm
 
 # Own functions
-from seismostats.analysis.bvalue import BPositiveBValueEstimator, estimate_b
+from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 
 
 def plot_mc_vs_b(
     magnitudes: np.ndarray,
     mcs: np.ndarray,
+    dmc: float | None = None,
     delta_m: float = 0.1,
-    method: str = "classic",
+    b_method: BValueEstimator = ClassicBValueEstimator,
     confidence_intvl: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
@@ -22,13 +24,11 @@ def plot_mc_vs_b(
     Args:
         magnitudes: magnitudes of the catalog
         mcs:        completeness magnitudes (list or numpy array)
+        dmc:        if a positive b-value estimator is used, this is the
+                minimum difference that is considered. For the
+                ClassicBValueEstimator, leave this as the default None.
         delta_m:    discretization of the magnitudes
-        method:     method used for b-value estimation, either 'classic' or
-                    'positive' or 'positive_postcut'. positive_postcut is the
-                    same as 'positive' but with the postcut method (differences
-                    are taken before cutting the magnitudes below the
-                    completeness magnitude). The mcs are then interpreted as
-                    dmcs.
+        method:     method used for b-value estimation
         confidence_intvl:   confidence interval that should be plotted
         ax:         axis where figure should be plotted
         color:      color of the data
@@ -37,57 +37,27 @@ def plot_mc_vs_b(
         ax that was plotted on
     """
 
-    # try except
-    try:
-        if method == "classic":
-            results = [
-                estimate_b(
-                    magnitudes[magnitudes >= mc],
-                    mc,
-                    delta_m=delta_m,
-                    return_std=True,
-                )
-                for mc in mcs
-            ]
-        elif method == "positive":
-            results = [
-                estimate_b(
-                    magnitudes[magnitudes >= mc],
-                    delta_m=delta_m,
-                    return_std=True,
-                    method=BPositiveBValueEstimator
-                )
-                for mc in mcs
-            ]
-        elif method == "positive_postcut":
-            mag_diffs = np.diff(magnitudes)
-            mag_diffs = mag_diffs[mag_diffs > 0]
-            results = [
-                estimate_b(
-                    mag_diffs[mag_diffs >= mc],
-                    mc=mc,
-                    delta_m=delta_m,
-                    return_std=True,
-                )
-                for mc in mcs
-            ]
-        else:
-            raise ValueError(
-                "Method must be either 'classic', 'positive' or"
-                "'positive_postcut'"
-            )
+    b_values = []
+    b_errors = []
 
-        b_values, b_errors = zip(*results)
-        b_values = np.array(b_values)
-        b_errors = np.array(b_errors)
-    except ValueError as err:
-        print(err)
-        return
+    if dmc is None:
+        for mc in mcs:
+            estimator = b_method(mc=mc, delta_m=delta_m)
+            b_values.append(estimator(magnitudes))
+            b_errors.append(estimator.std)
+    else:
+        for mc in mcs:
+            estimator = b_method(mc=mc, delta_m=delta_m, dmc=dmc)
+            b_values.append(estimator(magnitudes))
+            b_errors.append(estimator.std)
+
+    b_values = np.array(b_values)
+    b_errors = np.array(b_errors)
 
     if ax is None:
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
 
-    # Plotting
+    # Plotting: this either
     error_factor = norm.ppf((1 + confidence_intvl) / 2)
     ax.plot(mcs, b_values, "-o", color=color)
     ax.fill_between(

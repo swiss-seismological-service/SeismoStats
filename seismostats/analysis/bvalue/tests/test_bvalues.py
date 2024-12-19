@@ -42,12 +42,12 @@ def test_estimate_b_classic(
     delta_m: float,
 ):
     mags = bin_to_precision(mags, delta_m)
-    mags = mags[mags >= mc - delta_m / 2]
     mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
     estimator = ClassicBValueEstimator(mc=mc, delta_m=delta_m)
+
     b_estimate = estimator(mags)
     b_estimate_weighted = estimator(mags, weights=weights)
     b_estimate_half_weighted = estimator(mags, weights=weights * 0.5)
@@ -74,7 +74,6 @@ def test_estimate_b_utsu(
     delta_m: float,
 ):
     mags = bin_to_precision(mags, delta_m)
-    mags = mags[mags >= mc - delta_m / 2]
     mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
