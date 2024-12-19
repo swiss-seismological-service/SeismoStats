@@ -64,7 +64,7 @@ def test_estimate_a_positive():
 def test_estimate_a_more_positive():
     mags = np.array([1, 1, 1, 1, 10])
     times = np.arange(datetime(2000, 1, 1), datetime(
-        2000, 1, 12), timedelta(days=1)).astype(datetime)
+        2000, 1, 6), timedelta(days=1)).astype(datetime)
 
     a = estimate_a_more_positive(mags, times, delta_m=1, b_value=1)
     assert_almost_equal(10**a, 10.0)
