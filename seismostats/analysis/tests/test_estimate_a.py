@@ -62,16 +62,16 @@ def test_estimate_a_positive():
 
 
 def test_estimate_a_more_positive():
-    mags = np.array([1, 1, 1, 1, 10])
+    mags = np.array([0.9, 0.9, 0.9, 0.9, 10.9])
     times = np.arange(datetime(2000, 1, 1), datetime(
         2000, 1, 6), timedelta(days=1)).astype(datetime)
 
     a = estimate_a_more_positive(mags, times, delta_m=1, b_value=1)
-    assert_almost_equal(10**a, 10.0)
+    assert_almost_equal(10**a, 16.0)
 
     a = estimate_a_more_positive(
-        mags, times, delta_m=1, mc=1, m_ref=0, b_value=1)
-    assert_almost_equal(10**a, 100.0)
+        mags, times, delta_m=1, mc=0, m_ref=-1, b_value=1)
+    assert_almost_equal(10**a, 160.0)
 
     # no b-value given
     try:
