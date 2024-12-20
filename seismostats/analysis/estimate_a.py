@@ -5,7 +5,6 @@ import warnings
 
 import numpy as np
 
-from seismostats.utils.binning import bin_to_precision
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
 from seismostats.analysis.bvalue.utils import find_next_larger
@@ -64,8 +63,7 @@ def estimate_a(magnitudes: np.ndarray,
             scaling_factor=scaling_factor,
             m_ref=m_ref,
             mc=mc,
-            b_value=b_value,
-            correction=False)
+            b_value=b_value)
 
 
 def estimate_a_classic(magnitudes: np.ndarray,
@@ -320,21 +318,19 @@ def estimate_a_more_positive(
 
     # differences
     idx_next_larger = find_next_larger(magnitudes, delta_m, dmc)
-    mag_diffs = magnitudes[idx_next_larger] - magnitudes
     time_diffs = times[idx_next_larger] - times
 
     # deal with events which do not have a next larger event
     idx_no_next = idx_next_larger == 0
     time_diffs[idx_no_next] = times[-1] - times[idx_no_next]
-    mag_diffs = bin_to_precision(mag_diffs[~idx_no_next], delta_x=delta_m)
 
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0]
+
     # scale the time
     tau = time_diffs * 10**(-b_value * (magnitudes + dmc - mc))
-
     total_time_more_pos = sum(tau / total_time)
-    n_more_pos = len(mag_diffs) / total_time_more_pos
+    n_more_pos = (sum(~idx_no_next)) / total_time_more_pos
 
     # estimate a-value
     a = np.log10(n_more_pos)
