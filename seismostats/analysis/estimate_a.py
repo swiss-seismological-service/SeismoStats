@@ -331,7 +331,7 @@ def estimate_a_more_positive(
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0]
     # scale the time
-    tau = time_diffs * 10**(-b_value * (magnitudes + dmc))
+    tau = time_diffs * 10**(-b_value * (magnitudes + dmc - mc))
 
     total_time_more_pos = sum(tau / total_time)
     n_more_pos = len(mag_diffs) / total_time_more_pos
