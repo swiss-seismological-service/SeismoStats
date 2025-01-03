@@ -103,6 +103,13 @@ def estimate_a_classic(magnitudes: np.ndarray,
     """
     if delta_m is None:
         delta_m = 0
+        tolerance = 1e-08
+    else:
+        tolerance = max(delta_m / 100, 1e-08)
+    assert (
+        binning_test(magnitudes, delta_m, tolerance)
+    )
+    "Magnitudes are not binned correctly."
     if mc is None:
         mc = magnitudes.min()
     elif magnitudes.min() < mc - delta_m / 2:
@@ -186,14 +193,14 @@ def estimate_a_positive(
         times = times[idx]
 
     # test that the magnitudes are binned correctly
-        if delta_m == 0:
-            tolerance = 1e-08
-        else:
-            tolerance = max(delta_m / 100, 1e-08)
-        assert (
-            binning_test(magnitudes, delta_m, tolerance)
-        )
-        "Magnitudes are not binned correctly."
+    if delta_m == 0:
+        tolerance = 1e-08
+    else:
+        tolerance = max(delta_m / 100, 1e-08)
+    assert (
+        binning_test(magnitudes, delta_m, tolerance)
+    )
+    "Magnitudes are not binned correctly."
 
     if dmc is None:
         dmc = delta_m
@@ -218,8 +225,9 @@ def estimate_a_positive(
 
     # estimate the number of events within the time interval
     total_time = times[-1] - times[0]
-    total_time_pos = sum(time_diffs / total_time)
-    n_pos = len(mag_diffs) / total_time_pos
+
+    time_factor = sum(time_diffs / total_time)
+    n_pos = sum(idx) / time_factor
 
     # estimate a-value
     a = np.log10(n_pos)
@@ -292,14 +300,14 @@ def estimate_a_more_positive(
         times = times[idx]
 
     # test that the magnitudes are binned correctly
-        if delta_m == 0:
-            tolerance = 1e-08
-        else:
-            tolerance = max(delta_m / 100, 1e-08)
-        assert (
-            binning_test(magnitudes, delta_m, tolerance)
-        )
-        "Magnitudes are not binned correctly."
+    if delta_m == 0:
+        tolerance = 1e-08
+    else:
+        tolerance = max(delta_m / 100, 1e-08)
+    assert (
+        binning_test(magnitudes, delta_m, tolerance)
+    )
+    "Magnitudes are not binned correctly."
 
     if dmc is None:
         dmc = delta_m
@@ -329,8 +337,9 @@ def estimate_a_more_positive(
 
     # scale the time
     tau = time_diffs * 10**(-b_value * (magnitudes + dmc - mc))
-    total_time_more_pos = sum(tau / total_time)
-    n_more_pos = (sum(~idx_no_next)) / total_time_more_pos
+
+    time_factor = sum(tau / total_time)
+    n_more_pos = sum(~idx_no_next) / time_factor
 
     # estimate a-value
     a = np.log10(n_more_pos)
