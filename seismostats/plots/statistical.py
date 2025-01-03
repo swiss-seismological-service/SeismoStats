@@ -57,7 +57,6 @@ def plot_mc_vs_b(
     if ax is None:
         _, ax = plt.subplots()
 
-    # Plotting: this either
     error_factor = norm.ppf((1 + confidence_intvl) / 2)
     ax.plot(mcs, b_values, "-o", color=color)
     ax.fill_between(
