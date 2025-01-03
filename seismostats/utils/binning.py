@@ -95,12 +95,16 @@ def binning_test(
     """
     if delta_x == 0:
         range = np.max(x) - np.min(x)
-        power = np.arange(np.floor(np.log10(tolerance)) + 1, range, 1)
+        power = np.arange(np.floor(np.log10(tolerance)) + 1,
+                          np.ceil(np.log10(range)), 1)
         delta_x_test = 10**power
         test = True
+        tolerance = 10**(np.floor(np.log10(tolerance)) - 1)
         for delta_x_loop in delta_x_test:
+            print(binning_test(x, delta_x_loop, tolerance))
             if binning_test(x, delta_x_loop, tolerance):
                 return False
+
     else:
         x = np.asarray(x)
         x_binned = bin_to_precision(x, delta_x)
