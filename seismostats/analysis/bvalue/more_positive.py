@@ -25,38 +25,48 @@ class BMorePositiveBValueEstimator(BValueEstimator):
 
     weights_supported = True
 
-    def __init__(self, dmc: float | None = None, *args, **kwargs):
+    def __init__(self, *args, dmc: float | None = None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.dmc = dmc or self.delta_m
+        self.dmc: float
+        self._register_attribute('dmc', dmc or self.delta_m)
+
+    def _estimate(self,
+                  magnitudes: np.ndarray,
+                  weights: np.ndarray | None
+                  ) -> tuple[float, np.ndarray, np.ndarray | None]:
 
         if self.dmc < 0:
             raise ValueError('dmc must be larger or equal to 0')
         elif self.dmc < self.delta_m and get_option('warnings') is True:
             warnings.warn('dmc is smaller than delta_m, not recommended')
 
-    def _estimate(self):
+        mag_diffs = -np.ones(len(magnitudes) - 1) * self.delta_m
 
-        mag_diffs = - np.ones(len(self.magnitudes) - 1) * self.delta_m
-        if self.weights is not None:
-            # weight vector of same length as mag diffs
-            weights = - np.ones(len(self.magnitudes) - 1) * self.delta_m
-        for ii in range(len(self.magnitudes) - 1):
-            for jj in range(ii + 1, len(self.magnitudes)):
-                mag_diff_loop = self.magnitudes[jj] - self.magnitudes[ii]
+        if weights is not None:
+            weights_pos = np.ones_like(mag_diffs)
+
+        for ii in range(len(magnitudes) - 1):
+            for jj in range(ii + 1, len(magnitudes)):
+                mag_diff_loop = magnitudes[jj] - magnitudes[ii]
                 if mag_diff_loop > self.dmc - self.delta_m / 2:
                     mag_diffs[ii] = mag_diff_loop
-                    if self.weights is not None:
+                    if weights is not None:
                         # use weight of second earthquake of a difference
-                        weights[ii] = self.weights[jj]
+                        weights_pos[ii] = weights[jj]
                     break
 
         # only take the values where the next earthquake is larger
-        if self.weights is not None:
-            self.weights = weights[mag_diffs > - self.delta_m / 2]
-        self.magnitudes = abs(mag_diffs[mag_diffs > - self.delta_m / 2])
+        is_larger = mag_diffs > -self.delta_m / 2
 
-        classic_estimator = ClassicBValueEstimator(mc=self.dmc,
-                                                   delta_m=self.delta_m)
+        if weights is not None:
+            weights = weights_pos[is_larger]
 
-        return classic_estimator(self.magnitudes, weights=self.weights)
+        magnitudes = abs(mag_diffs[is_larger])
+
+        classic_estimator = ClassicBValueEstimator(magnitudes,
+                                                   mc=self.dmc,
+                                                   delta_m=self.delta_m,
+                                                   weights=weights)
+
+        return classic_estimator.b_value(), magnitudes, weights

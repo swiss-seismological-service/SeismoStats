@@ -25,19 +25,20 @@ def estimate_b(
     **kwargs
 ) -> float | tuple[float, float] | tuple[float, float, float]:
 
-    estimator = method(mc=mc, delta_m=delta_m, *args, **kwargs)
+    estimator = method(magnitudes, mc=mc, delta_m=delta_m,
+                       weights=weights, *args, **kwargs)
 
     if b_parameter == 'b_value':
-        b = estimator(magnitudes, weights=weights)
+        b = estimator.b_value()
     elif b_parameter == 'beta':
-        b = estimator.estimate_beta(magnitudes, weights=weights)
+        b = estimator.beta()
     else:
         raise ValueError('b_parameter must be either "b_value" or "beta"')
 
     out = b
 
     if return_std:
-        out = (out, estimator.std)
+        out = (out, estimator.std())
 
     if return_n:
         out = (*tuple(out), estimator.n)

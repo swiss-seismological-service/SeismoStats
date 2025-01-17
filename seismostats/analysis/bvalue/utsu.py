@@ -23,7 +23,10 @@ class UtsuBValueEstimator(BValueEstimator):
 
         super().__init__(*args, **kwargs)
 
-    def _estimate(self):
-        beta = 1 / np.average(self.magnitudes - self.mc
-                              + self.delta_m / 2, weights=self.weights)
-        return beta_to_b_value(beta)
+    def _estimate(self,
+                  magnitudes: np.ndarray,
+                  weights: np.ndarray | None
+                  ) -> tuple[float, np.ndarray, np.ndarray | None]:
+        beta = 1 / np.average(magnitudes - self.mc
+                              + self.delta_m / 2, weights=weights)
+        return beta_to_b_value(beta), magnitudes, weights

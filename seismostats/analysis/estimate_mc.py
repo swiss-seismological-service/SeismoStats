@@ -227,8 +227,8 @@ def mc_ks(
 
         # if no beta is given, estimate beta
         if beta is None:
-            estimator = b_method(mc=mc, delta_m=delta_m)
-            mc_beta = estimator.estimate_beta(magnitudes=mc_sample)
+            estimator = b_method(mc_sample, mc=mc, delta_m=delta_m)
+            mc_beta = estimator.beta()
         else:
             mc_beta = beta
 
@@ -273,6 +273,7 @@ def mc_ks(
     else:
         best_mc = None
         beta = None
+        best_beta = None
 
         if verbose:
             print("None of the mcs passed the test.")
