@@ -1,27 +1,29 @@
+from typing import Literal
+
 import numpy as np
 
 
 def beta_to_b_value(beta: float) -> float:
-    """converts the beta value to the b-value  of the Gutenberg-Richter law
+    '''converts the beta value to the b-value  of the Gutenberg-Richter law
 
     Args:
         beta: beta value
 
     Returns:
         b_value: corresponding b-value
-    """
+    '''
     return beta / np.log(10)
 
 
 def b_value_to_beta(b_value: float) -> float:
-    """converts the b-value to the beta value of the exponential distribution
+    '''converts the b-value to the beta value of the exponential distribution
 
     Args:
         b_value: b-value
 
     Returns:
         beta: corresponding beta value
-    """
+    '''
     return b_value * np.log(10)
 
 
@@ -29,9 +31,9 @@ def shi_bolt_confidence(
     magnitudes: np.ndarray,
     weights: np.ndarray | None = None,
     b: float | None = None,
-    b_parameter: str = "b_value",
+    b_parameter: Literal['b_value', 'beta'] = 'b_value'
 ) -> float:
-    """Return the Shi and Bolt (1982) confidence limit of the b-value or
+    '''Return the Shi and Bolt (1982) confidence limit of the b-value or
     beta.
 
     Source:
@@ -45,12 +47,11 @@ def shi_bolt_confidence(
 
     Returns:
         std_b:  confidence limit of the b-value/beta value (depending on input)
-    """
+    '''
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
-    assert (
-        b_parameter == "b_value" or b_parameter == "beta"
-    ), "please choose either 'b_value' or 'beta' as b_parameter"
+    if b_parameter not in ['b_value', 'beta']:
+        raise ValueError('b_parameter must be either "b_value" or "beta"')
 
     std_mags = np.sqrt(np.average(np.square(
         magnitudes - np.average(magnitudes, weights=weights)), weights=weights))
@@ -62,7 +63,7 @@ def shi_bolt_confidence(
     std_b = (
         np.log(10) * b**2 * std_mags / np.sqrt(len_mags - 1)
     )
-    if b_parameter == "beta":
+    if b_parameter == 'beta':
         std_b = (std_b) / np.log(10)
 
     return std_b
@@ -71,10 +72,10 @@ def shi_bolt_confidence(
 def make_more_incomplete(
     magnitudes: np.ndarray,
     times: np.array,
-    delta_t: np.timedelta64 = np.timedelta64(60, "s"),
+    delta_t: np.timedelta64 = np.timedelta64(60, 's'),
     return_idx: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Return filtered magnitudes and times. Filter the magnitudes and times in
+    '''Return filtered magnitudes and times. Filter the magnitudes and times in
     the following way: If an earthquake is smaller than the previous one and
     less than ``delta_t`` away, the earthquake is removed.
 
@@ -95,7 +96,7 @@ def make_more_incomplete(
         magnitudes: filtered array of magnitudes
         times:      filtered array of datetime objects
         idx:        indices of the events that were kept
-        """
+        '''
 
     # sort magnitudes in time
     idx_sort = np.argsort(times)

@@ -28,13 +28,17 @@ class ClassicBValueEstimator(BValueEstimator):
         '''
         super().__init__(*args, **kwargs)
 
-    def _estimate(self):
+    def _estimate(self,
+                  magnitudes: np.ndarray,
+                  weights: np.ndarray | None
+                  ) -> tuple[float, np.ndarray, np.ndarray | None]:
+
         if self.delta_m > 0:
             p = 1 + self.delta_m / \
-                np.average(self.magnitudes - self.mc, weights=self.weights)
+                np.average(magnitudes - self.mc, weights=weights)
             beta = 1 / self.delta_m * np.log(p)
         else:
-            beta = 1 / np.average(self.magnitudes
-                                  - self.mc, weights=self.weights)
+            beta = 1 / np.average(magnitudes
+                                  - self.mc, weights=weights)
 
-        return beta_to_b_value(beta)
+        return beta_to_b_value(beta), magnitudes, weights
