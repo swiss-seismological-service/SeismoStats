@@ -29,8 +29,8 @@ def b_value_to_beta(b_value: float) -> float:
 
 def shi_bolt_confidence(
     magnitudes: np.ndarray,
+    b: float,
     weights: np.ndarray | None = None,
-    b: float | None = None,
     b_parameter: Literal['b_value', 'beta'] = 'b_value'
 ) -> float:
     '''Return the Shi and Bolt (1982) confidence limit of the b-value or

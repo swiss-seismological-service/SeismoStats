@@ -8,31 +8,49 @@ from seismostats.utils._config import get_option
 
 
 class BPositiveBValueEstimator(BValueEstimator):
-    '''Return the b-value estimate calculated using the
-    positive differences between consecutive magnitudes.
+    '''
+    B-value estimator using positive differences between
+    consecutive magnitudes.
 
     Source:
-        Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126, Issue
-        2)
-
-    Args:
-        delta_m:    discretization of magnitudes. default is no discretization.
-        dmc:       cutoff value for the differences (diffferences below this
-                value are not considered). If None, the cutoff is set to delta_m
+        Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126,
+        Issue 2)
     '''
 
     weights_supported = True
 
-    def __init__(self, *args, dmc: float | None = None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
 
-        self.dmc: float
-        self._register_attribute('dmc', dmc or self.delta_m)
-
-    def _estimate(self,
+    def calculate(self,
                   magnitudes: np.ndarray,
-                  weights: np.ndarray | None
-                  ) -> tuple[float, np.ndarray, np.ndarray | None]:
+                  mc: float,
+                  delta_m: float,
+                  weights: np.ndarray | None = None,
+                  dmc: float | None = None) -> float:
+        '''
+        Return the b-value estimate calculated using the
+        positive differences between consecutive magnitudes.
+
+        Args:
+            magnitudes: Array of magnitudes
+            mc:         Completeness magnitude
+            delta_m:    Discretization of magnitudes.
+            weights:    Array of weights for the magnitudes.
+            dmc:        Cutoff value for the differences (differences
+                        below this value are not considered). If None,
+                        the cutoff is set to delta_m.
+        '''
+
+        return super().calculate(magnitudes,
+                                 mc=mc,
+                                 delta_m=delta_m,
+                                 weights=weights,
+                                 dmc=dmc)
+
+    def _estimate(self, dmc: float | None = None) -> float:
+
+        self.dmc = dmc or self.delta_m
 
         if self.dmc < 0:
             raise ValueError('dmc must be larger or equal to 0')
@@ -42,17 +60,17 @@ class BPositiveBValueEstimator(BValueEstimator):
 
         # only take the values where the next earthquake is d_mc larger than the
         # previous one. delta_m is added to avoid numerical errors
-        magnitudes = np.diff(magnitudes)
-        is_larger = magnitudes > self.dmc - self.delta_m / 2
-        magnitudes = abs(magnitudes[is_larger])
+        self.magnitudes = np.diff(self.magnitudes)
+        is_larger = self.magnitudes > self.dmc - self.delta_m / 2
+        self.magnitudes = abs(self.magnitudes[is_larger])
 
-        if weights is not None:
+        if self.weights is not None:
             # use weight of second earthquake of a difference
-            weights = weights[1:][is_larger]
+            self.weights = self.weights[1:][is_larger]
 
-        classic_estimator = ClassicBValueEstimator(magnitudes,
-                                                   mc=self.dmc,
-                                                   delta_m=self.delta_m,
-                                                   weights=weights)
+        classic_estimator = ClassicBValueEstimator()
 
-        return classic_estimator.b_value(), magnitudes, weights
+        return classic_estimator.calculate(self.magnitudes,
+                                           mc=self.dmc,
+                                           delta_m=self.delta_m,
+                                           weights=self.weights)
