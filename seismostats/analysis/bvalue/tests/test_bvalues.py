@@ -47,15 +47,22 @@ def test_estimate_b_classic(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
-    estimator = ClassicBValueEstimator(mags, mc=mc, delta_m=delta_m)
-    b_estimate = estimator.b_value()
-    estimator.weights = weights
-    b_estimate_weighted = estimator.b_value()
-    estimator.weights = weights * 0.5
-    b_estimate_half_weighted = estimator.b_value()
-    estimator.magnitudes = mags_extended
-    estimator.weights = weights_extended
-    b_estimate_extended = estimator.b_value()
+    estimator = ClassicBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   weights=weights * 0.5)
+    b_estimate_extended = estimator.calculate(mags_extended,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights_extended)
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
@@ -83,15 +90,23 @@ def test_estimate_b_utsu(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
-    estimator = UtsuBValueEstimator(mags, mc=mc, delta_m=delta_m)
-    b_estimate = estimator.b_value()
-    estimator.weights = weights
-    b_estimate_weighted = estimator.b_value()
-    estimator.weights = weights * 0.5
-    b_estimate_half_weighted = estimator.b_value()
-    estimator.magnitudes = mags_extended
-    estimator.weights = weights_extended
-    b_estimate_extended = estimator.b_value()
+    estimator = UtsuBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   weights=weights * 0.5)
+    b_estimate_extended = estimator.calculate(mags_extended,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights_extended
+                                              )
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
@@ -120,15 +135,26 @@ def test_estimate_b_positive(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
-    estimator = BPositiveBValueEstimator(mags, mc=mc, delta_m=delta_m, dmc=dmc)
-    b_estimate = estimator.b_value()
-    estimator.weights = weights
-    b_estimate_weighted = estimator.b_value()
-    estimator.weights = weights * 0.5
-    b_estimate_half_weighted = estimator.b_value()
-    estimator.magnitudes = mags_extended
-    estimator.weights = weights_extended
-    b_estimate_extended = estimator.b_value()
+    estimator = BPositiveBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m,
+                                     dmc=dmc)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              dmc=dmc,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   dmc=dmc,
+                                                   weights=weights * 0.5)
+    b_estimate_extended = estimator.calculate(mags_extended,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              dmc=dmc,
+                                              weights=weights_extended)
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
@@ -155,13 +181,21 @@ def test_estimate_b_more_positive(
     mags = mags[mags >= mc - delta_m / 2]
     weights = np.ones(len(mags))
 
-    estimator = BMorePositiveBValueEstimator(
-        mags, mc=mc, delta_m=delta_m, dmc=dmc)
-    b_estimate = estimator.b_value()
-    estimator.weights = weights
-    b_estimate_weighted = estimator.b_value()
-    estimator.weights = weights * 0.5
-    b_estimate_half_weighted = estimator.b_value()
+    estimator = BMorePositiveBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m,
+                                     dmc=dmc)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              dmc=dmc,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   dmc=dmc,
+                                                   weights=weights * 0.5)
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)

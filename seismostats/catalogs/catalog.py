@@ -506,16 +506,13 @@ class Catalog(pd.DataFrame):
             std:    Shi and Bolt estimate of the beta/b-value error estimate
             n:      number of events used for the estimation.
         """
-
-        if mc is None and self.mc is None:
-            raise ValueError("completeness magnitude (mc) needs to be set")
+        mc = self.mc if mc is None else mc
         if mc is None:
-            mc = self.mc
+            raise ValueError("completeness magnitude (mc) needs to be set")
 
-        if delta_m is None and self.delta_m is None:
-            raise ValueError("binning (delta_m) needs to be set")
+        delta_m = self.delta_m if delta_m is None else delta_m
         if delta_m is None:
-            delta_m = self.delta_m
+            raise ValueError("binning (delta_m) needs to be set")
 
         # filter magnitudes above mc without changing the original dataframe
         df = self[self.magnitude >= mc]

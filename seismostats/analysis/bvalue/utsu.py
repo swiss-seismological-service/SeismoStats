@@ -5,28 +5,20 @@ from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 
 class UtsuBValueEstimator(BValueEstimator):
+    '''
+    Estimator for the b-value using the maximum likelihood estimator.
+
+    Source:
+        Utsu 1965 (Geophysical bulletin of the Hokkaido University,
+        vol 13, pp 99-103).
+    '''
 
     weights_supported = True
 
-    def __init__(self, *args, **kwargs):
-        """Return the maximum likelihood b-value or beta.
+    def __init__(self):
+        super().__init__()
 
-        Source:
-            Utsu 1965 (Geophysical bulletin of the Hokkaido University,
-            vol 13, pp 99-103).
-
-        Args:
-            mc:         completeness magnitude
-            delta_m:    discretization of magnitudes.
-                        default is no discretization
-        """
-
-        super().__init__(*args, **kwargs)
-
-    def _estimate(self,
-                  magnitudes: np.ndarray,
-                  weights: np.ndarray | None
-                  ) -> tuple[float, np.ndarray, np.ndarray | None]:
-        beta = 1 / np.average(magnitudes - self.mc
-                              + self.delta_m / 2, weights=weights)
-        return beta_to_b_value(beta), magnitudes, weights
+    def _estimate(self) -> float:
+        beta = 1 / np.average(self.magnitudes - self.mc
+                              + self.delta_m / 2, weights=self.weights)
+        return beta_to_b_value(beta)
