@@ -250,11 +250,11 @@ def estimate_a_more_positive(
         magnitudes: np.ndarray,
         times: np.ndarray,
         delta_m: float,
+        b_value: float,
         dmc: float | None = None,
         scaling_factor: float | None = None,
         m_ref: float | None = None,
         mc: float | None = None,
-        b_value: float = None,
 ) -> float:
     """Return the a-value of the Gutenberg-Richter (GR) law using only the
     earthquakes with magnitude m_i >= m_i-1 + dmc.
@@ -267,6 +267,7 @@ def estimate_a_more_positive(
         times:      vector of times of the events, in any format (datetime,
                 float, etc.)
         delta_m:    discretization of the magnitudes.
+        b_value:    b-value of the Gutenberg-Richter law.
         dmc:        minimum magnitude difference between consecutive events.
                 If None, the default value is delta_m.
         scaling_factor:    scaling factor. If given, this is used to normalize
@@ -280,9 +281,6 @@ def estimate_a_more_positive(
                 If None, the catalog is assumed to be complete and
                 mc is set to the smallest magnitude in the catalog.
                 This is only relevant when m_ref is not None.
-        b_value:    b-value of the Gutenberg-Richter law. If not given, it
-                wil be estimated from the sample with the method defined by
-                b_method.
 
     Returns:
         a_pos: a-value of the Gutenberg-Richter distribution
