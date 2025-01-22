@@ -46,14 +46,6 @@ def test_estimate_b_classic(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
-<<<<<<< HEAD
-    estimator = ClassicBValueEstimator(mc=mc, delta_m=delta_m)
-
-    b_estimate = estimator(mags)
-    b_estimate_weighted = estimator(mags, weights=weights)
-    b_estimate_half_weighted = estimator(mags, weights=weights * 0.5)
-    b_estimate_extended = estimator(mags_extended, weights=weights_extended)
-=======
     estimator = ClassicBValueEstimator()
     b_estimate = estimator.calculate(mags,
                                      mc=mc,
@@ -70,7 +62,6 @@ def test_estimate_b_classic(
                                               mc=mc,
                                               delta_m=delta_m,
                                               weights=weights_extended)
->>>>>>> main
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
