@@ -68,7 +68,9 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 def binning_test(
         x: np.ndarray | list,
         delta_x: float,
-        tolerance: float = 1e-08) -> float:
+        tolerance: float = 1e-08,
+        fail_if_larger: bool = True,
+) -> float:
     """
     Finds out to which precision the given array is binned with delta_x,
       within the given absolute tolerance.
@@ -87,6 +89,9 @@ def binning_test(
             (with bin-sizes delta_x)
         delta_x:    size of the bin
         tolerance:  tolerance for the comparison
+        fail_if_larger: if False, the test will only warn if a larger binning
+                seems to be correct. If True, an error will be returned in this
+                case (default).
 
     Returns:
         result: True if the array is binned to the given precision, False
@@ -123,7 +128,14 @@ def binning_test(
             power = np.floor(np.log10(delta_x)) + 1
             x_binned = bin_to_precision(x, 10**power)
             test_2 = not np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
-        test = test_1 and test_2
+        if fail_if_larger is True:
+            test = test_1 and test_2
+        elif fail_if_larger is False:
+            test = test_1
+            if get_option("warnings") is True and test_2 is False:
+                warnings.warn("A larger binning than the chosen one might be"
+                              "correct. Please check.")
+
     return test
 
 
