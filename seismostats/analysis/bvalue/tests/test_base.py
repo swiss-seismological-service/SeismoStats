@@ -67,11 +67,12 @@ def test_getters():
 def test_std():
     mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
     estimator = ClassicBValueEstimator()
+    estimator.calculate(mags, mc=1, delta_m=0.1)
 
     std_shi = shi_bolt_confidence(
-        mags, b=estimator.calculate(mags, mc=1, delta_m=0.1))
+        estimator.magnitudes, estimator.b_value)
     np.testing.assert_almost_equal(estimator.std, std_shi)
 
-    std_shi_beta = shi_bolt_confidence(mags, b=estimator.beta,
+    std_shi_beta = shi_bolt_confidence(estimator.mags, b=estimator.beta,
                                        b_parameter='beta')
     np.testing.assert_almost_equal(estimator.std_beta, std_shi_beta)
