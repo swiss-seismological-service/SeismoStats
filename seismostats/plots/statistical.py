@@ -12,12 +12,13 @@ from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 def plot_mc_vs_b(
     magnitudes: np.ndarray,
     mcs: np.ndarray,
-    dmc: float | None = None,
-    delta_m: float = 0.1,
+    delta_m: float,
     b_method: BValueEstimator = ClassicBValueEstimator,
     confidence_intvl: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
+    legend: str = None,
+    **kwargs,
 ) -> plt.Axes:
     """Plots the estimated b-value in dependence of the completeness magnitude.
 
@@ -32,6 +33,8 @@ def plot_mc_vs_b(
         confidence_intvl:   confidence interval that should be plotted
         ax:         axis where figure should be plotted
         color:      color of the data
+        **kwargs:   Additional keyword arguments for the b-value
+                estimator.
 
     Returns:
         ax that was plotted on
@@ -39,17 +42,13 @@ def plot_mc_vs_b(
 
     b_values = []
     b_errors = []
+    estimator = b_method()
 
-    if dmc is None:
-        for mc in mcs:
-            estimator = b_method(mc=mc, delta_m=delta_m)
-            b_values.append(estimator(magnitudes))
-            b_errors.append(estimator.std)
-    else:
-        for mc in mcs:
-            estimator = b_method(mc=mc, delta_m=delta_m, dmc=dmc)
-            b_values.append(estimator(magnitudes))
-            b_errors.append(estimator.std)
+    for mc in mcs:
+        estimator.calculate(
+            magnitudes, mc=mc, delta_m=delta_m, **kwargs)
+        b_values.append(estimator.b_value)
+        b_errors.append(estimator.std)
 
     b_values = np.array(b_values)
     b_errors = np.array(b_errors)
@@ -58,7 +57,7 @@ def plot_mc_vs_b(
         _, ax = plt.subplots()
 
     error_factor = norm.ppf((1 + confidence_intvl) / 2)
-    ax.plot(mcs, b_values, "-o", color=color)
+    ax.plot(mcs, b_values, "-o", color=color, label=legend)
     ax.fill_between(
         mcs,
         b_values - error_factor * b_errors,
