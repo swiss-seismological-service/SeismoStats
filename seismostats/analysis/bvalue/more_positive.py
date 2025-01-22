@@ -1,9 +1,11 @@
 import warnings
 
+import numpy as np
+
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.utils._config import get_option
 from seismostats.analysis.bvalue.utils import find_next_larger
+from seismostats.utils._config import get_option
 
 
 class BMorePositiveBValueEstimator(BValueEstimator):
