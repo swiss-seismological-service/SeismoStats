@@ -5,30 +5,22 @@ from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 
 class ClassicBValueEstimator(BValueEstimator):
+    '''
+    Estimator for the b-value using the maximum likelihood estimator.
+
+    Source:
+        - Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
+        - Tinti and Mulargia 1987 (Bulletin of the Seismological Society of
+        America, 77(6), 2125-2134.)
+    '''
 
     weights_supported = True
 
-    def __init__(self, *args, **kwargs):
-        '''Return the maximum likelihood b-value or beta for
-        an array of magnitudes and a completeness magnitude mc.
-        If the magnitudes are discretized, the discretization must be given in
-        ``delta_m``, so that the maximum likelihood estimator can be calculated
-        correctly.
+    def __init__(self):
+        super().__init__()
 
+    def _estimate(self) -> float:
 
-        Source:
-            - Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
-            - Tinti and Mulargia 1987 (Bulletin of the Seismological Society of
-            America, 77(6), 2125-2134.)
-
-        Args:
-            mc:         completeness magnitude
-            delta_m:    Discretization of magnitudes.
-                        Default is no discretization.
-        '''
-        super().__init__(*args, **kwargs)
-
-    def _estimate(self):
         if self.delta_m > 0:
             p = 1 + self.delta_m / \
                 np.average(self.magnitudes - self.mc, weights=self.weights)

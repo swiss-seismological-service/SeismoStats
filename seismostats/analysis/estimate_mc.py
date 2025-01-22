@@ -139,6 +139,7 @@ def mc_ks(
     b_method: BValueEstimator = ClassicBValueEstimator,
     n: int = 10000,
     ks_ds_list: list[list] | None = None,
+    **kwargs,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
     Return the completeness magnitude (mc) estimate
@@ -168,8 +169,10 @@ def mc_ks(
                             calculated for estimating the p-value,
                             by default 10000
         ks_ds_list:         List of list of KS distances from synthetic data
-                        (needed for testing). If None, they will be estimated
-                        in this funciton. By default None
+                            (needed for testing). If None, they will be
+                            estimated in this funciton. By default None
+        **kwargs:           Additional keyword arguments for the b-value
+                            estimator.
 
     Returns:
         mcs_test:   tested completeness magnitudes
@@ -227,8 +230,9 @@ def mc_ks(
 
         # if no beta is given, estimate beta
         if beta is None:
-            estimator = b_method(mc=mc, delta_m=delta_m)
-            mc_beta = estimator.estimate_beta(magnitudes=mc_sample)
+            estimator = b_method()
+            estimator.calculate(mc_sample, mc=mc, delta_m=delta_m, **kwargs)
+            mc_beta = estimator.beta
         else:
             mc_beta = beta
 
@@ -273,6 +277,7 @@ def mc_ks(
     else:
         best_mc = None
         beta = None
+        best_beta = None
 
         if verbose:
             print("None of the mcs passed the test.")
