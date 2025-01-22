@@ -19,16 +19,16 @@ def magnitudes(b: float):
     df_mags = pd.read_csv(os.path.join(
         PATH_RESOURCES, 'simulated_magnitudes.csv'))
     if b == 0.5:
-        mags = df_mags["b_value = 0.5"].values
+        mags = df_mags['b_value = 0.5'].values
     elif b == 1:
-        mags = df_mags["b_value = 1"].values
+        mags = df_mags['b_value = 1'].values
     elif b == 1.5:
-        mags = df_mags["b_value = 1.5"].values
+        mags = df_mags['b_value = 1.5'].values
     return mags
 
 
 @pytest.mark.parametrize(
-    "b_est_correct, mags, mc, delta_m",
+    'b_est_correct, mags, mc, delta_m',
     [
         (0.9985052730956719, magnitudes(1), 0, 0.1),
         (1.486114976626299, magnitudes(1.5), 0.5, 0.01),
@@ -46,12 +46,31 @@ def test_estimate_b_classic(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
+<<<<<<< HEAD
     estimator = ClassicBValueEstimator(mc=mc, delta_m=delta_m)
 
     b_estimate = estimator(mags)
     b_estimate_weighted = estimator(mags, weights=weights)
     b_estimate_half_weighted = estimator(mags, weights=weights * 0.5)
     b_estimate_extended = estimator(mags_extended, weights=weights_extended)
+=======
+    estimator = ClassicBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   weights=weights * 0.5)
+    b_estimate_extended = estimator.calculate(mags_extended,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights_extended)
+>>>>>>> main
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
@@ -60,7 +79,7 @@ def test_estimate_b_classic(
 
 
 @pytest.mark.parametrize(
-    "b_est_correct, mags, mc, delta_m",
+    'b_est_correct, mags, mc, delta_m',
     [
         (0.9941299341459253, magnitudes(1), 0, 0.1),
         (1.485969980462011, magnitudes(1.5), 0.5, 0.01),
@@ -78,11 +97,23 @@ def test_estimate_b_utsu(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
-    estimator = UtsuBValueEstimator(mc=mc, delta_m=delta_m)
-    b_estimate = estimator(mags)
-    b_estimate_weighted = estimator(mags, weights=weights)
-    b_estimate_half_weighted = estimator(mags, weights=weights * 0.5)
-    b_estimate_extended = estimator(mags_extended, weights=weights_extended)
+    estimator = UtsuBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   weights=weights * 0.5)
+    b_estimate_extended = estimator.calculate(mags_extended,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              weights=weights_extended
+                                              )
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
@@ -91,7 +122,7 @@ def test_estimate_b_utsu(
 
 
 @pytest.mark.parametrize(
-    "b_est_correct, mags, mc, delta_m, dmc",
+    'b_est_correct, mags, mc, delta_m, dmc',
     [
         (1.00768483769521, magnitudes(1), 0, 0.1, 0.3),
         (1.4946439854664, magnitudes(1.5), 0.5, 0.01, None),
@@ -111,11 +142,26 @@ def test_estimate_b_positive(
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
 
-    estimator = BPositiveBValueEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
-    b_estimate = estimator(mags)
-    b_estimate_weighted = estimator(mags, weights=weights)
-    b_estimate_half_weighted = estimator(mags, weights=weights * 0.5)
-    b_estimate_extended = estimator(mags_extended, weights=weights_extended)
+    estimator = BPositiveBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m,
+                                     dmc=dmc)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              dmc=dmc,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   dmc=dmc,
+                                                   weights=weights * 0.5)
+    b_estimate_extended = estimator.calculate(mags_extended,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              dmc=dmc,
+                                              weights=weights_extended)
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
@@ -124,7 +170,7 @@ def test_estimate_b_positive(
 
 
 @pytest.mark.parametrize(
-    "b_est_correct, mags, mc, delta_m, dmc",
+    'b_est_correct, mags, mc, delta_m, dmc',
     [
         (1.03259579513585, magnitudes(1), 0, 0.1, 0.3),
         (1.476841984167775, magnitudes(1.5), 0.5, 0.01, None),
@@ -142,10 +188,21 @@ def test_estimate_b_more_positive(
     mags = mags[mags >= mc - delta_m / 2]
     weights = np.ones(len(mags))
 
-    estimator = BMorePositiveBValueEstimator(mc=mc, delta_m=delta_m, dmc=dmc)
-    b_estimate = estimator(mags)
-    b_estimate_weighted = estimator(mags, weights=weights)
-    b_estimate_half_weighted = estimator(mags, weights=weights * 0.5)
+    estimator = BMorePositiveBValueEstimator()
+    b_estimate = estimator.calculate(mags,
+                                     mc=mc,
+                                     delta_m=delta_m,
+                                     dmc=dmc)
+    b_estimate_weighted = estimator.calculate(mags,
+                                              mc=mc,
+                                              delta_m=delta_m,
+                                              dmc=dmc,
+                                              weights=weights)
+    b_estimate_half_weighted = estimator.calculate(mags,
+                                                   mc=mc,
+                                                   delta_m=delta_m,
+                                                   dmc=dmc,
+                                                   weights=weights * 0.5)
 
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)

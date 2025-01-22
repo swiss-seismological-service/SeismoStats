@@ -141,37 +141,3 @@ def estimate_b_kijko_smit(
     )
 
     return b, std_b, rate_at_lmc, a_val
-
-
-def shi_bolt_confidence(
-    magnitudes: np.ndarray,
-    b: float | None = None,
-    b_parameter: str = "b_value",
-) -> float:
-    """Return the Shi and Bolt (1982) confidence limit of the b-value or
-    beta.
-
-    Source:
-        Shi and Bolt, BSSA, Vol. 72, No. 5, pp. 1677-1687, October 1982
-
-    Args:
-        magnitudes: numpy array of magnitudes
-        b:          known or estimated b-value/beta of the magnitudes
-        b_parameter:either either 'b_value' or 'beta'
-
-    Returns:
-        std_b:  confidence limit of the b-value/beta value (depending on input)
-    """
-    # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
-    # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
-    assert (
-        b_parameter == "b_value" or b_parameter == "beta"
-    ), "please choose either 'b_value' or 'beta' as b_parameter"
-
-    std_b = (
-        np.log(10) * b**2 * np.std(magnitudes) / np.sqrt(len(magnitudes) - 1)
-    )
-    if b_parameter == "beta":
-        std_b = (std_b) / np.log(10)
-
-    return std_b
