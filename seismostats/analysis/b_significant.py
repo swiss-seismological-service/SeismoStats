@@ -6,11 +6,8 @@ import numpy as np
 import datetime as dt
 import warnings
 
-from seismostats import (
-    estimate_b,
-    estimate_b_positive,
-    estimate_b_more_positive)  # this will have to be adjusted once the b-value
-# class is completed
+from seismostats.analysis.bvalue import ClassicBValueEstimator
+from seismostats.analysis.bvalue.base import BValueEstimator
 
 
 def est_morans_i(values: np.ndarray, w: np.ndarray | None):
@@ -88,35 +85,31 @@ def transform_n(
 def b_samples(
     tile_magnitudes: np.ndarray,
     tile_times: np.ndarray[dt.datetime],
-    delta_m: float = 0.1,
-    mc: None | float = None,
-    dmc: None | float = None,
-    b_method: str = "positive",
+    delta_m: float,
+    mc: float,
+    b_method: BValueEstimator = ClassicBValueEstimator,
     return_std: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """ Estimate the b-values for a given partition of the data
 
     Args:
-        magnitudes:     array of magnitudes
-        times:          array of times that correspond to magnitudes
-        n_sample:       number of subsamples to cut the data into
-        delta_m:        magnitude bin width
-        return_idx:     if True, return the indices of the subsamples
-        cutting:        method of cutting the data into subsamples. either
-                    'random_idx' or 'constant_idx' or 'random'
-        order:          array of values that can be used to sort the
-                    magnitudes, if left as None, it will be assumed that the
-                    desired order is in time.
-        offset:         offset where to start cutting the series (only for
-                    cutting = 'constant_idx')
-        nb_min:         minimum number of events in a subsample (only for the
-                    cutting method 'random_idx' relevant)
+        list_mags:  list of arrays of magnitudes
+        list_times: list of arrays of times
+        delta_m:    discretization of magnitudes
+        mc:         completeness magnitude (can be a vector of same
+                length as list_magnitudes)
+        b_method:   method to estimate the b-value
+        return_std: if True, return the standard deviation of the b-values
 
     """
 
     b_series = np.zeros(len(tile_magnitudes))
     std_b = np.zeros(len(tile_magnitudes))
     n_ms = np.zeros(len(tile_magnitudes))
+    if mc is float:
+        mc = np.ones(len(tile_magnitudes)) * mc
+
+    estimator = b_method()
 
     for ii, mags_loop in enumerate(tile_magnitudes):
         # sort the magnitudes of the subsets by time
@@ -126,29 +119,10 @@ def b_samples(
         times_loop = times_loop[idx_sorted]
 
         if len(mags_loop) > 2:
-            if b_method == "classic":
-                b_series[ii], std_b[ii], = estimate_b(
-                    mags_loop,
-                    mc,
-                    delta_m=delta_m,
-                    method=b_method,
-                    return_std=True,
-                )
-                n_ms[ii] = len(mags_loop)
-            elif b_method == "positive":
-                b_series[ii], std_b[ii], n_ms[ii] = estimate_b_positive(
-                    np.array(mags_loop),
-                    delta_m=delta_m,
-                    dmc=dmc,
-                    return_std=True,
-                    return_n=True)
-            elif b_method == "more_positive":
-                b_series[ii], std_b[ii], n_ms[ii] = estimate_b_more_positive(
-                    np.array(mags_loop),
-                    delta_m=delta_m,
-                    dmc=dmc,
-                    return_std=True,
-                    return_n=True,)
+            estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m)
+            b_series[ii] = estimator.b_value
+            std_b[ii] = estimator.std
+            n_ms[ii] = estimator.n
         else:
             b_series[ii] = np.nan
             std_b[ii] = np.nan
