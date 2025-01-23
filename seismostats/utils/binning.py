@@ -68,7 +68,9 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 def binning_test(
         x: np.ndarray | list,
         delta_x: float,
-        tolerance: float = 1e-08) -> float:
+        tolerance: float = 1e-08,
+        check_larger_binning: bool = True,
+) -> float:
     """
     Finds out to which precision the given array is binned with delta_x,
       within the given absolute tolerance.
@@ -87,6 +89,15 @@ def binning_test(
             (with bin-sizes delta_x)
         delta_x:    size of the bin
         tolerance:  tolerance for the comparison
+        check_larger_binning: if True (default), the function not only check
+            that the binning of the array is correct, but also make sure that
+            there is no other binning that is correct. For example, take the
+            array [1.0, 3.0, 4.0]. If delta_x = 0.1, the function will return
+            False because a larger binning (1.0) is also correct. Here, it is
+            important to note that only the next larger power of ten is checked.
+            In case of check_larger_binning = False, the function will return
+            True for the example above, as the binning of 0.1 is correct, and
+            the larger binning is not checked.
 
     Returns:
         result: True if the array is binned to the given precision, False
@@ -95,12 +106,15 @@ def binning_test(
     """
     if delta_x == 0:
         range = np.max(x) - np.min(x)
-        power = np.arange(np.floor(np.log10(tolerance)) + 1, range, 1)
+        power = np.arange(np.floor(np.log10(tolerance)) + 1,
+                          np.ceil(np.log10(range)), 1)
         delta_x_test = 10**power
         test = True
+        tolerance = 10**(np.floor(np.log10(tolerance)) - 1)
         for delta_x_loop in delta_x_test:
             if binning_test(x, delta_x_loop, tolerance):
                 return False
+
     else:
         x = np.asarray(x)
         x_binned = bin_to_precision(x, delta_x)
@@ -113,13 +127,15 @@ def binning_test(
                     "default")
             return True
         test_1 = np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
-        if test_1:
+        if test_1 and check_larger_binning is True:
             # second test checks if the bins are smaller than delta_x
             # For this, we check the next larger power of ten
             power = np.floor(np.log10(delta_x)) + 1
             x_binned = bin_to_precision(x, 10**power)
             test_2 = not np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
-        test = test_1 and test_2
+            test = test_1 and test_2
+        else:
+            test = test_1
     return test
 
 

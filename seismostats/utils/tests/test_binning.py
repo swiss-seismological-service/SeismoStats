@@ -119,7 +119,7 @@ def test_get_fmd(magnitudes: np.ndarray, delta_m: float,
     assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 
 
-def test_binning_test():
+def test_test_binning():
     a = [0.2, 0.4, 0.6, 0.8, 1.0]
     assert binning_test(a, 0.1)
     assert binning_test(a, 0.2)

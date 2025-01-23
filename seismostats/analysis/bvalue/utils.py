@@ -69,6 +69,36 @@ def shi_bolt_confidence(
     return std_b
 
 
+def find_next_larger(magnitudes: np.array,
+                     delta_m: float,
+                     dmc: float | None):
+    """Takes an array of magnitudes and returns an array of indices of the next
+    largest event for each element. For each magnitude[ii], magnitude[idx[ii]]
+    is the next larger event in the series. Example: magnitudes = [10, 4, 3, 9]
+    result in [0, 3, 3, 0]. Note that the value of idx is 0 if no
+    next magnitude exists.
+
+    Args:
+        magnitudes:     ordered magnitudes (in the dimension of interest, e.g.
+                    time)
+        delta_m:        discretization of the magnitudes.
+        dmc:            minimum magnitude difference between consecutive events.
+                    If None, the default value is delta_m.
+
+    """
+    if dmc is None:
+        dmc = delta_m
+
+    idx_next_larger = np.zeros(len(magnitudes))
+    for ii in range(len(magnitudes) - 1):
+        for jj in range(ii + 1, len(magnitudes)):
+            mag_diff_loop = magnitudes[jj] - magnitudes[ii]
+            if mag_diff_loop > dmc - delta_m / 2:
+                idx_next_larger[ii] = jj
+                break
+    return idx_next_larger.astype(int)
+
+
 def make_more_incomplete(
     magnitudes: np.ndarray,
     times: np.array,
