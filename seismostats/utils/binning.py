@@ -134,7 +134,8 @@ def test_binning(
             x_binned = bin_to_precision(x, 10**power)
             test_2 = not np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
             test = test_1 and test_2
-
+        else:
+            test = test_1
     return test
 
 

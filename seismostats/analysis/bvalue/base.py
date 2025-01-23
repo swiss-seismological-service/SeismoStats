@@ -7,7 +7,7 @@ from typing_extensions import Self
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
-from seismostats.utils.binning import binning_test
+from seismostats.utils.binning import test_binning
 
 
 class BValueEstimator(ABC):
@@ -76,7 +76,7 @@ class BValueEstimator(ABC):
         else:
             tolerance = max(self.delta_m / 100, 1e-08)
         assert (
-            binning_test(self.magnitudes, self.delta_m, tolerance)
+            test_binning(self.magnitudes, self.delta_m, tolerance)
         )
         'Magnitudes are not binned correctly.'
 
