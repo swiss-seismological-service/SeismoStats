@@ -17,7 +17,7 @@ def plot_mc_vs_b(
     confidence_intvl: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
-    label: str = None,
+    label: str | None = None,
     **kwargs,
 ) -> plt.Axes:
     """Plots the estimated b-value in dependence of the completeness magnitude.
@@ -30,6 +30,7 @@ def plot_mc_vs_b(
         confidence_intvl:   confidence interval that should be plotted
         ax:         axis where figure should be plotted
         color:      color of the data
+        label:      label of the data that will be put in the legend
         **kwargs:   Additional keyword arguments for the b-value
                 estimator.
 
@@ -61,6 +62,7 @@ def plot_mc_vs_b(
         b_values + error_factor * b_errors,
         alpha=0.2,
         color=color,
+        linewidth=0,
     )
     ax.set_xlabel("Completeness magnitude $m_c$")
     ax.set_ylabel("b-value")
