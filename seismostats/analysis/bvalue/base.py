@@ -43,6 +43,7 @@ class BValueEstimator(ABC):
         self.weights = None if weights is None else np.array(weights)
 
         self._sanity_checks()
+        self._filtering()
 
         self.__b_value = self._estimate(*args, **kwargs)
         return self.__b_value
@@ -53,6 +54,16 @@ class BValueEstimator(ABC):
         Specific implementation of the b-value estimator.
         '''
         pass
+
+    def _filtering(self):
+        '''
+        Filter out magnitudes below the completeness magnitude.
+        '''
+        idx = self.magnitudes >= self.mc - self.delta_m / 2
+        self.magnitudes = self.magnitudes[idx]
+
+        if self.weights is not None:
+            self.weights = self.weights[idx]
 
     def _sanity_checks(self):
         '''

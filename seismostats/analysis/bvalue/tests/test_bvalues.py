@@ -42,7 +42,6 @@ def test_estimate_b_classic(
     delta_m: float,
 ):
     mags = bin_to_precision(mags, delta_m)
-    mags = mags[mags >= mc - delta_m / 2]
     mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
@@ -85,7 +84,6 @@ def test_estimate_b_utsu(
     delta_m: float,
 ):
     mags = bin_to_precision(mags, delta_m)
-    mags = mags[mags >= mc - delta_m / 2]
     mags_extended = np.concatenate([mags, mags + delta_m])
     weights = np.ones(len(mags))
     weights_extended = np.concatenate([weights, 0 * weights])
