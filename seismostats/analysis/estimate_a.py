@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 from seismostats.utils._config import get_option
-from seismostats.utils.binning import test_binning
+from seismostats.utils.binning import binning_test
 from seismostats.analysis.bvalue.utils import find_next_larger
 
 
@@ -107,7 +107,7 @@ def estimate_a_classic(magnitudes: np.ndarray,
     else:
         tolerance = max(delta_m / 100, 1e-08)
     assert (
-        test_binning(magnitudes, delta_m, tolerance, check_larger_binning=False)
+        binning_test(magnitudes, delta_m, tolerance, check_larger_binning=False)
     )
     "Magnitudes are not binned correctly."
     if mc is None:
@@ -198,7 +198,7 @@ def estimate_a_positive(
     else:
         tolerance = max(delta_m / 100, 1e-08)
     assert (
-        test_binning(magnitudes, delta_m, tolerance, check_larger_binning=False)
+        binning_test(magnitudes, delta_m, tolerance, check_larger_binning=False)
     )
     "Magnitudes are not binned correctly."
 
@@ -303,7 +303,7 @@ def estimate_a_more_positive(
     else:
         tolerance = max(delta_m / 100, 1e-08)
     assert (
-        test_binning(magnitudes, delta_m, tolerance, check_larger_binning=False)
+        binning_test(magnitudes, delta_m, tolerance, check_larger_binning=False)
     )
     "Magnitudes are not binned correctly."
 

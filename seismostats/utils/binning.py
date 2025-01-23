@@ -65,7 +65,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
     return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
 
 
-def test_binning(
+def binning_test(
         x: np.ndarray | list,
         delta_x: float,
         tolerance: float = 1e-08,
@@ -112,7 +112,7 @@ def test_binning(
         test = True
         tolerance = 10**(np.floor(np.log10(tolerance)) - 1)
         for delta_x_loop in delta_x_test:
-            if test_binning(x, delta_x_loop, tolerance):
+            if binning_test(x, delta_x_loop, tolerance):
                 return False
 
     else:
