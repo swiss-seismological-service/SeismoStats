@@ -3,7 +3,6 @@ b-value series varies significantly, following Mirwald et al, SRL (2024)
 """
 
 import numpy as np
-import datetime as dt
 import warnings
 
 from seismostats.analysis.bvalue import ClassicBValueEstimator
@@ -22,6 +21,8 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
                 the matrix is set to zero, effectively not counting these data
                 points. If w is None, it is assumed that the series of values is
                 1-dimensional, and the values are sorted along that dimension.
+                Then, the ac that is returned corresponds to the usual 1D
+                autocorrelation with a lag of 1.
 
     Returns:
         ac:     Auto correlation of the values
@@ -42,10 +43,28 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
         w = np.zeros((n_values, n_values))
         for ii in range(n_values):
             for jj in range(n_values):
-                if ii == jj + 1:
+                if jj == ii + 1:
                     w[ii, jj] = 1
+    else:
+        if w.shape[0] != w.shape[1]:
+            raise ValueError("Weight matrix must be square")
+        if w.shape[0] != len(values):
+            raise ValueError(
+                "Weight matrix must have the same size as the values")
+        # check that w is diagonal and has zeros on the diagonal
+        if sum(w.diagonal()) != 0:
+            raise ValueError("Weight matrix must have zeros on the diagonal")
+        # check if w is triangular
+        if np.sum(np.tril(w)) != 0 and np.sum(np.triu(w)) != 0:
+            if np.all(w == w.T):
+                w = np.triu(w)
+            else:
+                raise ValueError(
+                    "Weight matrix must be triangular or at least symmetric")
+        elif np.sum(np.triu(w)) == 0:
+            w = w.T
 
-    # estimate mean
+        # estimate mean
     n = len(values[~np.isnan(values)])
     mean_v = np.mean(values[~np.isnan(values)])
 
@@ -54,7 +73,8 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
             w[ii, :] = 0
             continue
         ac_0 += (v1 - mean_v) ** 2
-        for jj, v2 in enumerate(values):
+        for jj in range(ii + 1, len(values)):
+            v2 = values[jj]
             if np.isnan(v2):
                 w[ii, jj] = 0
                 continue
@@ -85,13 +105,12 @@ def transform_n(
 
 
 def b_series(
-    list_magnitudes: np.ndarray[np.ndarray],
-    list_times: np.ndarray[np.ndarray[dt.datetime]],
+    list_magnitudes: list[np.ndarray],
+    list_times: list[np.ndarray[np.datetime64]],
     delta_m: float,
     mc: float,
     b_method: BValueEstimator = ClassicBValueEstimator,
-    return_std: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """ Estimate the series of b-values
 
     Args:
@@ -101,14 +120,18 @@ def b_series(
         mc:         completeness magnitude (can be a vector of same
                 length as list_magnitudes)
         b_method:   method to estimate the b-value
-        return_std: if True, return the standard deviation of the b-values
 
+    Returns:
+        b_values:   series of b-values, each one is estimated from the
+            magnitudes contained in the corresponding element of list_magnitudes
+        std_b:      standard deviations corresponding to the b-values
+        n_ms:       number of events used for the b-value estimates
     """
 
-    b_series = np.zeros(len(list_magnitudes))
+    b_values = np.zeros(len(list_magnitudes))
     std_b = np.zeros(len(list_magnitudes))
     n_ms = np.zeros(len(list_magnitudes))
-    if mc is float:
+    if isinstance(mc, (float, int)):
         mc = np.ones(len(list_magnitudes)) * mc
 
     estimator = b_method()
@@ -122,17 +145,14 @@ def b_series(
 
         try:
             estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m)
-            b_series[ii] = estimator.b_value
+            b_values[ii] = estimator.b_value
             std_b[ii] = estimator.std
             n_ms[ii] = estimator.n
         except Exception:
-            b_series[ii] = np.nan
+            b_values[ii] = np.nan
             std_b[ii] = np.nan
 
-    if return_std:
-        return b_series, std_b, n_ms.astype(int)
-
-    return b_series, n_ms.astype(int)
+    return b_values, std_b, n_ms.astype(int)
 
 
 def cut_constant_idx(
@@ -156,8 +176,13 @@ def cut_constant_idx(
         idx:            indices of the subsamples
         subsamples:     list of subsamples
     """
-    if n_m is None:
+    if n_sample is not None and n_m is not None:
+        raise ValueError("Either n_sample or n_m must be given, not both")
+    elif n_m is None:
+        if n_sample is None:
+            raise ValueError("Either n_sample or n_m must be given")
         n_m = np.round(len(series) / n_sample).astype(int)
+
     idx = np.arange(offset, len(series), n_m)
 
     if offset == 0:
