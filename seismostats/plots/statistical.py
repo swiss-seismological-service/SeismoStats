@@ -17,7 +17,7 @@ def plot_mc_vs_b(
     confidence_intvl: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
-    legend: str = None,
+    label: str = None,
     **kwargs,
 ) -> plt.Axes:
     """Plots the estimated b-value in dependence of the completeness magnitude.
@@ -25,9 +25,6 @@ def plot_mc_vs_b(
     Args:
         magnitudes: magnitudes of the catalog
         mcs:        completeness magnitudes (list or numpy array)
-        dmc:        if a positive b-value estimator is used, this is the
-                minimum difference that is considered. For the
-                ClassicBValueEstimator, leave this as the default None.
         delta_m:    discretization of the magnitudes
         method:     method used for b-value estimation
         confidence_intvl:   confidence interval that should be plotted
@@ -57,7 +54,7 @@ def plot_mc_vs_b(
         _, ax = plt.subplots()
 
     error_factor = norm.ppf((1 + confidence_intvl) / 2)
-    ax.plot(mcs, b_values, "-o", color=color, label=legend)
+    ax.plot(mcs, b_values, "-o", color=color, label=label)
     ax.fill_between(
         mcs,
         b_values - error_factor * b_errors,
@@ -68,5 +65,7 @@ def plot_mc_vs_b(
     ax.set_xlabel("Completeness magnitude $m_c$")
     ax.set_ylabel("b-value")
     ax.grid(True)
+    if label is not None:
+        ax.legend()
 
     return ax
