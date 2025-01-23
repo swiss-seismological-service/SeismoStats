@@ -1,5 +1,5 @@
 import numpy as np
-import warnings
+import pytest
 from numpy.testing import assert_almost_equal
 from datetime import datetime, timedelta
 
@@ -27,9 +27,8 @@ def test_estimate_a_classic():
     assert a == 0.0
 
     # magnitudes not cut at mc
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.raises(UserWarning):
         estimate_a_classic(mags, mc=2, delta_m=1)
-        assert w[-1].category == UserWarning
 
 
 def test_estimate_a_positive():
@@ -56,9 +55,8 @@ def test_estimate_a_positive():
     assert_almost_equal(10**a, 1.0)
 
     # magnitudes not cut at mc
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.raises(UserWarning):
         estimate_a_positive(mags, times, delta_m=1, mc=2)
-        assert w[-1].category == UserWarning
 
 
 def test_estimate_a_more_positive():

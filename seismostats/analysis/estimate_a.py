@@ -293,7 +293,7 @@ def estimate_a_more_positive(
             warnings.warn(
                 "Completeness magnitude is higher than the lowest magnitude."
                 "Cutting the magnitudes to the completeness magnitude.")
-        idx = magnitudes >= mc - delta_m / 2
+        idx = magnitudes > mc - delta_m / 2
         magnitudes = magnitudes[idx]
         times = times[idx]
 
