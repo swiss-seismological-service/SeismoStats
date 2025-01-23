@@ -10,7 +10,7 @@ from seismostats.analysis.bvalue import ClassicBValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
 
 
-def est_morans_i(values: np.ndarray, w: np.ndarray | None):
+def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
     """
     Estimate the nearest neighbor auto correlation (Moran's I) of the values.
 
@@ -25,9 +25,11 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None):
 
     Returns:
         ac:     Auto correlation of the values
+        n:      Number of values that are not nan
         n_p:    Sum of the weight matrix. In the limit of a large n (number of
             values), the upper limit of the standard deviation of the
-            autocorrelation is 1/sqrt(n_p).
+            autocorrelation is 1/sqrt(n_p). This number is can be interpreted as
+            the number of neighboring pairs.
 
     """
 
@@ -82,15 +84,15 @@ def transform_n(
     return x_transformed
 
 
-def b_samples(
-    tile_magnitudes: np.ndarray,
-    tile_times: np.ndarray[dt.datetime],
+def b_series(
+    list_magnitudes: np.ndarray[np.ndarray],
+    list_times: np.ndarray[np.ndarray[dt.datetime]],
     delta_m: float,
     mc: float,
     b_method: BValueEstimator = ClassicBValueEstimator,
     return_std: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """ Estimate the b-values for a given partition of the data
+    """ Estimate the series of b-values
 
     Args:
         list_mags:  list of arrays of magnitudes
@@ -103,27 +105,27 @@ def b_samples(
 
     """
 
-    b_series = np.zeros(len(tile_magnitudes))
-    std_b = np.zeros(len(tile_magnitudes))
-    n_ms = np.zeros(len(tile_magnitudes))
+    b_series = np.zeros(len(list_magnitudes))
+    std_b = np.zeros(len(list_magnitudes))
+    n_ms = np.zeros(len(list_magnitudes))
     if mc is float:
-        mc = np.ones(len(tile_magnitudes)) * mc
+        mc = np.ones(len(list_magnitudes)) * mc
 
     estimator = b_method()
 
-    for ii, mags_loop in enumerate(tile_magnitudes):
+    for ii, mags_loop in enumerate(list_magnitudes):
         # sort the magnitudes of the subsets by time
-        times_loop = tile_times[ii]
+        times_loop = list_times[ii]
         idx_sorted = np.argsort(times_loop)
         mags_loop = mags_loop[idx_sorted]
         times_loop = times_loop[idx_sorted]
 
-        if len(mags_loop) > 2:
+        try:
             estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m)
             b_series[ii] = estimator.b_value
             std_b[ii] = estimator.std
             n_ms[ii] = estimator.n
-        else:
+        except Exception:
             b_series[ii] = np.nan
             std_b[ii] = np.nan
 
