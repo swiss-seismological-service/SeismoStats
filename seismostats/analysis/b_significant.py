@@ -39,7 +39,7 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
     # in case w is not provided, the 1-dimensional case is assumed
     if w is None:
         n_values = len(values)
-        w = np.zeros(n_values, n_values)
+        w = np.zeros((n_values, n_values))
         for ii in range(n_values):
             for jj in range(n_values):
                 if ii == jj + 1:
