@@ -1,13 +1,19 @@
 import uuid
-from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
-from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
+
+try:
+    from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
+    from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
+except ImportError:
+    pass
+
+import os
 from copy import deepcopy
 
 import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 import pytest
-import os
+
 from seismostats import Catalog as SeismoCatalog
 from seismostats.catalogs.catalog import REQUIRED_COLS_CATALOG
 from seismostats.utils import _check_required_cols
