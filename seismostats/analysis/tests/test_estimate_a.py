@@ -27,7 +27,7 @@ def test_estimate_a_classic():
     assert a == 0.0
 
     # magnitudes not cut at mc
-    with pytest.raises(UserWarning):
+    with pytest.warns(UserWarning):
         estimate_a_classic(mags, mc=2, delta_m=1)
 
 
@@ -55,7 +55,7 @@ def test_estimate_a_positive():
     assert_almost_equal(10**a, 1.0)
 
     # magnitudes not cut at mc
-    with pytest.raises(UserWarning):
+    with pytest.warns(UserWarning):
         estimate_a_positive(mags, times, delta_m=1, mc=2)
 
 
