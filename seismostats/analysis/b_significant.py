@@ -87,21 +87,51 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
 
 
 def transform_n(
-    x: np.ndarray, b: float, n1: np.ndarray, n2: np.ndarray
+    b_estimate: np.ndarray | float,
+    b_true: float,
+    n1: np.ndarray | int,
+    n2: int,
 ) -> np.ndarray:
-    """transform b-value to be comparable to other b-values
+    """transform a b-value estimated from n1 events to a b-value estimated from
+    n2 events, such that the distribution of the transformed b-values is
+    consistent with one that would be estimated from n2 events. The
+    transformation is based on the assumption that the true b-value is known,
+    and that the b-values estimated follow the reciprocaln inverse distribution
+    (which is only true for a large enough n1, see Shi and Bolt, 1981, BSSA).
+
+    Source:
+        Mirwald et al, SRL (2024), supplementary material
 
     Args:
-        x:  b-value estimates to be transformed
-        b:  true b-value
-        n1:   number of events used for the the b-value estimates
-        n2:   number of events to which the distribution is transformed
+        b_estimate: b-value estimates to be transformed
+        b_true:          true b-value
+        n1:         number of events used for the the b-value estimates. Has to
+            be an integer or an array of the same length as b_estimate.
+        n2:         number of events to which the distribution is transformed.
+            It is only possible to transform to a larger number of events, so
+            n2 must be larger than n1. while n1 can be an array, n2 must be an
+            integer.
 
     Returns:
-        x:  transformed b-values
+        b_transformed:  transformed b-values
     """
-    x_transformed = b / (1 - np.sqrt(n1 / n2) * (1 - b / x))
-    return x_transformed
+
+    # sanity checks
+    if not isinstance(n2, int):
+        raise ValueError("n2 must be an integer")
+    if np.any(n1 > n2):
+        raise ValueError("n2 must be larger or equal than n1")
+    if not isinstance(n1, (int, np.ndarray)):
+        raise ValueError("n1 must be an integer or an array")
+    elif isinstance(n1, int):
+        n1 = np.ones(len(b_estimate)) * n1
+    else:
+        assert len(b_estimate) == len(
+            n1), "if n1 is an array, it must have tha same length as b_estimate"
+
+    # transform the b-values
+    b_transformed = b_true / (1 - np.sqrt(n1 / n2) * (1 - b_true / b_estimate))
+    return b_transformed
 
 
 def b_series(
@@ -110,6 +140,8 @@ def b_series(
     delta_m: float,
     mc: float,
     b_method: BValueEstimator = ClassicBValueEstimator,
+
+
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """ Estimate the series of b-values
 

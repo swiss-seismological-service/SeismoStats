@@ -47,7 +47,29 @@ def test_est_morans_i():
 
 
 def test_transform_n():
-    pass
+    b_est = np.array([1, 1, 2, 0.5, 2])
+    n1 = np.array([10, 100, 100, 100, 1000])
+    n2 = 1000
+    b_true = 1
+    b_transformed = transform_n(b_est, b_true, n1, n2)
+    correct_b_transformed = np.array(
+        [1., 1., 1.1878091107778657, 0.7597469266479578, 2.])
+    assert_almost_equal(b_transformed, correct_b_transformed)
+
+    b_est = np.array([1, 1, 2, 0.5, 2])
+    n1 = 1000
+    n2 = 1000
+    b_true = 1
+    b_transformed = transform_n(b_est, b_true, n1, n2)
+    assert_almost_equal(b_transformed, b_est)
+
+    # check that sanity checks work
+    with pytest.raises(AssertionError):
+        transform_n(b_est, b_true, np.array([1, 2]), n2)
+    with pytest.raises(ValueError):
+        transform_n(b_est, b_true, 5, 1)
+    with pytest.raises(ValueError):
+        transform_n(b_est, b_true, n1, np.array([1, 2]))
 
 
 def test_b_series():
