@@ -140,7 +140,7 @@ def b_series(
     list_magnitudes: list[np.ndarray],
     list_times: list[np.ndarray[np.datetime64]],
     delta_m: float,
-    mc: float,
+    mc: float | np.ndarray,
     b_method: BValueEstimator = ClassicBValueEstimator,
 
 
@@ -177,14 +177,10 @@ def b_series(
         mags_loop = mags_loop[idx_sorted]
         times_loop = times_loop[idx_sorted]
 
-        try:
-            estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m)
-            b_values[ii] = estimator.b_value
-            std_b[ii] = estimator.std
-            n_ms[ii] = estimator.n
-        except Exception:
-            b_values[ii] = np.nan
-            std_b[ii] = np.nan
+        estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m)
+        b_values[ii] = estimator.b_value
+        std_b[ii] = estimator.std
+        n_ms[ii] = estimator.n
 
     return b_values, std_b, n_ms.astype(int)
 
@@ -249,7 +245,9 @@ def mac_1D_constant_nm(
         mags:   magnitudes of the events. They are assumed to be order along the
             dimension of interest (e.g. time or depth)
         delta_m:    magnitude bin width
-        mc:     completeness magnitude
+        mc:     completeness magnitude. If a single value is provided, it is
+            used for all magnitudes. Otherwise, the individual completeness of
+            each magnitude can be provided.
         times:  times of the events
         n_m:   number of magnitudes in each partition
         min_num:    minimum number of events in a partition
@@ -266,9 +264,15 @@ def mac_1D_constant_nm(
                 the standard deviation can be mulitplied by the factor
                 gamma = 0.81 given by Mirwald et al, SRL (2024).
     """
-    if min(mags) < mc:
-        raise ValueError("The completeness magnitude is larger than the "
-                         "smallest magnitude")
+    if isinstance(mc, (float, int)):
+        if min(mags) < mc:
+            raise ValueError("The completeness magnitude is larger than the "
+                             "smallest magnitude")
+        mc = np.ones(len(mags)) * mc
+    else:
+        if any(mags < mc):
+            raise ValueError("There are earthquakes below their respective "
+                             "completeness magnitude")
 
     if n_m < min_num:
         raise ValueError("n_m cannot be smaller than min_num")
@@ -282,6 +286,13 @@ def mac_1D_constant_nm(
                 "The number of subsamples is less than 25. The normality "
                 "assumption of the autocorrelation might not be valid")
 
+    if not isinstance(mags, np.ndarray):
+        raise ValueError("mags must be an array")
+    if not isinstance(times, np.ndarray):
+        raise ValueError("times must be an array")
+    if len(mags) != len(times):
+        raise ValueError("mags and times must have the same length")
+
     # estimate a and b values for n realizations
     ac_1D = np.zeros(n_m)
     n = np.zeros(n_m)
@@ -294,20 +305,26 @@ def mac_1D_constant_nm(
             mags, n_m, offset=ii
         )
         tile_times = np.array_split(times, idx_left)
+        tile_mc = np.array_split(mc, idx_left)
+        for jj, mc_loop in enumerate(tile_mc):
+            tile_mc[jj] = float(max(mc_loop))
 
         # make sure that data at the edges is not included if not enough
         # samples
         if len(tile_magnitudes[-1]) < n_m:
             tile_magnitudes.pop(-1)
             tile_times.pop(-1)
+            tile_mc.pop(-1)
+
         if len(tile_magnitudes[0]) < n_m:
             tile_magnitudes.pop(0)
             tile_times.pop(0)
+            tile_mc.pop(0)
 
         # estimate b-values
         b_vec, _, n_m_loop = b_series(
             tile_magnitudes, tile_times, delta_m,
-            mc, b_method=b_method)
+            tile_mc, b_method=b_method)
         b_vec[n_m_loop < min_num] = np.nan
 
         # estimate average events per b-value estimate
@@ -316,9 +333,9 @@ def mac_1D_constant_nm(
         # estimate autocorrelation (1D, not considering nan)
         ac_1D[ii], n[ii], n_p[ii], = est_morans_i(b_vec)
 
-    mac = np.mean(ac_1D)
-    mean_n = np.mean(n)
-    mean_np = np.mean(n_p)
+    mac = np.nanmean(ac_1D)
+    mean_n = np.nanmean(n)
+    mean_np = np.nanmean(n_p)
 
     # estimate mean and (conservative )standard deviation of the
     # autocorrelation under H0
