@@ -7,6 +7,7 @@ import warnings
 
 from seismostats.analysis.bvalue import ClassicBValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.utils._config import get_option
 
 
 def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
@@ -33,11 +34,12 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
             the number of neighboring pairs.
 
     """
+    # sanity checks
+    if len(values) < 2:
+        raise ValueError("At least 2 values are needed for the estimation")
 
-    ac = 0
-    ac_0 = 0
-
-    # in case w is not provided, the 1-dimensional case is assumed
+    # checks regardning the weight matrix. In case it is not provided, 1D case
+    # is assumed
     if w is None:
         n_values = len(values)
         w = np.zeros((n_values, n_values))
@@ -51,10 +53,8 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
         if w.shape[0] != len(values):
             raise ValueError(
                 "Weight matrix must have the same size as the values")
-        # check that w is diagonal and has zeros on the diagonal
         if sum(w.diagonal()) != 0:
             raise ValueError("Weight matrix must have zeros on the diagonal")
-        # check if w is triangular
         if np.sum(np.tril(w)) != 0 and np.sum(np.triu(w)) != 0:
             if np.all(w == w.T):
                 w = np.triu(w)
@@ -64,7 +64,9 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
         elif np.sum(np.triu(w)) == 0:
             w = w.T
 
-        # estimate mean
+    # estimate autocorrelation
+    ac = 0
+    ac_0 = 0
     n = len(values[~np.isnan(values)])
     mean_v = np.mean(values[~np.isnan(values)])
 
@@ -188,44 +190,139 @@ def b_series(
 
 
 def cut_constant_idx(
-    series: np.ndarray,
-    n_sample: np.ndarray | None = None,
-    n_m: np.ndarray | None = None,
+    values: np.ndarray,
+    n: int,
     offset: int = 0,
 ) -> tuple[list[int], list[np.ndarray]]:
-    """cut a series such that the subsamples have a constant number of events.
-    it is assumed that the magnitudes are ordered as desired (e.g. in time or
-    in depth)
+    """
+    find the indices to cut a series such that the subsamples have a constant
+    number of events, n.
+
+    the subsamples can then be obtained in the following way:
+    subsamples = np.array_split(values, idx)
 
     Args:
-        series:     array of values
-        n_sample:   number of subsamples to cut the series into
-        n_m:        length of each sample (if not given, it'll be estimated
-                from n_sample)
-        offset:     offset where to start cutting the series
+        values:     original series to be cut
+        n:          number of events in each subsample
+        offset:     idx where to start cutting the series. This should be
+                between 0 and n
 
     Returns:
         idx:            indices of the subsamples
         subsamples:     list of subsamples
     """
-    if n_sample is not None and n_m is not None:
-        raise ValueError("Either n_sample or n_m must be given, not both")
-    elif n_m is None:
-        if n_sample is None:
-            raise ValueError("Either n_sample or n_m must be given")
-        n_m = np.round(len(series) / n_sample).astype(int)
+    # check that the offset is not larger than n
+    if offset >= n:
+        raise ValueError("offset must be smaller than n")
 
-    idx = np.arange(offset, len(series), n_m)
+    idx = np.arange(offset, len(values), n)
 
     if offset == 0:
         idx = idx[1:]
 
-    if offset > n_m:
-        warnings.warn(
-            "offset is larger than the number of events per subsample, this"
-            "will lead to cutting off more events than necessary"
-        )
-
-    subsamples = np.array_split(series, idx)
-
+    subsamples = np.array_split(values, idx)
     return idx, subsamples
+
+
+def mac_1D_constant_nm(
+        mags: np.ndarray,
+        delta_m: float,
+        mc: float,
+        times: np.ndarray[np.timedelta64],
+        n_m: int,
+        min_num: int = 10,
+        b_method: BValueEstimator = ClassicBValueEstimator,
+) -> tuple[float, float, float, np.ndarray, np.ndarray]:
+    """
+    This function estimates the mean autocorrelation for the one-dimensional
+    case (along the dimension of order). Additionally, it provides the mean
+    a- and b-values for each grid-point. The partitioning method is based on
+    voronoi tesselation (random area).
+
+    With the mean and standard deviation of the autocorrelation under H0, the
+    hypothesis that the b-values are constant can be tested. If the number of
+    subsamples is large enough, the autocorrelation can be assumed to be normal.
+    As a lower limit, no less than 25 subsamples (which can be estimated by
+    len(mags) / n_m) should be used.
+
+    Args:
+        mags:   magnitudes of the events. They are assumed to be order along the
+            dimension of interest (e.g. time or depth)
+        delta_m:    magnitude bin width
+        mc:     completeness magnitude
+        times:  times of the events
+        n_m:   number of magnitudes in each partition
+        min_num:    minimum number of events in a partition
+        b_method:   method to estimate the b-values
+        return_nm:  if True, the mean number of events per b-value estimate is
+            returned
+
+    Returns:
+        mac:        mean autocorrelation.
+        mu_mac:     expected mean autocorrelation und H0
+        std_mac:    standard deviation of the mean autocorrelation under H0
+                (i.e. constant b-value). Here, the conservatice estimate
+                is used - in case the non-conservative estimate is needed,
+                the standard deviation can be mulitplied by the factor
+                gamma = 0.81 given by Mirwald et al, SRL (2024).
+    """
+    if min(mags) < mc:
+        raise ValueError("The completeness magnitude is larger than the "
+                         "smallest magnitude")
+
+    if n_m < min_num:
+        raise ValueError("n_m cannot be smaller than min_num")
+
+    if len(mags) / n_m < 3:
+        raise ValueError(
+            "n_m is too large - less than three subsamples are created")
+    elif len(mags) / n_m < 25:
+        if get_option("warnings") is True:
+            warnings.warn(
+                "The number of subsamples is less than 25. The normality "
+                "assumption of the autocorrelation might not be valid")
+
+    # estimate a and b values for n realizations
+    ac_1D = np.zeros(n_m)
+    n = np.zeros(n_m)
+    n_p = np.zeros(n_m)
+    n_ms = np.zeros(n_m)
+
+    for ii in range(n_m):
+        # partition data
+        idx_left, tile_magnitudes = cut_constant_idx(
+            mags, n_m, offset=ii
+        )
+        tile_times = np.array_split(times, idx_left)
+
+        # make sure that data at the edges is not included if not enough
+        # samples
+        if len(tile_magnitudes[-1]) < n_m:
+            tile_magnitudes.pop(-1)
+            tile_times.pop(-1)
+        if len(tile_magnitudes[0]) < n_m:
+            tile_magnitudes.pop(0)
+            tile_times.pop(0)
+
+        # estimate b-values
+        b_vec, _, n_m_loop = b_series(
+            tile_magnitudes, tile_times, delta_m,
+            mc, b_method=b_method)
+        b_vec[n_m_loop < min_num] = np.nan
+
+        # estimate average events per b-value estimate
+        n_ms[ii] = np.mean(n_m_loop[n_m_loop >= min_num])
+
+        # estimate autocorrelation (1D, not considering nan)
+        ac_1D[ii], n[ii], n_p[ii], = est_morans_i(b_vec)
+
+    mac = np.mean(ac_1D)
+    mean_n = np.mean(n)
+    mean_np = np.mean(n_p)
+
+    # estimate mean and (conservative )standard deviation of the
+    # autocorrelation under H0
+    mu_mac = -1 / mean_n
+    std_mac = 1 / np.sqrt(mean_np)
+
+    return mac, mu_mac, std_mac

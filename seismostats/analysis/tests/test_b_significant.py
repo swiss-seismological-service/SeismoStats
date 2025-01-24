@@ -96,9 +96,9 @@ def test_b_series():
 
 
 def test_cut_constant_idx():
-    series = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+    values = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
                        12, 13, 14, 15, 16, 17, 18, 19, 20])
-    idx, subsamples = cut_constant_idx(series, n_m=5)
+    idx, subsamples = cut_constant_idx(values, n=5)
 
     correct_idx = [5, 10, 15]
     correct_subsamples = [np.array([1, 2, 3, 4, 5]),
@@ -110,16 +110,8 @@ def test_cut_constant_idx():
                correct_subsample in zip(subsamples, correct_subsamples))
 
     # check that the split samples are the same as the subsamples
-    series = np.random.rand(100)
-    idx, subsamples = cut_constant_idx(series, n_m=10, offset=2)
-    split_samples = np.array_split(series, idx)
+    values = np.random.rand(100)
+    idx, subsamples = cut_constant_idx(values, 4, offset=2)
+    split_samples = np.array_split(values, idx)
     assert all(all(subsample == split_sample) for subsample,
                split_sample in zip(subsamples, split_samples))
-
-    # check that function fails is neither n_m nor n_sample is provided
-    with pytest.raises(ValueError):
-        cut_constant_idx(series)
-
-    # check that function fails if both n_m and n_sample are provided
-    with pytest.raises(ValueError):
-        cut_constant_idx(series, n_m=5, n_sample=10)
