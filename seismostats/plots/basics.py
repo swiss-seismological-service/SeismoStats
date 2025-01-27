@@ -24,7 +24,7 @@ def gutenberg_richter(
 
 
 def plot_cum_fmd(
-    magnitudes: np.ndarray,
+    magnitudes: np.ndarray | pd.Series,
     ax: plt.Axes | None = None,
     b_value: float | None = None,
     mc: float | None = None,
@@ -129,7 +129,7 @@ def plot_cum_fmd(
 
 
 def plot_fmd(
-    magnitudes: np.ndarray,
+    magnitudes: np.ndarray | pd.Series,
     ax: plt.Axes | None = None,
     delta_m: float = 0.1,
     color: str = None,
@@ -196,7 +196,7 @@ def plot_fmd(
 
 def plot_cum_count(
     times: list | np.ndarray | pd.Series,
-    magnitudes: np.ndarray,
+    magnitudes: np.ndarray | pd.Series,
     ax: plt.Axes | None = None,
     mcs: np.ndarray = np.array([0]),
     delta_m: float | None = 0,
@@ -240,9 +240,9 @@ def plot_cum_count(
     return ax
 
 
-def plot_magnitudes_in_time(
+def plot_mags_in_time(
     times: list | np.ndarray | pd.Series,
-    magnitudes: np.ndarray,
+    magnitudes: np.ndarray | pd.Series,
     ax: plt.Axes | None = None,
     mc_change_times: list | None = None,
     mcs: list | None = None,
