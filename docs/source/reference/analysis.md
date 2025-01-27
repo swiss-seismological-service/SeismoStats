@@ -20,14 +20,11 @@
     :toctree: api/
 
     estimate_b
-    shi_bolt_confidence
-    analysis.estimate_b_classic
-    analysis.estimate_b_positive
-    analysis.estimate_b_more_positive
-    analysis.estimate_b_utsu
-    analysis.estimate_b_laplace
-    analysis.estimate_b_weichert
-    analysis.estimate_b_kijko_smit
+    analysis.bvalue.shi_bolt_confidence
+    analysis.bvalue.ClassicBValueEstimator
+    analysis.bvalue.BPositiveBValueEstimator
+    analysis.bvalue.BMorePositiveBValueEstimator
+    analysis.bvalue.UtsuBValueEstimator
 ```
 
 ## Estimating a-Values
@@ -46,7 +43,7 @@
 .. autosummary::
     :toctree: api/
 
-    analysis.make_more_incomplete
-    analysis.beta_to_b_value
-    analysis.b_value_to_beta
+    analysis.bvalue.utils.make_more_incomplete
+    analysis.bvalue.beta_to_b_value
+    analysis.bvalue.b_value_to_beta
 ```

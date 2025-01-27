@@ -5,14 +5,13 @@ for the estimation of the completeness magnitude.
 import warnings
 
 import numpy as np
-import pandas as pd
 
-from seismostats.analysis.estimate_beta import estimate_b
-from seismostats.utils.binning import bin_to_precision, get_fmd
-from seismostats.utils.simulate_distributions import (
-    simulate_magnitudes_binned,
-)
+from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.utils._config import get_option
+from seismostats.utils.binning import bin_to_precision, get_fmd
+from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
 def cdf_discrete_GR(
@@ -39,91 +38,6 @@ def cdf_discrete_GR(
     x = np.sort(sample)
     x = np.unique(x)
     y = 1 - np.exp(-beta * (x + delta_m - mc))
-    return x, y
-
-
-def empirical_cdf(
-    sample: np.ndarray | pd.Series,
-    mc: float = None,
-    delta_m: float = 1e-16,
-    weights: np.ndarray | pd.Series | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Calculate the empirical cumulative distribution function (CDF)
-    from a sample.
-
-    Parameters:
-        sample:     Magnitude sample
-        mc:         Completeness magnitude, if None, the minimum of the sample
-                is used
-        delta_m:    Magnitude bin size, by default 1e-16. Its recommended to
-                use the value that the samples are rounded to.
-        weights:    Sample weights, by default None
-
-    Returns:
-        x:          x-values of the empirical CDF (i.e. the unique vector of
-                magnitudes from mc to the maximum magnitude in the sample,
-                binned by delta_m)
-        y:          y-values of the empirical CDF (i.e., the empirical
-                frequency observed in the sample corresponding to the x-values)
-    """
-
-    try:
-        sample = sample.values
-    except BaseException:
-        pass
-
-    try:
-        weights = weights.values
-    except BaseException:
-        pass
-
-    if delta_m == 0:
-        raise ValueError("delta_m has to be > 0")
-
-    if get_option("warnings") is True:
-        # check if binning is correct
-        if not np.allclose(sample, bin_to_precision(sample, delta_m)):
-            warnings.warn(
-                "Magnitudes are not binned correctly. "
-                "Test might fail because of this."
-            )
-        if delta_m == 1e-16:
-            warnings.warn(
-                "delta_m = 1e-16, this might lead to extended computation time")
-
-    if mc is None:
-        mc = np.min(sample)
-
-    idx1 = np.argsort(sample)
-    x = sample[idx1]
-    x, y_count = np.unique(x, return_counts=True)
-
-    # add empty bins
-    for mag_bin in bin_to_precision(
-        np.arange(mc, np.max(sample) + delta_m, delta_m), delta_m
-    ):
-        if mag_bin not in x:
-            x = np.append(x, mag_bin)
-            y_count = np.append(y_count, 0)
-    idx2 = np.argsort(x)
-    x = x[idx2]
-    y_count = y_count[idx2]
-
-    # estimate the CDF
-    if weights is None:
-        y = np.cumsum(y_count) / len(sample)
-    else:
-        weights_sorted = weights[idx1]
-        y = np.cumsum(weights_sorted) / weights_sorted.sum()
-
-        # make sure that y is zero if there are no samples in the first bins
-        for ii, y_loop in enumerate(y_count):
-            if y_loop > 0:
-                break
-        leading_zeros = np.zeros(ii)
-        y = np.append(leading_zeros, y[np.cumsum(y_count[ii:]) - 1])
-
     return x, y
 
 
@@ -177,17 +91,36 @@ def ks_test_gr(
         simulated_all = simulate_magnitudes_binned(
             n * n_sample, beta, mc, delta_m, b_parameter="beta"
         )
+        max_considered_mag = np.max([np.max(sample), np.max(simulated_all)])
+
+        x_bins = bin_to_precision(
+            np.arange(mc, max_considered_mag + 3
+                      / 2 * delta_m, delta_m), delta_m
+        )
+        x = x_bins[:-1].copy()
+        x_bins -= delta_m / 2
+        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
 
         for ii in range(n):
             simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
-            x, y_emp = empirical_cdf(simulated, mc, delta_m)
-            _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+            y_hist, _ = np.histogram(simulated, bins=x_bins)
+            y_emp = np.cumsum(y_hist) / np.sum(y_hist)
 
             ks_d = np.max(np.abs(y_emp - y_th))
             ks_ds.append(ks_d)
 
-    x, y_emp = empirical_cdf(sample, mc, delta_m)
-    _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+    else:
+        max_considered_mag = np.max(sample)
+        x_bins = bin_to_precision(
+            np.arange(mc, max_considered_mag + 3
+                      / 2 * delta_m, delta_m), delta_m
+        )
+        x = x_bins[:-1].copy()
+        x_bins -= delta_m / 2
+        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+
+    y_hist, _ = np.histogram(sample, bins=x_bins)
+    y_emp = np.cumsum(y_hist) / np.sum(y_hist)
 
     ks_d_obs = np.max(np.abs(y_emp - y_th))
     p_val = sum(ks_ds >= ks_d_obs) / len(ks_ds)
@@ -203,9 +136,10 @@ def mc_ks(
     stop_when_passed: bool = True,
     verbose: bool = False,
     beta: float | None = None,
-    b_method: str | None = None,
+    b_method: BValueEstimator = ClassicBValueEstimator,
     n: int = 10000,
     ks_ds_list: list[list] | None = None,
+    **kwargs,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
     Return the completeness magnitude (mc) estimate
@@ -235,8 +169,10 @@ def mc_ks(
                             calculated for estimating the p-value,
                             by default 10000
         ks_ds_list:         List of list of KS distances from synthetic data
-                        (needed for testing). If None, they will be estimated
-                        in this funciton. By default None
+                            (needed for testing). If None, they will be
+                            estimated in this funciton. By default None
+        **kwargs:           Additional keyword arguments for the b-value
+                            estimator.
 
     Returns:
         mcs_test:   tested completeness magnitudes
@@ -277,11 +213,8 @@ def mc_ks(
             )
 
         # check if beta is given (then b_method is not needed)
-        if beta is not None and b_method is not None:
-            warnings.warn("Both beta and b_method are given. Using beta.")
-
-    if beta is None and b_method is None:
-        b_method = "classic"
+        if beta is not None and verbose:
+            print("Using given beta instead of estimating it.")
 
     mcs_tested = []
     ks_ds = []
@@ -297,13 +230,9 @@ def mc_ks(
 
         # if no beta is given, estimate beta
         if beta is None:
-            mc_beta = estimate_b(
-                magnitudes=mc_sample,
-                mc=mc,
-                delta_m=delta_m,
-                b_parameter="beta",
-                method=b_method,
-            )
+            estimator = b_method()
+            estimator.calculate(mc_sample, mc=mc, delta_m=delta_m, **kwargs)
+            mc_beta = estimator.beta
         else:
             mc_beta = beta
 
@@ -348,6 +277,7 @@ def mc_ks(
     else:
         best_mc = None
         beta = None
+        best_beta = None
 
         if verbose:
             print("None of the mcs passed the test.")
@@ -458,8 +388,7 @@ def mc_by_bvalue_stability(
         # TODO: here, one should be able to choose the method
         b, std = estimate_b(
             sample[sample >= mc - delta_m / 2], mc, delta_m,
-            b_parameter='b_value', return_std=True,
-            method="classic")
+            return_std=True)
         if len(sample[sample >= mc - delta_m / 2]) < 30:
             warnings.warn(
                 "Number of events above tested Mc is less than 30. "
@@ -473,8 +402,7 @@ def mc_by_bvalue_stability(
         for mc_p in mc_plus:
             # TODO: here, one should be able to choose the method
             b_p = estimate_b(sample[sample >= mc_p - delta_m / 2],
-                             mc_p, delta_m, b_parameter='b_value',
-                             method="classic")
+                             mc_p, delta_m)
             b_ex.append(b_p)
         b_avg = np.sum(b_ex) / steps
         diff_b = np.abs(b_avg - b) / std

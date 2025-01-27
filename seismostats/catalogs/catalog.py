@@ -4,23 +4,37 @@ import logging
 import os
 import uuid
 from collections import defaultdict
+from datetime import datetime
 from typing import Any
 
 import numpy as np
 import pandas as pd
-from seismostats.analysis.estimate_beta import estimate_b
+from shapely import Polygon
+
+from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.bvalue.base import BValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
-from shapely import Polygon
+
+try:
+    from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
+except ImportError:
+    _openquake_available = False
+else:
+    _openquake_available = True
 
 REQUIRED_COLS_CATALOG = ['longitude', 'latitude', 'depth',
                          'time', 'magnitude']
 
 QML_TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'catalog_templates', 'quakeml.j2')
+
+_PD_TIME_COLS = ['year', 'month', 'day',
+                 'hour', 'minute', 'second', 'microsecond']
 
 
 def _catalog_constructor_with_fallback(*args, **kwargs):
@@ -185,9 +199,22 @@ class Catalog(pd.DataFrame):
                         'secondaryazimuthalgap', 'maximumdistance',
                         'minimumdistance', 'mediandistance']
 
+        string_cols = ['magnitude_type', 'event_type']
+
         for num in numeric_cols:
             if num in df.columns:
                 df[num] = pd.to_numeric(df[num], errors='coerce')
+
+        # make sure empty rows in string columns are NoneType
+        for strc in string_cols:
+            if strc in df.columns:
+                df[strc] = df[strc].replace(
+                    to_replace=['',
+                                'nan', 'NaN',
+                                'none', 'None',
+                                'na', 'Na', 'NA',
+                                'null', 'Null', 'NULL'],
+                    value=None)
 
         if 'time' in df.columns:
             df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
@@ -212,6 +239,88 @@ class Catalog(pd.DataFrame):
                 f"Dropped {full_len - len(df)} rows with missing values")
 
         return df
+
+    @classmethod
+    def from_openquake(cls, oq_catalogue: OQCatalogue,
+                       keep_time_cols=False) -> Catalog:
+        """
+        Create a (seismostats) Catalog from an openquake Catalogue.
+        The optional dependency group openquake is required for this method.
+
+        Args:
+            oq_catalogue:       The openquake catalogue.
+            keep_time_cols:     Whether the time columns: 'year', 'month',
+                                'day', 'hour', 'minute', 'second'
+                                should be kept (they are converted to 'time').
+        Returns:
+            Catalog
+        """
+        if not _openquake_available:
+            raise ImportError("the optional openquake package is not available")
+
+        def _convert_to_datetime(row):
+            return datetime(row.year,
+                            row.month,
+                            row.day,
+                            row.hour,
+                            row.minute,
+                            row.second)
+        data = oq_catalogue.data
+        # not all items of the data have necessarily the same length
+        length = max((len(c) for c in data.values()), default=0)
+
+        if length == 0:
+            return cls()
+
+        cat = cls({k: v for k, v in data.items() if len(v) > 0})
+        # hmtk stores seconds as floats, but pandas requires them as integers
+        us = ((cat["second"] % 1) * 1e6)
+        cat["microsecond"] = us.round().astype(np.int32)
+        cat["second"] = cat["second"].astype(np.int32)
+        try:
+            cat.loc[:, "time"] = pd.to_datetime(cat[_PD_TIME_COLS])
+        except ValueError:
+            # if the time is out of bounds, we have to store
+            # datetime with a resolution of seconds.
+            dt = cat.apply(_convert_to_datetime, axis=1)
+            cat['time'] = dt.astype('datetime64[s]')
+        if not keep_time_cols:
+            cat.drop(columns=_PD_TIME_COLS, inplace=True)
+        return cat
+
+    @require_cols(require=REQUIRED_COLS_CATALOG)
+    def to_openquake(self) -> OQCatalogue:
+        """
+        Converts the Catalog to an openquake Catalogue
+        The optional dependency group openquake is required for this method.
+        The required columns are mapped to the openquake columns, except
+        time is converted to 'year', 'month', 'day', 'hour', 'minute', 'second'.
+        'eventID' is created if not present.
+
+        Returns:
+            OQCatalogue:        the converted Catalogue
+        """
+        if not _openquake_available:
+            raise ImportError("the optional openquake package is not available")
+        if len(self) == 0:
+            return OQCatalogue()
+        data = dict()
+        for col, dtype in zip(self.columns, self.dtypes):
+            if np.issubdtype(dtype, np.number):
+                data[col] = self[col].to_numpy(dtype=dtype, copy=True)
+            else:
+                data[col] = self[col].to_list()
+        # add required eventID if not present
+        if 'eventID' not in data:
+            data['eventID'] = self.apply(
+                lambda _: uuid.uuid4().hex, axis=1).to_list()
+
+        time = self['time']
+        for time_unit in _PD_TIME_COLS:
+            data[time_unit] = getattr(
+                time.dt, time_unit).to_numpy(copy=True)
+        data["second"] = data["second"] + data["microsecond"] / 1e6
+        return OQCatalogue.make_from_dict(data)
 
     def drop_uncertainties(self) -> Catalog:
         """
@@ -268,7 +377,7 @@ class Catalog(pd.DataFrame):
             return df
 
     @require_cols(require=['magnitude'])
-    def bin_magnitudes(self, delta_m: float = 0.1, inplace: bool = False) \
+    def bin_magnitudes(self, delta_m: float = None, inplace: bool = False) \
             -> Catalog | None:
         """
         Rounds values in the ``magnitude`` column of the catalog to a given
@@ -281,6 +390,11 @@ class Catalog(pd.DataFrame):
         Returns:
             catalog:    Catalog with rounded magnitudes.
         """
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("binning (delta_m) needs to be set")
+        if delta_m is None:
+            delta_m = self.delta_m
+
         if inplace:
             df = self
         else:
@@ -357,7 +471,7 @@ class Catalog(pd.DataFrame):
         weights: list | None = None,
         b_parameter: str = "b_value",
         return_std: bool = False,
-        method: str = "classic",
+        method: BValueEstimator = ClassicBValueEstimator,
         return_n: bool = False,
     ) -> float | tuple[float, float] | tuple[float, float, float]:
         """
@@ -392,16 +506,13 @@ class Catalog(pd.DataFrame):
             std:    Shi and Bolt estimate of the beta/b-value error estimate
             n:      number of events used for the estimation.
         """
-
-        if mc is None and self.mc is None:
-            raise ValueError("completeness magnitude (mc) needs to be set")
+        mc = self.mc if mc is None else mc
         if mc is None:
-            mc = self.mc
+            raise ValueError("completeness magnitude (mc) needs to be set")
 
-        if delta_m is None and self.delta_m is None:
-            raise ValueError("binning (delta_m) needs to be set")
+        delta_m = self.delta_m if delta_m is None else delta_m
         if delta_m is None:
-            delta_m = self.delta_m
+            raise ValueError("binning (delta_m) needs to be set")
 
         # filter magnitudes above mc without changing the original dataframe
         df = self[self.magnitude >= mc]

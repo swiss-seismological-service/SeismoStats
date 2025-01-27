@@ -1,15 +1,15 @@
 import os
 import re
 import uuid
-import pytest
 
 import numpy as np
 import pandas as pd
+import pytest
 
+from seismostats.analysis.bvalue import estimate_b
 from seismostats.catalogs.catalog import (REQUIRED_COLS_CATALOG, Catalog,
                                           ForecastCatalog)
 from seismostats.utils.binning import bin_to_precision
-from seismostats.analysis.estimate_beta import estimate_b
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
             'magnitude': [10.0, 12.5, 8.2],
@@ -94,10 +94,17 @@ def test_forecast_catalog_strip():
 def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
     catalog = Catalog({'magnitude': mag_values})
 
+    with pytest.raises(ValueError):
+        catalog.bin_magnitudes(delta_m=None)
+    with pytest.raises(ValueError):
+        catalog.bin_magnitudes()
+
     assert (catalog.bin_magnitudes(
         delta_m)['magnitude'].tolist()
         == bin_to_precision(mag_values, delta_m)).all()
-    assert (catalog.bin_magnitudes()['magnitude'].tolist()
+    catalog_copy = Catalog({'magnitude': mag_values})
+    catalog_copy.delta_m = 0.1
+    assert (catalog_copy.bin_magnitudes()['magnitude'].tolist()
             == bin_to_precision(mag_values, 0.1)).all()
 
     return_value = catalog.bin_magnitudes(delta_m, inplace=True)
@@ -125,26 +132,16 @@ def test_catalog_estimate_mc():
 def test_catalog_estimate_b(mag_values, delta_m, mc):
     catalog = Catalog({'magnitude': mag_values})
 
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=None, delta_m=None)
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=1.0, delta_m=None)
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=None, delta_m=0.1)
-    with pytest.raises(ValueError):
-        catalog.estimate_b(mc=1.0, delta_m=0.1, method='positive')
-
     b_value = estimate_b(catalog['magnitude'],
                          mc=mc,
-                         delta_m=delta_m,
-                         method="classic")
-    return_value = catalog.estimate_b(mc=mc, delta_m=delta_m, method="classic")
+                         delta_m=delta_m)
+    return_value = catalog.estimate_b(mc=mc, delta_m=delta_m)
     assert catalog.b_value == b_value
     assert return_value == b_value
 
     catalog.mc = mc
     catalog.delta_m = delta_m
-    return_value = catalog.estimate_b(method="classic")
+    return_value = catalog.estimate_b()
     assert catalog.b_value == b_value
     assert return_value == b_value
 
@@ -155,7 +152,11 @@ def test_to_quakeml():
         xml_content = file.read()
 
     catalog = Catalog.from_quakeml(
-        xml_file, include_uncertainties=True, include_ids=True)
+        xml_file,
+        include_uncertainties=True,
+        include_ids=True,
+        include_quality=True)
+
     catalog_xml = catalog.to_quakeml(agencyID='SED', author='catalog-tools')
     catalog_xml = re.sub(r"[\n\t\s]*", "", catalog_xml)
 
@@ -166,7 +167,11 @@ def test_to_quakeml():
     assert catalog_xml == xml
 
     catalog2 = catalog.from_quakeml(
-        xml_content, include_uncertainties=True, include_ids=True)
+        xml_content,
+        include_uncertainties=True,
+        include_ids=True,
+        include_quality=True)
+
     assert catalog.equals(catalog2)
 
 
@@ -200,7 +205,10 @@ def test_to_quakeml_forecast():
     xml_file = os.path.join(PATH_RESOURCES, 'quakeml_data.xml')
 
     catalog1 = Catalog.from_quakeml(
-        xml_file, include_uncertainties=True, include_ids=True)
+        xml_file,
+        include_uncertainties=True,
+        include_ids=True,
+        include_quality=True)
     catalog1.name = 'Catalog 1'
     catalog2 = catalog1.copy()
     catalog2.name = 'Catalog 2'
