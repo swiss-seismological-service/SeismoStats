@@ -10,7 +10,9 @@ from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.utils._config import get_option
 
 
-def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
+def est_morans_i(values: np.ndarray,
+                 w: np.ndarray | None = None,
+                 mean_v: float = None) -> tuple:
     """
     Estimate the nearest neighbor auto correlation (Moran's I) of the values.
 
@@ -24,6 +26,8 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
                 1-dimensional, and the values are sorted along that dimension.
                 Then, the ac that is returned corresponds to the usual 1D
                 autocorrelation with a lag of 1.
+        mean_v:     mean value of the series. If not provided, it is estimated
+                from the non-nan values.
 
     Returns:
         ac:     Auto correlation of the values
@@ -64,12 +68,13 @@ def est_morans_i(values: np.ndarray, w: np.ndarray | None = None) -> tuple:
         elif np.sum(np.triu(w)) == 0:
             w = w.T
 
+    if mean_v is None:
+        mean_v = np.mean(values[~np.isnan(values)])
+
     # estimate autocorrelation
     ac = 0
     ac_0 = 0
     n = len(values[~np.isnan(values)])
-    mean_v = np.mean(values[~np.isnan(values)])
-
     for ii, v1 in enumerate(values):
         if np.isnan(v1):
             w[ii, :] = 0
