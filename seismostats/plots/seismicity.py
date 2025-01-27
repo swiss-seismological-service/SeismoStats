@@ -17,7 +17,9 @@ from seismostats.plots.basics import dot_size, reverse_dot_size
 
 
 def plot_in_space(
-    cat: pd.DataFrame,
+    longitudes: np.ndarray | pd.Series,
+    latitudes: np.ndarray | pd.Series,
+    mags: np.ndarray | pd.Series,
     resolution: str = "10m",
     include_map: bool | None = False,
     country: str | None = None,
@@ -35,8 +37,9 @@ def plot_in_space(
     according to the midpoint latitude.
 
     Args:
-        cat:            dataframe - needs to have latitude, longitude and
-                        depth as entries
+        longitudes:     array of longitudes
+        latitudes:      array of latitudes
+        mags:           array of magnitudes, used for scaling of dot sizes
         resolution:     resolution of map, "10m", "50m" and "110m" available
         include_map:    if True, seismicity will be plotted on natural earth
                         map, otherwise it will be plotted on a blank grid.
@@ -103,13 +106,13 @@ def plot_in_space(
         )
     else:
         # create box around the data points
-        pad_lat = abs(max(cat["latitude"]) - min(cat["latitude"])) * 0.05
-        pad_lon = abs(max(cat["longitude"]) - min(cat["longitude"])) * 0.05
+        pad_lat = abs(max(latitudes) - min(latitudes)) * 0.05
+        pad_lon = abs(max(longitudes) - min(longitudes)) * 0.05
         exts = [
-            min(cat["longitude"]) - pad_lon,
-            max(cat["longitude"]) + pad_lon,
-            min(cat["latitude"]) - pad_lat,
-            max(cat["latitude"]) + pad_lat,
+            min(longitudes) - pad_lon,
+            max(longitudes) + pad_lon,
+            min(latitudes) - pad_lat,
+            max(latitudes) + pad_lat,
         ]
 
     ax.set_extent(exts, crs=ll_proj)
@@ -132,12 +135,12 @@ def plot_in_space(
     gl.right_labels = False
 
     points = ax.scatter(
-        cat["longitude"],
-        cat["latitude"],
+        longitudes,
+        latitudes,
         c="blue",
         edgecolor="k",
         s=dot_size(
-            cat["magnitude"],
+            mags,
             smallest=dot_smallest,
             largest=dot_largest,
             interpolation_power=dot_interpolation_power,
@@ -161,8 +164,8 @@ def plot_in_space(
             alpha=0.5,
             func=lambda x: reverse_dot_size(
                 x,
-                min(cat["magnitude"]),
-                max(cat["magnitude"]),
+                min(mags),
+                max(mags),
                 dot_interpolation_power,
             ),
         )
