@@ -266,7 +266,7 @@ def plot_mags_in_time(
             ``times``
         ax: axis where figure should be plotted
         mc_change_times: list of points in time when Mc changes, sorted in
-            increasing order, can be given as a list of datetimes or 
+            increasing order, can be given as a list of datetimes or
             integers (years).
         mcs: changed values of Mc at times given in ``mc_change_times``
         dot_smallest: smallest dot size for magnitude scaling
