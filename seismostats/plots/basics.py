@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import datetime as dt
 
 # Own functions
 from seismostats.utils.binning import get_cum_fmd, get_fmd
@@ -23,7 +24,7 @@ def gutenberg_richter(
 
 
 def plot_cum_fmd(
-    mags: np.ndarray,
+    magnitudes: np.ndarray,
     ax: plt.Axes | None = None,
     b_value: float | None = None,
     mc: float | None = None,
@@ -40,7 +41,7 @@ def plot_cum_fmd(
     distribution is plotted provided the b-value is given.
 
     Args:
-        mags    : array of magnitudes
+        magnitudes    : array of magnitudes
         ax      : axis where figure should be plotted
         b_value : b-value of the theoretical GR distribution to plot
         mc      : completeness magnitude of the theoretical GR distribution
@@ -61,9 +62,9 @@ def plot_cum_fmd(
         ax that was plotted on
     """
 
-    mags = mags[~np.isnan(mags)]
-    bins, c_counts, mags = get_cum_fmd(
-        mags, delta_m, bin_position=bin_position
+    magnitudes = magnitudes[~np.isnan(magnitudes)]
+    bins, c_counts, magnitudes = get_cum_fmd(
+        magnitudes, delta_m, bin_position=bin_position
     )
 
     if ax is None:
@@ -83,11 +84,11 @@ def plot_cum_fmd(
             labels[1] = labels[1] + ", b={x:.2f}".format(x=b_value)
 
         if mc is None:
-            mc = min(mags)
+            mc = min(magnitudes)
         if bin_position == "left":
             mc -= delta_m / 2
 
-        n_mc = len(mags[mags >= mc])
+        n_mc = len(magnitudes[magnitudes >= mc])
         x = bins[bins >= mc]
         y = gutenberg_richter(x, b_value, min(x), n_mc)
 
@@ -128,7 +129,7 @@ def plot_cum_fmd(
 
 
 def plot_fmd(
-    mags: np.ndarray,
+    magnitudes: np.ndarray,
     ax: plt.Axes | None = None,
     delta_m: float = 0.1,
     color: str = None,
@@ -142,7 +143,7 @@ def plot_fmd(
     assumed value of ``delta_m`` is 0.1.
 
     Args:
-        mags    : array of magnitudes
+        magnitudes    : array of magnitudes
         ax      : axis where figure should be plotted
         delta_m : discretization of the magnitudes, important for the correct
                 visualization of the data
@@ -157,12 +158,16 @@ def plot_fmd(
         ax that was plotted on
     """
 
-    mags = mags[~np.isnan(mags)]
+    magnitudes = magnitudes[~np.isnan(magnitudes)]
 
     if delta_m == 0:
         delta_m = 0.1
 
-    bins, counts, mags = get_fmd(mags, delta_m, bin_position=bin_position)
+    bins, counts, magnitudes = get_fmd(
+        magnitudes,
+        delta_m,
+        bin_position=bin_position
+    )
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -190,10 +195,11 @@ def plot_fmd(
 
 
 def plot_cum_count(
-    cat: pd.DataFrame,
+    times: list | np.ndarray | pd.Series,
+    magnitudes: np.ndarray,
     ax: plt.Axes | None = None,
     mcs: np.ndarray = np.array([0]),
-    delta_m: float | None = 0.1,
+    delta_m: float | None = 0,
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -201,30 +207,26 @@ def plot_cum_count(
     the array ``mcs``.
 
     Args:
+        times: array containing times of events
+        magnitudes: array of magnitudes of events corresponding to the
+            ``times``
         ax: axis where figure should be plotted
-        cat: catalog given as a pandas dataframe, should contain the column
-             "magnitude" and  either "time" or "year"
         mcs: the list of completeness magnitudes for which we show lines
              on the plot
-        delta_m: binning precision of the magnitudes
+        delta_m: binning precision of the magnitudes, assumed 0 if not given
 
     Returns:
         ax that was plotted on
     """
-    try:
-        times_list = cat["time"]
-    except KeyError:
-        raise Exception("Dataframe needs a 'time' column.")
-
-    first_time, last_time = min(times_list), max(times_list)
+    first_time, last_time = min(times), max(times)
 
     if ax is None:
         ax = plt.subplots()[1]
 
     for mc in mcs:
-        cat_above_mc = cat.query(f"magnitude>={mc - delta_m / 2}")
-        times = sorted(cat_above_mc["time"])
-        times_adjusted = [first_time, *times, last_time]
+        filtered_index = magnitudes >= mc - delta_m / 2
+        times_sorted = sorted(times[filtered_index])
+        times_adjusted = [first_time, *times_sorted, last_time]
 
         ax.plot(
             times_adjusted,
@@ -238,8 +240,9 @@ def plot_cum_count(
     return ax
 
 
-def plot_mags_in_time(
-    cat: pd.DataFrame,
+def plot_magnitudes_in_time(
+    times: list | np.ndarray | pd.Series,
+    magnitudes: np.ndarray,
     ax: plt.Axes | None = None,
     mc_change_times: list | None = None,
     mcs: list | None = None,
@@ -258,11 +261,13 @@ def plot_mags_in_time(
     means that between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
 
     Args:
+        times: array containing times of events
+        magnitudes: array of magnitudes of events corresponding to the
+            ``times``
         ax: axis where figure should be plotted
-        cat: catalog given as a pandas dataframe, should contain the column
-             "magnitude" and  either "time" or "year"
         mc_change_times: list of points in time when Mc changes, sorted in
-            increasing order, can be given as a list of datetimes or ints (yrs).
+            increasing order, can be given as a list of datetimes or 
+            integers (years).
         mcs: changed values of Mc at times given in ``mc_change_times``
         dot_smallest: smallest dot size for magnitude scaling
         dot_largest: largest dot size for magnitude scaling
@@ -273,26 +278,14 @@ def plot_mags_in_time(
     Returns:
         ax that was plotted on
     """
-    year_only = False
-    import datetime as dt
-
-    try:
-        times = pd.to_datetime(cat["time"])
-    except KeyError:
-        try:
-            times = cat["year"]
-            year_only = True
-        except KeyError:
-            raise Exception("Dataframe needs a 'year' or 'time' column.")
-
     if ax is None:
         ax = plt.subplots()[1]
 
     ax.scatter(
         times,
-        cat["magnitude"],
+        magnitudes,
         s=dot_size(
-            cat["magnitude"],
+            magnitudes,
             smallest=dot_smallest,
             largest=dot_largest,
             interpolation_power=dot_interpolation_power,
@@ -304,10 +297,8 @@ def plot_mags_in_time(
     )
 
     if mc_change_times is not None and mcs is not None:
-        if not year_only and isinstance(mc_change_times[0], int):
+        if isinstance(mc_change_times[0], int):
             mc_change_times = [dt.datetime(x, 1, 1) for x in mc_change_times]
-        if year_only and not isinstance(mc_change_times[0], int):
-            mc_change_times = [x.year for x in mc_change_times]
 
         mc_change_times.append(np.max(times))
         mcs.append(mcs[-1])

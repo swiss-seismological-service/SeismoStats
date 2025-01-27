@@ -19,7 +19,7 @@ from seismostats.plots.basics import dot_size, reverse_dot_size
 def plot_in_space(
     longitudes: np.ndarray | pd.Series,
     latitudes: np.ndarray | pd.Series,
-    mags: np.ndarray | pd.Series,
+    magnitudes: np.ndarray | pd.Series,
     resolution: str = "10m",
     include_map: bool | None = False,
     country: str | None = None,
@@ -39,7 +39,7 @@ def plot_in_space(
     Args:
         longitudes:     array of longitudes
         latitudes:      array of latitudes
-        mags:           array of magnitudes, used for scaling of dot sizes
+        magnitudes:     array of magnitudes, used for scaling of dot sizes
         resolution:     resolution of map, "10m", "50m" and "110m" available
         include_map:    if True, seismicity will be plotted on natural earth
                         map, otherwise it will be plotted on a blank grid.
@@ -140,7 +140,7 @@ def plot_in_space(
         c="blue",
         edgecolor="k",
         s=dot_size(
-            mags,
+            magnitudes,
             smallest=dot_smallest,
             largest=dot_largest,
             interpolation_power=dot_interpolation_power,
@@ -164,8 +164,8 @@ def plot_in_space(
             alpha=0.5,
             func=lambda x: reverse_dot_size(
                 x,
-                min(mags),
-                max(mags),
+                min(magnitudes),
+                max(magnitudes),
                 dot_interpolation_power,
             ),
         )
