@@ -5,7 +5,7 @@ import pytest
 
 from seismostats.analysis.b_significant import (
     est_morans_i,
-    b_series,
+    bs_from_partitioning,
     cut_constant_idx,
     transform_n,
 )
@@ -72,7 +72,7 @@ def test_transform_n():
         transform_n(b_est, b_true, n1, np.array([1, 2]))
 
 
-def test_b_series():
+def test_bs_from_partitioning():
     list_magnitudes = [np.array([1, 2, 3, 4, 5]),
                        np.array([1, 2, 3, 4, 5]),
                        np.array([1, 2, 3, 4, 5])]
@@ -87,7 +87,8 @@ def test_b_series():
                             datetime(2021, 1, 15)])]
     delta_m = 1
     mc = 1
-    b_values, std_b, n_ms = b_series(list_magnitudes, list_times, delta_m, mc)
+    b_values, std_b, n_ms = bs_from_partitioning(
+        list_magnitudes, list_times, delta_m, mc)
     assert_almost_equal(b_values, np.array(
         [0.17609125905568124, 0.17609125905568124, 0.17609125905568124]))
     assert_almost_equal(std_b, np.array([0.05048661905780697,

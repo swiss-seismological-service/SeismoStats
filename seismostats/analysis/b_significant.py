@@ -136,24 +136,27 @@ def transform_n(
     return b_transformed
 
 
-def b_series(
+def bs_from_partitioning(
     list_magnitudes: list[np.ndarray],
     list_times: list[np.ndarray[np.datetime64]],
     delta_m: float,
     mc: float | np.ndarray,
     b_method: BValueEstimator = ClassicBValueEstimator,
-
-
+    **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """ Estimate the series of b-values
+    """ Estimate the series of b-values from a list of subsets of magnitudes and
+    times.
 
     Args:
-        list_mags:  list of arrays of magnitudes
-        list_times: list of arrays of times
+        list_mags:  list of arrays of magnitudes. Example of how to provide the
+            data: [np.array([1, 2, 3], np.array([2, 3, 4])]. From each array
+            within the list, a b-value is estimated.
+        list_times: list of arrays of times, in the same order as the magnitudes
         delta_m:    discretization of magnitudes
         mc:         completeness magnitude (can be a vector of same
                 length as list_magnitudes)
         b_method:   method to estimate the b-value
+        **kwargs:   additional arguments to the b-value estimation method
 
     Returns:
         b_values:   series of b-values, each one is estimated from the
@@ -163,7 +166,7 @@ def b_series(
     """
 
     b_values = np.zeros(len(list_magnitudes))
-    std_b = np.zeros(len(list_magnitudes))
+    std_bs = np.zeros(len(list_magnitudes))
     n_ms = np.zeros(len(list_magnitudes))
     if isinstance(mc, (float, int)):
         mc = np.ones(len(list_magnitudes)) * mc
@@ -177,12 +180,12 @@ def b_series(
         mags_loop = mags_loop[idx_sorted]
         times_loop = times_loop[idx_sorted]
 
-        estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m)
+        estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m, **kwargs)
         b_values[ii] = estimator.b_value
-        std_b[ii] = estimator.std
+        std_bs[ii] = estimator.std
         n_ms[ii] = estimator.n
 
-    return b_values, std_b, n_ms.astype(int)
+    return b_values, std_bs, n_ms.astype(int)
 
 
 def cut_constant_idx(
@@ -228,6 +231,7 @@ def mac_1D_constant_nm(
         n_m: int,
         min_num: int = 10,
         b_method: BValueEstimator = ClassicBValueEstimator,
+        **kwargs,
 ) -> tuple[float, float, float, np.ndarray, np.ndarray]:
     """
     This function estimates the mean autocorrelation for the one-dimensional
@@ -241,6 +245,10 @@ def mac_1D_constant_nm(
     As a lower limit, no less than 25 subsamples (which can be estimated by
     len(mags) / n_m) should be used.
 
+    In order to plot the corresponding series of b-values, use the function
+    plot_b_constant_mn (from seismostats.plots.statistical  import
+    plot_b_constant_mn) with the same parameters as used here.
+
     Args:
         mags:   magnitudes of the events. They are assumed to be order along the
             dimension of interest (e.g. time or depth)
@@ -252,11 +260,10 @@ def mac_1D_constant_nm(
         n_m:   number of magnitudes in each partition
         min_num:    minimum number of events in a partition
         b_method:   method to estimate the b-values
-        return_nm:  if True, the mean number of events per b-value estimate is
-            returned
+        **kwargs:   additional arguments to the b-value estimation method
 
     Returns:
-        mac:        mean autocorrelation.
+        mac:        mean autocorrelation
         mu_mac:     expected mean autocorrelation und H0
         std_mac:    standard deviation of the mean autocorrelation under H0
                 (i.e. constant b-value). Here, the conservatice estimate
@@ -293,7 +300,7 @@ def mac_1D_constant_nm(
     if len(mags) != len(times):
         raise ValueError("mags and times must have the same length")
 
-    # estimate a and b values for n realizations
+    # estimate a and b values for n_m realizations
     ac_1D = np.zeros(n_m)
     n = np.zeros(n_m)
     n_p = np.zeros(n_m)
@@ -301,44 +308,41 @@ def mac_1D_constant_nm(
 
     for ii in range(n_m):
         # partition data
-        idx_left, tile_magnitudes = cut_constant_idx(
+        idx, list_magnitudes = cut_constant_idx(
             mags, n_m, offset=ii
         )
-        tile_times = np.array_split(times, idx_left)
-        tile_mc = np.array_split(mc, idx_left)
-        for jj, mc_loop in enumerate(tile_mc):
-            tile_mc[jj] = float(max(mc_loop))
+        list_times = np.array_split(times, idx)
+        list_mc = np.array_split(mc, idx)
+        for jj, mc_loop in enumerate(list_mc):
+            list_mc[jj] = float(max(mc_loop))
 
         # make sure that data at the edges is not included if not enough
         # samples
-        if len(tile_magnitudes[-1]) < n_m:
-            tile_magnitudes.pop(-1)
-            tile_times.pop(-1)
-            tile_mc.pop(-1)
-
-        if len(tile_magnitudes[0]) < n_m:
-            tile_magnitudes.pop(0)
-            tile_times.pop(0)
-            tile_mc.pop(0)
+        if len(list_magnitudes[-1]) < n_m:
+            list_magnitudes.pop(-1)
+            list_times.pop(-1)
+            list_mc.pop(-1)
+        if len(list_magnitudes[0]) < n_m:
+            list_magnitudes.pop(0)
+            list_times.pop(0)
+            list_mc.pop(0)
 
         # estimate b-values
-        b_vec, _, n_m_loop = b_series(
-            tile_magnitudes, tile_times, delta_m,
-            tile_mc, b_method=b_method)
+        b_vec, _, n_m_loop = bs_from_partitioning(
+            list_magnitudes, list_times, delta_m,
+            list_mc, b_method=b_method, **kwargs)
         b_vec[n_m_loop < min_num] = np.nan
 
         # estimate average events per b-value estimate
         n_ms[ii] = np.mean(n_m_loop[n_m_loop >= min_num])
-
-        # estimate autocorrelation (1D, not considering nan)
+        # estimate autocorrelation (1D)
         ac_1D[ii], n[ii], n_p[ii], = est_morans_i(b_vec)
 
+    # estimate mean and (conservative) standard deviation of the
+    # autocorrelation under H0
     mac = np.nanmean(ac_1D)
     mean_n = np.nanmean(n)
     mean_np = np.nanmean(n_p)
-
-    # estimate mean and (conservative )standard deviation of the
-    # autocorrelation under H0
     mu_mac = -1 / mean_n
     std_mac = 1 / np.sqrt(mean_np)
 
