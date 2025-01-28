@@ -4,8 +4,34 @@ from numpy.testing import assert_almost_equal
 from datetime import datetime, timedelta
 
 from seismostats.analysis.avalue import (
-    APositiveAValueEstimator, ClassicAValueEstimator
+    APositiveAValueEstimator, ClassicAValueEstimator, estimate_a
 )
+
+
+def test_estimate_a():
+    mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    a = estimate_a(mags, mc=1, delta_m=10.0)
+    assert a == 1.0
+
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 12), timedelta(days=1)).astype(datetime)
+    a = estimate_a(np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 10]),
+                   mc=1, delta_m=1, times=times,
+                   method=APositiveAValueEstimator)
+    assert_almost_equal(10**a, 10.0)
+
+    # reference magnitude is given and b-value given
+    a = estimate_a(mags, mc=1, m_ref=0, b_value=1, delta_m=1)
+    assert a == 2.0
+
+    # reference magnitude but no b-value
+    try:
+        a = estimate_a(mags, mc=1, m_ref=0, delta_m=1)
+    except ValueError as e:
+        assert str(e) == "b_value must be provided if m_ref is given"
+
+    a = estimate_a(mags, mc=1, scaling_factor=10, delta_m=1)
+    assert a == 0.0
 
 
 def test_estimate_a_classic():
