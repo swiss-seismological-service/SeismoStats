@@ -36,6 +36,11 @@ def test_estimate_a_classic():
         estimator.calculate(mags, mc=2, delta_m=0.0)
         assert w[-1].category == UserWarning
 
+    # test that warning is raised if smallest magnitude is much larger than mc
+    with warnings.catch_warnings(record=True) as w:
+        estimator.calculate(mags, mc=-1, delta_m=0.0)
+        assert w[-1].category == UserWarning
+
 
 def test_estimate_a_positive():
     mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 10])
@@ -67,4 +72,9 @@ def test_estimate_a_positive():
     # magnitudes not cut at mc
     with warnings.catch_warnings(record=True) as w:
         estimator.calculate(mags, delta_m=1, mc=2, times=times)
+        assert w[-1].category == UserWarning
+
+    # test that warning is raised if smallest magnitude is much larger than mc
+    with warnings.catch_warnings(record=True) as w:
+        estimator.calculate(mags, delta_m=1, mc=-1, times=times)
         assert w[-1].category == UserWarning
