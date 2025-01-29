@@ -59,8 +59,8 @@ class AValueEstimator(ABC):
         self.m_ref = m_ref
         self.b_value = b_value
 
-        self._sanity_checks()
         self._filtering()
+        self._sanity_checks()
 
         self.__a_value = self._estimate(*args, **kwargs)
         self.__a_value = self._reference_scaling(self.__a_value)

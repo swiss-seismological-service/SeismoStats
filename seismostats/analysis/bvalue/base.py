@@ -46,8 +46,8 @@ class BValueEstimator(ABC):
         self.delta_m = delta_m
         self.weights = None if weights is None else np.array(weights)
 
-        self._sanity_checks()
         self._filtering()
+        self._sanity_checks()
 
         self.__b_value = self._estimate(*args, **kwargs)
         return self.__b_value
