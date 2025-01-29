@@ -8,7 +8,7 @@ from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 def test_estimate_a_warnings():
     mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
 
-    # test that uncorrect binninng leads to error
+    # TODO: test that uncorrect binninng leads to error
     # with pytest.raises(AssertionError):
     #     estimator = ClassicAValueEstimator()
     #     estimator.calculate(mags, mc=0, delta_m=0.2)

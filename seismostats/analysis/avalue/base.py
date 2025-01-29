@@ -84,7 +84,7 @@ class AValueEstimator(ABC):
         '''
         Perform sanity checks on the input data.
         '''
-        # TODO test that the magnitudes are binned correctly
+        # TODO: test that the magnitudes are binned correctly
         # if self.delta_m == 0:
         #     tolerance = 1e-08
         # else:
