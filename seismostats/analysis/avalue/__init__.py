@@ -4,6 +4,8 @@ import numpy as np
 
 from seismostats.analysis.avalue.base import AValueEstimator
 from seismostats.analysis.avalue.classic import ClassicAValueEstimator
+from seismostats.analysis.avalue.more_positive import \
+    AMorePositiveAValueEstimator
 from seismostats.analysis.avalue.positive import APositiveAValueEstimator
 
 
@@ -14,7 +16,6 @@ def estimate_a(
     scaling_factor: float | None = None,
     m_ref: float | None = None,
     b_value: float | None = None,
-    weights: np.ndarray | list | None = None,
     method: AValueEstimator = ClassicAValueEstimator,
     *args,
     **kwargs
@@ -23,8 +24,6 @@ def estimate_a(
     estimator = method()
     estimator.calculate(magnitudes, mc=mc, delta_m=delta_m,
                         scaling_factor=scaling_factor, m_ref=m_ref,
-                        b_value=b_value, weights=weights, *args, **kwargs)
+                        b_value=b_value, *args, **kwargs)
 
-    a = estimator.a_value
-
-    return a
+    return estimator.a_value
