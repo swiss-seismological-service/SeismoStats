@@ -154,7 +154,7 @@ def transform_n(
         n1 = np.ones(len(b_estimates)) * n1
     else:
         assert len(b_estimates) == len(
-            n1), ("if n1 is an array, it must have tha same length as"
+            n1), ("If n1 is an array, it must have tha same length as"
                   "b_estimate.")
 
     # transform the b-values
@@ -255,7 +255,7 @@ def cut_constant_idx(
     """
     # Check that the offset is not larger than n.
     if offset >= n:
-        raise ValueError("offset must be smaller than n")
+        raise ValueError("Offset must be smaller than n.")
 
     idx = np.arange(offset, len(values), n)
 
@@ -317,31 +317,31 @@ def mac_1D_constant_nm(
     if isinstance(mc, (float, int)):
         if min(mags) < mc:
             raise ValueError("The completeness magnitude is larger than the "
-                             "smallest magnitude")
+                             "smallest magnitude.")
         mc = np.ones(len(mags)) * mc
     else:
         if any(mags < mc):
             raise ValueError("There are earthquakes below their respective "
-                             "completeness magnitude")
+                             "completeness magnitude.")
 
     if n_m < min_num:
-        raise ValueError("n_m cannot be smaller than min_num")
+        raise ValueError("n_m cannot be smaller than min_num.")
 
     if len(mags) / n_m < 3:
         raise ValueError(
-            "n_m is too large - less than three subsamples are created")
+            "n_m is too large - less than three subsamples are created.")
     elif len(mags) / n_m < 25:
         if get_option("warnings") is True:
             warnings.warn(
                 "The number of subsamples is less than 25. The normality "
-                "assumption of the autocorrelation might not be valid")
+                "assumption of the autocorrelation might not be valid.")
 
     if not isinstance(mags, np.ndarray):
-        raise ValueError("mags must be an array")
+        raise ValueError("Magnitudes must be an array.")
     if not isinstance(times, np.ndarray):
-        raise ValueError("times must be an array")
+        raise ValueError("Times must be an array.")
     if len(mags) != len(times):
-        raise ValueError("mags and times must have the same length")
+        raise ValueError("Magnitudes and times must have the same length.")
 
     # Estimate a and b values for n_m realizations.
     ac_1D = np.zeros(n_m)
