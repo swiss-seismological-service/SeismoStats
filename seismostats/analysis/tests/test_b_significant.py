@@ -8,6 +8,7 @@ from seismostats.analysis.b_significant import (
     bs_from_partitioning,
     cut_constant_idx,
     transform_n,
+    mac_1D_constant_nm,
 )
 
 
@@ -44,6 +45,39 @@ def test_est_morans_i():
     assert ac == ac_symmetric
     assert n == n_symmetric
     assert n_p == n_p_symmetric
+
+    # test that correct error is raised
+    with pytest.raises(ValueError):
+        # non-square matrix
+        w = np.array([[0, 1, 0, 1, 1],
+                      [0, 0, 1, 0, 0],
+                      [0, 0, 0, 1, 0],
+                      [0, 0, 0, 0, 1]])
+        est_morans_i(values, w)
+    with pytest.raises(ValueError):
+        # trace is not zero
+        w = np.array([[0, 1, 0, 1, 1],
+                      [0, 0, 1, 0, 0],
+                      [0, 0, 1, 1, 0],
+                      [0, 0, 0, 0, 1],
+                      [0, 0, 0, 0, 0]])
+        est_morans_i(values, w)
+    with pytest.raises(ValueError):
+        # other values than 0 and 1
+        w = np.array([[0, 1, 0, 1, 1],
+                      [0, 0, 1, 0, 0],
+                      [0, 0, 0, 1, 0],
+                      [0, 0, 0, 0, -1],
+                      [0, 0, 0, 0, 0]])
+        est_morans_i(values, w)
+    with pytest.raises(ValueError):
+        # non symmetric matrix
+        w = np.array([[0, 0, 0, 1, 1],
+                      [0, 0, 0, 0, 0],
+                      [0, 0, 0, 0, 0],
+                      [0, 0, 0, 0, 0],
+                      [0, 1, 0, 0, 0]])
+        est_morans_i(values, w)
 
 
 def test_transform_n():
@@ -116,3 +150,60 @@ def test_cut_constant_idx():
     split_samples = np.array_split(values, idx)
     assert all(all(subsample == split_sample) for subsample,
                split_sample in zip(subsamples, split_samples))
+
+
+def test_mac_1D_constant_nm():
+    mags = np.arange(0, 1000, 1)
+    times = np.arange(0, 1000, 1)
+    mac, mu_mac, std_mac = mac_1D_constant_nm(
+        mags,
+        delta_m=1,
+        mc=0,
+        times=times,
+        n_m=20)
+
+    assert_almost_equal(mac, 0.5184342563144473)
+    assert_almost_equal(mu_mac, -0.020387359836901122)
+    assert_almost_equal(std_mac, 0.14426245016127676)
+
+    with pytest.raises(ValueError):
+        # mags larger than mc present
+        mac_1D_constant_nm(
+            mags,
+            delta_m=1,
+            mc=1,
+            times=times,
+            n_m=20)
+    with pytest.raises(ValueError):
+        # min_num larger than n_m
+        mac_1D_constant_nm(
+            mags,
+            delta_m=1,
+            mc=0,
+            times=times,
+            n_m=10,
+            min_num=11)
+    with pytest.raises(ValueError):
+        # n_m larger than len(mags)/3
+        mac_1D_constant_nm(
+            mags,
+            delta_m=1,
+            mc=0,
+            times=times,
+            n_m=500)
+    with pytest.raises(ValueError):
+        # mags are not an array
+        mac_1D_constant_nm(
+            list(mags),
+            delta_m=1,
+            mc=0,
+            times=times,
+            n_m=20)
+    with pytest.raises(ValueError):
+        # times and mags have different lengths
+        mac_1D_constant_nm(
+            mags,
+            delta_m=1,
+            mc=0,
+            times=times[:-1],
+            n_m=20)
