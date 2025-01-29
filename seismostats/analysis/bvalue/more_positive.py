@@ -44,22 +44,20 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                         below this value are not considered). If None,
                         the cutoff is set to delta_m.
         '''
+        self.dmc: float = dmc if dmc is not None else delta_m
+
+        if self.dmc < 0:
+            raise ValueError('dmc must be larger or equal to 0')
+
+        if self.dmc < delta_m and get_option('warnings') is True:
+            warnings.warn('dmc is smaller than delta_m, not recommended')
 
         return super().calculate(magnitudes,
                                  mc=mc,
                                  delta_m=delta_m,
-                                 weights=weights,
-                                 dmc=dmc)
+                                 weights=weights)
 
-    def _estimate(self, dmc: float) -> float:
-
-        self.dmc = dmc or self.delta_m
-
-        if self.dmc < 0:
-            raise ValueError('dmc must be larger or equal to 0')
-        elif self.dmc < self.delta_m and get_option('warnings') is True:
-            warnings.warn('dmc is smaller than delta_m, not recommended')
-
+    def _estimate(self) -> float:
         mag_diffs = -np.ones(len(self.magnitudes) - 1) * self.delta_m
 
         idx_next_larger = find_next_larger(
@@ -74,6 +72,6 @@ class BMorePositiveBValueEstimator(BValueEstimator):
             self.weights = weights[~idx_no_next]
 
         return _mle_estimator(self.magnitudes,
-                              mc=self.mc,
+                              mc=self.dmc,
                               delta_m=self.delta_m,
                               weights=self.weights)

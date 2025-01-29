@@ -18,7 +18,6 @@ class AValueEstimator(ABC):
         self.scaling_factor: float | None = None
         self.m_ref: float | None = None
         self.b_value: float | None = None
-        self.idx: np.ndarray | None = None
 
         self.__a_value: float | None = None
 
@@ -26,11 +25,9 @@ class AValueEstimator(ABC):
                   magnitudes: np.ndarray,
                   mc: float,
                   delta_m: float,
-                  *args,
                   scaling_factor: float | None = None,
                   m_ref: float | None = None,
-                  b_value: float | None = None,
-                  **kwargs) -> float:
+                  b_value: float | None = None) -> float:
         '''
         Return the a-value estimate.
 
@@ -59,27 +56,29 @@ class AValueEstimator(ABC):
         self.m_ref = m_ref
         self.b_value = b_value
 
-        self._filtering()
+        self._filter_magnitudes()
         self._sanity_checks()
 
-        self.__a_value = self._estimate(*args, **kwargs)
+        self.__a_value = self._estimate()
         self.__a_value = self._reference_scaling(self.__a_value)
 
         return self.__a_value
 
     @abstractmethod
-    def _estimate(self, *args, **kwargs) -> float:
+    def _estimate(self) -> float:
         '''
         Specific implementation of the a-value estimator.
         '''
         pass
 
-    def _filtering(self) -> np.ndarray:
+    def _filter_magnitudes(self) -> np.ndarray:
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        self.idx = self.magnitudes >= self.mc - self.delta_m / 2
-        self.magnitudes = self.magnitudes[self.idx]
+        idx = self.magnitudes >= self.mc - self.delta_m / 2
+        self.magnitudes = self.magnitudes[idx]
+
+        return idx
 
     def _sanity_checks(self):
         '''

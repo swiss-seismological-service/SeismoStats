@@ -112,3 +112,12 @@ def test_estimate_a_more_positive():
     with pytest.raises(ValueError):
         estimate_a(mags, mc=0, delta_m=0.1, times=times,
                    m_ref=-1, method=AMorePositiveAValueEstimator)
+
+    # check that cutting at mc is handled correctly
+    mags = np.array([-0.5, 0.9, 0.9, 0.9, 0.9, 10.9])
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 7), timedelta(days=1)).astype(datetime)
+
+    a = estimator.calculate(
+        mags, 0, 0.1, times, b_value=1, dmc=0.1)
+    assert_almost_equal(10**a, 16.0)

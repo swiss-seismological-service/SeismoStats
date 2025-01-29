@@ -42,21 +42,20 @@ class BPositiveBValueEstimator(BValueEstimator):
                         the cutoff is set to delta_m.
         '''
 
-        return super().calculate(magnitudes,
-                                 mc=mc,
-                                 delta_m=delta_m,
-                                 weights=weights,
-                                 dmc=dmc)
-
-    def _estimate(self, dmc: float | None = None) -> float:
-
-        self.dmc = dmc or self.delta_m
+        self.dmc: float = dmc if dmc is not None else delta_m
 
         if self.dmc < 0:
             raise ValueError('dmc must be larger or equal to 0')
 
-        elif self.dmc < self.delta_m and get_option('warnings') is True:
+        if self.dmc < delta_m and get_option('warnings') is True:
             warnings.warn('dmc is smaller than delta_m, not recommended')
+
+        return super().calculate(magnitudes,
+                                 mc=mc,
+                                 delta_m=delta_m,
+                                 weights=weights)
+
+    def _estimate(self, dmc: float | None = None) -> float:
 
         # only take the values where the next earthquake is d_mc larger than the
         # previous one. delta_m is added to avoid numerical errors
