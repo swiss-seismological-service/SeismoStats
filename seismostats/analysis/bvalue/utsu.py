@@ -6,7 +6,7 @@ from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 class UtsuBValueEstimator(BValueEstimator):
     '''
-    Estimator for the b-value using the maximum likelihood estimator.
+    Estimator for the b-value.
 
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University,

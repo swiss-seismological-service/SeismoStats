@@ -18,6 +18,7 @@ class AValueEstimator(ABC):
         self.scaling_factor: float | None = None
         self.m_ref: float | None = None
         self.b_value: float | None = None
+        self.idx: np.ndarray | None = None
 
         self.__a_value: float | None = None
 
