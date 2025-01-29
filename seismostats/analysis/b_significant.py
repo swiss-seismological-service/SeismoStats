@@ -20,7 +20,7 @@ def est_morans_i(values: np.ndarray,
         values:     Values for which the autocorrelation is estimated.
         w:          Weight matrix, indicating which of the values are
                 neighbors to each other. It should be a square matrix of
-                size `len(b_vec) x len(b_vec)`, with zeros on the diagonal.
+                size `len(values) x len(values)`, with zeros on the diagonal.
                 At places where the value is 1, the values are considered
                 neighbors to each other. Values that are NaN are not considered
                 neighbors to any other value. If w is None, it is assumed that
