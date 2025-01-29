@@ -25,9 +25,7 @@ class BValueEstimator(ABC):
                   magnitudes: np.ndarray | list,
                   mc: float,
                   delta_m: float,
-                  *args,
-                  weights: np.ndarray | list | None = None,
-                  **kwargs) -> float:
+                  weights: np.ndarray | list | None = None) -> float:
         '''
         Return the b-value estimate.
 
@@ -46,28 +44,30 @@ class BValueEstimator(ABC):
         self.delta_m = delta_m
         self.weights = None if weights is None else np.array(weights)
 
-        self._filtering()
+        self._filter_magnitudes()
         self._sanity_checks()
 
-        self.__b_value = self._estimate(*args, **kwargs)
+        self.__b_value = self._estimate()
         return self.__b_value
 
     @abstractmethod
-    def _estimate(self, *args, **kwargs) -> float:
+    def _estimate(self) -> float:
         '''
         Specific implementation of the b-value estimator.
         '''
         pass
 
-    def _filtering(self):
+    def _filter_magnitudes(self):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        self.idx = self.magnitudes >= self.mc - self.delta_m / 2
-        self.magnitudes = self.magnitudes[self.idx]
+        idx = self.magnitudes >= self.mc - self.delta_m / 2
+        self.magnitudes = self.magnitudes[idx]
 
         if self.weights is not None:
-            self.weights = self.weights[self.idx]
+            self.weights = self.weights[idx]
+
+        return idx
 
     def _sanity_checks(self):
         '''
