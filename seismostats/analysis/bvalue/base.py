@@ -35,6 +35,9 @@ class BValueEstimator(ABC):
             mc:         Completeness magnitude
             delta_m:    Discretization of magnitudes.
             weights:    Array of weights for the magnitudes.
+
+        Returns:
+            b: b-value of the Gutenberg-Richter law.
         '''
 
         self.magnitudes = np.array(magnitudes)
@@ -59,11 +62,11 @@ class BValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = self.magnitudes >= self.mc - self.delta_m / 2
-        self.magnitudes = self.magnitudes[idx]
+        self.idx = self.magnitudes >= self.mc - self.delta_m / 2
+        self.magnitudes = self.magnitudes[self.idx]
 
         if self.weights is not None:
-            self.weights = self.weights[idx]
+            self.weights = self.weights[self.idx]
 
     def _sanity_checks(self):
         '''

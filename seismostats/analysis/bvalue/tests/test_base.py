@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pytest
 
@@ -18,10 +16,9 @@ def test_estimate_b_warnings():
         estimator.calculate(mags, mc=0, delta_m=0.2)
 
     # test that warning is raised if smallest magnitude is much larger than mc
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(UserWarning):
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=-1, delta_m=0.1)
-        assert w[-1].category == UserWarning
 
 
 def test_by_reference():
