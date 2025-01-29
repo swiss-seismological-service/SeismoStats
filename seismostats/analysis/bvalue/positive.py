@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 
 from seismostats.analysis.bvalue.base import BValueEstimator
-from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
+from seismostats.analysis.bvalue.classic import _mle_estimator
 from seismostats.utils._config import get_option
 
 
@@ -68,9 +68,7 @@ class BPositiveBValueEstimator(BValueEstimator):
             # use weight of second earthquake of a difference
             self.weights = self.weights[1:][is_larger]
 
-        classic_estimator = ClassicBValueEstimator()
-
-        return classic_estimator.calculate(self.magnitudes,
-                                           mc=self.dmc,
-                                           delta_m=self.delta_m,
-                                           weights=self.weights)
+        return _mle_estimator(self.magnitudes,
+                              mc=self.dmc,
+                              delta_m=self.delta_m,
+                              weights=self.weights)

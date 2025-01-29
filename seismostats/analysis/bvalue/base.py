@@ -17,6 +17,7 @@ class BValueEstimator(ABC):
         self.mc: float | None = None
         self.delta_m: float | None = None
         self.weights: np.ndarray | None = None
+        self.idx: np.ndarray | None = None
 
         self.__b_value: float | None = None
 
