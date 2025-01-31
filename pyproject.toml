@@ -12,7 +12,14 @@ description = "Library for statistical analysis of seismicity."
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 
-dependencies = ["cartopy", "fiona", "geopandas", "jinja2", "requests", "scipy", "typing_extensions"]
+dependencies = [
+    "cartopy",
+    "geopandas",
+    "jinja2",
+    "requests",
+    "scipy",
+    "typing_extensions",
+]
 
 [project.optional-dependencies]
 dev = ["flake8", "isort", "pytest", "pytest-cov", "responses", "tox"]
