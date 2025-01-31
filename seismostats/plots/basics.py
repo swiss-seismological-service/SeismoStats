@@ -82,14 +82,12 @@ def plot_cum_fmd(
             labels[1] = "GR fit, b={x:.2f}".format(x=b_value)
         else:
             labels[1] = labels[1] + ", b={x:.2f}".format(x=b_value)
-
         if mc is None:
             mc = min(magnitudes)
+        n_mc = len(magnitudes[magnitudes >= mc - delta_m / 2])
         if bin_position == "left":
             mc -= delta_m / 2
-
-        n_mc = len(magnitudes[magnitudes >= mc])
-        x = bins[bins >= mc]
+        x = bins[bins >= mc - delta_m / 2]
         y = gutenberg_richter(x, b_value, min(x), n_mc)
 
         if type(color) is not list:

@@ -74,14 +74,14 @@ def ks_test_gr(
     """
     if get_option("warnings") is True:
         if np.min(sample) < mc - delta_m / 2:
-            warnings.warn("sample contains values below mc - delta_m / 2")
+            warnings.warn("Sample contains values below mc.")
 
         if len(sample) == 0:
-            warnings.warn("no sample")
+            warnings.warn("No sample given.")
             return 0, 1, []
 
         if len(np.unique(sample)) == 1:
-            warnings.warn("sample contains only one value")
+            warnings.warn("Sample contains only one value.")
             return 0, 1, []
 
     if ks_ds is None:
@@ -313,8 +313,8 @@ def mc_max_curvature(
     Returns:
         mc:                 estimated completeness magnitude
     """
-    bins, count, mags = get_fmd(
-        mags=sample, delta_m=delta_m, bin_position="center"
+    bins, count, _ = get_fmd(
+        magnitudes=sample, delta_m=delta_m, bin_position="center"
     )
     mc = bins[count.argmax()] + correction_factor
     return mc
