@@ -165,8 +165,8 @@ def transform_n(
 def bs_from_partitioning(
     list_magnitudes: list[np.ndarray],
     list_times: list[np.ndarray[np.datetime64]],
+    list_mc: float | np.ndarray,
     delta_m: float,
-    mc: float | np.ndarray,
     b_method: BValueEstimator = ClassicBValueEstimator,
     **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -177,9 +177,10 @@ def bs_from_partitioning(
         list_mags:  List of arrays of magnitudes. From each array within the
             list, a b-value is estimated.
         list_times: List of arrays of times, in the same order as the magnitudes
+        list_mc:    List of completeness magnitude corresponding to the
+            magnitudes. If a single value is provided, it is used for all
+            magnitudes.
         delta_m:    Discretization of magnitudes.
-        mc:         Completeness magnitude (can be a vector of same length as
-            list_magnitudes).
         b_method:   Method to estimate the b-value.
         **kwargs:   Additional arguments to the b-value estimation method.
 
@@ -211,8 +212,8 @@ def bs_from_partitioning(
     b_values = np.zeros(len(list_magnitudes))
     std_bs = np.zeros(len(list_magnitudes))
     n_ms = np.zeros(len(list_magnitudes))
-    if isinstance(mc, (float, int)):
-        mc = np.ones(len(list_magnitudes)) * mc
+    if isinstance(list_mc, (float, int)):
+        list_mc = np.ones(len(list_magnitudes)) * list_mc
 
     estimator = b_method()
 
@@ -223,7 +224,8 @@ def bs_from_partitioning(
         mags_loop = mags_loop[idx_sorted]
         times_loop = times_loop[idx_sorted]
 
-        estimator.calculate(mags_loop, mc=mc[ii], delta_m=delta_m, **kwargs)
+        estimator.calculate(
+            mags_loop, mc=list_mc[ii], delta_m=delta_m, **kwargs)
         b_values[ii] = estimator.b_value
         std_bs[ii] = estimator.std
         n_ms[ii] = estimator.n
@@ -268,8 +270,8 @@ def cut_constant_idx(
 
 def mac_1D_constant_nm(
         mags: np.ndarray,
-        delta_m: float,
         mc: float,
+        delta_m: float,
         times: np.ndarray[np.timedelta64],
         n_m: int,
         min_num: int = 10,
@@ -295,10 +297,10 @@ def mac_1D_constant_nm(
     Args:
         mags:       Magnitudes of the events. They are assumed to be order
             along the dimension of interest (e.g. time or depth)
-        delta_m:    Magnitude bin width.
         mc:     Completeness magnitude. If a single value is provided, it is
             used for all magnitudes. Otherwise, the individual completeness of
             each magnitude can be provided.
+        delta_m:    Magnitude bin width.
         times:  Times of the events.
         n_m:    Number of magnitudes in each partition.
         min_num:    Minimum number of events in a partition.
@@ -372,8 +374,8 @@ def mac_1D_constant_nm(
 
         # estimate b-values
         b_vec, _, n_m_loop = bs_from_partitioning(
-            list_magnitudes, list_times, delta_m,
-            list_mc, b_method=b_method, **kwargs)
+            list_magnitudes, list_times, list_mc,
+            delta_m, b_method=b_method, **kwargs)
         b_vec[n_m_loop < min_num] = np.nan
 
         # Estimate average events per b-value estimate.

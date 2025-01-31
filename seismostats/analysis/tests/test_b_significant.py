@@ -2,6 +2,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 from datetime import datetime
 import pytest
+import warnings
 
 from seismostats.analysis.b_significant import (
     est_morans_i,
@@ -121,8 +122,11 @@ def test_bs_from_partitioning():
                             datetime(2021, 1, 15)])]
     delta_m = 1
     mc = 1
-    b_values, std_b, n_ms = bs_from_partitioning(
-        list_magnitudes, list_times, delta_m, mc)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        b_values, std_b, n_ms = bs_from_partitioning(
+            list_magnitudes, list_times, mc, delta_m)
+
     assert_almost_equal(b_values, np.array(
         [0.17609125905568124, 0.17609125905568124, 0.17609125905568124]))
     assert_almost_equal(std_b, np.array([0.05048661905780697,
@@ -155,12 +159,14 @@ def test_cut_constant_idx():
 def test_mac_1D_constant_nm():
     mags = np.arange(0, 1000, 1)
     times = np.arange(0, 1000, 1)
-    mac, mu_mac, std_mac = mac_1D_constant_nm(
-        mags,
-        delta_m=1,
-        mc=0,
-        times=times,
-        n_m=20)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mac, mu_mac, std_mac = mac_1D_constant_nm(
+            mags,
+            mc=0,
+            delta_m=1,
+            times=times,
+            n_m=20)
 
     assert_almost_equal(mac, 0.5184342563144473)
     assert_almost_equal(mu_mac, -0.020387359836901122)
@@ -170,16 +176,16 @@ def test_mac_1D_constant_nm():
         # mags larger than mc present
         mac_1D_constant_nm(
             mags,
-            delta_m=1,
             mc=1,
+            delta_m=1,
             times=times,
             n_m=20)
     with pytest.raises(ValueError):
         # min_num larger than n_m
         mac_1D_constant_nm(
             mags,
-            delta_m=1,
             mc=0,
+            delta_m=1,
             times=times,
             n_m=10,
             min_num=11)
@@ -187,8 +193,8 @@ def test_mac_1D_constant_nm():
         # n_m larger than len(mags)/3
         mac_1D_constant_nm(
             mags,
-            delta_m=1,
             mc=0,
+            delta_m=1,
             times=times,
             n_m=500)
     with pytest.raises(ValueError):
