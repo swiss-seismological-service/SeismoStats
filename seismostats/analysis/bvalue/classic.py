@@ -4,6 +4,23 @@ from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 
+def _mle_estimator(magnitudes: np.ndarray,
+                   mc: float,
+                   delta_m: float,
+                   weights: np.ndarray | None = None) -> float:
+    '''
+    Internal function for the classic b-value estimator. For b-value
+    estimation use `ClassicBValueEstimator` instead.
+    '''
+    if delta_m > 0:
+        p = 1 + delta_m / np.average(magnitudes - mc, weights=weights)
+        beta = 1 / delta_m * np.log(p)
+    else:
+        beta = 1 / np.average(magnitudes - mc, weights=weights)
+
+    return beta_to_b_value(beta)
+
+
 class ClassicBValueEstimator(BValueEstimator):
     '''
     Estimator for the b-value using the maximum likelihood estimator.
@@ -20,13 +37,7 @@ class ClassicBValueEstimator(BValueEstimator):
         super().__init__()
 
     def _estimate(self) -> float:
-
-        if self.delta_m > 0:
-            p = 1 + self.delta_m / \
-                np.average(self.magnitudes - self.mc, weights=self.weights)
-            beta = 1 / self.delta_m * np.log(p)
-        else:
-            beta = 1 / np.average(self.magnitudes
-                                  - self.mc, weights=self.weights)
-
-        return beta_to_b_value(beta)
+        return _mle_estimator(self.magnitudes,
+                              mc=self.mc,
+                              delta_m=self.delta_m,
+                              weights=self.weights)

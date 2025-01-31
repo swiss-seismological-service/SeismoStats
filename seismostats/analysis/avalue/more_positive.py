@@ -56,46 +56,54 @@ class AMorePositiveAValueEstimator(AValueEstimator):
             # not passed to the function
             raise ValueError("b_value must be given")
 
+        self.times: np.ndarray = np.array(times)
+        self.dmc: float = dmc if dmc is not None else delta_m
+
+        if self.dmc < 0:
+            raise ValueError("dmc must be larger or equal to 0.")
+
+        if self.dmc < delta_m and get_option("warnings") is True:
+            warnings.warn("dmc is smaller than delta_m, not recommended.")
+
         return super().calculate(magnitudes,
                                  mc=mc,
                                  delta_m=delta_m,
-                                 times=times,
                                  scaling_factor=scaling_factor,
                                  m_ref=m_ref,
                                  b_value=b_value,
-                                 dmc=dmc,
                                  )
 
-    def _estimate(self, times: np.ndarray, dmc: float | None = None) -> float:
-        if dmc is None:
-            dmc = self.delta_m
-        elif dmc < 0:
-            raise ValueError("dmc must be larger or equal to 0")
-        elif dmc < self.delta_m and get_option("warnings") is True:
-            warnings.warn("dmc is smaller than delta_m, not recommended")
+    def _filter_magnitudes(self):
+        '''
+        Filter out magnitudes below the completeness magnitude.
+        '''
+        idx = super()._filter_magnitudes()
 
-        times = np.array(times)
-        times = times[self.idx]
+        self.times = self.times[idx]
 
+        return idx
+
+    def _estimate(self) -> float:
         # order the magnitudes and times
-        srt = np.argsort(times)
+        srt = np.argsort(self.times)
         self.magnitudes = self.magnitudes[srt]
-        times = times[srt]
+        self.times = self.times[srt]
 
         # differences
-        idx_next_larger = find_next_larger(self.magnitudes, self.delta_m, dmc)
-        time_diffs = times[idx_next_larger] - times
+        idx_next_larger = find_next_larger(
+            self.magnitudes, self.delta_m, self.dmc)
+        time_diffs = self.times[idx_next_larger] - self.times
 
         # deal with events which do not have a next larger event
         idx_no_next = idx_next_larger == 0
-        time_diffs[idx_no_next] = times[-1] - times[idx_no_next]
+        time_diffs[idx_no_next] = self.times[-1] - self.times[idx_no_next]
 
         # estimate the number of events within the time interval
-        total_time = times[-1] - times[0]
+        total_time = self.times[-1] - self.times[0]
 
         # scale the time
         tau = time_diffs * 10**(-self.b_value
-                                * (self.magnitudes + dmc - self.mc))
+                                * (self.magnitudes + self.dmc - self.mc))
 
         time_factor = sum(tau / total_time)
         n_more_pos = sum(~idx_no_next) / time_factor

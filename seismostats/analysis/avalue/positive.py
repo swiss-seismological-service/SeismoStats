@@ -54,43 +54,52 @@ class APositiveAValueEstimator(AValueEstimator):
         Returns:
             a_pos: a-value of the Gutenberg-Richter distribution
         '''
+
+        self.times: np.ndarray = np.array(times)
+        self.dmc: float = dmc if dmc is not None else delta_m
+
+        if self.dmc < 0:
+            raise ValueError('dmc must be larger or equal to 0.')
+
+        if self.dmc < delta_m and get_option('warnings') is True:
+            warnings.warn('dmc is smaller than delta_m, not recommended.')
+
         return super().calculate(magnitudes,
                                  mc=mc,
                                  delta_m=delta_m,
-                                 times=times,
                                  scaling_factor=scaling_factor,
                                  m_ref=m_ref,
-                                 b_value=b_value,
-                                 dmc=dmc,
+                                 b_value=b_value
                                  )
 
-    def _estimate(self, times: np.ndarray, dmc: float | None = None) -> float:
-        if dmc is None:
-            dmc = self.delta_m
-        elif dmc < 0:
-            raise ValueError('dmc must be larger or equal to 0.')
-        elif dmc < self.delta_m and get_option('warnings') is True:
-            warnings.warn('dmc is smaller than delta_m, not recommended.')
+    def _filter_magnitudes(self) -> np.ndarray:
+        '''
+        Filter out magnitudes below the completeness magnitude.
+        '''
+        idx = super()._filter_magnitudes()
 
-        times = np.array(times)
-        times = times[self.idx]
+        self.times = self.times[idx]
+
+        return idx
+
+    def _estimate(self) -> float:
 
         # order the magnitudes and times
-        idx = np.argsort(times)
+        idx = np.argsort(self.times)
         self.magnitudes = self.magnitudes[idx]
-        times = times[idx]
+        self.times = self.times[idx]
 
         # differences
         mag_diffs = np.diff(self.magnitudes)
-        time_diffs = np.diff(times)
+        time_diffs = np.diff(self.times)
 
         # only consider events with magnitude difference >= dmc
-        idx = mag_diffs > dmc - self.delta_m / 2
+        idx = mag_diffs > self.dmc - self.delta_m / 2
         mag_diffs = mag_diffs[idx]
         time_diffs = time_diffs[idx]
 
         # estimate the number of events within the time interval
-        total_time = times[-1] - times[0]
+        total_time = self.times[-1] - self.times[0]
 
         time_factor = sum(time_diffs / total_time)
         n_pos = sum(idx) / time_factor
