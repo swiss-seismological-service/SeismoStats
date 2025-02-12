@@ -17,6 +17,7 @@ class BValueEstimator(ABC):
         self.mc: float | None = None
         self.delta_m: float | None = None
         self.weights: np.ndarray | None = None
+        self.idx: np.ndarray | None = None
 
         self.__b_value: float | None = None
 
@@ -24,9 +25,7 @@ class BValueEstimator(ABC):
                   magnitudes: np.ndarray | list,
                   mc: float,
                   delta_m: float,
-                  *args,
-                  weights: np.ndarray | list | None = None,
-                  **kwargs) -> float:
+                  weights: np.ndarray | list | None = None) -> float:
         '''
         Return the b-value estimate.
 
@@ -35,6 +34,9 @@ class BValueEstimator(ABC):
             mc:         Completeness magnitude
             delta_m:    Discretization of magnitudes.
             weights:    Array of weights for the magnitudes.
+
+        Returns:
+            b: b-value of the Gutenberg-Richter law.
         '''
 
         self.magnitudes = np.array(magnitudes)
@@ -42,20 +44,20 @@ class BValueEstimator(ABC):
         self.delta_m = delta_m
         self.weights = None if weights is None else np.array(weights)
 
+        self._filter_magnitudes()
         self._sanity_checks()
-        self._filtering()
 
-        self.__b_value = self._estimate(*args, **kwargs)
+        self.__b_value = self._estimate()
         return self.__b_value
 
     @abstractmethod
-    def _estimate(self, *args, **kwargs) -> float:
+    def _estimate(self) -> float:
         '''
         Specific implementation of the b-value estimator.
         '''
         pass
 
-    def _filtering(self):
+    def _filter_magnitudes(self):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
@@ -64,6 +66,8 @@ class BValueEstimator(ABC):
 
         if self.weights is not None:
             self.weights = self.weights[idx]
+
+        return idx
 
     def _sanity_checks(self):
         '''

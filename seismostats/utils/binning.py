@@ -140,7 +140,7 @@ def binning_test(
 
 
 def get_fmd(
-    mags: np.ndarray, delta_m: float, bin_position: str = "center"
+    magnitudes: np.ndarray, delta_m: float, bin_position: str = "center"
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculates event counts per magnitude bin. Note that the returned bins
@@ -158,20 +158,18 @@ def get_fmd(
         counts  : counts for each bin
         mags    : array of magnitudes binned to ``delta_m``
     """
-    mags = bin_to_precision(mags, delta_m)
-    mags_i = bin_to_precision(mags / delta_m - np.min(mags / delta_m), 1)
-    mags_i = mags_i.astype(int)
-    counts = np.bincount(mags_i)
 
-    bins = bin_to_precision(
-        np.arange(
-            (np.min(mags)) * 100000,
-            (np.max(mags) + delta_m / 2) * 100000,
-            delta_m * 100000,
-        )
-        / 100000,
-        delta_m,
-    )
+    if delta_m == 0:
+        raise ValueError("delta_m cannot be 0")
+
+    magnitudes = bin_to_precision(magnitudes, delta_m)
+    # use histogram to get the counts
+    x_bins = bin_to_precision(
+        np.arange(np.min(magnitudes), np.max(magnitudes) + 3
+                  / 2 * delta_m, delta_m), delta_m)
+    bins = x_bins[:-1].copy()
+    x_bins -= delta_m / 2
+    counts, _ = np.histogram(magnitudes, x_bins)
 
     assert (
         bin_position == "left" or bin_position == "center"
@@ -179,7 +177,7 @@ def get_fmd(
     if bin_position == "left":
         bins = bins - delta_m / 2
 
-    return bins, counts, mags
+    return bins, counts, magnitudes
 
 
 def get_cum_fmd(
