@@ -4,6 +4,7 @@ b-value series varies significantly, following Mirwald et al, SRL (2024)
 
 import numpy as np
 import warnings
+from scipy.stats import norm
 
 from seismostats.analysis.bvalue import ClassicBValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
@@ -253,6 +254,7 @@ def b_significant_1D(
         n_m: int,
         min_num: int = 10,
         b_method: BValueEstimator = ClassicBValueEstimator,
+        return_p: bool = False,
         conservative: bool = True,
         **kwargs,
 ) -> tuple[float, float, float]:
@@ -260,15 +262,11 @@ def b_significant_1D(
     Estimates the mean autocorrelation for the one-dimensional case (along the
     dimension of order).
 
-    With the mean and standard deviation of the autocorrelation under H0, the
-    hypothesis that the b-values are constant can be tested. If the number of
-    subsamples is large enough, the autocorrelation can be assumed to be normal.
-    As a lower limit, no less than 25 subsamples (which can be estimated by
-    len(mags) / n_m) should be used.
-
-    In order to plot the corresponding series of b-values, use the function
-    plot_b_constant_mn (from seismostats.plots.statistical  import
-    plot_b_constant_mn) with the same parameters as used here.
+    Additionaly, the p-value of the null hypothesis H0 that the true b-value is
+    constant can be returned. This is based on the assumption that the mean
+    autocorrelation is normally distributed under H0. This is true for a large
+    enough number of subsamples. As a lower limit, no less than 25 subsamples
+    (which can be estimated by len(magnitudes) / n_m) should be used.
 
     Args:
         mags:           Magnitudes of the events. They are assumed to be order
@@ -281,6 +279,8 @@ def b_significant_1D(
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events in a partition.
         b_method:       Method to estimate the b-values.
+        return_p:       If True, the p-value of the null hypothesis of constant 
+                    b-values is returned.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
@@ -295,6 +295,14 @@ def b_significant_1D(
                 used - in case the non-conservative estimate is needed, the
                 standard deviation can be mulitplied by the factor gamma = 0.81
                 given by Mirwald et al, SRL (2024).
+        p_value:    P-value of the null hypothesis that the b-values are
+                constant. This parameter is only returned if return_p is True.
+
+    See Also:
+        To plot the time series, use
+        :func:`seismostats.plots.plot_b_series_constant_nm`. To plot the mean
+        autocorrelation for different n_m, use
+        :func:`seismostats.plots.plot_b_significant_1D`
     """
     if isinstance(mc, (float, int)):
         if min(mags) < mc:
@@ -369,4 +377,7 @@ def b_significant_1D(
     if not conservative:
         std_mac *= 0.81
 
+    if return_p:
+        p = 1 - norm(loc=mu_mac, scale=std_mac).cdf(mac)
+        return mac, mu_mac, std_mac, p
     return mac, mu_mac, std_mac
