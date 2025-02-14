@@ -47,6 +47,11 @@ def test_est_morans_i():
     assert n == n_symmetric
     assert n_p == n_p_symmetric
 
+    # test that nan values are ignored as they should be
+    values = np.array([4, 4, 4, np.nan, 4, 4, 4])
+    ac, n, n_p = est_morans_i(values, mean_v=3)
+    assert_almost_equal(ac, (6 - 1) / 6)
+
     # test that correct error is raised
     with pytest.raises(ValueError):
         # non-square matrix

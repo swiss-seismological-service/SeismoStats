@@ -256,7 +256,8 @@ def b_significant_1D(
         b_method: BValueEstimator = ClassicBValueEstimator,
         return_p: bool = False,
         conservative: bool = True,
-        **kwargs,
+        *args,
+        ** kwargs,
 ) -> tuple[float, float, float]:
     """
     Estimates the mean autocorrelation for the one-dimensional case (along the
@@ -285,7 +286,8 @@ def b_significant_1D(
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
                     i.e., gamma = 0.81 (see Mirwald et al, SRL (2024)).
-        **kwargs:       Additional arguments to the b-value estimation method.
+        *args:          Additional arguments to the b-value estimation method.
+        **kwargs:       Keyword arguments to the b-value estimation method.
 
     Returns:
         mac:        Mean autocorrelation.
@@ -358,7 +360,7 @@ def b_significant_1D(
         # estimate b-values
         b_vec, _, n_m_loop = bs_from_partitioning(
             list_magnitudes, list_times, list_mc,
-            delta_m, b_method=b_method, **kwargs)
+            delta_m, b_method=b_method, *args, **kwargs)
         b_vec[n_m_loop < min_num] = np.nan
 
         # Estimate average events per b-value estimate.
