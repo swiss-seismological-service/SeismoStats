@@ -1,5 +1,6 @@
 import os
 
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
@@ -158,6 +159,22 @@ def test_estimate_b_positive(
     assert_almost_equal(b_estimate, b_estimate_weighted)
     assert_almost_equal(b_estimate, b_estimate_half_weighted)
     assert_almost_equal(b_estimate, b_estimate_extended)
+
+    # test that index works correctly
+    mags = np.array([0, 0.9, -1, 0.2, 0.5])
+    estimator.calculate(mags, mc=-1, delta_m=0.1)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+
+    # test that time array is correctly used
+    mags = np.array([0, 0.9, 0.5, 0.2, -1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 3)])
+
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
 
 
 @pytest.mark.parametrize(

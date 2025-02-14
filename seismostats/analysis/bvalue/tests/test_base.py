@@ -20,6 +20,16 @@ def test_estimate_b_warnings():
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=-1, delta_m=0.1)
 
+    # Magnitudes contain NaN values
+    mags = np.array([np.nan])
+    with pytest.raises(ValueError):
+        estimator.calculate(mags, mc=1, delta_m=0.1)
+
+    # No magnitudes above completeness magnitude
+    mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
+    with pytest.raises(AssertionError):
+        estimator.calculate(mags, mc=1, delta_m=0.1)
+
 
 def test_by_reference():
     estimator = ClassicBValueEstimator()
@@ -31,21 +41,10 @@ def test_by_reference():
     estimator.magnitudes.sort()
     assert not np.array_equal(mags, estimator.magnitudes)
 
-    # Magnitudes contain NaN values
-    mags = np.array([np.nan])
-    with pytest.raises(ValueError):
-        estimator.calculate(mags, mc=1, delta_m=0.1)
-
-    # No magnitudes above completeness magnitude
-    mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
-    with pytest.raises(AssertionError):
-        estimator.calculate(mags, mc=1, delta_m=0.1)
-
-    # test index
-    mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
-    estimator.calculate(mags, mc=0, delta_m=0.1)
-    print(estimator.index)
-    assert estimator.index == np.array([0])
+    # test index is working
+    mags = np.array([0, 0.9, -1, 0.2, 0.5])
+    estimator.calculate(mags, mc=0.1, delta_m=0.1)
+    assert (estimator.magnitudes == mags[estimator.idx]).all()
 
 
 def test_beta():

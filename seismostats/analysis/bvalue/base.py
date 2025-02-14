@@ -61,7 +61,7 @@ class BValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = self.magnitudes >= self.mc - self.delta_m / 2
+        idx = np.where(self.magnitudes >= self.mc - self.delta_m / 2)[0]
         self.magnitudes = self.magnitudes[idx]
 
         if self.weights is not None:
@@ -72,6 +72,7 @@ class BValueEstimator(ABC):
         )
         'No magnitudes above the completeness magnitude.'
 
+        self.idx = idx
         return idx
 
     def _sanity_checks(self):
@@ -82,13 +83,9 @@ class BValueEstimator(ABC):
             raise ValueError('Magnitudes contain NaN values.')
 
         # test magnitude binnning
-        if self.delta_m == 0:
-            tolerance = 1e-08
-        else:
-            tolerance = max(self.delta_m / 100, 1e-08)
         assert (
             binning_test(self.magnitudes, self.delta_m,
-                         tolerance, check_larger_binning=False)
+                         check_larger_binning=False)
         )
         'Magnitudes are not binned correctly.'
 

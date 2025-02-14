@@ -68,7 +68,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 def binning_test(
         x: np.ndarray | list,
         delta_x: float,
-        tolerance: float = 1e-08,
+        tolerance: float = 1e-15,
         check_larger_binning: bool = True,
 ) -> float:
     """
@@ -107,8 +107,9 @@ def binning_test(
     if len(x) == 0:
         # error if the array is empty
         raise ValueError("The given array has no entry")
+    x = np.array(x)
 
-    if delta_x == 0:
+    if delta_x == 0 and check_larger_binning is True:
         range = np.max(x) - np.min(x)
         power = np.arange(np.floor(np.log10(tolerance)) + 1,
                           np.ceil(np.log10(range)), 1)
@@ -120,20 +121,19 @@ def binning_test(
                 return False
 
     else:
-        x = np.asarray(x)
-        x_binned = bin_to_precision(x, delta_x)
-
-        # The first test can only be correct if the bins are <= delta_x
-        if delta_x <= tolerance:
+        if delta_x < tolerance:
             if get_option("warnings") is True:
                 warnings.warn(
-                    "tolerance is smaller than binning, returning True by"
-                    "default")
-            return True
+                    "delta_x is smaller than tolerance, checking"
+                    "for delta_x = " + str(tolerance) + " instead")
+            delta_x = tolerance
+        x_binned = bin_to_precision(x, delta_x)
+
+        # This test checks if the bins are equal or larger than delta_x.
         test_1 = np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
+
+        # If the test_1 is True, we check if a larger binning is correct.
         if test_1 and check_larger_binning is True:
-            # second test checks if the bins are smaller than delta_x
-            # For this, we check the next larger power of ten
             power = np.floor(np.log10(delta_x)) + 1
             x_binned = bin_to_precision(x, 10**power)
             test_2 = not np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)

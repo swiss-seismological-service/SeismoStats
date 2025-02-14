@@ -83,26 +83,29 @@ class APositiveAValueEstimator(AValueEstimator):
         return idx
 
     def _estimate(self) -> float:
-
         # order the magnitudes and times
-        idx = np.argsort(self.times)
-        self.magnitudes = self.magnitudes[idx]
-        self.times = self.times[idx]
+        srt = np.argsort(self.times)
+        self.magnitudes = self.magnitudes[srt]
+        self.times = self.times[srt]
+        self.idx = self.idx[srt]
 
         # differences
         mag_diffs = np.diff(self.magnitudes)
         time_diffs = np.diff(self.times)
 
         # only consider events with magnitude difference >= dmc
-        idx = mag_diffs > self.dmc - self.delta_m / 2
-        mag_diffs = mag_diffs[idx]
-        time_diffs = time_diffs[idx]
+        is_larger = mag_diffs >= self.dmc - self.delta_m / 2
+        mag_diffs = mag_diffs[is_larger]
+        time_diffs = time_diffs[is_larger]
+        self.magnitudes = self.magnitudes[1:][is_larger]
+        self.idx = self.idx[1:][is_larger]
 
         # estimate the number of events within the time interval
         total_time = self.times[-1] - self.times[0]
+        self.times = self.times[1:][is_larger]
 
         time_factor = sum(time_diffs / total_time)
-        n_pos = sum(idx) / time_factor
+        n_pos = sum(is_larger) / time_factor
 
         # estimate a-value
         return np.log10(n_pos)
