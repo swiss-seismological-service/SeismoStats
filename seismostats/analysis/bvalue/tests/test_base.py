@@ -22,11 +22,30 @@ def test_estimate_b_warnings():
 
 
 def test_by_reference():
-    mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
     estimator = ClassicBValueEstimator()
+
+    # test that values below mc are filtered out
+    mags = np.array([0, 1, 3.1, 1.1, 2, 1.2, 1.3, 1.4,
+                    4.7, 1.5, 1.6, 1.7, 1.8, 3.4])
     estimator.calculate(mags, mc=1, delta_m=0.1)
     estimator.magnitudes.sort()
     assert not np.array_equal(mags, estimator.magnitudes)
+
+    # Magnitudes contain NaN values
+    mags = np.array([np.nan])
+    with pytest.raises(ValueError):
+        estimator.calculate(mags, mc=1, delta_m=0.1)
+
+    # No magnitudes above completeness magnitude
+    mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
+    with pytest.raises(AssertionError):
+        estimator.calculate(mags, mc=1, delta_m=0.1)
+
+    # test index
+    mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
+    estimator.calculate(mags, mc=0, delta_m=0.1)
+    print(estimator.index)
+    assert estimator.index == np.array([0])
 
 
 def test_beta():

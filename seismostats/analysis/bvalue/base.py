@@ -44,8 +44,8 @@ class BValueEstimator(ABC):
         self.delta_m = delta_m
         self.weights = None if weights is None else np.array(weights)
 
-        self._filter_magnitudes()
         self._sanity_checks()
+        self._filter_magnitudes()
 
         self.__b_value = self._estimate()
         return self.__b_value
@@ -67,20 +67,28 @@ class BValueEstimator(ABC):
         if self.weights is not None:
             self.weights = self.weights[idx]
 
+        assert (
+            len(self.magnitudes) > 0
+        )
+        'No magnitudes above the completeness magnitude.'
+
         return idx
 
     def _sanity_checks(self):
         '''
         Perform sanity checks on the input data.
         '''
+        if np.any(np.isnan(self.magnitudes)):
+            raise ValueError('Magnitudes contain NaN values.')
 
-        # test that the magnitudes are binned correctly
+        # test magnitude binnning
         if self.delta_m == 0:
             tolerance = 1e-08
         else:
             tolerance = max(self.delta_m / 100, 1e-08)
         assert (
-            binning_test(self.magnitudes, self.delta_m, tolerance)
+            binning_test(self.magnitudes, self.delta_m,
+                         tolerance, check_larger_binning=False)
         )
         'Magnitudes are not binned correctly.'
 

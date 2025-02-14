@@ -58,9 +58,9 @@ class BPositiveBValueEstimator(BValueEstimator):
     def _estimate(self, dmc: float | None = None) -> float:
 
         # only take the values where the next earthquake is d_mc larger than the
-        # previous one. delta_m is added to avoid numerical errors
+        # previous one. delta_m / 2 is added to avoid numerical errors
         self.magnitudes = np.diff(self.magnitudes)
-        is_larger = self.magnitudes > self.dmc - self.delta_m / 2
+        is_larger = self.magnitudes >= self.dmc - self.delta_m / 2
         self.magnitudes = abs(self.magnitudes[is_larger])
 
         if self.weights is not None:

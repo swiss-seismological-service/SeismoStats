@@ -104,6 +104,10 @@ def binning_test(
             otherwise.
 
     """
+    if len(x) == 0:
+        # error if the array is empty
+        raise ValueError("The given array has no entry")
+
     if delta_x == 0:
         range = np.max(x) - np.min(x)
         power = np.arange(np.floor(np.log10(tolerance)) + 1,
