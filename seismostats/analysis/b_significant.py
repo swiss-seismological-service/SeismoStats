@@ -12,15 +12,15 @@ from seismostats.utils._config import get_option
 
 def est_morans_i(values: np.ndarray,
                  w: np.ndarray | None = None,
-                 mean_v: float = None) -> tuple:
+                 mean_v: float | float | None = None) -> tuple:
     """
-    Estimate the nearest neighbor auto correlation (Moran's I) of the values.
+    Estimates the nearest neighbor auto correlation (Moran's I) of the values.
 
     Args:
         values:     Values for which the autocorrelation is estimated.
         w:          Weight matrix, indicating which of the values are
-                neighbors to each other. It should be a square matrix of
-                size `len(values) x len(values)`, with zeros on the diagonal.
+                neighbors to each other. It should be a square matrix of size
+                :code:`len(values) x len(values)`, with zeros on the diagonal.
                 At places where the value is 1, the values are considered
                 neighbors to each other. Values that are NaN are not considered
                 neighbors to any other value. If w is None, it is assumed that
@@ -31,51 +31,46 @@ def est_morans_i(values: np.ndarray,
                 from the non-nan values.
 
     Returns:
-        ac:     Auto correlation of the values.
-        n:      Number of values that are not NaN.
-        n_p:    Sum of the weight matrix. In the limit of a large n (number of
-            values), the upper limit of the standard deviation of the
-            autocorrelation is `1/sqrt(n_p)`. This number is can be interpreted
-            as the number of neighboring pairs.
+        ac:         Auto correlation of the values.
+        n:          Number of values that are not NaN.
+        n_p:        Sum of the weight matrix. In the limit of a large n (number
+                of values), the upper limit of the standard deviation of the
+                autocorrelation is `1/sqrt(n_p)`. This number is can be
+                interpreted as the number of neighboring pairs.
 
     Examples:
         .. code-block:: python
 
-        import numpy as np
-        from seismostats.analysis.b_significant import est_morans_i
+            >>> import numpy as np
+            >>> from seismostats.analysis.b_significant import est_morans_i
 
-        values = np.array([2, 2, 2, 4, 4])
-        w = np.array([[0, 1, 1, 0, 0],
-                      [1, 0, 1, 0, 0],
-                      [1, 1, 0, 0, 0],
-                      [0, 0, 0, 0, 1],
-                      [0, 0, 0, 1, 0]])
-        # now, the first three values are neighbors to each other, as well as
-        # the last two values.
-
-        ac, n, n_p = est_morans_i(values, w, mean_v=3)
+            >>> values = np.array([2, 2, 2, 4, 4])
+            >>> w = np.array([[0, 1, 1, 0, 0],
+            ...             [1, 0, 1, 0, 0],
+            ...             [1, 1, 0, 0, 0],
+            ...             [0, 0, 0, 0, 1],
+            ...             [0, 0, 0, 1, 0]])
+            >>> ac, n, n_p = est_morans_i(values, w, mean_v=3)
+            >>> ac
+            0.8
     """
     # sanity checks
     if len(values) < 2:
-        raise ValueError("At least 2 values are needed for the estimation")
+        raise ValueError("At least 2 values are needed for the estimation.")
 
     # Checks regardning the weight matrix. In case it is not provided, 1D case
     # is assumed
     if w is None:
         n_values = len(values)
-        w = np.zeros((n_values, n_values))
-        for ii in range(n_values):
-            for jj in range(n_values):
-                if jj == ii + 1:
-                    w[ii, jj] = 1
+        w = np.eye(n_values, k=1)
     else:
         if w.shape[0] != w.shape[1]:
             raise ValueError("Weight matrix must be square.")
-        if w.shape[0] != len(values):
-            raise ValueError(
-                "Weight matrix must have the same size as the values.")
         if sum(w.diagonal()) != 0:
-            raise ValueError("Weight matrix must have zeros on the diagonal.")
+            np.fill_diagonal(w, 0)
+            if get_option('warnings') is True:
+                warnings.warn("Diagonal of the neighbour matrix is not zero."
+                              "It is set to zero.")
         if np.sum(np.tril(w)) != 0 and np.sum(np.triu(w)) != 0:
             if np.all(w == w.T):
                 w = np.triu(w)
@@ -84,42 +79,35 @@ def est_morans_i(values: np.ndarray,
                     "Weight matrix must be triangular or at least symmetric.")
         elif np.sum(np.triu(w)) == 0:
             w = w.T
-        # Check that there are only 0 and 1 in the weight matrix.
         if not np.all(np.isin(w, [0, 1])):
             raise ValueError("Weight matrix must only contain 0 and 1.")
 
-    if mean_v is None:
-        mean_v = np.mean(values[~np.isnan(values)])
-
     # estimate autocorrelation
-    ac = 0
-    ac_0 = 0
-    n = len(values[~np.isnan(values)])
-    for ii, v1 in enumerate(values):
-        if np.isnan(v1):
-            w[ii, :] = 0
-            continue
-        ac_0 += (v1 - mean_v) ** 2
-        for jj in range(ii + 1, len(values)):
-            v2 = values[jj]
-            if np.isnan(v2):
-                w[ii, jj] = 0
-                continue
-            if w[ii, jj] == 1:
-                ac += (v1 - mean_v) * (v2 - mean_v)
+    valid_mask = ~np.isnan(values)
+    if mean_v is None:
+        mean_v = np.mean(values[valid_mask])
+
+    w[~valid_mask, :] = 0
+    w[:, ~valid_mask] = 0
+
+    deviations = values - mean_v
+    deviations[~valid_mask] = 0
+    ac = deviations @ w @ deviations
+    ac_0 = deviations @ deviations
 
     n_p = np.sum(w)
+    n = sum(valid_mask)
     ac = (n - 1) / n_p * ac / ac_0
     return ac, n, n_p
 
 
 def transform_n(
-    b_estimates: np.ndarray | float,
+    b_estimate: float,
     b_true: float,
-    n1: np.ndarray | int,
+    n1: int,
     n2: int,
 ) -> np.ndarray:
-    """Transform a b-value estimated from n1 events to a b-value estimated from
+    """Transforms a b-value estimated from n1 events to a b-value estimated from
     n2 events, such that the distribution of the transformed b-values is
     consistent with one that would be estimated from n2 events. The
     transformation is based on the assumption that the true b-value is known,
@@ -133,32 +121,20 @@ def transform_n(
         b_estimates:    b-value estimates to be transformed
         b_true:         True b-value
         n1:             Number of events used for the the b-value estimates.
-            Has to be an integer or an array of the same length as b_estimate.
         n2:             number of events to which the distribution is
-            transformed. It is only possible to transform to a larger number of
-            events, so n2 must be larger than n1. while n1 can be an array, n2
-            must be an integer.
+                    transformed. Note that b_estimate, n1 and n2 can also be
+                    arrays of the same length.
 
     Returns:
         b_transformed:  Transformed b-values.
     """
 
     # sanity checks
-    if not isinstance(n2, int):
-        raise ValueError("n2 must be an integer.")
     if np.any(n1 > n2):
         raise ValueError("n2 must be larger or equal than n1.")
-    if not isinstance(n1, (int, np.ndarray)):
-        raise ValueError("n1 must be an integer or an array.")
-    elif isinstance(n1, int):
-        n1 = np.ones(len(b_estimates)) * n1
-    else:
-        assert len(b_estimates) == len(
-            n1), ("If n1 is an array, it must have tha same length as"
-                  "b_estimate.")
 
     # transform the b-values
-    b_transformed = b_true / (1 - np.sqrt(n1 / n2) * (1 - b_true / b_estimates))
+    b_transformed = b_true / (1 - np.sqrt(n1 / n2) * (1 - b_true / b_estimate))
     return b_transformed
 
 
@@ -170,43 +146,45 @@ def bs_from_partitioning(
     b_method: BValueEstimator = ClassicBValueEstimator,
     **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """ Estimate the series of b-values from a list of subsets of magnitudes and
-    times.
+    """ Estimates the series of b-values from a list of subsets of magnitudes
+    and times.
 
     Args:
         list_mags:  List of arrays of magnitudes. From each array within the
-            list, a b-value is estimated.
+                list, a b-value is estimated.
         list_times: List of arrays of times, in the same order as the magnitudes
         list_mc:    List of completeness magnitude corresponding to the
-            magnitudes. If a single value is provided, it is used for all
-            magnitudes.
+                magnitudes. If a single value is provided, it is used for all
+                magnitudes.
         delta_m:    Discretization of magnitudes.
         b_method:   Method to estimate the b-value.
         **kwargs:   Additional arguments to the b-value estimation method.
 
     Returns:
         b_values:   Series of b-values, each one is estimated from the
-            magnitudes contained in the corresponding element of
-            ``list_magnitudes``.
+                magnitudes contained in the corresponding element of
+                ``list_magnitudes``.
         std_b:      Standard deviations corresponding to the b-values.
         n_ms:       Number of events used for the b-value estimates.
 
     Examples:
         .. code-block:: python
 
-        import numpy as np
-        from seismostats.analysis.b_significant import bs_from_partitioning
-
-        mags = [np.array([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]),
-                np.array([21, 22, 23, 24, 25, 26, 27, 28, 29, 30]),
-                np.array([31, 32, 33, 34, 35, 36, 37, 38, 39, 40])]
-        times = [np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-                np.array([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]),
-                np.array([21, 22, 23, 24, 25, 26, 27, 28, 29, 30])]
-        delta_m = 1
-        mc = 11
-
-        b_values, std_bs, n_ms = bs_from_partitioning(mags, times, delta_m, mc)
+            >>> import numpy as np
+            >>> from seismostats.analysis.b_significant import (
+            ...     bs_from_partitioning)
+            >>> mags = [np.array([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]),
+            ...         np.array([21, 22, 23, 24, 25, 26, 27, 28, 29, 30]),
+            ...         np.array([31, 32, 33, 34, 35, 36, 37, 38, 39, 40])]
+            >>> times = [np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+            ...         np.array([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]),
+            ...         np.array([21, 22, 23, 24, 25, 26, 27, 28, 29, 30])]
+            >>> delta_m = 1
+            >>> mc = 11
+            >>> b_values, std_bs, n_ms = bs_from_partitioning(
+            ...     mags, times, delta_m, mc)
+            >>> b_values
+            array([0.0289637 , 0.0173741 , 0.01240926])
     """
 
     b_values = np.zeros(len(list_magnitudes))
@@ -239,21 +217,20 @@ def cut_constant_idx(
     offset: int = 0,
 ) -> tuple[list[int], list[np.ndarray]]:
     """
-    find the indices to cut a series such that the subsamples have a constant
+    Finds the indices to cut a series such that the subsamples have a constant
     number of events, n.
 
-    the subsamples can then be obtained in the following way:
-    subsamples = np.array_split(values, idx)
-
     Args:
-        values:     original series to be cut
-        n:          number of events in each subsample
+        values:     Original series of values to be cut.
+        n:          Number of events in each subsample.
         offset:     idx where to start cutting the series. This should be
-                between 0 and n
+                    between 0 and n.
 
     Returns:
-        idx:            indices of the subsamples
-        subsamples:     list of subsamples
+        idx:        Indices of the subsamples, which can be used to
+                    construct the subsamples in the following way:
+                    :code:`subsamples = np.array_split(values, idx)`
+        subsamples: list of subsamples
     """
     # Check that the offset is not larger than n.
     if offset >= n:
@@ -268,21 +245,20 @@ def cut_constant_idx(
     return idx, subsamples
 
 
-def mac_1D_constant_nm(
+def b_significant_1D(
         mags: np.ndarray,
-        mc: float,
+        mc: float | np.ndarray,
         delta_m: float,
         times: np.ndarray[np.timedelta64],
         n_m: int,
         min_num: int = 10,
         b_method: BValueEstimator = ClassicBValueEstimator,
+        conservative: bool = True,
         **kwargs,
-) -> tuple[float, float, float, np.ndarray, np.ndarray]:
+) -> tuple[float, float, float]:
     """
-    This function estimates the mean autocorrelation for the one-dimensional
-    case (along the dimension of order). Additionally, it provides the mean
-    a- and b-values for each grid-point. The partitioning method is based on
-    voronoi tesselation (random area).
+    Estimates the mean autocorrelation for the one-dimensional case (along the
+    dimension of order).
 
     With the mean and standard deviation of the autocorrelation under H0, the
     hypothesis that the b-values are constant can be tested. If the number of
@@ -295,26 +271,30 @@ def mac_1D_constant_nm(
     plot_b_constant_mn) with the same parameters as used here.
 
     Args:
-        mags:       Magnitudes of the events. They are assumed to be order
-            along the dimension of interest (e.g. time or depth)
-        mc:     Completeness magnitude. If a single value is provided, it is
-            used for all magnitudes. Otherwise, the individual completeness of
-            each magnitude can be provided.
-        delta_m:    Magnitude bin width.
-        times:  Times of the events.
-        n_m:    Number of magnitudes in each partition.
-        min_num:    Minimum number of events in a partition.
-        b_method:   Method to estimate the b-values.
-        **kwargs:   Additional arguments to the b-value estimation method.
+        mags:           Magnitudes of the events. They are assumed to be order
+                    along the dimension of interest (e.g. time or depth)
+        mc:             Completeness magnitude. If a single value is provided,
+                    it is used for all magnitudes. Otherwise, the individual
+                    completeness of each magnitude can be provided.
+        delta_m:        Magnitude bin width.
+        times:          Times of the events.
+        n_m:            Number of magnitudes in each partition.
+        min_num:        Minimum number of events in a partition.
+        b_method:       Method to estimate the b-values.
+        conservative:   If True, the conservative estimate of the standard
+                    deviation of the autocorrelation is used, i.e., gamma = 1.
+                    If False (default), the non-conservative estimate is used,
+                    i.e., gamma = 0.81 (see Mirwald et al, SRL (2024)).
+        **kwargs:       Additional arguments to the b-value estimation method.
 
     Returns:
         mac:        Mean autocorrelation.
         mu_mac:     Expected mean autocorrelation und H0.
         std_mac:    Standard deviation of the mean autocorrelation under H0.
-            (i.e. constant b-value). Here, the conservatice estimate is used -
-            in case the non-conservative estimate is needed, the standard
-            deviation can be mulitplied by the factor gamma = 0.81 given by
-            Mirwald et al, SRL (2024).
+                (i.e. constant b-value). Here, the conservatice estimate is
+                used - in case the non-conservative estimate is needed, the
+                standard deviation can be mulitplied by the factor gamma = 0.81
+                given by Mirwald et al, SRL (2024).
     """
     if isinstance(mc, (float, int)):
         if min(mags) < mc:
@@ -337,11 +317,6 @@ def mac_1D_constant_nm(
             warnings.warn(
                 "The number of subsamples is less than 25. The normality "
                 "assumption of the autocorrelation might not be valid.")
-
-    if not isinstance(mags, np.ndarray):
-        raise ValueError("Magnitudes must be an array.")
-    if not isinstance(times, np.ndarray):
-        raise ValueError("Times must be an array.")
     if len(mags) != len(times):
         raise ValueError("Magnitudes and times must have the same length.")
 
@@ -389,6 +364,9 @@ def mac_1D_constant_nm(
     mean_n = np.nanmean(n)
     mean_np = np.nanmean(n_p)
     mu_mac = -1 / mean_n
-    std_mac = 1 / np.sqrt(mean_np)
+    std_mac = (mean_np - 2) / (mean_np * np.sqrt(mean_np))
+
+    if not conservative:
+        std_mac *= 0.81
 
     return mac, mu_mac, std_mac

@@ -10,7 +10,7 @@ from scipy.stats import norm
 # Own functions
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.b_significant import mac_1D_constant_nm
+from seismostats.analysis.b_significant import b_significant_1D
 
 
 def plot_mc_vs_b(
@@ -212,7 +212,7 @@ def plot_b_series_constant_nm(
     return ax
 
 
-def plot_nm_vs_mac1D(
+def plot_b_significant_1D(
         magnitudes: np.ndarray,
         times: np.ndarray,
         mc: np.ndarray,
@@ -292,7 +292,7 @@ def plot_nm_vs_mac1D(
     mu_mac = np.zeros(len(n_ms))
     std_mac = np.zeros(len(n_ms))
     for ii, n_m in enumerate(n_ms):
-        mac[ii], mu_mac[ii], std_mac[ii] = mac_1D_constant_nm(
+        mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
             magnitudes, mc, delta_m, times, n_m, min_num=min_num,
             b_method=b_method, **kwargs)
 

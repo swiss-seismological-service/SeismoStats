@@ -9,7 +9,7 @@ from seismostats.analysis.b_significant import (
     bs_from_partitioning,
     cut_constant_idx,
     transform_n,
-    mac_1D_constant_nm,
+    b_significant_1D,
 )
 
 
@@ -56,14 +56,6 @@ def test_est_morans_i():
                       [0, 0, 0, 0, 1]])
         est_morans_i(values, w)
     with pytest.raises(ValueError):
-        # trace is not zero
-        w = np.array([[0, 1, 0, 1, 1],
-                      [0, 0, 1, 0, 0],
-                      [0, 0, 1, 1, 0],
-                      [0, 0, 0, 0, 1],
-                      [0, 0, 0, 0, 0]])
-        est_morans_i(values, w)
-    with pytest.raises(ValueError):
         # other values than 0 and 1
         w = np.array([[0, 1, 0, 1, 1],
                       [0, 0, 1, 0, 0],
@@ -84,7 +76,7 @@ def test_est_morans_i():
 def test_transform_n():
     b_est = np.array([1, 1, 2, 0.5, 2])
     n1 = np.array([10, 100, 100, 100, 1000])
-    n2 = 1000
+    n2 = np.ones(len(n1)) * 1000
     b_true = 1
     b_transformed = transform_n(b_est, b_true, n1, n2)
     correct_b_transformed = np.array(
@@ -99,12 +91,8 @@ def test_transform_n():
     assert_almost_equal(b_transformed, b_est)
 
     # check that sanity checks work
-    with pytest.raises(AssertionError):
-        transform_n(b_est, b_true, np.array([1, 2]), n2)
     with pytest.raises(ValueError):
         transform_n(b_est, b_true, 5, 1)
-    with pytest.raises(ValueError):
-        transform_n(b_est, b_true, n1, np.array([1, 2]))
 
 
 def test_bs_from_partitioning():
@@ -155,26 +143,31 @@ def test_cut_constant_idx():
     assert all(all(subsample == split_sample) for subsample,
                split_sample in zip(subsamples, split_samples))
 
+    # make sure that sanity checks work
+    with pytest.raises(ValueError):
+        idx, subsamples = cut_constant_idx(values, 4, offset=5)
 
-def test_mac_1D_constant_nm():
+
+def test_b_significant_1D():
     mags = np.arange(0, 1000, 1)
     times = np.arange(0, 1000, 1)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        mac, mu_mac, std_mac = mac_1D_constant_nm(
+        mac, mu_mac, std_mac = b_significant_1D(
             mags,
             mc=0,
             delta_m=1,
             times=times,
-            n_m=20)
+            n_m=20,
+            conservative=True)
 
     assert_almost_equal(mac, 0.5184342563144473)
     assert_almost_equal(mu_mac, -0.020387359836901122)
-    assert_almost_equal(std_mac, 0.14426245016127676)
+    assert_almost_equal(std_mac, 0.1382577696134609)
 
     with pytest.raises(ValueError):
         # mags larger than mc present
-        mac_1D_constant_nm(
+        b_significant_1D(
             mags,
             mc=1,
             delta_m=1,
@@ -182,7 +175,7 @@ def test_mac_1D_constant_nm():
             n_m=20)
     with pytest.raises(ValueError):
         # min_num larger than n_m
-        mac_1D_constant_nm(
+        b_significant_1D(
             mags,
             mc=0,
             delta_m=1,
@@ -191,23 +184,15 @@ def test_mac_1D_constant_nm():
             min_num=11)
     with pytest.raises(ValueError):
         # n_m larger than len(mags)/3
-        mac_1D_constant_nm(
+        b_significant_1D(
             mags,
             mc=0,
             delta_m=1,
             times=times,
             n_m=500)
     with pytest.raises(ValueError):
-        # mags are not an array
-        mac_1D_constant_nm(
-            list(mags),
-            delta_m=1,
-            mc=0,
-            times=times,
-            n_m=20)
-    with pytest.raises(ValueError):
         # times and mags have different lengths
-        mac_1D_constant_nm(
+        b_significant_1D(
             mags,
             delta_m=1,
             mc=0,
