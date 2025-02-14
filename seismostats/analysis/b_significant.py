@@ -280,7 +280,7 @@ def b_significant_1D(
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events in a partition.
         b_method:       Method to estimate the b-values.
-        return_p:       If True, the p-value of the null hypothesis of constant 
+        return_p:       If True, the p-value of the null hypothesis of constant
                     b-values is returned.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
