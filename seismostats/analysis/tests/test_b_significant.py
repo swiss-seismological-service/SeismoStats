@@ -6,7 +6,7 @@ import warnings
 
 from seismostats.analysis.b_significant import (
     est_morans_i,
-    bs_from_partitioning,
+    values_from_partitioning,
     cut_constant_idx,
     transform_n,
     b_significant_1D,
@@ -100,7 +100,7 @@ def test_transform_n():
         transform_n(b_est, b_true, 5, 1)
 
 
-def test_bs_from_partitioning():
+def test_values_from_partitioning():
     list_magnitudes = [np.array([1, 2, 3, 4, 5]),
                        np.array([1, 2, 3, 4, 5]),
                        np.array([1, 2, 3, 4, 5])]
@@ -117,7 +117,7 @@ def test_bs_from_partitioning():
     mc = 1
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        b_values, std_b, n_ms = bs_from_partitioning(
+        b_values, std_b, n_ms = values_from_partitioning(
             list_magnitudes, list_times, mc, delta_m)
 
     assert_almost_equal(b_values, np.array(
@@ -158,7 +158,7 @@ def test_b_significant_1D():
     times = np.arange(0, 1000, 1)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        mac, mu_mac, std_mac = b_significant_1D(
+        p, mac, mu_mac, std_mac = b_significant_1D(
             mags,
             mc=0,
             delta_m=1,
@@ -166,6 +166,7 @@ def test_b_significant_1D():
             n_m=20,
             conservative=True)
 
+    assert_almost_equal(p, 4.8650635175784274e-05)
     assert_almost_equal(mac, 0.5184342563144473)
     assert_almost_equal(mu_mac, -0.020387359836901122)
     assert_almost_equal(std_mac, 0.1382577696134609)
