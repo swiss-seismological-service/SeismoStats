@@ -95,7 +95,6 @@ class APositiveAValueEstimator(AValueEstimator):
 
         # only consider events with magnitude difference >= dmc
         is_larger = mag_diffs >= self.dmc - self.delta_m / 2
-        mag_diffs = mag_diffs[is_larger]
         time_diffs = time_diffs[is_larger]
         self.magnitudes = self.magnitudes[1:][is_larger]
         self.idx = self.idx[1:][is_larger]

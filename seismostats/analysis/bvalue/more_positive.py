@@ -29,6 +29,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                   magnitudes: np.ndarray,
                   mc: float,
                   delta_m: float,
+                  times: np.ndarray | None = None,
                   weights: np.ndarray | None = None,
                   dmc: float | None = None) -> float:
         '''
@@ -39,11 +40,19 @@ class BMorePositiveBValueEstimator(BValueEstimator):
             magnitudes: Array of magnitudes
             mc:         Completeness magnitude
             delta_m:    Discretization of magnitudes.
+            times:      Vector of times of the events, in any format (datetime,
+                    float, etc.). If None, it is assumed that the events are
+                    ordered in time.
             weights:    Array of weights for the magnitudes.
-            dmc:        Cutoff value for the differences (differences
-                        below this value are not considered). If None,
-                        the cutoff is set to delta_m.
+            dmc:        Cutoff value for the differences (differences below
+                    this value are not considered). If None, the cutoff is set
+                    to delta_m.
         '''
+        if times is None:
+            self.times = None
+        else:
+            self.times: np.ndarray = np.array(times)
+
         self.dmc: float = dmc if dmc is not None else delta_m
 
         if self.dmc < 0:
@@ -57,9 +66,27 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                                  delta_m=delta_m,
                                  weights=weights)
 
-    def _estimate(self) -> float:
-        mag_diffs = -np.ones(len(self.magnitudes) - 1) * self.delta_m
+    def _filter_magnitudes(self) -> np.ndarray:
+        '''
+        Filter out magnitudes below the completeness magnitude.
+        '''
+        idx = super()._filter_magnitudes()
 
+        if self.times is not None:
+            self.times = self.times[idx]
+        return idx
+
+    def _estimate(self) -> float:
+        if self.times is not None:
+            srt = np.argsort(self.times)
+            self.magnitudes = self.magnitudes[srt]
+            self.times = self.times[srt]
+            if self.weights is not None:
+                self.weights = self.weights[srt]
+            self.idx = self.idx[srt]
+
+        # calculate mg diffs to next larger magnitude
+        mag_diffs = -np.ones(len(self.magnitudes) - 1) * self.delta_m
         idx_next_larger = find_next_larger(
             self.magnitudes, self.delta_m, self.dmc)
         mag_diffs = self.magnitudes[idx_next_larger] - self.magnitudes
@@ -67,9 +94,13 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         idx_no_next = idx_next_larger == 0
         self.magnitudes = mag_diffs[~idx_no_next]
 
+        # make sure that all attributes are consistent
+        idx_next_larger = idx_next_larger[~idx_no_next]
+        self.idx = self.idx[idx_next_larger]
         if self.weights is not None:
-            weights = self.weights[idx_next_larger]
-            self.weights = weights[~idx_no_next]
+            self.weights = self.weights[idx_next_larger]
+        if self.times is not None:
+            self.times = self.times[idx_next_larger]
 
         return _mle_estimator(self.magnitudes,
                               mc=self.dmc,

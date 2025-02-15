@@ -215,3 +215,22 @@ def test_estimate_b_more_positive(
     assert_almost_equal(b_estimate, b_est_correct)
     assert_almost_equal(b_estimate, b_estimate_weighted)
     assert_almost_equal(b_estimate, b_estimate_half_weighted)
+
+    # test that index works correctly
+    mags = np.array([0, 0.9, -1, 0.2, 0.5, 1])
+    estimator.calculate(mags, mc=-1, delta_m=0.1)
+    assert (mags[estimator.idx] == np.array([0.9, 1, 0.2, 0.5, 1])).all()
+    assert (estimator.idx == np.array([1, 5, 3, 4, 5])).all()
+    assert (estimator.times is None)
+
+    # test that time array is correctly used
+    mags = np.array([0, 0.9, 0.5, 0.2, -1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 3)])
+
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (estimator.times == times[estimator.idx]).all()

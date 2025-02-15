@@ -101,6 +101,7 @@ def test_estimate_a_positive():
                       datetime(2000, 1, 5)])
     estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
     assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
 
     # test that time array is correctly used
     mags = np.array([0, 0.9, 0.5, 0.2, -1])
@@ -111,6 +112,7 @@ def test_estimate_a_positive():
                       datetime(2000, 1, 3)])
     estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
     assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
 
 
 @pytest.mark.filterwarnings("ignore")
@@ -142,3 +144,29 @@ def test_estimate_a_more_positive():
     a = estimator.calculate(
         mags, 0, 0.1, times, b_value=1, dmc=0.1)
     assert_almost_equal(10**a, 16.0)
+
+    # test that index works correctly
+    mags = np.array([0, 0.9, -1, 0.2, 0.5, 1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 3),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 6)])
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times, b_value=1)
+    assert (mags[estimator.idx] == np.array([0.9, 1, 0.2, 0.5, 1])).all()
+    assert (estimator.idx == np.array([1, 5, 3, 4, 5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
+    assert (estimator.times == times[estimator.idx]).all()
+
+    # test that time array is correctly used
+    mags = np.array([0, 0.9, 0.5, 0.2, -1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 3)])
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times, b_value=1)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
+    assert (estimator.times == times[estimator.idx]).all()
