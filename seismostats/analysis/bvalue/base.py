@@ -61,47 +61,43 @@ class BValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = np.where(self.magnitudes >= self.mc - self.delta_m / 2)[0]
-        self.magnitudes = self.magnitudes[idx]
+        self.idx = np.where(self.magnitudes >= self.mc - self.delta_m / 2)[0]
+        self.magnitudes = self.magnitudes[self.idx]
 
         if self.weights is not None:
-            self.weights = self.weights[idx]
+            self.weights = self.weights[self.idx]
 
-        assert (
-            len(self.magnitudes) > 0
-        )
-        'No magnitudes above the completeness magnitude.'
+        if len(self.magnitudes) == 0:
+            raise ValueError('No magnitudes above the completeness magnitude.')
 
-        self.idx = idx
-        return idx
+        return self.idx
 
     def _sanity_checks(self):
         '''
         Perform sanity checks on the input data.
         '''
-        if np.any(np.isnan(self.magnitudes)):
-            raise ValueError('Magnitudes contain NaN values.')
-
         # test magnitude binnning
-        assert (
-            binning_test(self.magnitudes, self.delta_m,
-                         check_larger_binning=False)
-        )
-        'Magnitudes are not binned correctly.'
+        if not binning_test(self.magnitudes, self.delta_m,
+                            check_larger_binning=False):
+            raise ValueError('Magnitudes are not binned correctly.')
 
+        # test weights
         if self.weights is not None:
-            assert len(self.magnitudes) == len(self.weights), (
-                'The number of magnitudes and weights must be equal.'
-            )
-            assert np.all(self.weights >= 0), 'Weights must be nonnegative.'
+            if len(self.magnitudes) != len(self.weights):
+                raise IndexError(
+                    'The number of magnitudes and weights must be equal.')
+            if np.any(self.weights < 0):
+                raise ValueError('Weights must be nonnegative.')
 
-        # test if lowest magnitude is much larger than mc
+        # give warnings
         if get_option('warnings') is True:
             if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
                 warnings.warn(
                     'No magnitudes in the lowest magnitude bin are present. '
                     'Check if mc is chosen correctly.'
                 )
+            if np.any(np.isnan(self.magnitudes)):
+                warnings.warn('Magnitudes contain NaN values.')
 
     @classmethod
     @abstractmethod

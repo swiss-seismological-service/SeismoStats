@@ -76,11 +76,9 @@ class APositiveAValueEstimator(AValueEstimator):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = super()._filter_magnitudes()
-
-        self.times = self.times[idx]
-
-        return idx
+        super()._filter_magnitudes()
+        self.times = self.times[self.idx]
+        return self.idx
 
     def _estimate(self) -> float:
         # order the magnitudes and times

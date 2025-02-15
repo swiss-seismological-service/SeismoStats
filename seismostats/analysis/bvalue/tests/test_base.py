@@ -11,7 +11,7 @@ def test_estimate_b_warnings():
     mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
 
     # test that uncorrect binninng leads to error
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=0, delta_m=0.2)
 
@@ -27,7 +27,7 @@ def test_estimate_b_warnings():
 
     # No magnitudes above completeness magnitude
     mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         estimator.calculate(mags, mc=1, delta_m=0.1)
 
 

@@ -45,11 +45,8 @@ class BPositiveBValueEstimator(BValueEstimator):
                     this value are not considered). If None, the cutoff is set
                     to delta_m.
         '''
-        if times is None:
-            self.times = None
-        else:
-            self.times: np.ndarray = np.array(times)
-
+        self.times: np.ndarray | None = np.array(
+            times) if times is not None else times
         self.dmc: float = dmc if dmc is not None else delta_m
 
         if self.dmc < 0:
@@ -67,11 +64,10 @@ class BPositiveBValueEstimator(BValueEstimator):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = super()._filter_magnitudes()
-
+        super()._filter_magnitudes()
         if self.times is not None:
-            self.times = self.times[idx]
-        return idx
+            self.times = self.times[self.idx]
+        return self.idx
 
     def _estimate(self) -> float:
         # order the magnitudes and times

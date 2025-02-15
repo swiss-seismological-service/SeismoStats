@@ -91,6 +91,7 @@ def plot_b_series_constant_nm(
         ax: plt.Axes | None = None,
         color: str = "blue",
         label: str | None = None,
+        *args,
         **kwargs,
 ) -> plt.Axes:
     """
@@ -119,12 +120,17 @@ def plot_b_series_constant_nm(
             the b-values are plotted against the event index.
         confidence:    confidence interval that should be plotted. Default
             is 0.95 (i.e., the 95% confidence interval is plotted)
-        ax:    axis where the plot should be plotted
-        color: color of the data
+        ax:     axis where the plot should be plotted
+        color:  color of the data
+        label:  abel of the data that will be put in the legend
+        *args:  Additional positional arguments for the b-value estimator.
+        **kwargs:   Additional keyword arguments for the b-value estimator.
 
     Returns:
         ax that was plotted on
     """
+    mags = np.array(mags)
+    times = np.array(times)
 
     if isinstance(mc, (float, int)):
         if min(mags) < mc:
@@ -135,21 +141,15 @@ def plot_b_series_constant_nm(
         if any(mags < mc):
             raise ValueError("There are earthquakes below their respective "
                              "completeness magnitude")
-
     if n_m < min_num:
         raise ValueError("n_m cannot be smaller than min_num")
-
-    if not isinstance(mags, np.ndarray):
-        raise ValueError("mags must be an array")
-    if not isinstance(times, np.ndarray):
-        raise ValueError("times must be an array")
     if len(mags) != len(times):
-        raise ValueError("mags and times must have the same length")
+        raise IndexError("mags and times must have the same length")
 
     if x_variable is None:
         x_variable = np.arange(len(mags))
     elif len(x_variable) != len(mags):
-        raise ValueError(
+        raise IndexError(
             "x_variable must have the same length as magnitudes")
     else:
         idx_sort = np.argsort(x_variable)
@@ -186,7 +186,8 @@ def plot_b_series_constant_nm(
         times_window = times_window[idx]
 
         # estimate the b-value
-        estimator.calculate(mags_window, mc=mc[ii], delta_m=delta_m, **kwargs)
+        estimator.calculate(
+            mags_window, mc=mc[ii], delta_m=delta_m, *args, **kwargs)
         if estimator.n < min_num:
             b_values[idx_start + ii] = np.nan
             std_bs[idx_start + ii] = np.nan
