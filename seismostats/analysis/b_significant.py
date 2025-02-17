@@ -143,8 +143,8 @@ def transform_n(
 
 def values_from_partitioning(
     list_magnitudes: list[np.ndarray],
-    list_times: list[np.ndarray[np.datetime64]],
-    list_mc: float | list[float],
+    list_times: list[np.ndarray],
+    list_mc: list[float] | float,
     delta_m: float,
     method: AValueEstimator | BValueEstimator = ClassicBValueEstimator,
     * args,
@@ -194,11 +194,10 @@ def values_from_partitioning(
             array([0.0289637 , 0.0173741 , 0.01240926])
     """
     # sanity checks
-    if len(list_magnitudes) != len(list_times):
-        raise ValueError("subsets of times and magnitudes must be the same ")
-
-    # conversion to numpy arrays
     n_subsets = len(list_magnitudes)
+    if n_subsets != len(list_times):
+        raise ValueError(
+            "Length of list_times and list_magnitudes must be the same.")
     list_magnitudes = [np.array(mags) for mags in list_magnitudes]
     list_times = [np.array(times) for times in list_times]
     if isinstance(list_mc, (float, int)):
@@ -303,11 +302,11 @@ def b_significant_1D(
                     If False (default), the non-conservative estimate is used,
                     i.e., gamma = 0.81 (see Mirwald et al, SRL (2024)).
         *args:          Additional arguments to the b-value estimation method.
-        **kwargs:       Keyword arguments to the b-value estimation method
+        **kwargs:       Keyword arguments to the b-value estimation method.
 
     Returns:
         p_value:    P-value of the null hypothesis that the b-values are
-                constant. This parameter is only returned if return_p is True.
+                constant.
         mac:        Mean autocorrelation.
         mu_mac:     Expected mean autocorrelation und H0.
         std_mac:    Standard deviation of the mean autocorrelation under H0.
@@ -335,7 +334,6 @@ def b_significant_1D(
         if any(mags < mc):
             raise ValueError("There are earthquakes below their respective "
                              "completeness magnitude.")
-
     if n_m < min_num:
         raise ValueError("n_m cannot be smaller than min_num.")
 
@@ -375,7 +373,7 @@ def b_significant_1D(
             list_times.pop(0)
             list_mc.pop(0)
 
-        # estimate b-values
+        # Estimate b-values (a-values)
         vec, _, n_m_loop = values_from_partitioning(
             list_magnitudes, list_times, list_mc,
             delta_m, method=method, *args, **kwargs)
