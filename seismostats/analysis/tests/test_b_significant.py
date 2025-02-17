@@ -196,7 +196,7 @@ def test_b_significant_1D():
             delta_m=1,
             times=times,
             n_m=500)
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         # times and mags have different lengths
         b_significant_1D(
             mags,
