@@ -197,13 +197,16 @@ def values_from_partitioning(
     # sanity checks
     n_subsets = len(list_magnitudes)
     if n_subsets != len(list_times):
-        raise ValueError(
+        raise IndexError(
             "Length of list_times and list_magnitudes must be the same.")
     list_magnitudes = [np.array(mags) for mags in list_magnitudes]
     list_times = [np.array(times) for times in list_times]
     if isinstance(list_mc, (float, int)):
         list_mc = np.ones(n_subsets) * list_mc
     else:
+        if n_subsets != len(list_mc):
+            raise IndexError(
+                "Length of list_mc must be the same as list_magnitudes.")
         list_mc = np.array(list_mc)
 
     # start estimation
@@ -347,7 +350,7 @@ def b_significant_1D(
                 "The number of subsamples is less than 25. The normality "
                 "assumption of the autocorrelation might not be valid.")
     if len(mags) != len(times):
-        raise ValueError("Magnitudes and times must have the same length.")
+        raise IndexError("Magnitudes and times must have the same length.")
 
     # Estimate a and b values for n_m realizations.
     ac_1D = np.zeros(n_m)
