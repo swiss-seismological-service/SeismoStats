@@ -148,15 +148,15 @@ def get_fmd(
     ``bin_position = 'left'``.
 
     Args:
-        mags    : array of magnitudes
-        delta_m : discretization of the magnitudes
-        bin_position    : position of the bin, options are  'center' and 'left'.
-                        accordingly, left edges of bins or center points are
-                        returned.
+        mags:           array of magnitudes
+        delta_m:        discretization of the magnitudes
+        bin_position:   position of the bin, options are  'center' and 'left'.
+                    accordingly, left edges of bins or center points are
+                    returned.
     Returns:
-        bins    : array of bin centers (left to right)
-        counts  : counts for each bin
-        mags    : array of magnitudes binned to ``delta_m``
+        bins:           array of bin centers (left to right)
+        counts:         counts for each bin
+        mags:           array of magnitudes binned to ``delta_m``
     """
 
     if delta_m == 0:
