@@ -20,7 +20,7 @@ def est_morans_i(values: np.ndarray,
 
     Args:
         values:     Values for which the autocorrelation is estimated.
-        w:          Weight matrix, indicating which of the values are
+        w:          neighbor matrix, indicating which of the values are
                 neighbors to each other. It should be a square matrix of size
                 :code:`len(values) x len(values)`, with zeros on the diagonal.
                 At places where the value is 1, the values are considered
@@ -35,9 +35,9 @@ def est_morans_i(values: np.ndarray,
     Returns:
         ac:         Auto correlation of the values.
         n:          Number of values that are not NaN.
-        n_p:        Sum of the weight matrix. In the limit of a large n (number
-                of values), the upper limit of the standard deviation of the
-                autocorrelation is `1/sqrt(n_p)`. This number is can be
+        n_p:        Sum of the nearest neighbor matrix. In the limit of a large
+                n (number of values), the upper limit of the standard deviation
+                of the autocorrelation is `1/sqrt(n_p)`. This number is can be
                 interpreted as the number of neighboring pairs.
 
     Examples:
@@ -61,14 +61,14 @@ def est_morans_i(values: np.ndarray,
         raise ValueError("At least 2 values are needed for the estimation.")
     values = np.array(values)
 
-    # Checks regardning the weight matrix. In case it is not provided, 1D case
-    # is assumed
+    # Checks regardning the nearest neigbor matrix. In case it is not provided,
+    # the 1D case is assumed
     if w is None:
         n_values = len(values)
         w = np.eye(n_values, k=1)
     else:
         if w.shape[0] != w.shape[1]:
-            raise ValueError("Weight matrix must be square.")
+            raise ValueError("Neighbor matrix must be square.")
         if sum(w.diagonal()) != 0:
             np.fill_diagonal(w, 0)
             if get_option('warnings') is True:
@@ -79,11 +79,12 @@ def est_morans_i(values: np.ndarray,
                 w = np.triu(w)
             else:
                 raise ValueError(
-                    "Weight matrix must be triangular or at least symmetric.")
+                    "Neighbor matrix must be triangular or symmetric.")
         elif np.sum(np.triu(w)) == 0:
             w = w.T
         if not np.all(np.isin(w, [0, 1])):
-            raise ValueError("Weight matrix must only contain 0 and 1.")
+            raise ValueError(
+                "Neighbor matrix must only contain the values 0 and 1.")
 
     # estimate autocorrelation
     valid_mask = ~np.isnan(values)
