@@ -1,8 +1,5 @@
 import decimal
 import numpy as np
-import warnings
-
-from seismostats.utils._config import get_option
 
 
 def normal_round_to_int(x: float) -> int:
@@ -125,11 +122,7 @@ def binning_test(
 
     else:
         if delta_x < tolerance:
-            if get_option("warnings") is True:
-                warnings.warn(
-                    "delta_x is smaller than tolerance, checking"
-                    "for delta_x = " + str(tolerance) + " instead")
-            delta_x = tolerance
+            return True
         x_binned = bin_to_precision(x, delta_x)
 
         # This test checks if the bins are equal or larger than delta_x.
