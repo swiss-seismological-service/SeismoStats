@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import warnings
 
 import numpy as np
 import pytest
@@ -42,9 +41,8 @@ def test_estimate_a_classic():
     assert a_estimate == 1.0
 
     # reference magnitude is given and b-value given
-    with warnings.catch_warnings(record=True):
-        a_estimate = estimator.calculate(mags, mc=1, delta_m=0.0,
-                                         m_ref=0, b_value=1)
+    a_estimate = estimator.calculate(mags, mc=1, delta_m=0.0,
+                                     m_ref=0, b_value=1)
     assert a_estimate == 2.0
 
     # reference magnitude but no b-value

@@ -79,7 +79,7 @@ class AValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        self.idx = np.where(self.magnitudes >= self.mc - self.delta_m / 2)[0]
+        self.idx = (self.magnitudes >= self.mc - self.delta_m / 2).nonzero()[0]
         self.magnitudes = self.magnitudes[self.idx]
 
         if len(self.magnitudes) == 0:
@@ -92,7 +92,8 @@ class AValueEstimator(ABC):
         '''
         # test magnitude binnning
         if len(self.magnitudes) > 0:
-            if not binning_test(self.magnitudes, self.delta_m,
+            tolerance = 1e-8
+            if not binning_test(self.magnitudes, max(self.delta_m, tolerance),
                                 check_larger_binning=False):
                 raise ValueError('Magnitudes are not binned correctly.')
 
