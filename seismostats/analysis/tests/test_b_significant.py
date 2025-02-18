@@ -171,7 +171,7 @@ def test_b_significant_1D():
     assert_almost_equal(mu_mac, -0.020387359836901122)
     assert_almost_equal(std_mac, 0.1382577696134609)
 
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning):
         # mags larger than mc present
         b_significant_1D(
             mags,
@@ -188,7 +188,7 @@ def test_b_significant_1D():
             times=times,
             n_m=10,
             min_num=11)
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning):
         # n_m larger than len(mags)/3
         b_significant_1D(
             mags,
@@ -196,7 +196,7 @@ def test_b_significant_1D():
             delta_m=1,
             times=times,
             n_m=500)
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         # times and mags have different lengths
         b_significant_1D(
             mags,
