@@ -305,22 +305,22 @@ def plot_b_significant_1D(
             method=b_method, **kwargs)
 
     # plot the results
-    plt.plot(n_ms, mac, color=color, marker='o', label=label)
+    ax.plot(n_ms, mac, color=color, marker='o', label=label)
     std_factor = norm.ppf(1 - p_threshold / 2)
-    plt.fill_between(n_ms,
-                     mu_mac - std_factor * std_mac,
-                     mu_mac + std_factor * std_mac,
-                     color=adjust_color_brightness(color, 0.7),
-                     alpha=0.2,
-                     linewidth=0)
-    plt.plot(n_ms, mu_mac, color=adjust_color_brightness(
+    ax.fill_between(n_ms,
+                    mu_mac - std_factor * std_mac,
+                    mu_mac + std_factor * std_mac,
+                    color=adjust_color_brightness(color, 0.7),
+                    alpha=0.2,
+                    linewidth=0)
+    ax.plot(n_ms, mu_mac, color=adjust_color_brightness(
         color, 1.3), linestyle='--')
     if any(p < p_threshold):
-        plt.plot(n_ms[p < p_threshold], mac[p < p_threshold],
-                 'o', color='r')
+        ax.plot(n_ms[p < p_threshold], mac[p < p_threshold],
+                'o', color='r')
 
-    plt.xlabel('$n_m$')
-    plt.ylabel('MAC')
+    ax.set_xlabel('$n_m$')
+    ax.set_ylabel('MAC')
     if label is not None:
         ax.legend()
     return ax
