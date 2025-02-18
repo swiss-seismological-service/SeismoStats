@@ -11,7 +11,7 @@ def test_estimate_b_warnings():
     mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
 
     # test that uncorrect binninng leads to error
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=0, delta_m=0.2)
 
@@ -20,13 +20,35 @@ def test_estimate_b_warnings():
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=-1, delta_m=0.1)
 
+    # Magnitudes contain NaN values
+    mags1 = np.array([np.nan, 1, 2, 3, 4])
+    b1 = estimator.calculate(mags1, mc=1, delta_m=1)
+    mags2 = np.array([1, 2, 3, 4])
+    b2 = estimator.calculate(mags2, mc=1, delta_m=1)
+    assert (b1 == b2)
+
+    # No magnitudes above completeness magnitude
+    mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
+    # make sure that warning is raised
+    with pytest.warns(UserWarning):
+        estimator.calculate(mags, mc=1, delta_m=0.1)
+    assert (np.isnan(estimator.b_value))
+
 
 def test_by_reference():
-    mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
     estimator = ClassicBValueEstimator()
+
+    # test that values below mc are filtered out
+    mags = np.array([0, 1, 3.1, 1.1, 2, 1.2, 1.3, 1.4,
+                    4.7, 1.5, 1.6, 1.7, 1.8, 3.4])
     estimator.calculate(mags, mc=1, delta_m=0.1)
     estimator.magnitudes.sort()
     assert not np.array_equal(mags, estimator.magnitudes)
+
+    # test index is working
+    mags = np.array([0, 0.9, -1, 0.2, 0.5])
+    estimator.calculate(mags, mc=0.1, delta_m=0.1)
+    assert (estimator.magnitudes == mags[estimator.idx]).all()
 
 
 def test_beta():

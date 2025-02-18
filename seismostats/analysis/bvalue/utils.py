@@ -93,7 +93,7 @@ def find_next_larger(magnitudes: np.array,
     for ii in range(len(magnitudes) - 1):
         for jj in range(ii + 1, len(magnitudes)):
             mag_diff_loop = magnitudes[jj] - magnitudes[ii]
-            if mag_diff_loop > dmc - delta_m / 2:
+            if mag_diff_loop >= dmc - delta_m / 2:
                 idx_next_larger[ii] = jj
                 break
     return idx_next_larger.astype(int)

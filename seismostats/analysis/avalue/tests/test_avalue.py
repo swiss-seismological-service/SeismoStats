@@ -15,7 +15,7 @@ def test_estimate_a():
     mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     # arguments are passed correctly
-    a = estimate_a(mags, mc=1, delta_m=10.0)
+    a = estimate_a(mags, mc=1, delta_m=1)
     assert a == 1.0
 
     mags = np.array([0.9, 0.9, 0.9, 0.9, 10.9])
@@ -37,7 +37,7 @@ def test_estimate_a():
 def test_estimate_a_classic():
     mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     estimator = ClassicAValueEstimator()
-    a_estimate = estimator.calculate(mags, mc=1, delta_m=10.0)
+    a_estimate = estimator.calculate(mags, mc=1, delta_m=1)
     assert a_estimate == 1.0
 
     # reference magnitude is given and b-value given
@@ -47,11 +47,10 @@ def test_estimate_a_classic():
 
     # reference magnitude but no b-value
     with pytest.raises(ValueError):
-        estimator.calculate(mags, mc=1, delta_m=0.0,
-                            m_ref=0)
+        estimator.calculate(mags, mc=1, delta_m=0.0001, m_ref=0)
 
     # reference time is given
-    a_estimate = estimator.calculate(mags, mc=1, delta_m=0.0,
+    a_estimate = estimator.calculate(mags, mc=1, delta_m=0.0001,
                                      scaling_factor=10)
     assert a_estimate == 0.0
 
@@ -91,6 +90,28 @@ def test_estimate_a_positive():
     with pytest.warns(UserWarning):
         estimator.calculate(mags, delta_m=1, mc=-1, times=times)
 
+    # test that index works correctly
+    mags = np.array([0, 0.9, -1, 0.2, 0.5])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 3),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 5)])
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
+
+    # test that time array is correctly used
+    mags = np.array([0, 0.9, 0.5, 0.2, -1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 3)])
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
+
 
 @pytest.mark.filterwarnings("ignore")
 def test_estimate_a_more_positive():
@@ -121,3 +142,29 @@ def test_estimate_a_more_positive():
     a = estimator.calculate(
         mags, 0, 0.1, times, b_value=1, dmc=0.1)
     assert_almost_equal(10**a, 16.0)
+
+    # test that index works correctly
+    mags = np.array([0, 0.9, -1, 0.2, 0.5, 1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 3),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 6)])
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times, b_value=1)
+    assert (mags[estimator.idx] == np.array([0.9, 1, 0.2, 0.5, 1])).all()
+    assert (estimator.idx == np.array([1, 5, 3, 4, 5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
+    assert (estimator.times == times[estimator.idx]).all()
+
+    # test that time array is correctly used
+    mags = np.array([0, 0.9, 0.5, 0.2, -1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 3)])
+    estimator.calculate(mags, mc=-1, delta_m=0.1, times=times, b_value=1)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+    assert (mags[estimator.idx] == estimator.magnitudes).all()
+    assert (estimator.times == times[estimator.idx]).all()

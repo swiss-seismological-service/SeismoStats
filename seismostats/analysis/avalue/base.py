@@ -5,8 +5,7 @@ import numpy as np
 from typing_extensions import Self
 
 from seismostats.utils._config import get_option
-
-# from seismostats.utils.binning import binning_test
+from seismostats.utils.binning import binning_test
 
 
 class AValueEstimator(ABC):
@@ -18,6 +17,7 @@ class AValueEstimator(ABC):
         self.scaling_factor: float | None = None
         self.m_ref: float | None = None
         self.b_value: float | None = None
+        self.idx: np.ndarray | None = None
 
         self.__a_value: float | None = None
 
@@ -56,8 +56,12 @@ class AValueEstimator(ABC):
         self.m_ref = m_ref
         self.b_value = b_value
 
-        self._filter_magnitudes()
         self._sanity_checks()
+        self._filter_magnitudes()
+
+        if len(self.magnitudes) == 0:
+            self.__a_value = np.nan
+            return self.__a_value
 
         self.__a_value = self._estimate()
         self.__a_value = self._reference_scaling(self.__a_value)
@@ -75,32 +79,30 @@ class AValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = self.magnitudes >= self.mc - self.delta_m / 2
-        self.magnitudes = self.magnitudes[idx]
+        self.idx = (self.magnitudes >= self.mc - self.delta_m / 2).nonzero()[0]
+        self.magnitudes = self.magnitudes[self.idx]
 
-        return idx
+        if len(self.magnitudes) == 0:
+            if get_option('warnings') is True:
+                warnings.warn('No magnitudes above the completeness magnitude.')
 
     def _sanity_checks(self):
         '''
         Perform sanity checks on the input data.
         '''
-        # TODO: test that the magnitudes are binned correctly
-        # if self.delta_m == 0:
-        #     tolerance = 1e-08
-        # else:
-        #     tolerance = max(self.delta_m / 100, 1e-08)
-        # assert (
-        #     binning_test(self.magnitudes, self.delta_m, tolerance)
-        # )
-        # 'Magnitudes are not binned correctly.'
+        # test magnitude binnning
+        if len(self.magnitudes) > 0:
+            if not binning_test(self.magnitudes, self.delta_m,
+                                check_larger_binning=False):
+                raise ValueError('Magnitudes are not binned correctly.')
 
-        # test if lowest magnitude is much larger than mc
-        if get_option('warnings') is True:
-            if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
-                warnings.warn(
-                    'No magnitudes in the lowest magnitude bin are present. '
-                    'Check if mc is chosen correctly.'
-                )
+            # give warnings
+            if get_option('warnings') is True:
+                if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
+                    warnings.warn(
+                        'No magnitudes in the lowest magnitude bin are present.'
+                        'Check if mc is chosen correctly.'
+                    )
 
     def _reference_scaling(self, a: float) -> float:
         '''

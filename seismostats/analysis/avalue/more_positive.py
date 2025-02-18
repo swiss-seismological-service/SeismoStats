@@ -73,23 +73,21 @@ class AMorePositiveAValueEstimator(AValueEstimator):
                                  b_value=b_value,
                                  )
 
-    def _filter_magnitudes(self):
+    def _filter_magnitudes(self) -> np.ndarray:
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = super()._filter_magnitudes()
-
-        self.times = self.times[idx]
-
-        return idx
+        super()._filter_magnitudes()
+        self.times = self.times[self.idx]
 
     def _estimate(self) -> float:
         # order the magnitudes and times
         srt = np.argsort(self.times)
         self.magnitudes = self.magnitudes[srt]
         self.times = self.times[srt]
+        self.idx = self.idx[srt]
 
-        # differences
+        # find next larger event (if it exists)
         idx_next_larger = find_next_larger(
             self.magnitudes, self.delta_m, self.dmc)
         time_diffs = self.times[idx_next_larger] - self.times
@@ -107,6 +105,12 @@ class AMorePositiveAValueEstimator(AValueEstimator):
 
         time_factor = sum(tau / total_time)
         n_more_pos = sum(~idx_no_next) / time_factor
+
+        # make sure that all attributes are consistent
+        idx_next_larger = idx_next_larger[~idx_no_next]
+        self.magnitudes = self.magnitudes[idx_next_larger]
+        self.times = self.times[idx_next_larger]
+        self.idx = self.idx[idx_next_larger]
 
         # estimate a-value
         return np.log10(n_more_pos)
