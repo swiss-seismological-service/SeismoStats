@@ -109,6 +109,9 @@ def binning_test(
         raise ValueError("The given array has no entry")
     x = np.array(x)
 
+    # filter out NaN values
+    x = x[~np.isnan(x)]
+
     if delta_x == 0 and check_larger_binning is True:
         range = np.max(x) - np.min(x)
         power = np.arange(np.floor(np.log10(tolerance)) + 1,

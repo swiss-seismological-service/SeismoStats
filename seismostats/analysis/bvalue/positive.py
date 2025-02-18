@@ -67,7 +67,6 @@ class BPositiveBValueEstimator(BValueEstimator):
         super()._filter_magnitudes()
         if self.times is not None:
             self.times = self.times[self.idx]
-        return self.idx
 
     def _estimate(self) -> float:
         # order the magnitudes and times

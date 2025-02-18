@@ -47,6 +47,10 @@ class BValueEstimator(ABC):
         self._sanity_checks()
         self._filter_magnitudes()
 
+        if len(self.magnitudes) == 0:
+            self.__b_value = np.nan
+            return self.__b_value
+
         self.__b_value = self._estimate()
         return self.__b_value
 
@@ -68,18 +72,26 @@ class BValueEstimator(ABC):
             self.weights = self.weights[self.idx]
 
         if len(self.magnitudes) == 0:
-            raise ValueError('No magnitudes above the completeness magnitude.')
-
-        return self.idx
+            if get_option('warnings') is True:
+                warnings.warn('No magnitudes above the completeness magnitude.')
 
     def _sanity_checks(self):
         '''
         Perform sanity checks on the input data.
         '''
         # test magnitude binnning
-        if not binning_test(self.magnitudes, self.delta_m,
-                            check_larger_binning=False):
-            raise ValueError('Magnitudes are not binned correctly.')
+        if len(self.magnitudes) > 0:
+            if not binning_test(self.magnitudes, self.delta_m,
+                                check_larger_binning=False):
+                raise ValueError('Magnitudes are not binned correctly.')
+
+            # give warnings
+            if get_option('warnings') is True:
+                if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
+                    warnings.warn(
+                        'No magnitudes in the lowest magnitude bin are present.'
+                        'Check if mc is chosen correctly.'
+                    )
 
         # test weights
         if self.weights is not None:
@@ -88,16 +100,6 @@ class BValueEstimator(ABC):
                     'The number of magnitudes and weights must be equal.')
             if np.any(self.weights < 0):
                 raise ValueError('Weights must be nonnegative.')
-
-        # give warnings
-        if get_option('warnings') is True:
-            if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
-                warnings.warn(
-                    'No magnitudes in the lowest magnitude bin are present. '
-                    'Check if mc is chosen correctly.'
-                )
-            if np.any(np.isnan(self.magnitudes)):
-                warnings.warn('Magnitudes contain NaN values.')
 
     @classmethod
     @abstractmethod

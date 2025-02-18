@@ -19,14 +19,17 @@ def test_estimate_a_warnings():
         estimator.calculate(mags, mc=-1, delta_m=0.1)
 
     # Magnitudes contain NaN values
-    mags = np.array([np.nan])
-    with pytest.raises(ValueError):
-        estimator.calculate(mags, mc=1, delta_m=0.1)
+    mags1 = np.array([np.nan, 1, 2, 3, 4])
+    a1 = estimator.calculate(mags1, mc=1, delta_m=1)
+    mags2 = np.array([1, 2, 3, 4])
+    a2 = estimator.calculate(mags2, mc=1, delta_m=1)
+    assert (a1 == a2)
 
     # No magnitudes above completeness magnitude
     mags = np.array([0, 0.9, 0.1, 0.2, 0.5])
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning):
         estimator.calculate(mags, mc=1, delta_m=0.1)
+    assert (np.isnan(estimator.a_value))
 
 
 def test_by_reference():

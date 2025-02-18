@@ -78,7 +78,6 @@ class APositiveAValueEstimator(AValueEstimator):
         '''
         super()._filter_magnitudes()
         self.times = self.times[self.idx]
-        return self.idx
 
     def _estimate(self) -> float:
         # order the magnitudes and times

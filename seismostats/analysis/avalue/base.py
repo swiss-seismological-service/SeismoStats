@@ -59,6 +59,10 @@ class AValueEstimator(ABC):
         self._sanity_checks()
         self._filter_magnitudes()
 
+        if len(self.magnitudes) == 0:
+            self.__a_value = np.nan
+            return self.__a_value
+
         self.__a_value = self._estimate()
         self.__a_value = self._reference_scaling(self.__a_value)
 
@@ -79,28 +83,26 @@ class AValueEstimator(ABC):
         self.magnitudes = self.magnitudes[self.idx]
 
         if len(self.magnitudes) == 0:
-            raise ValueError('No magnitudes above the completeness magnitude.')
-
-        return self.idx
+            if get_option('warnings') is True:
+                warnings.warn('No magnitudes above the completeness magnitude.')
 
     def _sanity_checks(self):
         '''
         Perform sanity checks on the input data.
         '''
         # test magnitude binnning
-        if not binning_test(self.magnitudes, self.delta_m,
-                            check_larger_binning=False):
-            raise ValueError('Magnitudes are not binned correctly.')
+        if len(self.magnitudes) > 0:
+            if not binning_test(self.magnitudes, self.delta_m,
+                                check_larger_binning=False):
+                raise ValueError('Magnitudes are not binned correctly.')
 
-        # give warnings
-        if get_option('warnings') is True:
-            if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
-                warnings.warn(
-                    'No magnitudes in the lowest magnitude bin are present. '
-                    'Check if mc is chosen correctly.'
-                )
-            if np.any(np.isnan(self.magnitudes)):
-                warnings.warn('Magnitudes contain NaN values.')
+            # give warnings
+            if get_option('warnings') is True:
+                if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
+                    warnings.warn(
+                        'No magnitudes in the lowest magnitude bin are present.'
+                        'Check if mc is chosen correctly.'
+                    )
 
     def _reference_scaling(self, a: float) -> float:
         '''

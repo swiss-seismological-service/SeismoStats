@@ -70,7 +70,6 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         super()._filter_magnitudes()
         if self.times is not None:
             self.times = self.times[self.idx]
-        return self.idx
 
     def _estimate(self) -> float:
         if self.times is not None:
