@@ -19,9 +19,10 @@ from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
-from seismostats.plots import (plot_in_space, plot_cum_count,
-                               plot_mags_in_time, plot_cum_fmd,
-                               plot_fmd, plot_mc_vs_b)
+from seismostats.plots.seismicity import plot_in_space
+from seismostats.plots.basics import (plot_cum_count, plot_mags_in_time,
+                                      plot_cum_fmd, plot_fmd)
+from seismostats.plots.statistical import plot_mc_vs_b
 import matplotlib.pyplot as plt
 import cartopy
 
