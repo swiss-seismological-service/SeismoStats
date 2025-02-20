@@ -551,7 +551,7 @@ class Catalog(pd.DataFrame):
             self.b_value = b_estimate
 
         return b_estimate
-    
+
     @require_cols(require=['latitude', 'longitude', 'magnitude'])
     def plot_in_space(self,
                       resolution: str = "10m",
@@ -638,7 +638,7 @@ class Catalog(pd.DataFrame):
         Returns:
             ax: Ax that was plotted on.
         """
-        
+
         if delta_m is None:
             delta_m = self.delta_m
         ax = plot_cum_count(self.time,
@@ -795,9 +795,9 @@ class Catalog(pd.DataFrame):
                       grid=grid,
                       bin_position=bin_position,
                       legend=legend)
-        
+
         return ax
-        
+
     @require_cols(require=['magnitude'])
     def plot_mc_vs_b(self,
                      mcs: np.ndarray,
