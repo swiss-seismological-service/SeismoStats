@@ -10,15 +10,19 @@ from seismostats.utils.binning import get_cum_fmd, get_fmd
 def gutenberg_richter(
     magnitudes: np.ndarray, b_value: float, mc: float, n_mc: int
 ) -> np.ndarray:
-    """Estimates the cumulative Gutenberg richter law (proportional to the
+    """
+    Estimates the cumulative Gutenberg richter law (proportional to the
     complementary cumulative FMD) for a given magnitude vector.
 
     Args:
-        magnitudes: vector of magnitudes
-        b_value: theoretical b_value
-        mc: completeness magnitude
-        n_mc: cumulative number of all events larger than the completeness
-            magnitude (n_mc = 10 ** a)
+        magnitudes:     Array of magnitudes.
+        b_value:        Theoretical b_value.
+        mc:             Completeness magnitude.
+        n_mc:           Total number of all events larger than the
+                    completeness magnitude (:math: `n_{m_c} = 10^a`).
+
+    Returns:
+        x:  The cumulative Gutenberg-Richter distribution.
     """
     return n_mc * 10 ** (-b_value * (magnitudes - mc))
 
@@ -41,25 +45,25 @@ def plot_cum_fmd(
     distribution is plotted provided the b-value is given.
 
     Args:
-        magnitudes    : array of magnitudes
-        ax      : axis where figure should be plotted
-        b_value : b-value of the theoretical GR distribution to plot
-        mc      : completeness magnitude of the theoretical GR distribution
-        delta_m : discretization of the magnitudes, important for the correct
-                visualization of the data
-        color   : color of the data. If one value is given, it is used for
-            points, and the line of the theoretical GR distribution if it
-            is plotted. If a list of colors is given, the first entry is
-            the color of the points, and the second of the line representing
-            the GR distribution.
-        size    : size of data points
-        grid    : whether to include grid lines or not
-        bin_position    : position of the bin, options are  'center' and 'left'
-                        accordingly, left edges of bins or center points are
-                        returned.
+        magnitudes: Array of magnitudes.
+        ax:         Axis where figure should be plotted.
+        b_value:    The b-value of the theoretical GR distribution to plot.
+        mc:         Completeness magnitude of the theoretical GR distribution.
+        delta_m:    Discretization of the magnitudes; important for the correct
+                visualization of the data.
+        color:      Color of the data. If one value is given, it is used for
+                points, and the line of the theoretical GR distribution if it
+                is plotted. If a list of colors is given, the first entry is
+                the color of the points, and the second of the line
+                representing the GR distribution.
+        size:       Size of the data points.
+        grid:       Indicates whether or not to include grid lines.
+        bin_position: Position of the bin, options are  'center' and 'left'
+                accordingly, left edges of bins or center points are
+                returned.
 
     Returns:
-        ax that was plotted on
+        ax: The ax object that was plotted on.
     """
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
@@ -141,19 +145,19 @@ def plot_fmd(
     assumed value of ``delta_m`` is 0.1.
 
     Args:
-        magnitudes    : array of magnitudes
-        ax      : axis where figure should be plotted
-        delta_m : discretization of the magnitudes, important for the correct
-                visualization of the data
-        color   : color of the data
-        size    : size of data points
-        grid    : whether to include grid lines or not
-        bin_position    : position of the bin, options are  "center" and "left"
-                        accordingly, left edges of bins or center points are
-                        returned.
+        magnitudes:     Array of magnitudes.
+        ax:             The axis where figure should be plotted.
+        delta_m:        Discretization of the magnitudes, important for the
+                    correct visualization of the data.
+        color:          Color of the data.
+        size:           Size of data points.
+        grid:           Indicates whether or not to include grid lines.
+        bin_position:   Position of the bin, options are  "center" and "left"
+                    accordingly, left edges of bins or center points are
+                    returned.
 
     Returns:
-        ax that was plotted on
+        ax: The ax object that was plotted on.
     """
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
@@ -205,16 +209,17 @@ def plot_cum_count(
     the array ``mcs``.
 
     Args:
-        times: array containing times of events
-        magnitudes: array of magnitudes of events corresponding to the
-            ``times``
-        ax: axis where figure should be plotted
-        mcs: the list of completeness magnitudes for which we show lines
-             on the plot
-        delta_m: binning precision of the magnitudes, assumed 0 if not given
+        times:      Array containing times of events.
+        magnitudes: Array of magnitudes of events corresponding to the
+                ``times``.
+        ax:         Axis where figure should be plotted.
+        mcs:        The list of completeness magnitudes for which we show
+                lines on the plot.
+        delta_m:    Binning precision of the magnitudes, assumed 0 if not
+                given.
 
     Returns:
-        ax that was plotted on
+        ax: Ax that was plotted on.
     """
     first_time, last_time = min(times), max(times)
 
@@ -259,22 +264,22 @@ def plot_mags_in_time(
     means that between 2000 and 2005, Mc is 3.5 and after 2005, Mc is 3.0.
 
     Args:
-        times: array containing times of events
-        magnitudes: array of magnitudes of events corresponding to the
-            ``times``
-        ax: axis where figure should be plotted
-        mc_change_times: list of points in time when Mc changes, sorted in
-            increasing order, can be given as a list of datetimes or
-            integers (years).
-        mcs: changed values of Mc at times given in ``mc_change_times``
-        dot_smallest: smallest dot size for magnitude scaling
-        dot_largest: largest dot size for magnitude scaling
-        dot_interpolation_power: interpolation power for scaling
-        color_dots: color of the dots representing the events
-        color_line: color of the line representing the Mc changes
+        times:      Array containing times of events.
+        magnitudes: Array of magnitudes of events corresponding to the
+                ``times``.
+        ax:         Axis where figure should be plotted.
+        mc_change_times: List of points in time when Mc changes, sorted in
+                increasing order, can be given as a list of datetimes or
+                integers (years).
+        mcs:        Changed values of Mc at times given in ``mc_change_times``.
+        dot_smallest: Smallest dot size for magnitude scaling.
+        dot_largest: Largest dot size for magnitude scaling.
+        dot_interpolation_power: Interpolation power for scaling.
+        color_dots: Color of the dots representing the events.
+        color_line: Color of the line representing the Mc changes.
 
     Returns:
-        ax that was plotted on
+        ax: ax that was plotted on
     """
     if ax is None:
         ax = plt.subplots()[1]
@@ -320,24 +325,18 @@ def dot_size(
     The dot sizes are computed using a power interpolation between the smallest
     and largest size, with the given interpolation power.
 
-    Args
-    ----------
-    magnitudes : array-like of float, shape (n_samples,)
-        The magnitudes of the dots.
-    smallest : float, optional (default=10)
-        The size of the smallest dot, in pixels.
-    largest : float, optional (default=200)
-        The size of the largest dot, in pixels.
-    interpolation_power : float, optional (default=1)
-        The power used to interpolate between the smallest and largest size.
-        A value of 1 results in a linear interpolation, while larger values
-        result in a more "concave" curve.
+    Args:
+        magnitudes:     Array of magnitudes, influencing size of the dots.
+        smallest:       The size of the smallest dot, in pixels.
+        largest:        The size of the largest dot, in pixels.
+        interpolation_power: The power used to interpolate between the smallest
+                    and largest size. A value of 1 results in a linear
+                    interpolation, while larger values result in a more
+                    "concave" curve.
 
-    Returns
-    -------
-    sizes : ndarray of float, shape (n_samples,)
-        The sizes of the dots, proportional to their magnitudes.
-        The returned sizes are between ``smallest`` and ``largest``.
+    Returns:
+        sizes:  The sizes of the dots, proportional to their magnitudes.
+            The returned sizes are between ``smallest`` and ``largest``.
     """
     if largest <= smallest:
         print(
@@ -361,32 +360,25 @@ def reverse_dot_size(
     max_mag: float,
     interpolation_power: int = 1,
 ) -> np.ndarray:
-    """Compute magnitudes proportional to a given array of dot sizes.
+    """
+    Computes magnitudes proportional to a given array of dot sizes.
 
     The magnitudes are computed by reversing the dot size calculation
-    performed by the dot_size function.
+    performed by the :func: `dot_size` function.
 
-    Args
-    ----------
-    sizes : array-like of float, shape (n_samples,)
-        The sizes of the dots.
-    min_mag : float
-        The minimum magnitude in the dataset.
-    max_mag : float
-        The maximum magnitude in the dataset.
-    smallest : float, optional (default=10)
-        The size of the smallest dot, in pixels.
-    largest : float, optional (default=200)
-        The size of the largest dot, in pixels.
-    interpolation_power : float, optional (default=1)
-        The power used to interpolate between the smallest and largest size.
-        A value of 1 results in a linear interpolation, while larger values
-        result in a more "concave" curve.
+    Args:
+        sizes:      A list containing the sizes of the dots.
+        min_mag:    The minimum magnitude in the dataset.
+        max_mag:    The maximum magnitude in the dataset.
+        smallest:   The size of the smallest dot, in pixels.
+        largest:    The size of the largest dot, in pixels.
+        interpolation_power: The power used to interpolate between the smallest
+                and largest size. A value of 1 results in a linear
+                interpolation, while larger values result in a more "concave"
+                curve.
 
-    Returns
-    -------
-    magnitudes : ndarray of float, shape (n_samples,)
-        The magnitudes corresponding to the given dot sizes.
+    Returns:
+        magnitudes: Array of magnitudes corresponding to the given dot sizes.
     """
     if interpolation_power == 0:
         raise ValueError("interpolation_power cannot be 0")

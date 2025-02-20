@@ -37,35 +37,35 @@ def plot_in_space(
     according to the midpoint latitude.
 
     Args:
-        longitudes:     array of longitudes
-        latitudes:      array of latitudes
-        magnitudes:     array of magnitudes, used for scaling of dot sizes
-        resolution:     resolution of map, "10m", "50m" and "110m" available
-        include_map:    if True, seismicity will be plotted on natural earth
-                        map, otherwise it will be plotted on a blank grid.
-        country:        name of country, if None map will fit to data points
-        colors:         color of background. if None is chosen, is will be
-                        either white or standard natural earth colors.
-        style:          style of map, "satellite" or "street" are available
-        dot_smallest:   smallest dot size for magnitude scaling
-        dot_largest:    largest dot size for magnitude scaling
-        dot_interpolation_power: interpolation power for scaling
-        dot_labels:     int, None, "auto" (default), list, or
-                        ``~.ticker.Locator``. Determines how labels for
-                        magnitudes can be created. Input for matplotlib's
-                        ``PathCollection.legend_elements``. If ``None``, no
-                        label is shown. If an integer, target to use
-                        ``dot_labels`` elements in the normed range.
-                        If "auto", an automatic range is chosen for the
-                        labels (default). If a list, uses elements of list
-                        which are between minimum and maximum magnitude of
-                        dataset for the legend.
-                        Finally, a ``~.ticker.Locator`` can be provided to use
-                        a predefined ``matplotlib.ticker`` (e.g.
-                        ``FixedLocator``, which results in the same legend as
-                        providing a list of values).
+        longitudes:     Array of longitudes.
+        latitudes:      Array of latitudes.
+        magnitudes:     Array of magnitudes, used for scaling of dot sizes.
+        resolution:     Resolution of the map, "10m", "50m" and "110m"
+                    available.
+        include_map:    If True, seismicity will be plotted on natural earth
+                    map, otherwise it will be plotted on a blank grid.
+        country:        Name of country, if None map will fit to data points.
+        colors:         Color of background. If None is chosen, it will be
+                    either white or standard natural earth colors.
+        style:          Style of map, "satellite" or "street" are available.
+        dot_smallest:   Smallest dot size for magnitude scaling.
+        dot_largest:    Largest dot size for magnitude scaling.
+        dot_interpolation_power: Interpolation power for scaling.
+        dot_labels:     Determines how labels for
+                    magnitudes can be created. Input for matplotlib's
+                    ``PathCollection.legend_elements``. If ``None``, no
+                    label is shown. If an integer, target to use
+                    ``dot_labels`` elements in the normed range.
+                    If "auto", an automatic range is chosen for the
+                    labels (default). If a list, uses elements of list
+                    which are between minimum and maximum magnitude of
+                    dataset for the legend.
+                    Finally, a ``~.ticker.Locator`` can be provided to use
+                    a predefined ``matplotlib.ticker`` (e.g.
+                    ``FixedLocator``, which results in the same legend as
+                    providing a list of values).
     Returns:
-        GeoAxis object
+        ax: GeoAxis object
     """
     # request data for use by geopandas
     if include_map is True:
@@ -183,13 +183,14 @@ def rect_from_bound(
     """
     Makes list of tuples for creating a rectangle polygon
     Args:
-        xmin: minimum x value
-        xmax: maximum x value
-        ymin: minimum y value
-        ymax: maximum y value
+        xmin:   Minimum x value.
+        xmax:   Maximum x value.
+        ymin:   Minimum y value.
+        ymax:   Maximum y value.
 
     Returns:
-        list of (x,y)'s for a rectangle
+        x: List of tuples representing the coordinates of vertices
+        for a rectangle.
     """
     xs = [xmax, xmin, xmin, xmax]
     ys = [ymax, ymax, ymin, ymin]
