@@ -1,16 +1,16 @@
 # standard
+from typing import Literal
+
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Literal
-
 # statistical
 from scipy.stats import norm
 
+from seismostats.analysis.b_significant import b_significant_1D
 # Own functions
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.b_significant import b_significant_1D
 
 
 def plot_mc_vs_b(
@@ -18,14 +18,15 @@ def plot_mc_vs_b(
     mcs: np.ndarray,
     delta_m: float,
     b_method: BValueEstimator = ClassicBValueEstimator,
-    confidence_intvl: float = 0.95,
+    confidence_interval: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
     label: str | None = None,
     *args,
     **kwargs,
 ) -> plt.Axes:
-    """Plots the estimated b-value in dependence of the completeness magnitude.
+    """
+    Plots the estimated b-value in dependence of the completeness magnitude.
 
     Args:
         magnitudes:     Magnitudes of the catalog.
@@ -40,7 +41,7 @@ def plot_mc_vs_b(
         **kwargs:       Additional keyword arguments for the b-value estimator.
 
     Returns:
-        ax that was plotted on
+        ax: ax that was plotted on
     """
 
     b_values = []
@@ -59,7 +60,7 @@ def plot_mc_vs_b(
     if ax is None:
         _, ax = plt.subplots()
 
-    error_factor = norm.ppf((1 + confidence_intvl) / 2)
+    error_factor = norm.ppf((1 + confidence_interval) / 2)
     ax.plot(mcs, b_values, "-o", color=color, label=label)
     ax.fill_between(
         mcs,
@@ -88,7 +89,7 @@ def plot_b_series_constant_nm(
         b_method: BValueEstimator = ClassicBValueEstimator,
         plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
         x_variable: np.ndarray | None = None,
-        confidence: float = 0.95,
+        confidence_level: float = 0.95,
         ax: plt.Axes | None = None,
         color: str = "blue",
         label: str | None = None,
@@ -99,34 +100,39 @@ def plot_b_series_constant_nm(
     Plots the b-values estimated from a running window of n_m magnitudes.
 
     Args:
-        magnitudes: Magnitudes of the events. If x_variable is None, the
-                magnitudes are assumed to be sorted in the dimension of
-                interest.
-        delta_m:    Magnitude bin width
-        mc:         Completeness magnitude. If a single value is provided, it is
-                used for all magnitudes. Otherwise, the individual completeness
-                of each magnitude can be provided.
-        times:      times of the events
-        n_m:        number of magnitudes in each partition
-        min_num:    Minimum number of events from which a b-value is estimated.
-                If the number of events is smaller, the b-value is set to np.nan
-        b_method:   Method to estimate the b-values
+        magnitudes:     Magnitudes of the events. If x_variable is None,
+                    the magnitudes are assumed to be sorted in the dimension
+                    of interest.
+        delta_m:        Magnitude bin width.
+        mc:             Completeness magnitude. If a single value is provided,
+                    it is used for all magnitudes. Otherwise, the individual
+                    completeness of each magnitude can be provided.
+        times:          Times of the events.
+        n_m:            Number of magnitudes in each partition.
+        min_num:        Minimum number of events from which a b-value is
+                    estimated. If the number of events is smaller, the b-value
+                    is set to np.nan.
+        b_method:       Method used to estimate the b-values.
         plot_technique: Technique where to plot the b-values with respect to
-                the x-variable. Options are 'left', 'midpoint', 'right'. If set
-                to 'right' (default), the b-value is plotted at the right edge.
-                For time series, this is the most common choice, as it avoids
-                optical illusions of the b-value predicting future seismicity.
-        x_variable: Values of the dimension of interest, along which the
-                b-values should be plotted. It should be a 1D array with the
-                same length as the magnitudes, e.g., the time of the events. If
-                None, the b-values are plotted against the event index.
-        confidence: Confidence interval that should be plotted. Default
-                is 0.95 (i.e., the 95% confidence interval is plotted)
-        ax:         axis where the plot should be plotted
-        color:      Color of the data
-        label:      Label of the data that will be put in the legend
-        *args:      Additional positional arguments for the b-value estimator.
-        **kwargs:   Additional keyword arguments for the b-value estimator.
+                    the x-variable. Options are 'left', 'midpoint', 'right'.
+                    If set to 'right' (default), the b-value is plotted at the
+                    right edge. For time series, this is the most common choice
+                    as it avoids optical illusions of the b-value predicting
+                    future seismicity.
+        x_variable:     Values of the dimension of interest, along which the
+                    b-values should be plotted. It should be a 1D array with
+                    the same length as the magnitudes, e.g., the time of the
+                    events. If None, the b-values are plotted against the
+                    event index.
+        confidence_level: Confidence level of the CI that should be plotted.
+                    Default is 0.95 (i.e., the 95% confidence interval is
+                    plotted).
+        ax:             Axis where the plot should be plotted.
+        color:          Color of the data.
+        label:          Label of the data that will be put in the legend.
+        *args:          Additional positional arguments for the b-value
+                    estimator.
+        **kwargs:       Additional keyword arguments for the b-value estimator.
 
     Returns:
         ax:         Ax that was plotted on.
@@ -200,7 +206,7 @@ def plot_b_series_constant_nm(
 
     # plotting
     ax.plot(x_variable, b_values, color=color, label=label)
-    error_factor = norm.ppf((1 + confidence) / 2)
+    error_factor = norm.ppf((1 + confidence_level) / 2)
     ax.fill_between(
         x_variable,
         b_values - error_factor * std_bs,
@@ -244,20 +250,20 @@ def plot_b_significant_1D(
     Args:
         magnitudes: Magnitudes of the events.
         times:      Times of the events.
-        mc:         Completeness magnitude. If a single value is provided, it is
-            used for all magnitudes. Otherwise, the individual completeness of
-            each magnitude can be provided.
+        mc:         Completeness magnitude. If a single value is provided, it
+            is used for all magnitudes. Otherwise, the individual completeness
+            of each magnitude can be provided.
         delta_m:    Magnitude descretization.
         n_ms:       List of number of magnitudes used per sample. If None,
             the function will use an array of values that are increasing by
             10 within a range of reasonable values.
         min_num:    Minimum number of events from which a b-value is estimated.
         b_method:   Method to estimate the b-values.
-        x_variable: values of the dimension of interest, along which the
+        x_variable: Values of the dimension of interest, along which the
             b-values should be plotted. It should be a 1D array with the same
             length as the magnitudes, e.g., the time of the events. If None,
             the b-values are plotted against the event index.
-        p_threshold:    Threshold above which the null hypothesis of a constant
+        p_threshold: Threshold above which the null hypothesis of a constant
             b-value can be rejected.
         ax:         Axis where the plot should be plotted.
         color:      Color of the data.
@@ -331,7 +337,7 @@ def adjust_color_brightness(color, factor=1.2):
     Adjusts the brightness of a given Matplotlib color.
 
     Args:
-        color: A valid Matplotlib color string (e.g., "blue", "#ff5733", "C1").
+        color:  A valid Matplotlib color string (e.g., "blue", "#ff5733", "C1").
         factor: A float value that adjusts the brightness of the color. if < 1,
             the color is lightened; if > 1, the color is darkened.
 
