@@ -148,6 +148,7 @@ def values_from_partitioning(
     list_mc: list[float] | float,
     delta_m: float,
     method: AValueEstimator | BValueEstimator = ClassicBValueEstimator,
+    list_scaling: list | None = None,
     * args,
     **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -164,13 +165,15 @@ def values_from_partitioning(
         delta_m:    Discretization of magnitudes.
         method:     Method to estimate the value. This could be an a-value or
                 b-value estimator.
+        list_scaling: List of scaling factors for the a-value estimation. Only
+                used in case the method is an a-value estimator.
         *args:      Additional arguments to the a/b-value estimation method.
         **kwargs:   Additional keyword arguments to the a/b-value estimation
                 method.
 
     Returns:
-        b_values:   Series of b-values, each one is estimated from the
-                magnitudes contained in the corresponding element of
+        values:     Series of b-values (or a-values), each one is estimated
+                from the magnitudes contained in the corresponding element of
                 ``list_magnitudes``.
         std_b:      Standard deviations corresponding to the b-values.
         n_ms:       Number of events used for the b-value estimates.
@@ -208,6 +211,10 @@ def values_from_partitioning(
             raise IndexError(
                 "Length of list_mc must be the same as list_magnitudes.")
         list_mc = np.array(list_mc)
+    if issubclass(method, AValueEstimator):
+        if list_scaling is None:
+            list_scaling = np.ones(n_subsets)
+        list_scaling = np.array(list_scaling)
 
     # start estimation
     estimator = method()
@@ -222,11 +229,17 @@ def values_from_partitioning(
         mags_loop = mags_loop[idx_sorted]
         times_loop = times_loop[idx_sorted]
 
-        estimator.calculate(
-            mags_loop, mc=list_mc[ii], delta_m=delta_m, *args, **kwargs)
         if isinstance(estimator, AValueEstimator):
+            estimator.calculate(
+                mags_loop,
+                mc=list_mc[ii],
+                delta_m=delta_m,
+                scaling_factor=list_scaling[ii],
+                *args, **kwargs)
             values[ii] = estimator.a_value
         elif isinstance(estimator, BValueEstimator):
+            estimator.calculate(
+                mags_loop, mc=list_mc[ii], delta_m=delta_m, *args, **kwargs)
             values[ii] = estimator.b_value
         stds[ii] = estimator.std
         n_ms[ii] = estimator.n
@@ -268,17 +281,17 @@ def cut_constant_idx(
 
 
 def b_significant_1D(
-        mags: np.ndarray,
+        magnitudes: np.ndarray,
         mc: float | np.ndarray,
         delta_m: float,
-        times: np.ndarray[np.timedelta64],
+        times: np.ndarray,
         n_m: int,
         min_num: int = 10,
         method: BValueEstimator | AValueEstimator = ClassicBValueEstimator,
         conservative: bool = True,
         *args,
         ** kwargs,
-) -> tuple[float, float, float]:
+) -> tuple[float, float, float, float]:
     """
     Estimates the significance of variation of b-values (or a-values) along a
     one-dimensional series of events.
@@ -291,11 +304,12 @@ def b_significant_1D(
     (which can be estimated by len(magnitudes) / n_m) should be used.
 
     Args:
-        mags:           Magnitudes of the events. They are assumed to be order
+        magnitudes:     Magnitudes of the events. They are assumed to be order
                     along the dimension of interest (e.g. time or depth)
         mc:             Completeness magnitude. If a single value is provided,
                     it is used for all magnitudes. Otherwise, the individual
-                    completeness of each magnitude can be provided.
+                    completeness of each magnitude can be provided. This will
+                    be used to filter the magnitudes.
         delta_m:        Magnitude bin width.
         times:          Times of the events.
         n_m:            Number of magnitudes in each partition.
@@ -325,32 +339,34 @@ def b_significant_1D(
         autocorrelation for different n_m, use
         :func:`seismostats.plots.plot_b_significant_1D`
     """
-    # sanity checks
-    mags = np.array(mags)
+    # sanity checks and preparation
+    magnitudes = np.array(magnitudes)
     times = np.array(times)
+    if len(magnitudes) != len(times):
+        raise IndexError("Magnitudes and times must have the same length.")
     if isinstance(mc, (float, int)):
-        if min(mags) < mc:
-            raise ValueError("The completeness magnitude is larger than the "
-                             "smallest magnitude.")
-        mc = np.ones(len(mags)) * mc
+        mc = np.ones(len(magnitudes)) * mc
     else:
         mc = np.array(mc)
-        if any(mags < mc):
-            raise ValueError("There are earthquakes below their respective "
-                             "completeness magnitude.")
     if n_m < min_num:
         raise ValueError("n_m cannot be smaller than min_num.")
 
-    if len(mags) / n_m < 3:
-        raise ValueError(
-            "n_m is too large - less than three subsamples are created.")
-    elif len(mags) / n_m < 25:
+    idx = magnitudes >= mc - delta_m / 2
+    magnitudes = magnitudes[idx]
+    times = times[idx]
+    mc = mc[idx]
+
+    if len(magnitudes) / n_m < 3:
+        if get_option("warnings") is True:
+            warnings.warn(
+                "n_m is too large - less than three subsamples are created."
+                "return NaNs")
+        return np.nan, np.nan, np.nan, np.nan
+    elif len(magnitudes) / n_m < 25:
         if get_option("warnings") is True:
             warnings.warn(
                 "The number of subsamples is less than 25. The normality "
                 "assumption of the autocorrelation might not be valid.")
-    if len(mags) != len(times):
-        raise IndexError("Magnitudes and times must have the same length.")
 
     # Estimate a and b values for n_m realizations.
     ac_1D = np.zeros(n_m)
@@ -360,7 +376,7 @@ def b_significant_1D(
     for ii in range(n_m):
         # partition data
         idx, list_magnitudes = cut_constant_idx(
-            mags, n_m, offset=ii
+            magnitudes, n_m, offset=ii
         )
         list_times = np.array_split(times, idx)
         list_mc = np.array_split(mc, idx)

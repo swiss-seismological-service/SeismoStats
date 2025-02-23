@@ -22,7 +22,8 @@ def plot_mc_vs_b(
     ax: plt.Axes | None = None,
     color: str = "blue",
     label: str | None = None,
-    **kwargs,
+    *args,
+    **kwargs
 ) -> plt.Axes:
     """
     Plots the estimated b-value in dependence of the completeness magnitude.
@@ -31,13 +32,13 @@ def plot_mc_vs_b(
         magnitudes:     Array of magnitudes.
         mcs:            Array of completeness magnitudes.
         delta_m:        Discretization of the magnitudes.
-        b_method:       Method used for b-value estimation.
+        method:         Method used for b-value estimation.
         confidence_interval: Confidence interval that should be plotted.
         ax:             Axis where figure should be plotted.
         color:          Color of the data.
         label:          Label of the data that will be put in the legend.
-        **kwargs:       Additional keyword arguments for the b-value
-                    estimator.
+        *args:          Additional arguments for the b-value estimator.
+        **kwargs:       Additional keyword arguments for the b-value estimator.
 
     Returns:
         ax: ax that was plotted on
@@ -49,7 +50,7 @@ def plot_mc_vs_b(
 
     for mc in mcs:
         estimator.calculate(
-            magnitudes, mc=mc, delta_m=delta_m, **kwargs)
+            magnitudes, mc=mc, delta_m=delta_m, *args, **kwargs)
         b_values.append(estimator.b_value)
         b_errors.append(estimator.std)
 
@@ -79,16 +80,16 @@ def plot_mc_vs_b(
 
 
 def plot_b_series_constant_nm(
-    mags: np.ndarray,
+    magnitudes: np.ndarray,
     delta_m: float,
-    mc: np.ndarray,
+    mc: float | np.ndarray,
     times: np.ndarray,
     n_m: int,
     min_num: float = 2,
     b_method: BValueEstimator = ClassicBValueEstimator,
     plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
     x_variable: np.ndarray | None = None,
-    confidence_level: float = 0.95,
+    confidence: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
     label: str | None = None,
@@ -99,75 +100,64 @@ def plot_b_series_constant_nm(
     Plots the b-values estimated from a running window of n_m magnitudes.
 
     Args:
-        magnitudes:     Magnitudes of the events. If x_variable is None,
-                    the magnitudes are assumed to be sorted in the dimension
-                    of interest.
-        delta_m:        Magnitude bin width.
-        mc:             Completeness magnitude. If a single value is provided,
-                    it is used for all magnitudes. Otherwise, the individual
-                    completeness of each magnitude can be provided.
-        times:          Times of the events.
-        n_m:            Number of magnitudes in each partition.
-        min_num:        Minimum number of events from which a b-value is
-                    estimated. If the number of events is smaller, the b-value
-                    is set to np.nan.
-        b_method:       Method used to estimate the b-values.
+        magnitudes: Magnitudes of the events. If `x_variable` is `None`, the
+                magnitudes are assumed to be sorted in the dimension of
+                interest.
+        delta_m:    Magnitude bin width.
+        mc:         Completeness magnitude. If a single value is provided, it
+                is used for all magnitudes. Otherwise, the individual
+                completeness of each magnitude can be provided.
+        times:      The times of the events.
+        n_m:        The number of magnitudes in each partition.
+        min_num:    Minimum number of events from which a b-value is estimated.
+                If the number of events is smaller, the b-value is set to
+                `np.nan`.
+        b_method:   Method to estimate the b-values.
         plot_technique: Technique where to plot the b-values with respect to
-                    the x-variable. Options are 'left', 'midpoint', 'right'.
-                    If set to 'right' (default), the b-value is plotted at the
-                    right edge. For time series, this is the most common choice
-                    as it avoids optical illusions of the b-value predicting
-                    future seismicity.
-        x_variable:     Values of the dimension of interest, along which the
-                    b-values should be plotted. It should be a 1D array with
-                    the same length as the magnitudes, e.g., the time of the
-                    events. If None, the b-values are plotted against the
-                    event index.
-        confidence_level: Confidence level of the CI that should be plotted.
-                    Default is 0.95 (i.e., the 95% confidence interval is
-                    plotted).
-        ax:             Axis where the plot should be plotted.
-        color:          Color of the data.
-        label:          Label of the data that will be put in the legend.
-        *args:          Additional positional arguments for the b-value
-                    estimator.
-        **kwargs:       Additional keyword arguments for the b-value estimator.
+                `x_variable`. Options are 'left', 'midpoint', 'right'. If set
+                to 'right' (default), the b-value is plotted at the right edge.
+                For time series, this is the most common choice, as it avoids
+                optical illusions of the b-value predicting future seismicity.
+        x_variable: Values of the dimension of interest, along which the
+                b-values should be plotted. It should be a 1D array with the
+                same length as the magnitudes, e.g., the time of the events. If
+                None, the b-values are plotted against the event index.
+        confidence: Confidence level of the interval that should be plotted.
+                Default is 0.95 (i.e., the 95% confidence interval is plotted)
+        ax:         Axis where the plot should be plotted.
+        color:      Color of the data.
+        label:      Label of the data that will be put in the legend.
+        *args:      Additional positional arguments for the b-value estimator.
+        **kwargs:   Additional keyword arguments for the b-value estimator.
 
     Returns:
-        ax that was plotted on
+        ax:         Ax that was plotted on.
     """
-    mags = np.array(mags)
+    # sanity checks and preparation
+    magnitudes = np.array(magnitudes)
     times = np.array(times)
-
     if isinstance(mc, (float, int)):
-        if min(mags) < mc:
-            raise ValueError("The completeness magnitude is larger than the "
-                             "smallest magnitude")
-        mc = np.ones(len(mags)) * mc
+        mc = np.ones(len(magnitudes)) * mc
     else:
-        if any(mags < mc):
-            raise ValueError("There are earthquakes below their respective "
-                             "completeness magnitude")
+        mc = np.array(mc)
     if n_m < min_num:
-        raise ValueError("n_m cannot be smaller than min_num")
-    if len(mags) != len(times):
-        raise IndexError("mags and times must have the same length")
-
+        raise ValueError("n_m cannot be smaller than min_num.")
+    if len(magnitudes) != len(times):
+        raise IndexError("Magnitudes and times must have the same length.")
     if x_variable is None:
-        x_variable = np.arange(len(mags))
-    elif len(x_variable) != len(mags):
+        x_variable = np.arange(len(magnitudes))
+    elif len(x_variable) != len(magnitudes):
         raise IndexError(
-            "x_variable must have the same length as magnitudes")
+            "x_variable must have the same length as magnitudes.")
     else:
+        x_variable = np.array(x_variable)
         idx_sort = np.argsort(x_variable)
-        mags = mags[idx_sort]
+        magnitudes = magnitudes[idx_sort]
         times = times[idx_sort]
         mc = mc[idx_sort]
         x_variable = x_variable[idx_sort]
-
     if ax is None:
         _, ax = plt.subplots()
-
     if plot_technique == 'left':
         idx_start = 0
     elif plot_technique == 'midpoint':
@@ -176,25 +166,33 @@ def plot_b_series_constant_nm(
         idx_start = n_m - 1
     else:
         raise ValueError(
-            "plot_technique must be 'left', 'midpoint', or 'right'")
+            "plot_technique must be 'left', 'midpoint', or 'right'.")
+
+    # filter magnitudes
+    idx = magnitudes >= mc - delta_m / 2
+    magnitudes = magnitudes[idx]
+    times = times[idx]
+    mc = mc[idx]
+    x_variable = x_variable[idx]
 
     # estimation
     estimator = b_method()
-    b_values = np.ones(len(mags)) * np.nan
-    std_bs = np.ones(len(mags)) * np.nan
-    for ii in range(len(mags) - n_m + 1):
+    b_values = np.ones(len(magnitudes)) * np.nan
+    std_bs = np.ones(len(magnitudes)) * np.nan
+    for ii in range(len(magnitudes) - n_m + 1):
         # runnning window of n_m magnitudes
-        mags_window = mags[ii:ii + n_m]
+        mags_window = magnitudes[ii:ii + n_m]
         times_window = times[ii:ii + n_m]
+        mc_window = mc[ii:ii + n_m]
 
-        # sort the magnitudes and times
+        # sort the magnitudes by time
         idx = np.argsort(times_window)
         mags_window = mags_window[idx]
-        times_window = times_window[idx]
+        mc_window = mc_window[idx]
 
         # estimate the b-value
         estimator.calculate(
-            mags_window, mc=mc[ii], delta_m=delta_m, *args, **kwargs)
+            mags_window, mc=max(mc_window), delta_m=delta_m, *args, **kwargs)
         if estimator.n < min_num:
             b_values[idx_start + ii] = np.nan
             std_bs[idx_start + ii] = np.nan
@@ -204,7 +202,7 @@ def plot_b_series_constant_nm(
 
     # plotting
     ax.plot(x_variable, b_values, color=color, label=label)
-    error_factor = norm.ppf((1 + confidence_level) / 2)
+    error_factor = norm.ppf((1 + confidence) / 2)
     ax.fill_between(
         x_variable,
         b_values - error_factor * std_bs,
@@ -221,20 +219,20 @@ def plot_b_series_constant_nm(
 
 
 def plot_b_significant_1D(
-        magnitudes: np.ndarray,
-        times: np.ndarray,
-        mc: np.ndarray,
-        delta_m: float,
-        n_ms: np.ndarray | None = None,
-        min_num: float = 2,
-        b_method: BValueEstimator = ClassicBValueEstimator,
-        x_variable: np.ndarray | None = None,
-        p_threshold: float = 0.05,
-        ax: plt.Axes | None = None,
-        color: str = "blue",
-        label: str | None = None,
-        **kwargs,
-):
+    magnitudes: np.ndarray,
+    times: np.ndarray,
+    mc: np.ndarray,
+    delta_m: float,
+    n_ms: np.ndarray | None = None,
+    min_num: float = 2,
+    b_method: BValueEstimator = ClassicBValueEstimator,
+    x_variable: np.ndarray | None = None,
+    p_threshold: float = 0.05,
+    ax: plt.Axes | None = None,
+    color: str = "blue",
+    label: str | None = None,
+    **kwargs
+) -> plt.Axes:
     """
     Plots the mean autocorrelation (MAC) vs the number of magnitudes uased per
     sample, together with the chosen tresold. If the MAC is outside of the
@@ -268,16 +266,20 @@ def plot_b_significant_1D(
         label:      Label of the data that will be put in the legend.
         **kwargs:   Additional keyword arguments for the b-value estimator.
 
+    Returns:
+        ax:         Ax that was plotted on.
+
     """
-    if n_ms is None:
-        n_ms = np.arange(20, len(magnitudes) / 25, 5).astype(int)
+    # sanity checks and preparation
+    magnitudes = np.array(magnitudes)
+    times = np.array(times)
+
     if isinstance(mc, (float, int)):
         mc = np.ones(len(magnitudes)) * mc
-    elif not isinstance(mc, np.ndarray):
-        raise ValueError("mc must be a float, or numpy array.")
     if x_variable is None:
         x_variable = np.arange(len(magnitudes))
     else:
+        x_variable = np.array(x_variable)
         if len(x_variable) != len(magnitudes):
             raise ValueError(
                 "x_variable must have the same length as magnitudes.")
@@ -289,31 +291,41 @@ def plot_b_significant_1D(
     if ax is None:
         _, ax = plt.subplots()
 
-    # filter magnitudes
     idx = magnitudes >= mc - delta_m / 2
     magnitudes = magnitudes[idx]
     times = times[idx]
     mc = mc[idx]
 
+    if n_ms is None:
+        n_ms = np.arange(20, len(magnitudes) / 25, 10).astype(int)
+
     # estimate the MAC for each n_m
+    p = np.zeros(len(n_ms))
     mac = np.zeros(len(n_ms))
     mu_mac = np.zeros(len(n_ms))
     std_mac = np.zeros(len(n_ms))
     for ii, n_m in enumerate(n_ms):
-        mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
+        p[ii], mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
             magnitudes, mc, delta_m, times, n_m, min_num=min_num,
-            b_method=b_method, **kwargs)
+            method=b_method, **kwargs)
 
     # plot the results
-    plt.plot(n_ms, mac, color=color, marker='o', label=label)
-    plt.fill_between(n_ms, mu_mac - 1.96 * std_mac, mu_mac + 1.96 * std_mac,
-                     color=adjust_color_brightness(color, 0.7), alpha=0.2,
-                     linewidth=0)
-    plt.plot(n_ms, mu_mac, color=adjust_color_brightness(
+    ax.plot(n_ms, mac, color=color, marker='o', label=label)
+    std_factor = norm.ppf(1 - p_threshold / 2)
+    ax.fill_between(n_ms,
+                    mu_mac - std_factor * std_mac,
+                    mu_mac + std_factor * std_mac,
+                    color=adjust_color_brightness(color, 0.7),
+                    alpha=0.2,
+                    linewidth=0)
+    ax.plot(n_ms, mu_mac, color=adjust_color_brightness(
         color, 1.3), linestyle='--')
+    if any(p < p_threshold):
+        ax.plot(n_ms[p < p_threshold], mac[p < p_threshold],
+                'o', color='r')
 
-    plt.xlabel('$n_m$')
-    plt.ylabel('MAC')
+    ax.set_xlabel('$n_m$')
+    ax.set_ylabel('MAC')
     if label is not None:
         ax.legend()
     return ax
