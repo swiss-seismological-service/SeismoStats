@@ -27,7 +27,7 @@ class FDSNWSEventClient():
                    max_longitude: float | None = None,
                    min_magnitude: float | None = None,
                    max_magnitude: float | None = None,
-                   include_all_magnitudes: bool | None = None,
+                   include_all_magnitudes: bool = False,
                    event_type: str | None = None,
                    delta_m: float | None = 0.1,
                    include_uncertainty: bool = False,
