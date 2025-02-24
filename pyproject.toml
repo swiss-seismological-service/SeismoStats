@@ -36,6 +36,7 @@ doc = [
 openquake = [
     "openquake-engine @ git+https://github.com/gem/oq-engine.git",
     "numpy < 2",
+    "fiona",
 ]
 jupyter = ["notebook"]
 
