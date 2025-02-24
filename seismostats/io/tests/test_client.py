@@ -57,7 +57,8 @@ def test_download_catalog():
                            'maxlatitude': max_lat,
                            'minlongitude': min_lon,
                            'maxlongitude': max_lon,
-                           'eventtype': event_type})],)
+                           'eventtype': event_type,
+                           'includeallmagnitudes': False})],)
 
     responses.add(responses.GET, url,
                   body=open(PATH_RESOURCES, 'rb'), status=200,
