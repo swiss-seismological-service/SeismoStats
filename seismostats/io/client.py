@@ -8,18 +8,19 @@ from seismostats.io.parser import parse_quakeml_response
 
 
 class FDSNWSEventClient():
-    """
-    Client for downloading earthquake catalogs from the FDSNWS event service.
-
-    Args:
-        url:    base url of the FDSNWS event service
-                (eg. 'https://earthquake.usgs.gov/fdsnws/event/1/query')
-    """
-
     def __init__(self, url: str):
+        """
+        Client for downloading earthquake catalogs from the
+        FDSNWS event service.
+
+        Args:
+            url:    base url of the FDSNWS event service
+                    (eg. 'https://earthquake.usgs.gov/fdsnws/event/1/query')
+        """
         self.url = url
 
-    def get_events(self, start_time: datetime | None = None,
+    def get_events(self,
+                   start_time: datetime | None = None,
                    end_time: datetime | None = None,
                    min_latitude: float | None = None,
                    max_latitude: float | None = None,
@@ -36,29 +37,53 @@ class FDSNWSEventClient():
         """Downloads an earthquake catalog based on a URL.
 
         Args:
-            start_time:             start time of the catalog.
-            end_time:               end time of the catalog. defaults to
-                                    current time.
-            min_latitude:           minimum latitude of catalog.
-            max_latitude:           maximum latitude of catalog.
-            min_longitude:          minimum longitude of catalog.
-            max_longitude:          maximum longitude of catalog.
-            min_magnitude:          minimum magnitude of catalog.
-            max_magnitude:          maximum magnitude of catalog.
-            include_all_magnitudes: whether to include all magnitudes.
-            event_type:             type of event to download.
-            delta_m:                magnitude bin size. if >0, then events of
-                                    magnitude >= (min_magnitude - delta_m/2)
-                                    will be downloaded.
-            include_uncertainty:    whether to include uncertainty columns.
-            include_ids:            whether to include event, magnitude
-                                    and origin IDs.
-            include_quality:         whether to include quality columns.
+            start_time:         Start time of the catalog.
+            end_time:           End time of the catalog.
+            min_latitude:       Minimum latitude of the catalog.
+            max_latitude:       Maximum latitude of the catalog.
+            min_longitude:      Minimum longitude of the catalog.
+            max_longitude:      Maximum longitude of the catalog.
+            min_magnitude:      Minimum magnitude of the catalog.
+            max_magnitude:      Maximum magnitude of the catalog.
+            include_all_magnitudes: Whether to include all magnitudes.
+            event_type:         Filter by the type of events.
+            delta_m:            Magnitude bin size. If >0, then events of
+                            `magnitude >= (min_magnitude - delta_m/2)`
+                            will be downloaded.
+            include_uncertainty:    Whether to include uncertainty columns.
+            include_ids:        Whether to include event,
+                            magnitude and origin IDs.
+            include_quality:    Whether to include quality columns.
 
         Returns:
-            The catalog as a Catalog Object.
+            catalog: The catalog as a Catalog Object.
 
+        Examples:
+            Create a Catalog from a dictionary.
+
+            >>> from seismostats.io import FDSNWSClient
+            >>> from datetime import datetime
+            >>> url = 'http://eida.ethz.ch/fdsnws/event/1/query'
+            >>> client = FDSNWSClient(url)
+            >>> df = client.get_events(
+            ...     start_time=datetime(2020, 1, 1),
+            ...     end_time=datetime(2022, 1, 1),
+            ...     min_magnitude=0.5,
+            ...     min_longitude=5,
+            ...     max_longitude=11,
+            ...     min_latitude=45,
+            ...     max_latitude=48)
+            >>> print(df)
+
+               event_type time                latitude  longitude magnitude
+            0  earthquake 2021-12-30 07:43:14 46.051445 7.388025  2.510115  ...
+            1  earthquake 2021-12-30 01:35:37 46.778985 9.476219  1.352086  ...
+            2  earthquake 2021-12-29 08:48:59 47.779511 7.722354  0.817480  ...
+            3  earthquake 2021-12-29 00:14:32 47.715341 7.634432  1.252432  ...
+            4  earthquake 2021-12-28 11:51:38 45.752843 7.080092  0.897306  ...
+               ...        ...                 ...       ...       ...       ...
         """
+
         request_url = self.url + '?'
         date_format = "%Y-%m-%dT%H:%M:%S"
 
