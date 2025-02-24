@@ -30,7 +30,8 @@ def _check_required_cols(df: pd.DataFrame, required_cols: list[str]) -> bool:
         required_cols:  List of required columns.
 
     Returns:
-        True if the DataFrame has the required columns, False otherwise.
+        check:          True if the DataFrame has the required columns,
+                    False otherwise.
     """
 
     if not set(required_cols).issubset(set(df.columns)):
@@ -43,9 +44,12 @@ def require_cols(_func=None, *, require: list[str], exclude: list[str] = None):
     Decorator to check if a Class has the required columns for a method.
 
     Args:
-        _func:      Function to decorate.
-        require:    List of required columns.
-        exclude:    List of columns to exclude from the required columns.
+        _func:          Function to decorate.
+        require:        List of required columns.
+        exclude:        List of columns to exclude from the required columns.
+
+    Returns:
+        requirement:    Decorator function.
     """
 
     def decorator_require(func):
@@ -76,10 +80,10 @@ def is_nan(value: float) -> bool:
     Check if a value is NaN.
 
     Args:
-        value: Value to check.
+        value:  Value to check.
 
     Returns:
-        True if the value is NaN, False otherwise.
+        check:  True if the value is NaN, False otherwise.
 
     Examples:
         >>> is_nan(float('nan'))

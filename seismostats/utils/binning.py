@@ -10,7 +10,7 @@ def normal_round_to_int(x: float) -> int:
     Rounds a float number ``x`` to the closest integer.
 
     Args:
-        x: Decimal number that needs to be rounded.
+        x:       Decimal number that needs to be rounded.
 
     Returns:
         x_round: Rounded value of the given number.
@@ -35,11 +35,11 @@ def normal_round(x: float, n: int = 0) -> float:
     of decimals is not given, we round to an integer.
 
     Args:
-        x: Decimal number that needs to be rounded.
-        n: Number of decimals, optional.
+        x:       Decimal number that needs to be rounded.
+        n:       Number of decimals, optional.
 
     Returns:
-        x_round:    Value rounded to the given number of decimals.
+        x_round: Value rounded to the given number of decimals.
 
     Examples:
         >>> normal_round(2.123456, 2)
@@ -190,9 +190,9 @@ def get_fmd(
                     Accordingly, left edges of bins or center points are
                     returned.
     Returns:
-        bins:    Array of bin centers (left to right).
-        counts:  Counts for each bin.
-        mags:    Array of magnitudes binned to ``delta_m``.
+        bins:           Array of bin centers (left to right).
+        counts:         Counts for each bin.
+        mags:           Array of magnitudes binned to ``delta_m``.
 
     Examples:
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
@@ -250,9 +250,9 @@ def get_cum_fmd(
                     returned.
 
     Returns:
-        bins:       Array of bin centers (left to right).
-        c_counts:   Cumulative counts for each bin.
-        mags:       Array of magnitudes binned to ``delta_m``.
+        bins:           Array of bin centers (left to right).
+        c_counts:       Cumulative counts for each bin.
+        mags:           Array of magnitudes binned to ``delta_m``.
 
     Examples:
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]

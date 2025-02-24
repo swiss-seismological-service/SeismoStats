@@ -16,7 +16,8 @@ def cat_intersect_polygon(
                         the vertices of the polygon to be checked against.
 
     Returns:
-        DataFrame containing only the rows with points inside the polygon.
+        filtered_cat:       DataFrame containing only the rows with points
+                        inside the polygon.
 
     """
     # Make a copy of the DataFrame

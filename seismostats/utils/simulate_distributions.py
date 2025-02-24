@@ -18,8 +18,8 @@ def simulate_magnitudes(
                 distribution is truncated at ``mag_max``.
 
     Returns:
-        mags:   Vector of length ``n`` of magnitudes drawn from an exponential
-            distribution.
+        mags:       Vector of length ``n`` of magnitudes drawn from an
+                exponential distribution.
 
     Examples:
         >>> simulate_magnitudes(5, 1, 0, 5)
@@ -71,7 +71,7 @@ def simulate_magnitudes_binned(
         b_parameter:    'b_value' or 'beta'
 
     Returns:
-        mags:   Array of magnitudes.
+        mags:           Array of magnitudes.
 
     Examples:
         >>> simulate_magnitudes_binned(5, 1, 0, 1, 5)

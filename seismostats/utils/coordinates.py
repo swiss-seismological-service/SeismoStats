@@ -85,7 +85,8 @@ class CoordinateTransformer:
             altitude:   Altitude of coordinate.
 
         Returns:
-            x: Easting, northing and altitude in local CRS relative to ref.
+            x:          Easting, northing and altitude in local CRS
+                    relative to reference.
 
         Examples:
             >>> from seismostats.utils.coordinates import CoordinateTransformer
@@ -125,7 +126,8 @@ class CoordinateTransformer:
             altitude:   Altitude of coordinate.
 
         Returns:
-            x: Longitude, latitude, altitude in local CRS relative to ref.
+            x:          Longitude, latitude, altitude in local CRS
+                    relative to reference.
 
         Examples:
             >>> from seismostats.utils.coordinates import CoordinateTransformer
@@ -163,10 +165,10 @@ class CoordinateTransformer:
         Transform polygon from geographic coordinates to local coordinates.
 
         Args:
-            polygon: Shapely polygon.
+            polygon:    Shapely polygon.
 
         Returns:
-            x: Shapely polygon in local coordinates.
+            x:          Shapely polygon in local coordinates.
 
         Examples:
             >>> from seismostats.utils.coordinates import CoordinateTransformer
