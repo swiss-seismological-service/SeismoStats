@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from seismostats.analysis.bvalue import estimate_b
-from seismostats.catalogs.catalog import (REQUIRED_COLS_CATALOG, Catalog,
+from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
                                           ForecastCatalog)
 from seismostats.utils.binning import bin_to_precision
 
@@ -58,11 +58,11 @@ def test_catalog_strip():
     stripped_catalog = catalog.strip()
     assert isinstance(stripped_catalog, Catalog)
     assert stripped_catalog.columns.tolist().sort() == \
-        REQUIRED_COLS_CATALOG.sort()
+        CATALOG_COLUMNS.sort()
 
     # Test inplace stripping
     catalog.strip(inplace=True)
-    assert catalog.columns.tolist().sort() == REQUIRED_COLS_CATALOG.sort()
+    assert catalog.columns.tolist().sort() == CATALOG_COLUMNS.sort()
 
     # Test constructor fallback
     dropped = catalog.drop(columns=['magnitude'])
@@ -239,12 +239,11 @@ def test_to_quakeml_forecast():
 def test_empty_catalog():
     catalog = Catalog()
     assert catalog.empty
-    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG
+    assert catalog.columns.tolist() == CATALOG_COLUMNS
 
     catalog = Catalog.from_dict({})
     assert catalog.empty
-    assert catalog.columns.tolist() == REQUIRED_COLS_CATALOG + \
-        ['magnitude_type']
+    assert catalog.columns.tolist() == CATALOG_COLUMNS
 
     catalog = Catalog.from_dict({'magnitude': []}, include_ids=False)
     assert isinstance(catalog, Catalog)

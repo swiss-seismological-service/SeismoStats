@@ -15,7 +15,6 @@ import pandas.testing as pdt
 import pytest
 
 from seismostats import Catalog as SeismoCatalog
-from seismostats.catalogs.catalog import REQUIRED_COLS_CATALOG
 from seismostats.utils import _check_required_cols
 
 pytest.importorskip("openquake.hmtk.seismicity.catalogue",
@@ -140,7 +139,8 @@ def test_to_openquake_simple():
 
 def test_from_openquake_simple():
     df = SeismoCatalog.from_openquake(simple_oq_catalogue)
-    assert _check_required_cols(df, REQUIRED_COLS_CATALOG)
+    assert _check_required_cols(df, ['longitude', 'latitude', 'depth',
+                                     'time', 'magnitude'])
     for col in COMMON_COLS:
         np.testing.assert_allclose(df[col], simple_oq_catalogue[col])
 
@@ -182,7 +182,8 @@ def test_from_openquake_extra_col():
     agencies = ["SED", "NA", "MarsQuakeService"]
     catalogue = OQCatalog.make_from_dict({**data, 'Agency': agencies})
     df = SeismoCatalog.from_openquake(catalogue)
-    assert _check_required_cols(df, REQUIRED_COLS_CATALOG)
+    assert _check_required_cols(df, ['longitude', 'latitude', 'depth',
+                                     'time', 'magnitude'])
     assert (df['Agency'] == agencies).all()
 
 
