@@ -4,29 +4,33 @@ import math
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from seismostats.utils.binning import (bin_to_precision, get_cum_fmd,  # noqa
-                                       get_fmd)
+from seismostats.utils.binning import (  # noqa
+    bin_to_precision,  # noqa
+    get_cum_fmd,  # noqa
+    get_fmd,  # noqa
+)
 from seismostats.utils.coordinates import CoordinateTransformer  # noqa
-from seismostats.utils.coordinates import (bounding_box_to_polygon,  # noqa
-                                           polygon_to_bounding_box)
+from seismostats.utils.coordinates import (  # noqa
+    bounding_box_to_polygon,  # noqa
+    polygon_to_bounding_box,  # noqa
+)
 from seismostats.utils.filtering import cat_intersect_polygon  # noqa
 from seismostats.utils.simulate_distributions import (  # noqa
-    simulate_magnitudes, simulate_magnitudes_binned)
+    simulate_magnitudes,  # noqa
+    simulate_magnitudes_binned,  # noqa
+)
 
 
-def _check_required_cols(df: pd.DataFrame, required_cols: list[str]):
+def _check_required_cols(df: pd.DataFrame, required_cols: list[str]) -> bool:
     """
     Check if a DataFrame has the required columns.
 
     Args:
-        df : pandas DataFrame
-            DataFrame to check.
-            required_cols : list of str
-            List of required columns.
+        df:             DataFrame to check.
+        required_cols:  List of required columns.
 
     Returns:
-        bool
-            True if the DataFrame has the required columns, False otherwise.
+        True if the DataFrame has the required columns, False otherwise.
     """
 
     if not set(required_cols).issubset(set(df.columns)):
@@ -39,12 +43,9 @@ def require_cols(_func=None, *, require: list[str], exclude: list[str] = None):
     Decorator to check if a Class has the required columns for a method.
 
     Args:
-        _func : function, optional
-            Function to decorate.
-        require : list of str
-            List of required columns.
-        exclude : list of str, optional
-            List of columns to exclude from the required columns.
+        _func:      Function to decorate.
+        require:    List of required columns.
+        exclude:    List of columns to exclude from the required columns.
     """
 
     def decorator_require(func):
@@ -70,17 +71,34 @@ def require_cols(_func=None, *, require: list[str], exclude: list[str] = None):
         return decorator_require(_func)
 
 
-def is_nan(value):
+def is_nan(value: float) -> bool:
+    """
+    Check if a value is NaN.
+
+    Args:
+        value: Value to check.
+
+    Returns:
+        True if the value is NaN, False otherwise.
+
+    Examples:
+        >>> is_nan(float('nan'))
+        True
+        >>> is_nan(1.0)
+        False
+    """
     return isinstance(value, float) and math.isnan(value)
 
 
 def _render_template(data: dict, template_path: str) -> str:
-
+    """
+    Render a Jinja template with the provided data.
+    """
     env = Environment(
-        loader=FileSystemLoader('/'),  # Base directory for templates
-        autoescape=select_autoescape()
+        loader=FileSystemLoader("/"),  # Base directory for templates
+        autoescape=select_autoescape(),
     )
-    env.tests['nan'] = is_nan
+    env.tests["nan"] = is_nan
 
     template = env.get_template(template_path)
 
