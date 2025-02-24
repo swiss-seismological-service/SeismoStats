@@ -44,8 +44,12 @@ class BValueEstimator(ABC):
         self.delta_m = delta_m
         self.weights = None if weights is None else np.array(weights)
 
-        self._filter_magnitudes()
         self._sanity_checks()
+        self._filter_magnitudes()
+
+        if len(self.magnitudes) == 0:
+            self.__b_value = np.nan
+            return self.__b_value
 
         self.__b_value = self._estimate()
         return self.__b_value
@@ -61,42 +65,41 @@ class BValueEstimator(ABC):
         '''
         Filter out magnitudes below the completeness magnitude.
         '''
-        idx = self.magnitudes >= self.mc - self.delta_m / 2
-        self.magnitudes = self.magnitudes[idx]
+        self.idx = (self.magnitudes >= self.mc - self.delta_m / 2).nonzero()[0]
+        self.magnitudes = self.magnitudes[self.idx]
 
         if self.weights is not None:
-            self.weights = self.weights[idx]
+            self.weights = self.weights[self.idx]
 
-        return idx
+        if len(self.magnitudes) == 0:
+            if get_option('warnings') is True:
+                warnings.warn('No magnitudes above the completeness magnitude.')
 
     def _sanity_checks(self):
         '''
         Perform sanity checks on the input data.
         '''
+        # test magnitude binnning
+        if len(self.magnitudes) > 0:
+            if not binning_test(self.magnitudes, self.delta_m,
+                                check_larger_binning=False):
+                raise ValueError('Magnitudes are not binned correctly.')
 
-        # test that the magnitudes are binned correctly
-        if self.delta_m == 0:
-            tolerance = 1e-08
-        else:
-            tolerance = max(self.delta_m / 100, 1e-08)
-        assert (
-            binning_test(self.magnitudes, self.delta_m, tolerance)
-        )
-        'Magnitudes are not binned correctly.'
+            # give warnings
+            if get_option('warnings') is True:
+                if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
+                    warnings.warn(
+                        'No magnitudes in the lowest magnitude bin are present.'
+                        'Check if mc is chosen correctly.'
+                    )
 
+        # test weights
         if self.weights is not None:
-            assert len(self.magnitudes) == len(self.weights), (
-                'The number of magnitudes and weights must be equal.'
-            )
-            assert np.all(self.weights >= 0), 'Weights must be nonnegative.'
-
-        # test if lowest magnitude is much larger than mc
-        if get_option('warnings') is True:
-            if np.min(self.magnitudes) - self.mc > self.delta_m / 2:
-                warnings.warn(
-                    'No magnitudes in the lowest magnitude bin are present. '
-                    'Check if mc is chosen correctly.'
-                )
+            if len(self.magnitudes) != len(self.weights):
+                raise IndexError(
+                    'The number of magnitudes and weights must be equal.')
+            if np.any(self.weights < 0):
+                raise ValueError('Weights must be nonnegative.')
 
     @classmethod
     @abstractmethod
