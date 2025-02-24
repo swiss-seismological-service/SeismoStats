@@ -83,10 +83,17 @@ def _select_origin_by_id(origins: list, id: str) -> tuple[dict, list]:
     return preferred, origins
 
 
-def _select_secondary_magnitudes(magnitudes: list):
+def _select_secondary_magnitudes(magnitudes: list) -> list:
     """
     Check the magnitudes for multiple magnitudes of the same type and
     select the one with the highest version number and creation time.
+
+    Args:
+        magnitudes:    The magnitudes to select from and check for multiple
+                    versions.
+
+    Returns:
+        selected:      The selected magnitudes.
     """
     magnitude_types = set(m['magnitudetype'] for m in magnitudes)
 
@@ -150,7 +157,9 @@ def _extract_secondary_magnitudes(magnitudes: list) -> dict:
     return magnitude_dict
 
 
-def _parse_to_dict(event: dict, origins: list, magnitudes: list,
+def _parse_to_dict(event: dict,
+                   origins: list[dict],
+                   magnitudes: list[dict],
                    include_all_magnitudes: bool = True,
                    include_quality: bool = True) -> dict:
     """
@@ -158,19 +167,17 @@ def _parse_to_dict(event: dict, origins: list, magnitudes: list,
     QuakeMLHandler and return a dictionary of event parameters.
 
     Args:
-        event : dict
-            A dictionary representing the earthquake event.
-        origins : list
-            A list of dictionaries representing the earthquake origins.
-        magnitudes : list
-            A list of dictionaries representing the earthquake magnitudes.
-        include_all_magnitudes : bool, optional
-            If True, include all magnitudes in the output dictionary.
-            Otherwise, only include the preferred magnitude.
+        event:          The earthquake event.
+        origins:        The earthquake origins.
+        magnitudes:     The earthquake magnitudes.
+        include_all_magnitudes:     If True, include all magnitudes in the
+                    output dictionary. Otherwise, only include
+                    the preferred magnitude.
+        include_quality:   If True, include quality information in the output
+                    dictionary.
 
     Returns:
-        dict
-            A dictionary of earthquake event parameters.
+        event_params:   Full dictionary of earthquake event parameters.
     """
     preferred_origin, _ = \
         _select_origin_by_id(origins,
@@ -200,19 +207,20 @@ class QuakeMLHandler(xml.sax.ContentHandler):
     earthquake event information.
 
     Args:
-        catalog : Catalog
-            A Catalog object to store the extracted earthquake events.
-        include_all_magnitudes : bool, optional
-            If True, include all magnitudes in the catalog. Otherwise,
-            only include the preferred magnitude.
+        catalog:        Object to store the extracted earthquake events.
+        include_all_magnitudes: If True, include all magnitudes in the catalog.
+                    Otherwise, only include the preferred magnitude.
     Notes:
         This class is a SAX ContentHandler, and is used in conjunction
         with an xml.sax parser to extract earthquake event information
         from QuakeML files.
     """
 
-    def __init__(
-            self, catalog, include_all_magnitudes=True, include_quality=True):
+    def __init__(self,
+                 catalog,
+                 include_all_magnitudes=True,
+                 include_quality=True):
+
         self.catalog = catalog
         self.include_all_magnitudes = include_all_magnitudes
         self.include_quality = include_quality
@@ -271,20 +279,18 @@ class QuakeMLHandler(xml.sax.ContentHandler):
         pass
 
 
-def parse_quakeml_file(
-        file_path: str, include_all_magnitudes: bool = True,
-        include_quality: bool = True) -> list[dict]:
+def parse_quakeml_file(file_path: str,
+                       include_all_magnitudes: bool = True,
+                       include_quality: bool = True) -> list[dict]:
     """
     Parse a QuakeML file and return a list of earthquake event information
     dictionaries.
 
     Args:
-        file_path : str
-            Path to the QuakeML file.
+        file_path :     Path to the QuakeML file.
 
     Returns:
-        list[dict]
-            A list of earthquake event information dictionaries.
+        events:         A list of earthquake event information dictionaries.
     """
     data = []
     handler = QuakeMLHandler(data, include_all_magnitudes, include_quality)
@@ -299,20 +305,18 @@ def parse_quakeml_file(
     return data
 
 
-def parse_quakeml(
-        quakeml: str, include_all_magnitudes: bool = True,
-        include_quality: bool = True) -> list[dict]:
+def parse_quakeml(quakeml: str,
+                  include_all_magnitudes: bool = True,
+                  include_quality: bool = True) -> list[dict]:
     """
     Parse a QuakeML string and return a list of earthquake event information
     dictionaries.
 
     Args:
-        quakeml : str
-            A QuakeML string.
+        quakeml :   A QuakeML string.
 
     Returns:
-        list[dict]
-            A list of earthquake event information dictionaries.
+        events:     A list of earthquake event information dictionaries.
     """
     data = []
 
@@ -324,21 +328,18 @@ def parse_quakeml(
     return data
 
 
-def parse_quakeml_response(
-        response: Response,
-        include_all_magnitudes: bool = True,
-        include_quality: bool = True) -> list[dict]:
+def parse_quakeml_response(response: Response,
+                           include_all_magnitudes: bool = True,
+                           include_quality: bool = True) -> list[dict]:
     """
     Parse a QuakeML response and return a list of earthquake event information
     dictionaries.
 
     Args:
-        response : Response
-            A response object from a QuakeML request.
+        response:   A response object from a QuakeML request.
 
     Returns:
-        list[dict]
-            A list of earthquake event information dictionaries.
+        events:     A list of earthquake event information dictionaries.
     """
     response.raw.decode_content = True  # if content-encoding is used decode
     data = []
