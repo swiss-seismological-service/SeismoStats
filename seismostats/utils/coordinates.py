@@ -89,7 +89,7 @@ class CoordinateTransformer:
                     relative to reference.
 
         Examples:
-            >>> from seismostats.utils.coordinates import CoordinateTransformer
+            >>> from seismostats.utils import CoordinateTransformer
 
             >>> ref_easting = 2642690
             >>> ref_northing = 1205590
@@ -130,7 +130,7 @@ class CoordinateTransformer:
                     relative to reference.
 
         Examples:
-            >>> from seismostats.utils.coordinates import CoordinateTransformer
+            >>> from seismostats.utils import CoordinateTransformer
 
             >>> ref_easting = 2642690
             >>> ref_northing = 1205590
@@ -171,7 +171,7 @@ class CoordinateTransformer:
             x:          Shapely polygon in local coordinates.
 
         Examples:
-            >>> from seismostats.utils.coordinates import CoordinateTransformer
+            >>> from seismostats.utils import CoordinateTransformer
             >>> from shapely.geometry import Polygon
 
             >>> ref_easting = 2642690
@@ -210,7 +210,7 @@ class CoordinateTransformer:
             x: Shapely polygon in geographic coordinates.
 
         Examples:
-            >>> from seismostats.utils.coordinates import CoordinateTransformer
+            >>> from seismostats.utils import CoordinateTransformer
             >>> from shapely.geometry import Polygon
 
             >>> ref_easting = 2642690
@@ -253,7 +253,7 @@ def bounding_box_to_polygon(x_min, x_max, y_min, y_max, srid=None) -> Polygon:
         x: Shapely polygon in geographic coordinates.
 
     Examples:
-        >>> from seismostats.utils.coordinates import bounding_box_to_polygon
+        >>> from seismostats.utils import bounding_box_to_polygon
         >>> polygon = bounding_box_to_polygon(0, 1, 0, 1)
         >>> x,y = polygon.exterior.xy
         >>> x

@@ -1,23 +1,24 @@
+# flake8: noqa
 import functools
 import math
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from seismostats.utils.binning import (  # noqa
-    bin_to_precision,  # noqa
-    get_cum_fmd,  # noqa
-    get_fmd,  # noqa
+from seismostats.utils.binning import (
+    bin_to_precision,
+    get_cum_fmd,
+    get_fmd,
 )
-from seismostats.utils.coordinates import CoordinateTransformer  # noqa
-from seismostats.utils.coordinates import (  # noqa
-    bounding_box_to_polygon,  # noqa
-    polygon_to_bounding_box,  # noqa
+from seismostats.utils.coordinates import CoordinateTransformer
+from seismostats.utils.coordinates import (
+    bounding_box_to_polygon,
+    polygon_to_bounding_box,
 )
-from seismostats.utils.filtering import cat_intersect_polygon  # noqa
-from seismostats.utils.simulate_distributions import (  # noqa
-    simulate_magnitudes,  # noqa
-    simulate_magnitudes_binned,  # noqa
+from seismostats.utils.filtering import cat_intersect_polygon
+from seismostats.utils.simulate_distributions import (
+    simulate_magnitudes,
+    simulate_magnitudes_binned,
 )
 
 
@@ -86,6 +87,8 @@ def is_nan(value: float) -> bool:
         check:  True if the value is NaN, False otherwise.
 
     Examples:
+        >>> from seismostats.utils import is_nan
+
         >>> is_nan(float('nan'))
         True
         >>> is_nan(1.0)

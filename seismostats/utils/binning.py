@@ -13,6 +13,7 @@ def normal_round_to_int(x: float) -> int:
         x_round: Rounded value of the given number.
 
     Examples:
+        >>> from seismostats.utils.binning import normal_round_to_int
         >>> normal_round_to_int(2.5)
         3
         >>> normal_round_to_int(2.4)
@@ -39,6 +40,7 @@ def normal_round(x: float, n: int = 0) -> float:
         x_round: Value rounded to the given number of decimals.
 
     Examples:
+        >>> from seismostats.utils.binning import normal_round
         >>> normal_round(2.123456, 2)
         2.12
         >>> normal_round(2.123456)
@@ -62,6 +64,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
         x_round:   Value rounded to the given precision.
 
     Examples:
+        >>> from seismostats.utils import bin_to_precision
         >>> bin_to_precision([1.234, 2.345, 3.456], 0.1)
         array([1.2, 2.3, 3.5])
         >>> bin_to_precision([1.234, 2.345, 3.456], 0.01)
@@ -123,6 +126,7 @@ def binning_test(
                 otherwise.
 
     Examples:
+        >>> from seismostats.utils.binning import binning_test
         >>> binning_test([0.2,0.4,0.6], 0.2)
         True
         >>> binning_test([0.2,0.4,0.6], 0.1)
@@ -194,6 +198,8 @@ def get_fmd(
         mags:           Array of magnitudes binned to ``delta_m``.
 
     Examples:
+        >>> from seismostats.utils import get_fmd
+
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
         >>> delta_m = 1.0
         >>> bin_position = "center"
@@ -254,6 +260,8 @@ def get_cum_fmd(
         mags:           Array of magnitudes binned to ``delta_m``.
 
     Examples:
+        >>> from seismostats.utils import get_cum_fmd
+
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
         >>> delta_m = 1.0
         >>> bin_position = "center"

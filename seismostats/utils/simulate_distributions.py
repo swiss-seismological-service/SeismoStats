@@ -22,10 +22,11 @@ def simulate_magnitudes(
                 exponential distribution.
 
     Examples:
-        >>> simulate_magnitudes(5, 1, 0, 5)
-        array([1.39701219, 0.09509761, 2.68367219, 0.73664695, 0.18811929])
-        >>> simulate_magnitudes(5, 1, 1)
-        array([1.3249975 , 1.63120196, 3.56443043, 1.15384524, 2.45147558])
+        >>> from seismostats.utils import simulate_magnitudes
+        >>> simulate_magnitudes(4, 1, 0, 5)
+        array([1.39701219, 0.09509761, 2.68367219, 0.73664695]) #random
+        >>> simulate_magnitudes(4, 1, 1)
+        array([1.3249975 , 1.63120196, 3.56443043, 1.15384524]) #random
 
     See also:
         :func:`~seismostats.utils.simulate_distributions.simulate_magnitudes_binned`
@@ -74,6 +75,7 @@ def simulate_magnitudes_binned(
         mags:           Array of magnitudes.
 
     Examples:
+        >>> from seismostats.utils import simulate_magnitudes_binned
         >>> simulate_magnitudes_binned(5, 1, 0, 1, 5)
         array([1., 0., 1., 1., 0.])
         >>> simulate_magnitudes_binned(5, 1, 1, 0.1)

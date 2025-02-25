@@ -21,6 +21,8 @@ def set_option(key: str, value: Any):
         KeyError: If the key is not in the available options.
 
     Examples:
+        >>> from seismostats.utils._config import set_option
+
         >>> # Disable warnings
         >>> set_option('warnings', False)
 
@@ -50,6 +52,8 @@ def get_option(key: str) -> Any:
         value:  The value of the option.
 
     Examples:
+        >>> from seismostats.utils._config import get_option
+
         >>> # Get the value of the 'warnings' option
         >>> warnings = get_option('warnings')
     """
