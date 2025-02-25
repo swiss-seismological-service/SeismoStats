@@ -11,15 +11,26 @@ def simulate_magnitudes(
     :math:`f = e^{-beta*M}`.
 
     Args:
-        n:      number of sample magnitudes
-        beta:   scale factor of the exponential distribution
-        mc:     cut-off magnitude
-        mag_max: maximum magnitude. If it is not None, the exponential
-                 distribution is truncated at mag_max.
+        n:          Number of sample magnitudes.
+        beta:       Scale factor of the exponential distribution.
+        mc:         Cut-off magnitude.
+        mag_max:    Maximum magnitude. If it is not None, the exponential
+                distribution is truncated at ``mag_max``.
 
     Returns:
-        mags:   vector of length n of magnitudes drawn from an exponential
-        distribution
+        mags:       Vector of length ``n`` of magnitudes drawn from an
+                exponential distribution.
+
+    Examples:
+        >>> from seismostats.utils import simulate_magnitudes
+        >>> simulate_magnitudes(4, 1, 0, 5)
+        array([1.39701219, 0.09509761, 2.68367219, 0.73664695]) #random
+        >>> simulate_magnitudes(4, 1, 1)
+        array([1.3249975 , 1.63120196, 3.56443043, 1.15384524]) #random
+
+    See also:
+        :func:`~seismostats.utils.simulate_distributions.simulate_magnitudes_binned`
+
     """
     if mag_max:
         quantile1 = stats.expon.cdf(mc, loc=0, scale=1 / beta)
@@ -49,18 +60,29 @@ def simulate_magnitudes_binned(
     depending on the ``b_parameter`` input.
 
     Args:
-        n:              number of magnitudes to simulate
+        n:              Number of magnitudes to simulate.
         b:              b-value or beta of the distribution from which
-                magnitudes are simulated. If ``b`` is np.ndarray, it must have
-                the length ``n``. Then each magnitude is simulated from the
-                corresponding b-value
-        mc:             completeness magnitude
-        delta_m:        magnitude bin width
-        mag_max:        maximum magnitude
+                    magnitudes are simulated. If ``b`` is np.ndarray, it must
+                    have the length ``n``. Then each magnitude is simulated
+                    from the corresponding b-value.
+        mc:             Magnitude of completeness.
+        delta_m:        Magnitude bin width.
+        mag_max:        Maximum magnitude. If it is not None, the exponential
+                distribution is truncated at ``mag_max``.
         b_parameter:    'b_value' or 'beta'
 
     Returns:
-        mags:   array of magnitudes
+        mags:           Array of magnitudes.
+
+    Examples:
+        >>> from seismostats.utils import simulate_magnitudes_binned
+        >>> simulate_magnitudes_binned(5, 1, 0, 1, 5)
+        array([1., 0., 1., 1., 0.])
+        >>> simulate_magnitudes_binned(5, 1, 1, 0.1)
+        array([1.1., 1., 1.6, 1.2, 1.3])
+
+    See also:
+        :func:`~seismostats.utils.simulate_distributions.simulate_magnitudes
     """
     if b_parameter == "b_value":
         beta = b * np.log(10)

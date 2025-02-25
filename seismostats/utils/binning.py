@@ -4,13 +4,20 @@ import numpy as np
 
 def normal_round_to_int(x: float) -> int:
     """
-    Rounds a float number x to the closest integer.
+    Rounds a float number ``x`` to the closest integer.
 
     Args:
-        x: decimal number that needs to be rounded
+        x:       Decimal number that needs to be rounded.
 
     Returns:
-        Rounded value of the given number.
+        x_round: Rounded value of the given number.
+
+    Examples:
+        >>> from seismostats.utils.binning import normal_round_to_int
+        >>> normal_round_to_int(2.5)
+        3
+        >>> normal_round_to_int(2.4)
+        2
     """
 
     sign = np.sign(x)
@@ -26,11 +33,18 @@ def normal_round(x: float, n: int = 0) -> float:
     of decimals is not given, we round to an integer.
 
     Args:
-        x: decimal number that needs to be rounded
-        n: number of decimals, optional
+        x:       Decimal number that needs to be rounded.
+        n:       Number of decimals, optional.
 
     Returns:
-        Value rounded to the given number of decimals.
+        x_round: Value rounded to the given number of decimals.
+
+    Examples:
+        >>> from seismostats.utils.binning import normal_round
+        >>> normal_round(2.123456, 2)
+        2.12
+        >>> normal_round(2.123456)
+        2
     """
 
     power = 10**n
@@ -40,14 +54,24 @@ def normal_round(x: float, n: int = 0) -> float:
 def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
     """
     Rounds float numbers within the array ``x`` to a given precision. If
-    precision not given, throws error.
+    precision is not given, an error is raised.
 
     Args:
-        x: list of decimal numbers that needs to be rounded
-        delta_x: size of the bin
+        x:          List of decimal numbers that needs to be rounded.
+        delta_x:    Size of the bin.
 
     Returns:
-        Value rounded to the given precision.
+        x_round:   Value rounded to the given precision.
+
+    Examples:
+        >>> from seismostats.utils import bin_to_precision
+        >>> bin_to_precision([1.234, 2.345, 3.456], 0.1)
+        array([1.2, 2.3, 3.5])
+        >>> bin_to_precision([1.234, 2.345, 3.456], 0.01)
+        array([1.23, 2.35, 3.46])
+
+    See also:
+        :func:`~seismostats.utils.binning.normal_round`
     """
     if x is None:
         raise ValueError("x cannot be None")
@@ -63,43 +87,57 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 
 
 def binning_test(
-        x: np.ndarray | list,
-        delta_x: float,
-        tolerance: float = 1e-15,
-        check_larger_binning: bool = True,
+    x: np.ndarray | list,
+    delta_x: float,
+    tolerance: float = 1e-15,
+    check_larger_binning: bool = True,
 ) -> float:
     """
-    Finds out to which precision the given array is binned with delta_x,
-      within the given absolute tolerance.
+    Finds out to which precision the given array is binned with ``delta_x``,
+    within the given absolute tolerance.
 
-    The function does have the implicit assumption of delta_x being a power
+    The function does have the implicit assumption of ``delta_x`` being a power
     of ten. As an example, what this means: the function will return True for
-    x =  [0, 0.2, 0.4], for delta_x = 0.2 but also for delta_x = 0.1. This is
-    because the algorithm will check the next larger power of ten in order
-    to determine if the array is binned to a larger delta_x.
+    ``x = [0, 0.2, 0.4]``, for ``delta_x = 0.2`` but also ``for delta_x = 0.1``.
+    This is because the algorithm will check the next larger power of ten in
+    order to determine if the array is binned to a larger ``delta_x``.
 
-    If delta_x == 0, the function will test if the array is binned to a power
+    If ``delta_x`` = 0, the function will test if the array is binned to a power
     of ten larger than the tolerance.
 
     Args:
-        x:          list of decimal numbers that are supposeddly binned
-            (with bin-sizes delta_x)
-        delta_x:    size of the bin
-        tolerance:  tolerance for the comparison
-        check_larger_binning: if True (default), the function not only check
-            that the binning of the array is correct, but also make sure that
-            there is no other binning that is correct. For example, take the
-            array [1.0, 3.0, 4.0]. If delta_x = 0.1, the function will return
-            False because a larger binning (1.0) is also correct. Here, it is
-            important to note that only the next larger power of ten is checked.
-            In case of check_larger_binning = False, the function will return
-            True for the example above, as the binning of 0.1 is correct, and
-            the larger binning is not checked.
+        x:          List of decimal numbers that are supposeddly binned
+                (with bin-sizes ``delta_x``).
+        delta_x:    Size of the bin.
+        tolerance:  Tolerance for the comparison. Default is 1e-15.
+        check_larger_binning: If True (default), the function not only checks
+                that the binning of the array is correct, but also makes sure
+                that there is no other binning that is correct. For example,
+                take the array [1.0, 3.0, 4.0]. If ``delta_x = 0.1``, the
+                function will return False because a larger binning (1.0) is
+                also correct. Here, it is important to note that only the next
+                larger power of ten is checked. In case of
+                ``check_larger_binning = False``, the function will return
+                True for the example above, as the binning of 0.1 is correct,
+                and the larger binning is not checked.
 
     Returns:
-        result: True if the array is binned to the given precision, False
-            otherwise.
+        result:     True if the array is binned to the given precision, False
+                otherwise.
 
+    Examples:
+        >>> from seismostats.utils.binning import binning_test
+        >>> binning_test([0.2,0.4,0.6], 0.2)
+        True
+        >>> binning_test([0.2,0.4,0.6], 0.1)
+        True
+        >>> binning_test([0.2,0.4,0.6], 0.05)
+        False
+        >>> binning_test([0.2,0.4,0.6], 0.05, check_larger_binning=False)
+        True
+
+    See also:
+        :func:`~seismostats.utils.binning.bin_to_precision`
     """
     if len(x) == 0:
         # error if the array is empty
@@ -111,11 +149,12 @@ def binning_test(
 
     if delta_x == 0 and check_larger_binning is True:
         range = np.max(x) - np.min(x)
-        power = np.arange(np.floor(np.log10(tolerance)) + 1,
-                          np.ceil(np.log10(range)), 1)
+        power = np.arange(
+            np.floor(np.log10(tolerance)) + 1, np.ceil(np.log10(range)), 1
+        )
         delta_x_test = 10**power
         test = True
-        tolerance = 10**(np.floor(np.log10(tolerance)) - 1)
+        tolerance = 10 ** (np.floor(np.log10(tolerance)) - 1)
         for delta_x_loop in delta_x_test:
             if binning_test(x, delta_x_loop, tolerance):
                 return False
@@ -148,15 +187,32 @@ def get_fmd(
     ``bin_position = 'left'``.
 
     Args:
-        mags:           array of magnitudes
-        delta_m:        discretization of the magnitudes
-        bin_position:   position of the bin, options are  'center' and 'left'.
-                    accordingly, left edges of bins or center points are
+        mags:           Array of magnitudes.
+        delta_m:        Discretization of the magnitudes.
+        bin_position:   Position of the bin, options are  'center' and 'left'.
+                    Accordingly, left edges of bins or center points are
                     returned.
     Returns:
-        bins:           array of bin centers (left to right)
-        counts:         counts for each bin
-        mags:           array of magnitudes binned to ``delta_m``
+        bins:           Array of bin centers (left to right).
+        counts:         Counts for each bin.
+        mags:           Array of magnitudes binned to ``delta_m``.
+
+    Examples:
+        >>> from seismostats.utils import get_fmd
+
+        >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
+        >>> delta_m = 1.0
+        >>> bin_position = "center"
+        >>> bins, counts, mags = get_fmd(magnitudes, delta_m, bin_position)
+        >>> bins
+        array([1., 2.])
+        >>> counts
+        array([4, 3])
+        >>> mags
+        array([1., 1., 1., 1., 2., 2., 2.])
+
+    See also:
+        :func:`~seismostats.utils.binning.get_cum_fmd`
     """
 
     if delta_m == 0:
@@ -165,8 +221,11 @@ def get_fmd(
     magnitudes = bin_to_precision(magnitudes, delta_m)
     # use histogram to get the counts
     x_bins = bin_to_precision(
-        np.arange(np.min(magnitudes), np.max(magnitudes) + 3
-                  / 2 * delta_m, delta_m), delta_m)
+        np.arange(
+            np.min(magnitudes), np.max(magnitudes) + 3 / 2 * delta_m, delta_m
+        ),
+        delta_m,
+    )
     bins = x_bins[:-1].copy()
     x_bins -= delta_m / 2
     counts, _ = np.histogram(magnitudes, x_bins)
@@ -186,19 +245,36 @@ def get_cum_fmd(
     """
     Calculates cumulative event counts across all magnitude units
     (summed from the right). Note that the returned bins array contains
-    the center point of each bin unless ``bin_position = 'left'``.
+    the center point of each bin unless ``bin_position = 'left'`` is used.
 
     Args:
-        mags    : array of magnitudes
-        delta_m : discretization of the magnitudes
-        bin_position    : position of the bin, options are  'center' and 'left'.
-                        accordingly, left edges of bins or center points are
-                        returned.
+        mags:           Array of magnitudes.
+        delta_m:        Discretization of the magnitudes.
+        bin_position:   Position of the bin, options are  'center' and 'left'.
+                    Accordingly, left edges of bins or center points are
+                    returned.
 
     Returns:
-        bins    : array of bin centers (left to right)
-        c_counts: cumulative counts for each bin
-        mags    : array of magnitudes binned to ``delta_m``
+        bins:           Array of bin centers (left to right).
+        c_counts:       Cumulative counts for each bin.
+        mags:           Array of magnitudes binned to ``delta_m``.
+
+    Examples:
+        >>> from seismostats.utils import get_cum_fmd
+
+        >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
+        >>> delta_m = 1.0
+        >>> bin_position = "center"
+        >>> bins, counts, mags = get_cum_fmd(magnitudes, delta_m, bin_position)
+        >>> bins
+        array([1., 2.])
+        >>> counts
+        array([7, 3])
+        >>> mags
+        array([1., 1., 1., 2., 2., 2., 2.])
+
+    See also:
+        :func:`~seismostats.utils.binning.get_fmd`
     """
 
     if delta_m == 0:
