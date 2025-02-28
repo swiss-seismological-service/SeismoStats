@@ -87,32 +87,34 @@ class FDSNWSEventClient():
         request_url = self.url + '?'
         date_format = "%Y-%m-%dT%H:%M:%S"
 
+        params = {}
+
         if start_time is not None:
-            request_url += f'&starttime={start_time.strftime(date_format)}'
+            params['starttime'] = start_time.strftime(date_format)
         if end_time is not None:
-            request_url += f'&endtime={end_time.strftime(date_format)}'
+            params['endtime'] = end_time.strftime(date_format)
         if min_latitude is not None:
-            request_url += f'&minlatitude={min_latitude}'
+            params['minlatitude'] = min_latitude
         if max_latitude is not None:
-            request_url += f'&maxlatitude={max_latitude}'
+            params['maxlatitude'] = max_latitude
         if min_longitude is not None:
-            request_url += f'&minlongitude={min_longitude}'
+            params['minlongitude'] = min_longitude
         if max_longitude is not None:
-            request_url += f'&maxlongitude={max_longitude}'
+            params['maxlongitude'] = max_longitude
         if min_magnitude is not None and delta_m is not None:
-            request_url += f'&minmagnitude={min_magnitude - (delta_m / 2)}'
+            params['minmagnitude'] = min_magnitude - (delta_m / 2)
         elif min_magnitude is not None:
-            request_url += f'&minmagnitude={min_magnitude}'
+            params['minmagnitude'] = min_magnitude
         if max_magnitude is not None:
-            request_url += f'&maxmagnitude={max_magnitude}'
+            params['maxmagnitude'] = max_magnitude
         if include_all_magnitudes is not None:
-            request_url += f'&includeallmagnitudes={include_all_magnitudes}'
+            params['includeallmagnitudes'] = include_all_magnitudes
         if event_type is not None:
-            request_url += f'&eventtype={event_type}'
+            params['eventtype'] = event_type
 
         catalog = []
 
-        r = requests.get(request_url, stream=True)
+        r = requests.get(request_url, stream=True, params=params)
 
         catalog = parse_quakeml_response(r, include_quality=include_quality)
 
