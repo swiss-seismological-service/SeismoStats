@@ -1,45 +1,75 @@
 [build-system]
-requires = ["setuptools>=70.0.0", "wheel>=0.43.0"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+
 [tool.setuptools.packages.find]
+where = ["."]
 include = ["seismostats*"]
+
 
 [project]
 name = "SeismoStats"
-version = "0.1"
-description = "Library for statistical analysis of seismicity."
+version = "1.0.0rc0"
+description = "A Python Package for Statistical Seismology."
+readme = "README.md"
 license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+
+]
+keywords = ["seismology", "statistics", "earthquake"]
+
 requires-python = ">=3.10"
 
 dependencies = [
     "cartopy",
     "geopandas",
     "jinja2",
+    "matplotlib",
+    "numpy",
+    "pandas",
     "requests",
     "scipy",
+    "shapely",
     "typing_extensions",
 ]
 
+
 [project.optional-dependencies]
-dev = ["flake8", "isort", "pytest", "pytest-cov", "responses", "tox"]
-doc = [
+dev = [
+    "build",
     "docutils==0.19",
-    "sphinx",
+    "flake8",
+    "isort",
     "myst-parser",
-    "sphinx-autobuild",
+    "nbsphinx-link",
+    "nbsphinx",
     "pandoc",
     "pydata-sphinx-theme",
-    "nbsphinx",
-    "nbsphinx-link",
+    "pytest-cov",
+    "pytest",
+    "responses",
+    "sphinx-autobuild",
+    "sphinx",
+    "tox",
+    "twine",
 ]
-openquake = [
-    "openquake-engine @ git+https://github.com/gem/oq-engine.git",
-    "numpy < 2",
-    "fiona",
-]
+openquake = ["openquake-engine", "numpy < 2", "fiona"]
 jupyter = ["notebook"]
 
 
-[tool.setuptools.package-data]
-"*" = ["*.j2"]
+[project.urls]
+Documentation = "https://seismostats.readthedocs.io/"
+Repository = "https://github.com/swiss-seismological-service/SeismoStats"
+Issues = "https://github.com/swiss-seismological-service/SeismoStats/issues"
