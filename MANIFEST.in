@@ -1,0 +1,1 @@
+include seismostats/catalogs/catalog_templates/*.j2
