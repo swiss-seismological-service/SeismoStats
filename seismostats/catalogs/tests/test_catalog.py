@@ -209,7 +209,7 @@ def compare_method_and_function(method,
     assert isinstance(function_output, plt.Axes)
 
     # how to do this without the linting error?
-    #assert type(method_output) == type(function_output)
+    # assert type(method_output) == type(function_output)
 
 
 @pytest.mark.parametrize("method, function, exclude_args, other_args", [
