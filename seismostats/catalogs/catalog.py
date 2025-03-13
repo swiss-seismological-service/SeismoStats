@@ -10,6 +10,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from shapely import Polygon
+import matplotlib.pyplot as plt
+import cartopy
 
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
@@ -23,8 +25,6 @@ from seismostats.plots.seismicity import plot_in_space
 from seismostats.plots.basics import (plot_cum_count, plot_mags_in_time,
                                       plot_cum_fmd, plot_fmd)
 from seismostats.plots.statistical import plot_mc_vs_b
-import matplotlib.pyplot as plt
-import cartopy
 
 
 try:
@@ -57,9 +57,9 @@ class Catalog(pd.DataFrame):
     A subclass of pandas DataFrame that represents a catalog of earthquakes.
 
     To be a valid Catalog object, the DataFrame must have at least a
-    `magnitude`column. Depending on the method the following
-    columns: `longitude, latitude, depth, time, and magnitude` are
-    also required.
+    `magnitude` column. Depending on the method the following
+    columns are also required: `longitude`, `latitude`, `depth`, `time`,
+    and `magnitude` .
 
         data: Any | None = None,
         name: str | None = None,
@@ -84,7 +84,7 @@ class Catalog(pd.DataFrame):
         depth_min:  Minimum depth for which events are included in the catalog.
         depth_max:  Maximum depth for which events are included in the catalog.
         kwargs:     Additional keyword arguments to pass to pandas
-                    DataFrame constructor.
+                DataFrame constructor.
 
     Notes:
         The Catalog class is a subclass of pandas DataFrame, and inherits
@@ -264,8 +264,8 @@ class Catalog(pd.DataFrame):
         Args:
             oq_catalogue:       The openquake catalogue.
             keep_time_cols:     Whether the time columns: 'year', 'month',
-                                'day', 'hour', 'minute', 'second'
-                                should be kept (they are converted to 'time').
+                            'day', 'hour', 'minute', 'second'
+                            should be kept (they are converted to 'time').
         Returns:
             Catalog
         """
@@ -395,7 +395,7 @@ class Catalog(pd.DataFrame):
         precision ``delta_m``.
 
         Args:
-            delta_m:    size of the bin, optional
+            delta_m:    The size of the bins to round the magnitudes to.
             inplace:    Whether to perform the operation in place on the data.
 
         Returns:
@@ -436,13 +436,13 @@ class Catalog(pd.DataFrame):
         Args:
             mcs_test:           Completeness magnitudes to test.
             delta_m:            Magnitude bins (sample has to be rounded to bins
-                                beforehand).
+                            beforehand).
             p_pass:             P-value with which the test is passed.
             stop_when_passed:   Stop calculations when first mc passes the test.
             verbose:            Verbose output.
             beta:               If beta is 'known', only estimate mc.
             n_samples:          Number of magnitude samples to be generated in
-                                p-value calculation of KS distance.
+                            p-value calculation of KS distance.
 
         Returns:
             mcs_test:   Tested completeness magnitudes.
@@ -494,26 +494,26 @@ class Catalog(pd.DataFrame):
 
         Args:
             mc:         Completeness magnitude, etiher given as parameter or
-                        taken from the object attribute.
+                    taken from the object attribute.
             delta_m:    Discretization of magnitudes, etiher given as parameter
-                        or taken from the object attribute.
+                    or taken from the object attribute.
             weights:    Weights of each magnitude can be specified here.
-            b_parameter:Either 'b-value', then the corresponding value  of the
-                        Gutenberg-Richter law is returned, otherwise 'beta'
-                        from the exponential distribution
-                        :math:`p(M) = exp(-beta*(M-mc))`
+            b_parameter: Either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta' from
+                    the exponential distribution
+                    :math:`p(M) = exp(-beta*(M-mc))`
             return_std: If True the standard deviation of beta/b-value (see
                         above) is returned.
             method:     Method to use for estimation of beta/b-value. Options
                         are: 'tinti', 'utsu', 'positive', 'laplace'.
-            return_n:   If True, the number of events used for the estimation is
-                        returned. This is only relevant for the 'positive'
-                        method.
+            return_n:   If True, the number of events used for the estimation
+                    is returned. This is only relevant for the 'positive'
+                    method.
 
         Returns:
             b:      Maximum likelihood beta or b-value, depending on value of
-                    input variable 'b_parameter'. Note that the difference
-                    is just a factor :math:`b = beta * log10(e)`.
+                input variable 'b_parameter'. Note that the difference
+                is just a factor :math:`b = beta * log10(e)`.
             std:    Shi and Bolt estimate of the beta/b-value error estimate
             n:      number of events used for the estimation.
         """
@@ -802,12 +802,13 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def plot_mc_vs_b(self,
                      mcs: np.ndarray,
-                     delta_m: float,
+                     delta_m: float = None,
                      b_method: BValueEstimator = ClassicBValueEstimator,
                      confidence_interval: float = 0.95,
                      ax: plt.Axes | None = None,
                      color: str = "blue",
                      label: str | None = None,
+                     *args,
                      **kwargs
                      ) -> plt.Axes:
         """
@@ -840,6 +841,7 @@ class Catalog(pd.DataFrame):
                           ax,
                           color,
                           label,
+                          *args,
                           **kwargs)
         return ax
 
