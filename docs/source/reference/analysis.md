@@ -34,8 +34,9 @@
     :toctree: api/
 
     estimate_a
-    analysis.estimate_a_classic
-    analysis.estimate_a_positive
+    analysis.avalue.ClassicAValueEstimator
+    analysis.avalue.APositiveAValueEstimator
+    analysis.avalue.AMorePositiveAValueEstimator
 ```
 
 ## Other
