@@ -9,6 +9,9 @@ from seismostats.utils.binning import (
     bin_to_precision,
     get_cum_fmd,
     get_fmd,
+    normal_round,
+    normal_round_to_int,
+    binning_test
 )
 from seismostats.utils.coordinates import CoordinateTransformer
 from seismostats.utils.coordinates import (
@@ -16,9 +19,15 @@ from seismostats.utils.coordinates import (
     polygon_to_bounding_box,
 )
 from seismostats.utils.filtering import cat_intersect_polygon
+
 from seismostats.utils.simulate_distributions import (
     simulate_magnitudes,
     simulate_magnitudes_binned,
+)
+
+from seismostats.utils._config import (
+    get_option,
+    set_option
 )
 
 
