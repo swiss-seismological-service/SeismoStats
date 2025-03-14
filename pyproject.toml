@@ -10,7 +10,7 @@ include = ["seismostats*"]
 
 [project]
 name = "SeismoStats"
-version = "1.0.0rc0"
+version = "1.0.0rc1"
 description = "A Python Package for Statistical Seismology."
 readme = "README.md"
 license = { file = "LICENSE" }
