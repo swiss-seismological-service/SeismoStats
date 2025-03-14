@@ -10,41 +10,41 @@ Measure your seismicity with **SeismoStats**, a Python package for seismicity an
 This is intended for people interested in using existing functionalities and functions in `SeismoStats`, for example if you want to calculate an Mc, a-value and b-value for your catalogue and plot the frequency magnitude distribution.
 
 ```
-# On your machine, select and go to the folder you want to have SeismoStats installed:
-cd Folder_seismostats/
+pip install seismostats
+```
 
-# Install the latest main version of SeismoStats "from source"
-git clone https://github.com/swiss-seismological-service/SeismoStats.git .
+That's all, you can now use SeismoStats!
 
-# Install core dependencies
+## Installation from source
+
+To get the very latest version of SeismoStats, you can install it directly from the source code. This is especially useful if you want to contribute to the development of SeismoStats.
+
+After cloning, you can install SeismoStats by running the following command in the root directory of the repository:
+```
 pip install .
-
-# That's all, you can now use SeismoStats!
 ```
-
-Note: this section is subject to changes soon, as we are working on getting `SeismoStats` into the [Python Package Index](https://pypi.org/).
-
-## Start developing:
-
-This is intended for people interested in contributing to the code base, for example by implementing a different method for the calculation of a magnitude of completeness or b-value. If you only want to use existing functions, please see the previous section.
+Or in development mode, including the development dependencies.
 ```
-# just use a basic virtual environment
-python3 -m venv env
-
-# activate it
-source env/bin/activate
-
-# update build tools
-pip install -U pip wheel setuptools
-
-# install this package + requirements + development requirements ([dev])
 pip install -e '.[dev]'
-
-# run tests
+```
+To run the tests.
+```
 tox
 ```
 
-## Use this repository inside another environment/code
+## Citing
+We are actively working on a publication to submit with the first stable version of `SeismoStats`. If you use the code for scientific work, and until a pre-print is available, please cite `SeismoStats` as:
+
+Mirwald, A., Schmid, N., Han, M., Rohnacher, A., Mizrahi, L., Ritz, V. A., & Wiemer, S. (2025). SeismoStats: A Python Package for Statistical Seismology. https://github.com/swiss-seismological-service/SeismoStats
+
+```
+@misc{Mirwald2025,
+   author = {Aron Mirwald and Nicolas Schmid and Marta Han and Alicia Rohnacher and Leila Mizrahi and Vanille A. Ritz and Stefan Wiemer},
+   title = {SeismoStats: A Python Package for Statistical Seismology},
+   url = {https://github.com/swiss-seismological-service/SeismoStats},
+   year = {2025}
+}
+```
 
 ```
 # use it locally, being able to switch back and forth doing changes
