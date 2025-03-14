@@ -1,22 +1,23 @@
+import datetime as dt
+import inspect
 import os
 import re
 import uuid
+from collections import OrderedDict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-import datetime as dt
-import inspect
-import matplotlib.pyplot as plt
 
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
                                           ForecastCatalog)
-from seismostats.utils.binning import bin_to_precision
+from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
+                                      plot_mags_in_time)
 from seismostats.plots.seismicity import plot_in_space
-from seismostats.plots.basics import (plot_cum_count, plot_mags_in_time,
-                                      plot_cum_fmd, plot_fmd)
 from seismostats.plots.statistical import plot_mc_vs_b
+from seismostats.utils.binning import bin_to_precision
 
 RAW_DATA = {'name': ['Object 1', 'Object 2', 'Object 3'],
             'magnitude': [10.0, 12.5, 8.2],
@@ -176,7 +177,7 @@ def mcs_for_plot_mc_vs_b():
 
 
 def extract_names_and_default_values(parameters, exclude_args):
-    params = {}
+    params = OrderedDict()
     for param, details in parameters.items():
         if param in exclude_args:
             continue
@@ -196,6 +197,7 @@ def compare_method_and_function(method,
                                 **kwargs):
     method_args = inspect.signature(method).parameters
     function_args = inspect.signature(function).parameters
+
     method_params = extract_names_and_default_values(method_args,
                                                      exclude_args)
     function_params = extract_names_and_default_values(function_args,
@@ -209,9 +211,10 @@ def compare_method_and_function(method,
     assert isinstance(function_output, plt.Axes)
 
     # how to do this without the linting error?
-    # assert type(method_output) == type(function_output)
+    assert type(method_output) is type(function_output)
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize("method, function, exclude_args, other_args", [
     ("plot_in_space", plot_in_space,
      ["magnitudes", "latitudes", "longitudes"], []),
