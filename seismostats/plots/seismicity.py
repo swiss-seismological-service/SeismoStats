@@ -4,11 +4,10 @@ import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import geopandas
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-
 # for map plotting
 from shapely.geometry import Polygon
 
