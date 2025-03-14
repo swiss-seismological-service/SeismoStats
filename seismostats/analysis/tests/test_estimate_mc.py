@@ -8,6 +8,7 @@ from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
                                               mc_max_curvature)
+from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 
 @pytest.fixture
@@ -133,32 +134,34 @@ def test_estimate_mc_ks(
         mcs=[0.8, 0.9, 1.0, 1.1]
 ):
     # test when beta is given
-    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
         magnitudes,
         delta_m=0.1,
         mcs_test=mcs,
         p_pass=0.1,
-        beta=2.24,
+        b_value=beta_to_b_value(2.24),
         ks_ds_list=ks_dists,
     )
     assert_equal(1.1, best_mc)
-    assert_equal(2.24, best_beta)
+    assert_equal(beta_to_b_value(2.24), best_b_value)
+    print(ps)
     assert_allclose(
-        [2.24, 2.24, 2.24, 2.24],
-        betas,
+        [beta_to_b_value(2.24), beta_to_b_value(
+            2.24), beta_to_b_value(2.24), beta_to_b_value(2.24)],
+        b_values,
         rtol=1e-7,
     )
     assert_allclose([0.0, 0.0, 0.0128, 0.4405], ps, atol=0.03)
     assert_equal(mcs_tested, mcs)
 
     # test when beta is not given
-    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
         magnitudes,
         delta_m=0.1,
         mcs_test=[1.1],
         p_pass=0.1,
     )
-    assert_almost_equal(2.242124985031149, best_beta)
+    assert_almost_equal(beta_to_b_value(2.242124985031149), best_b_value)
     assert_allclose(
         [
             0.07087102843116255,
@@ -168,35 +171,35 @@ def test_estimate_mc_ks(
     )
     assert_allclose(
         [
-            2.242124985031149,
+            beta_to_b_value(2.242124985031149),
         ],
-        betas,
+        b_values,
         rtol=1e-7,
     )
     assert_allclose([4.362e-01], ps, atol=0.03)
 
     # test when mcs are not given
-    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
+    best_mc, best_beta, mcs_tested, b_values, ks_ds, ps = mc_ks(
         magnitudes,
         delta_m=0.1,
         p_pass=0.1,
-        beta=2.24,
+        b_value=beta_to_b_value(2.24),
         ks_ds_list=ks_dists[2:],
     )
     assert_equal(1.1, best_mc)
     assert_equal([1.0, 1.1], mcs_tested)
 
     # test when b-positive is used
-    best_mc, best_beta, mcs_tested, betas, ks_ds, ps = mc_ks(
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
         magnitudes,
         delta_m=0.1,
         mcs_test=[1.5],
         b_method=BPositiveBValueEstimator
     )
     assert_equal(1.5, best_mc)
-    assert_almost_equal(3.2542240043462796, best_beta)
+    assert_almost_equal(beta_to_b_value(3.2542240043462796), best_b_value)
     assert_equal(len(mcs_tested), 1)
-    assert_equal(len(betas), 1)
+    assert_equal(len(b_values), 1)
     assert_equal(len(ks_ds), 1)
     assert_equal(len(ps), 1)
 
