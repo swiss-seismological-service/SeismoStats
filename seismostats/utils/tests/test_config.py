@@ -1,6 +1,6 @@
 import pytest
 
-from seismostats import get_option, set_option
+from seismostats.utils import get_option, set_option
 from seismostats.utils._config import __options
 
 
