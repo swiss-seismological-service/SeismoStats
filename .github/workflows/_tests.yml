@@ -8,32 +8,21 @@ on:
                 default: '["3.10", "3.12"]'
 
 jobs:
-    # tests:
-    #     runs-on: ubuntu-latest
-    #     strategy:
-    #         matrix:
-    #             python-version: ${{ fromJson(inputs.python-versions) }}
-    #     steps:
-    #         - uses: actions/checkout@v4
-    #         - uses: actions/setup-python@v5
-    #           with:
-    #               python-version: ${{ matrix.python-version }}
-    #         - name: Install dependencies
-    #           run: |
-    #               sudo apt -y install libgeos-dev
-    #               python -m pip install --upgrade pip setuptools wheel
-    #               pip install tox
-    #         - name: Run tox
-    #           run: |
-    #               tox -e flake8,${{ matrix.python-version }},${{ matrix.python-version }}-extra
-    dummy:
+    tests:
         runs-on: ubuntu-latest
         strategy:
             matrix:
                 python-version: ${{ fromJson(inputs.python-versions) }}
         steps:
-            # dummy step which always fails
-            - name: Dummy step
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python-version }}
+            - name: Install dependencies
               run: |
-                  echo "This is a dummy step"
-                  exit 1
+                  sudo apt -y install libgeos-dev
+                  python -m pip install --upgrade pip setuptools wheel
+                  pip install tox
+            - name: Run tox
+              run: |
+                  tox -e flake8,${{ matrix.python-version }},${{ matrix.python-version }}-extra
