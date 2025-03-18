@@ -44,6 +44,27 @@ jobs:
                   name: python-package-distributions
                   path: dist/
 
+    publish-to-pypi:
+        name: >-
+            Publish to PyPI
+        needs:
+            - build
+        runs-on: ubuntu-latest
+        environment:
+            name: pypi
+            url: https://pypi.org/p/SeismoStats
+        permissions:
+            id-token: write
+
+        steps:
+            - name: Download all the dists
+              uses: actions/download-artifact@v4
+              with:
+                  name: python-package-distributions
+                  path: dist/
+            - name: Publish distribution 📦 to PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
+
     github-release:
         name: >-
             Create Release
@@ -84,25 +105,25 @@ jobs:
                   "$GITHUB_REF_NAME" dist/**
                   --repo "$GITHUB_REPOSITORY"
 
-    publish-to-testpypi:
-        name: Publish to TestPyPI
-        needs:
-            - build
-        runs-on: ubuntu-latest
-        environment:
-            name: testpypi
-            url: https://test.pypi.org/p/SeismoStats
-        permissions:
-            id-token: write
+    # publish-to-testpypi:
+    #     name: Publish to TestPyPI
+    #     needs:
+    #         - build
+    #     runs-on: ubuntu-latest
+    #     environment:
+    #         name: testpypi
+    #         url: https://test.pypi.org/p/SeismoStats
+    #     permissions:
+    #         id-token: write
 
-        steps:
-            - name: Download all the Dists
-              uses: actions/download-artifact@v4
-              with:
-                  name: python-package-distributions
-                  path: dist/
+    #     steps:
+    #         - name: Download all the Dists
+    #           uses: actions/download-artifact@v4
+    #           with:
+    #               name: python-package-distributions
+    #               path: dist/
 
-            - name: Publish distribution to TestPyPI
-              uses: pypa/gh-action-pypi-publish@release/v1
-              with:
-                  repository-url: https://test.pypi.org/legacy/
+    #         - name: Publish distribution to TestPyPI
+    #           uses: pypa/gh-action-pypi-publish@release/v1
+    #           with:
+    #               repository-url: https://test.pypi.org/legacy/
