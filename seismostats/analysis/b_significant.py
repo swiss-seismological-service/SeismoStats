@@ -2,13 +2,14 @@
 b-value series varies significantly, following Mirwald et al, SRL (2024)
 """
 
-import numpy as np
 import warnings
+
+import numpy as np
 from scipy.stats import norm
 
+from seismostats.analysis.avalue import AValueEstimator
 from seismostats.analysis.bvalue import ClassicBValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
-from seismostats.analysis.avalue import AValueEstimator
 from seismostats.utils._config import get_option
 
 
@@ -122,8 +123,8 @@ def transform_n(
         Mirwald et al, SRL (2024), supplementary material
 
     Args:
-        b_estimates:    b-value estimates to be transformed
-        b_true:         True b-value
+        b_estimates:    b-value estimates to be transformed.
+        b_true:         True b-value.
         n1:             Number of events used for the the b-value estimates.
         n2:             number of events to which the distribution is
                     transformed. Note that b_estimate, n1 and n2 can also be
@@ -259,14 +260,14 @@ def cut_constant_idx(
     Args:
         values:     Original series of values to be cut.
         n:          Number of events in each subsample.
-        offset:     idx where to start cutting the series. This should be
+        offset:     Index where to start cutting the series. This should be
                     between 0 and n.
 
     Returns:
         idx:        Indices of the subsamples, which can be used to
                     construct the subsamples in the following way:
                     :code:`subsamples = np.array_split(values, idx)`
-        subsamples: list of subsamples
+        subsamples: The subsamples.
     """
     # sanity checks
     if offset >= n:
@@ -314,7 +315,7 @@ def b_significant_1D(
         times:          Times of the events.
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events in a partition.
-        method:         Method to estimate the b-values (or a-values)
+        method:         Method to estimate the b-values (or a-values).
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
@@ -359,8 +360,8 @@ def b_significant_1D(
     if len(magnitudes) / n_m < 3:
         if get_option("warnings") is True:
             warnings.warn(
-                "n_m is too large - less than three subsamples are created."
-                "return NaNs")
+                "n_m is too large - less than three subsamples are created,"
+                "returning NaNs.")
         return np.nan, np.nan, np.nan, np.nan
     elif len(magnitudes) / n_m < 25:
         if get_option("warnings") is True:

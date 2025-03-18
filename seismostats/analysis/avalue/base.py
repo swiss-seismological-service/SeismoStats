@@ -32,8 +32,8 @@ class AValueEstimator(ABC):
         Return the a-value estimate.
 
         Args:
-            magnitudes:     Array of magnitudes
-            mc:             Completeness magnitude
+            magnitudes:     Array of magnitudes.
+            mc:             Completeness magnitude.
             delta_m:        Discretization of magnitudes.
             scaling_factor: Scaling factor
                             If given, this is used to normalize the number of
