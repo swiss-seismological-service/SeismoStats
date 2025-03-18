@@ -31,13 +31,13 @@ class AMorePositiveAValueEstimator(AValueEstimator):
                   ) -> float:
         '''
         Args:
-            magnitudes:     Array of magnitudes
-            mc:             Completeness magnitude
-            delta_m:        Discretization of magnitudes
+            magnitudes:     Array of magnitudes.
+            mc:             Completeness magnitude.
+            delta_m:        Discretization of magnitudes.
             times:          Vector of times of the events, in any format
                             (datetime, float, etc.).
             b_value:        B-value of the Gutenberg-Richter law.
-            scaling_factor: Scaling factor
+            scaling_factor: Scaling factor.
                             If given, this is used to normalize the number of
                             observed events. For example: Volume or area of the
                             region considered or length of the time interval,
@@ -48,7 +48,7 @@ class AMorePositiveAValueEstimator(AValueEstimator):
                             events. If None, the default value is delta_m.
 
         Returns:
-            a_pos: a-value of the Gutenberg-Richter distribution
+            a_pos: The a-value of the Gutenberg-Richter distribution.
         '''
 
         if not b_value:
