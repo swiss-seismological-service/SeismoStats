@@ -1,0 +1,14 @@
+name: test
+
+on:
+    push:
+        branches:
+            - '**'
+        tags-ignore:
+            - '**'
+
+jobs:
+    tests:
+        uses: ./.github/workflows/_tests.yml
+        with:
+            python-versions: '["3.10", "3.12"]'

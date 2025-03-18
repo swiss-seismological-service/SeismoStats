@@ -1,25 +1,40 @@
-name: Publish Python distribution to TestPyPI
+name: publish
 
-on: [push]
+on:
+    push:
+        tags:
+            - 'v*.*.*'
 
 jobs:
+    tests:
+        uses: ./.github/workflows/_tests.yml
+        with:
+            python-versions: '["3.10", "3.12"]'
     build:
-        name: Build distribution 📦
+        name: Build distribution
+        needs:
+            - tests
         runs-on: ubuntu-latest
-
         steps:
             - uses: actions/checkout@v4
               with:
                   persist-credentials: false
+                  fetch-tags: true
+            - name: Get latest tag
+              id: get-tag
+              run: |
+                  TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+                  echo "TAG=$TAG" >> $GITHUB_ENV
+                  echo "Found tag: $TAG"
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: '3.10'
+                  python-version: '3.x'
             - name: Install pypa/build
               run: >-
                   python3 -m
                   pip install
-                  build
+                  build setuptools-scm
                   --user
             - name: Build a binary wheel and a source tarball
               run: python3 -m build
@@ -29,51 +44,48 @@ jobs:
                   name: python-package-distributions
                   path: dist/
 
-    github-release:
-        name: >-
-            Sign the Python 🐍 distribution 📦 with Sigstore
-            and upload them to GitHub Release
-        needs:
-            - build
-        runs-on: ubuntu-latest
+    # github-release:
+    #     name: >-
+    #         Create Release
+    #     needs:
+    #         - build
+    #     runs-on: ubuntu-latest
 
-        permissions:
-            contents: write # IMPORTANT: mandatory for making GitHub Releases
-            id-token: write # IMPORTANT: mandatory for sigstore
+    #     permissions:
+    #         contents: write
+    #         id-token: write
 
-        steps:
-            - name: Download all the dists
-              uses: actions/download-artifact@v4
-              with:
-                  name: python-package-distributions
-                  path: dist/
-            - name: Sign the dists with Sigstore
-              uses: sigstore/gh-action-sigstore-python@v3.0.0
-              with:
-                  inputs: >-
-                      ./dist/*.tar.gz
-                      ./dist/*.whl
-            - name: Create GitHub Release
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-              run: >-
-                  gh release create
-                  "$GITHUB_REF_NAME"
-                  --repo "$GITHUB_REPOSITORY"
-                  --notes ""
-            - name: Upload artifact signatures to GitHub Release
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-              # Upload to GitHub Release using the `gh` CLI.
-              # `dist/` contains the built packages, and the
-              # sigstore-produced signatures and certificates.
-              run: >-
-                  gh release upload
-                  "$GITHUB_REF_NAME" dist/**
-                  --repo "$GITHUB_REPOSITORY"
+    #     steps:
+    #         - name: Download all the dists
+    #           uses: actions/download-artifact@v4
+    #           with:
+    #               name: python-package-distributions
+    #               path: dist/
+    #         - name: Sign the dists with Sigstore
+    #           uses: sigstore/gh-action-sigstore-python@v3.0.0
+    #           with:
+    #               inputs: >-
+    #                   ./dist/*.tar.gz
+    #                   ./dist/*.whl
+    #         - name: Create GitHub Release
+    #           env:
+    #               GITHUB_TOKEN: ${{ github.token }}
+    #           run: >-
+    #               gh release create
+    #               "$GITHUB_REF_NAME"
+    #               --repo "$GITHUB_REPOSITORY"
+    #               --notes ""
+    #               --prerelease
+    #         - name: Upload artifact signatures to GitHub Release
+    #           env:
+    #               GITHUB_TOKEN: ${{ github.token }}
+    #           run: >-
+    #               gh release upload
+    #               "$GITHUB_REF_NAME" dist/**
+    #               --repo "$GITHUB_REPOSITORY"
 
     # publish-to-testpypi:
-    #     name: Publish Python 🐍 distribution 📦 to TestPyPI
+    #     name: Publish to TestPyPI
     #     needs:
     #         - build
     #     runs-on: ubuntu-latest
@@ -81,7 +93,7 @@ jobs:
     #         name: testpypi
     #         url: https://test.pypi.org/p/SeismoStats
     #     permissions:
-    #         id-token: write # IMPORTANT: mandatory for trusted publishing
+    #         id-token: write
 
     #     steps:
     #         - name: Download all the dists

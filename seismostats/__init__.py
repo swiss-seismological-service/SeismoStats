@@ -1,6 +1,7 @@
-"""All functions that are to be used externally are initialized here"""
+from importlib.metadata import version
 
-# flake8: noqa
-# catalogs
-from seismostats.catalogs.catalog import Catalog, ForecastCatalog
-from seismostats.catalogs.rategrid import ForecastGRRateGrid, GRRateGrid
+__version__ = version("seismostats")
+
+from seismostats.catalogs.catalog import Catalog, ForecastCatalog  # noqa
+from seismostats.catalogs.rategrid import (ForecastGRRateGrid,  # noqa
+                                           GRRateGrid)

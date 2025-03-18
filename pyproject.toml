@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "wheel", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 
@@ -10,7 +10,7 @@ include = ["seismostats*"]
 
 [project]
 name = "SeismoStats"
-version = "1.0.0rc1"
+dynamic = ["version"]
 description = "A Python Package for Statistical Seismology."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -73,3 +73,6 @@ jupyter = ["notebook"]
 Documentation = "https://seismostats.readthedocs.io/"
 Repository = "https://github.com/swiss-seismological-service/SeismoStats"
 Issues = "https://github.com/swiss-seismological-service/SeismoStats/issues"
+
+
+[tool.setuptools_scm]
