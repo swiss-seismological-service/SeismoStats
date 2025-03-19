@@ -28,7 +28,8 @@ class ClassicBValueEstimator(BValueEstimator):
     Source:
         - Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
         - Tinti and Mulargia 1987 (Bulletin of the Seismological Society of
-        America, 77(6), 2125-2134.)
+          America, 77(6), 2125-2134.)
+
     '''
 
     weights_supported = True

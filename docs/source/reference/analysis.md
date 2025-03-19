@@ -11,6 +11,7 @@
 
     analysis.mc_ks
     analysis.mc_max_curvature
+    analysis.mc_by_bvalue_stability
 ```
 
 ## Estimating b-Values
@@ -19,7 +20,7 @@
 .. autosummary::
     :toctree: api/
 
-    estimate_b
+    analysis.estimate_b
     analysis.bvalue.shi_bolt_confidence
     analysis.bvalue.ClassicBValueEstimator
     analysis.bvalue.BPositiveBValueEstimator
@@ -33,9 +34,18 @@
 .. autosummary::
     :toctree: api/
 
-    estimate_a
-    analysis.estimate_a_classic
-    analysis.estimate_a_positive
+    analysis.estimate_a
+    analysis.ClassicAValueEstimator
+    analysis.APositiveAValueEstimator
+    analysis.AMorePositiveAValueEstimator
+```
+
+## B-Significant
+```{eval-rst}
+.. autosummary::
+    :toctree: api/
+
+    analysis.b_significant_1D
 ```
 
 ## Other
