@@ -45,32 +45,3 @@ Mirwald, A., Schmid, N., Han, M., Rohnacher, A., Mizrahi, L., Ritz, V. A., & Wie
    year = {2025}
 }
 ```
-
-```
-# use it locally, being able to switch back and forth doing changes
-# enter this in your other environment
-pip install -e ../path/to/SeismoStats
-
-# if you don't need to do live changes in catalog-tools you can install it "from source"
-pip install git+https://github.com/swiss-seismological-service/SeismoStats.git
-
-# if you want to install a specific branch:
-pip install git+https://github.com/swiss-seismological-service/SeismoStats.git@feature/branch
-
-# update it once the repo has changed:
-pip install --force-reinstall git+https://github.com/swiss-seismological-service/SeismoStats.git
-```
-
-## Citing
-We are actively working on a publication to submit with the first stable version of `SeismoStats`. If you use the code for scientific work, and until a pre-print is available, please cite `SeismoStats` as:
-
-Mirwald, A., Schmid, N., Han, M., Rohnacher, A., Mizrahi, L., Ritz, V. A., & Wiemer, S. (2025). SeismoStats: A Python Package for Statistical Seismology. https://github.com/swiss-seismological-service/SeismoStats
-
-```
-@misc{Mirwald2025,
-   author = {Aron Mirwald and Nicolas Schmid and Marta Han and Alicia Rohnacher and Leila Mizrahi and Vanille A. Ritz and Stefan Wiemer},
-   title = {SeismoStats: A Python Package for Statistical Seismology},
-   url = {https://github.com/swiss-seismological-service/SeismoStats},
-   year = {2025}
-}
-```
