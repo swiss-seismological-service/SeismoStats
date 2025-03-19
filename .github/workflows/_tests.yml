@@ -6,10 +6,6 @@ on:
                 required: true
                 type: string
                 default: '["3.10", "3.12"]'
-            codecov:
-                required: false
-                type: string
-                default: 'false'
 
 jobs:
     tests:
@@ -30,8 +26,7 @@ jobs:
             - name: Run tox
               run: |
                   tox -e flake8,${{ matrix.python-version }},${{ matrix.python-version }}-extra
-
-            - name: Store the distribution packages
+            - name: Store the codecov report
               uses: actions/upload-artifact@v4
               with:
                   name: coverage-report
