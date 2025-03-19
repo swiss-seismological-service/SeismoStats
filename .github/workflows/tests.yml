@@ -13,3 +13,23 @@ jobs:
         with:
             python-versions: '["3.10", "3.12"]'
             codecov: 'true'
+    codecov:
+        name: Upload coverage reports to Codecov
+        needs:
+            - tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download all the dists
+              uses: actions/download-artifact@v4
+              with:
+                  name: coverage-report
+            - name: Debug Token
+              run: |
+                  echo "Token length: ${#CODECOV_TOKEN}" # This will output the length of the token
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+            - name: Upload coverage reports to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  slug: swiss-seismological-service/SeismoStats
