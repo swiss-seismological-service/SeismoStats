@@ -32,7 +32,7 @@ jobs:
                   tox -e flake8,${{ matrix.python-version }},${{ matrix.python-version }}-extra
 
             - name: Upload coverage reports to Codecov
-              if: ${{ inputs.codecov == 'true' }}
               uses: codecov/codecov-action@v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
+                  slug: swiss-seismological-service/SeismoStats
