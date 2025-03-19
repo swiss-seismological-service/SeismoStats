@@ -1,3 +1,5 @@
+[![test](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml/badge.svg)](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml)
+
 # SeismoStats
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
