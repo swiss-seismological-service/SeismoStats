@@ -1,4 +1,6 @@
 [![test](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml/badge.svg)](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml)
+![](https://img.shields.io/pypi/v/SeismoStats)
+
 
 # SeismoStats
 
