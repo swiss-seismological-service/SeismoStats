@@ -12,3 +12,4 @@ jobs:
         uses: ./.github/workflows/_tests.yml
         with:
             python-versions: '["3.10", "3.12"]'
+            codecov: 'true'
