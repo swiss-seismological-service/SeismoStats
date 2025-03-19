@@ -60,6 +60,7 @@ dev = [
     "pytest-cov",
     "pytest",
     "responses",
+    "setuptools-scm",
     "sphinx-autobuild",
     "sphinx",
     "tox",
