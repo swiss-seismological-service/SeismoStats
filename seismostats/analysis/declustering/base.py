@@ -16,7 +16,7 @@ class Declusterer(ABC):
     @abstractmethod
     def _decluster(self, catalog: pd.DataFrame) -> np.ndarray[np.bool_]:
         """
-        Implement the declustering algorithm.
+        Implements the declustering algorithm.
 
         Args:
             catalog: Earthquake catalog to be declustered.

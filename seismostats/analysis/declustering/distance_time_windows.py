@@ -3,9 +3,9 @@
 # Hazard Modeller's Toolkit (openquake.hmtk) https://www.globalquakemodel.org
 
 import abc
+
 import numpy as np
 import pandas as pd
-
 
 DistanceTimeWindow = tuple[np.ndarray[float], np.ndarray[pd.Timedelta]]
 _DistanceTimeWindow = tuple[np.ndarray[float], np.ndarray[float]]
@@ -31,7 +31,7 @@ class BaseDistanceTimeWindow(abc.ABC):
         magnitude: np.ndarray,
     ) -> _DistanceTimeWindow:
         """
-        Calculate the space and time windows for given magnitudes.
+        Calculates the space and time windows for given magnitudes.
 
         Args:
             magnitude:  Array of magnitudes.

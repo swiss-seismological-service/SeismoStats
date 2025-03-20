@@ -6,19 +6,19 @@ import numpy as np
 import pandas as pd
 
 from seismostats.analysis.declustering.base import Declusterer
-from seismostats.analysis.declustering.distance_time_windows import (
-    BaseDistanceTimeWindow,
-)
+from seismostats.analysis.declustering.distance_time_windows import \
+    BaseDistanceTimeWindow
 from seismostats.analysis.declustering.utils import haversine
 
 
 class GardnerKnopoffType1(Declusterer):
     """
-    This class implements the Gardner Knopoff algorithm as described in
-    this paper:
-    Gardner, J. K. and Knopoff, L. (1974). Is the sequence of aftershocks
-    in Southern California, with aftershocks removed, poissonian?. Bull.
-    Seism. Soc. Am., 64(5): 1363-1367.
+    Implements the Gardner Knopoff declustering algorithm.
+
+    Source:
+        Gardner, J. K. and Knopoff, L. (1974). Is the sequence of aftershocks
+        in Southern California, with aftershocks removed, poissonian?. Bull.
+        Seism. Soc. Am., 64(5): 1363-1367.
     """
 
     def __init__(
@@ -43,7 +43,7 @@ class GardnerKnopoffType1(Declusterer):
         catalog: pd.DataFrame,
     ) -> np.ndarray[np.bool_]:
         """
-        Apply the Gardner-Knopoff declustering algorithm to the catalog.
+        Applies the Gardner-Knopoff declustering algorithm to the catalog.
 
         The catalog must contain the following columns:
         - time, magnitude, longitude, latitude
