@@ -9,13 +9,13 @@ import numpy as np
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.bvalue.utils import b_value_to_beta, beta_to_b_value
+from seismostats.analysis.bvalue.utils import b_value_to_beta
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision, binning_test, get_fmd
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
-def cdf_discrete_GR(
+def cdf_discrete_exp(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
@@ -23,13 +23,13 @@ def cdf_discrete_GR(
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculates the cumulative distribution function (CDF) for a discrete
-    Gutenberg-Richter distribution at the points of the sample.
+    exponential distribution at the points of the sample.
 
     Args:
         sample:     Magnitude sample.
         mc:         Completeness magnitude.
         delta_m:    Magnitude bins.
-        beta:       Beta parameter for the Gutenberg-Richter distribution.
+        beta:       rate parameter of the exponential distribution.
 
     Returns:
         x: Unique x-values of the sample.
@@ -46,22 +46,22 @@ def ks_test_gr(
     sample: np.ndarray,
     mc: float,
     delta_m: float,
-    beta: float,
+    b_value: float,
     n: int = 10000,
     ks_ds: list | None = None,
 ) -> tuple[float, float, list[float]]:
     """
     Performs the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
-    distribution for a given magnitude sample and mc and beta. When the p-value
-    is below a certain threshold (e.g., 0.1), the null hypothesis that the
-    sample is drawn from a Gutenberg-Richter distribution with the given
+    distribution for a given magnitude sample and mc and b-value. When the
+    p-value is below a certain threshold (e.g., 0.1), the null hypothesis that
+    the sample is drawn from a Gutenberg-Richter distribution with the given
     parameters can be rejected.
 
     Args:
         sample:     Magnitude sample.
         mc:         Completeness magnitude.
         delta_m:    Magnitude bin size.
-        beta :      Beta parameter for the Gutenberg-Richter distribution
+        b_value:    b-value of the Gutenberg-Richter law
         n:          Number of times the KS distance is calculated from
                 synthetic samples with the given parameters, used for
                 estimating the p-value.
@@ -86,12 +86,14 @@ def ks_test_gr(
             warnings.warn("Sample contains only one value.")
             return 0, 1, []
 
+    beta = b_value_to_beta(b_value)
+
     if ks_ds is None:
         ks_ds = []
 
         n_sample = len(sample)
         simulated_all = simulate_magnitudes_binned(
-            n * n_sample, beta, mc, delta_m, b_parameter="beta"
+            n * n_sample, b_value, mc, delta_m, b_parameter="b_value"
         )
         max_considered_mag = np.max([np.max(sample), np.max(simulated_all)])
 
@@ -101,7 +103,8 @@ def ks_test_gr(
         )
         x = x_bins[:-1].copy()
         x_bins -= delta_m / 2
-        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+        _, y_th = cdf_discrete_exp(
+            x, mc=mc, delta_m=delta_m, beta=beta)
 
         for ii in range(n):
             simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
@@ -119,7 +122,7 @@ def ks_test_gr(
         )
         x = x_bins[:-1].copy()
         x_bins -= delta_m / 2
-        _, y_th = cdf_discrete_GR(x, mc=mc, delta_m=delta_m, beta=beta)
+        _, y_th = cdf_discrete_exp(x, mc=mc, delta_m=delta_m, beta=beta)
 
     y_hist, _ = np.histogram(sample, bins=x_bins)
     y_emp = np.cumsum(y_hist) / np.sum(y_hist)
@@ -221,25 +224,25 @@ def mc_ks(
 
         mc_sample = sample[sample >= mc - delta_m / 2]
 
-        # if no beta is given, estimate beta
+        # if no b_value is given, estimate b_value
         if b_value is None:
             estimator = b_method()
             estimator.calculate(
                 mc_sample, mc=mc, delta_m=delta_m, *args, **kwargs)
-            mc_beta = estimator.beta
+            mc_b_value = estimator.b_value
         else:
-            mc_beta = b_value_to_beta(b_value)
+            mc_b_value = b_value
 
         if ks_ds_list is None:
             p, ks_d, _ = ks_test_gr(
-                mc_sample, mc=mc, delta_m=delta_m, beta=mc_beta, n=n
+                mc_sample, mc=mc, delta_m=delta_m, b_value=mc_b_value, n=n
             )
         else:
             p, ks_d, _ = ks_test_gr(
                 mc_sample,
                 mc=mc,
                 delta_m=delta_m,
-                beta=mc_beta,
+                b_value=mc_b_value,
                 n=n,
                 ks_ds=ks_ds_list[ii],
             )
@@ -247,7 +250,7 @@ def mc_ks(
         mcs_tested.append(mc)
         ks_ds.append(ks_d)
         ps.append(p)
-        b_values.append(beta_to_b_value(mc_beta))
+        b_values.append(mc_b_value)
 
         if verbose:
             print("..p-value: ", p)
