@@ -6,7 +6,7 @@ import pandas as pd
 
 class Declusterer(ABC):
     """
-    Abstract base class for the implementation of declustering algorithms
+    Abstract base class for the implementation of declustering algorithms.
     """
 
     def __int__(self):
@@ -16,23 +16,23 @@ class Declusterer(ABC):
     @abstractmethod
     def _decluster(self, catalog: pd.DataFrame) -> np.ndarray[np.bool_]:
         """
-        Implement the declustering algorithm
+        Implement the declustering algorithm.
 
         Args:
-            catalog: earthquake catalog to be declustered
+            catalog: Earthquake catalog to be declustered.
         """
         return NotImplemented
 
     def __call__(self, catalog: pd.DataFrame) -> np.ndarray[np.bool_]:
         """
-        Declusters the catalog
+        Declusters the catalog.
 
         Args:
-            catalog: earthquake catalog to be declustered
+            catalog: Earthquake catalog to be declustered.
 
         Returns:
-            mainshock_flags: boolean array indicating whether the i'th event
-                             is a mainshock
+            mainshock_flags:    Boolean array indicating whether the i'th event
+                            is a mainshock.
         """
         self.__results = self._decluster(catalog)
         return self.__results
