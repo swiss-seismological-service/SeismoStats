@@ -28,7 +28,7 @@ class ClassicBValueEstimator(BValueEstimator):
     .. math::
         N(m) = 10 ^ {a - b \\cdot (m - m_{ref})},
 
-    where :math:`N(m)` is the number of events with magnitude larger than 
+    where :math:`N(m)` is the number of events with magnitude larger than
     or equal to :math:`m` that occurred in the timeframe of the catalog,
     :math:`a` and :math:`b` are the a- and b-value, and :math:`m_{ref}`
     is the reference magnitude above which earthquakes are counted.

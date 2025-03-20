@@ -16,7 +16,7 @@ def estimate_b_kijko_smit(
     b_parameter: str = "b_value",
 ) -> tuple[float, float, float, float]:
     """
-    Returns the b-value of the Gutenberg-Richter (GR) law 
+    Returns the b-value of the Gutenberg-Richter (GR) law
     calculated using the Kijko and Smit (2012) algorithm
     for the case of unequal completeness periods for different
     magnitude values.
