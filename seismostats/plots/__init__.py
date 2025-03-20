@@ -12,12 +12,10 @@ from seismostats.plots.basics import (
 
 from seismostats.plots.seismicity import (
     plot_in_space,
-    rect_from_bound
 )
 
 from seismostats.plots.statistical import (
     plot_mc_vs_b,
     plot_b_series_constant_nm,
     plot_b_significant_1D,
-    adjust_color_brightness
 )

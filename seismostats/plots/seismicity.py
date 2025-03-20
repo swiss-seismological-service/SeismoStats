@@ -96,7 +96,7 @@ def plot_in_space(
             poly[0].bounds[1] - pad_lon,
             poly[0].bounds[3] + pad_lon,
         ]
-        msk = Polygon(rect_from_bound(*exts)).difference(
+        msk = Polygon(_rect_from_bound(*exts)).difference(
             poly[0].simplify(0.01)
         )
         msk_stm = tile_proj.project_geometry(msk, ll_proj)
@@ -176,7 +176,7 @@ def plot_in_space(
     return ax
 
 
-def rect_from_bound(
+def _rect_from_bound(
     xmin: float, xmax: float, ymin: float, ymax: float
 ) -> list[tuple]:
     """

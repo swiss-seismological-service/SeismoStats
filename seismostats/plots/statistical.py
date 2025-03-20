@@ -212,7 +212,7 @@ def plot_b_series_constant_nm(
         b_values - error_factor * std_bs,
         b_values + error_factor * std_bs,
         alpha=0.2,
-        color=adjust_color_brightness(color, 0.7),
+        color=_adjust_color_brightness(color, 0.7),
         linewidth=0,
     )
 
@@ -316,10 +316,10 @@ def plot_b_significant_1D(
     ax.fill_between(n_ms,
                     mu_mac - std_factor * std_mac,
                     mu_mac + std_factor * std_mac,
-                    color=adjust_color_brightness(color, 0.7),
+                    color=_adjust_color_brightness(color, 0.7),
                     alpha=0.2,
                     linewidth=0)
-    ax.plot(n_ms, mu_mac, color=adjust_color_brightness(
+    ax.plot(n_ms, mu_mac, color=_adjust_color_brightness(
         color, 1.3), linestyle='--')
     if any(p < p_threshold):
         ax.plot(n_ms[p < p_threshold], mac[p < p_threshold],
@@ -332,7 +332,7 @@ def plot_b_significant_1D(
     return ax
 
 
-def adjust_color_brightness(color, factor=1.2):
+def _adjust_color_brightness(color, factor=1.2):
     """
     Adjusts the brightness of a given Matplotlib color.
 
@@ -348,7 +348,7 @@ def adjust_color_brightness(color, factor=1.2):
         .. code-block:: python
         from seismostats.plots.statistical import adjust_color_brightness
         original_color = "blue"
-        lighter_color = adjust_color_brightness(original_color, factor=0.7)
+        lighter_color = _adjust_color_brightness(original_color, factor=0.7)
     """
 
     # Convert color name or hex to RGB (values between 0 and 1)
