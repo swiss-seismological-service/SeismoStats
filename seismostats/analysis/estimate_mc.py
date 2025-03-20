@@ -29,7 +29,7 @@ def cdf_discrete_exp(
         sample:     Magnitude sample.
         mc:         Completeness magnitude.
         delta_m:    Magnitude bins.
-        beta:       rate parameter of the exponential distribution.
+        beta:       Rate parameter of the exponential distribution.
 
     Returns:
         x: Unique x-values of the sample.
