@@ -60,17 +60,6 @@ class Catalog(pd.DataFrame):
     columns are also required: `longitude`, `latitude`, `depth`, `time`,
     and `magnitude` .
 
-        data: Any | None = None,
-        name: str | None = None,
-        starttime: pd.Timestamp | None = None,
-        endtime: pd.Timestamp | None = None,
-        mc: float | None = None,
-        delta_m: float | None = None,
-        b_value: float | None = None,
-        bounding_polygon: Polygon | str | None = None,
-        depth_min: float | None = None,
-        depth_max: float | None = None,
-
     Args:
         data:       Data to initialize the catalog with.
         name:       Name of the catalog.
@@ -85,9 +74,9 @@ class Catalog(pd.DataFrame):
         kwargs:     Additional keyword arguments to pass to pandas
                 DataFrame constructor.
 
-    Notes:
-        The Catalog class is a subclass of pandas DataFrame, and inherits
-        all of its methods and attributes.
+    See Also:
+        The Catalog class is a subclass of :class:`pandas.DataFrame`, and
+        inherits all of its methods and attributes.
 
     Examples:
         Create a Catalog from a dictionary.
@@ -979,9 +968,13 @@ class ForecastCatalog(Catalog):
         kwargs:         Additional keyword arguments to pass to pandas
                     DataFrame constructor.
 
-    Notes:
-        The Catalog class is a subclass of pandas DataFrame, and inherits
-        all of its methods and attributes.
+    See Also:
+        The Catalog class is a subclass of :class:`pandas.DataFrame`, and
+        inherits all of its methods and attributes.
+
+        The ForecastCatalog class is a subclass of
+        :class:`seismostats.Catalog`, and inherits all of its
+        methods and attributes.
     """
 
     _required_cols = CATALOG_COLUMNS + ['catalog_id']

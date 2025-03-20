@@ -23,6 +23,7 @@
     analysis.estimate_b
     analysis.bvalue.shi_bolt_confidence
     analysis.bvalue.ClassicBValueEstimator
+    analysis.bvalue.ClassicBValueEstimator.calculate
     analysis.bvalue.BPositiveBValueEstimator
     analysis.bvalue.BMorePositiveBValueEstimator
     analysis.bvalue.UtsuBValueEstimator
