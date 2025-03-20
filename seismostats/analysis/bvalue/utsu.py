@@ -6,7 +6,8 @@ from seismostats.analysis.bvalue.utils import beta_to_b_value
 
 class UtsuBValueEstimator(BValueEstimator):
     '''
-    Estimator for the b-value.
+    Returns the b-value of the Gutenberg-Richter (GR) law using
+    the Utsu method.
 
     Source:
         Utsu 1965 (Geophysical bulletin of the Hokkaido University,

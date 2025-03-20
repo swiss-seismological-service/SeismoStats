@@ -9,8 +9,9 @@ from seismostats.utils._config import get_option
 
 class AMorePositiveAValueEstimator(AValueEstimator):
     '''
-    Returns the a-value of the Gutenberg-Richter (GR) law using only the
-    earthquakes with magnitude :math:`m_i \ge m_{i-1} + dmc`.
+    Returns the a-value of the Gutenberg-Richter (GR) law using earthquake
+    pairs for which the latter is larger than the former
+    by some margin, :math:`m_j \ge m_{i} + dmc`.
 
     Source:
         van der Elst and Page 2023 (JGR: Solid Earth, Vol 128, Issue 10).

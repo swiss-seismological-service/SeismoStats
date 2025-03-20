@@ -4,25 +4,25 @@ import numpy as np
 
 
 def beta_to_b_value(beta: float) -> float:
-    '''converts the beta value to the b-value  of the Gutenberg-Richter law
+    '''Converts the beta value to the b-value  of the Gutenberg-Richter law.
 
     Args:
-        beta: beta value
+        beta: beta value.
 
     Returns:
-        b_value: corresponding b-value
+        b_value: Corresponding b-value.
     '''
     return beta / np.log(10)
 
 
 def b_value_to_beta(b_value: float) -> float:
-    '''converts the b-value to the beta value of the exponential distribution
+    '''Converts the b-value to the beta value of the exponential distribution.
 
     Args:
-        b_value: b-value
+        b_value: b-value.
 
     Returns:
-        beta: corresponding beta value
+        beta: Corresponding beta value.
     '''
     return b_value * np.log(10)
 
@@ -33,20 +33,21 @@ def shi_bolt_confidence(
     weights: np.ndarray | None = None,
     b_parameter: Literal['b_value', 'beta'] = 'b_value'
 ) -> float:
-    '''Return the Shi and Bolt (1982) confidence limit of the b-value or
+    '''
+    Returns the Shi and Bolt (1982) confidence limit of the b-value or
     beta.
 
     Source:
         Shi and Bolt, BSSA, Vol. 72, No. 5, pp. 1677-1687, October 1982
 
     Args:
-        magnitudes: numpy array of magnitudes
-        weights:    numpy array of weights for each magnitude
-        b:          known or estimated b-value/beta of the magnitudes
-        b_parameter:either either 'b_value' or 'beta'
+        magnitudes:     Array of magnitudes.
+        weights:        Array of weights for the magnitudes.
+        b:              Known or estimated b-value/beta of the magnitudes.
+        b_parameter:    Either either 'b_value' or 'beta'.
 
     Returns:
-        std_b:  confidence limit of the b-value/beta value (depending on input)
+        std_b:  Confidence limit of the b-value/beta value (depending on input).
     '''
     # standard deviation in Shi and Bolt is calculated with 1/(N*(N-1)), which
     # is by a factor of sqrt(N) different to the std(x, ddof=1) estimator
@@ -72,18 +73,19 @@ def shi_bolt_confidence(
 def find_next_larger(magnitudes: np.array,
                      delta_m: float,
                      dmc: float | None):
-    """Takes an array of magnitudes and returns an array of indices of the next
+    """
+    Takes an array of magnitudes and returns an array of indices of the next
     largest event for each element. For each magnitude[ii], magnitude[idx[ii]]
     is the next larger event in the series. Example: magnitudes = [10, 4, 3, 9]
     result in [0, 3, 3, 0]. Note that the value of idx is 0 if no
     next magnitude exists.
 
     Args:
-        magnitudes:     ordered magnitudes (in the dimension of interest, e.g.
-                    time)
-        delta_m:        discretization of the magnitudes.
-        dmc:            minimum magnitude difference between consecutive events.
-                    If None, the default value is delta_m.
+        magnitudes:     Array of magnitudes, ordered by a dimension of interest, e.g.
+                    time).
+        delta_m:        Bin size of discretized magnitudes.
+        dmc:            Minimum magnitude difference between consecutive events.
+                    If `None`, the default value is `delta_m`.
 
     """
     if dmc is None:
@@ -105,7 +107,8 @@ def make_more_incomplete(
     delta_t: np.timedelta64 = np.timedelta64(60, 's'),
     return_idx: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    '''Return filtered magnitudes and times. Filter the magnitudes and times in
+    '''
+    Returns filtered magnitudes and times. Filters the magnitudes and times in
     the following way: If an earthquake is smaller than the previous one and
     less than ``delta_t`` away, the earthquake is removed.
 
@@ -114,18 +117,18 @@ def make_more_incomplete(
         Earth, 129(2):e2023JB027849, 2024.
 
     Args:
-        magnitudes: array of magnitudes, sorted in time (first
+        magnitudes: Array of magnitudes, ordered in time (first
                 entry is the earliest earthquake).
-        times:      array of datetime objects of occurrence of each earthquake
-        delta_t:    time window in seconds to filter out events. default is 60
+        times:      Array of datetime objects of occurrence of each earthquake.
+        delta_t:    Time window in seconds to filter out events. Default is 60
                 seconds.
-        return_idx: if True the indices of the events that were kept are
-                returned
+        return_idx: If `True`, the indices of the events that were kept are
+                also returned.
 
     Returns:
-        magnitudes: filtered array of magnitudes
-        times:      filtered array of datetime objects
-        idx:        indices of the events that were kept
+        magnitudes: Array of filtered magnitudes.
+        times:      Array of filtered datetime objects.
+        idx:        Array of indices of the events that were kept.
         '''
 
     # sort magnitudes in time
