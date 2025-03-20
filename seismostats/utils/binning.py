@@ -2,7 +2,7 @@ import decimal
 import numpy as np
 
 
-def normal_round_to_int(x: float) -> int:
+def _normal_round_to_int(x: float) -> int:
     """
     Rounds a float number ``x`` to the closest integer.
 
@@ -14,9 +14,9 @@ def normal_round_to_int(x: float) -> int:
 
     Examples:
         >>> from seismostats.utils.binning import normal_round_to_int
-        >>> normal_round_to_int(2.5)
+        >>> _normal_round_to_int(2.5)
         3
-        >>> normal_round_to_int(2.4)
+        >>> _normal_round_to_int(2.4)
         2
     """
 
@@ -48,7 +48,7 @@ def normal_round(x: float, n: int = 0) -> float:
     """
 
     power = 10**n
-    return normal_round_to_int(x * power) / power
+    return _normal_round_to_int(x * power) / power
 
 
 def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
@@ -83,7 +83,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
-    return np.round(normal_round_to_int(x / delta_x) * delta_x, decimal_places)
+    return np.round(_normal_round_to_int(x / delta_x) * delta_x, decimal_places)
 
 
 def binning_test(

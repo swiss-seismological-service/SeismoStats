@@ -10,7 +10,6 @@ from seismostats.utils.binning import (
     get_cum_fmd,
     get_fmd,
     normal_round,
-    normal_round_to_int,
     binning_test
 )
 from seismostats.utils.coordinates import CoordinateTransformer
