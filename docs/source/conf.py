@@ -8,6 +8,7 @@ import shutil
 
 import setuptools_scm
 
+# -- Copy over changelog ------------------------------------------------------
 # Path to the project's root CHANGELOG.md
 changelog_src = os.path.abspath("../../CHANGELOG.md")
 changelog_dst = os.path.abspath("./changelog.md")
@@ -38,19 +39,33 @@ extensions = [
     'nbsphinx',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'nbsphinx_link'
 ]
 
 autosectionlabel_prefix_document = True
 
-nbsphinx_custom_formats = {}
 templates_path = ['_templates']
 exclude_patterns = []
 napoleon_custom_sections = [('Returns', 'params_style')]
 
+# allows to link to other projects :class:`pandas.DataFrame`
+intersphinx_mapping = {
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+}
+
+autosummary_context = {  # this is available in the template
+    'skip_inheritance': ['Catalog',
+                         'ForecastCatalog',
+                         'GRRateGrid',
+                         'ForecastGRRateGrid',
+                         'CoordinateTransformer']
+}
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
 
 html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
@@ -70,6 +85,8 @@ navigation_with_keys = True
 html_context = {
     "default_mode": "light",
 }
+
+
 suppress_warnings = ['autosectionlabel.*',
                      'myst.header',
                      'config.cache']
