@@ -61,7 +61,7 @@ def ks_test_gr(
         sample:     Magnitude sample.
         mc:         Completeness magnitude.
         delta_m:    Magnitude bin size.
-        b_value:    b-value of the Gutenberg-Richter law
+        b_value:    b-value of the Gutenberg-Richter law.
         n:          Number of times the KS distance is calculated from
                 synthetic samples with the given parameters, used for
                 estimating the p-value.
@@ -70,7 +70,7 @@ def ks_test_gr(
                 not needed).
 
     Returns:
-        p_val:      p-value
+        p_val:      p-value.
         ks_d_obs:   KS distance of the sample.
         ks_ds:      KS distances.
     """
@@ -337,8 +337,8 @@ def mc_by_bvalue_stability(
         (2005): 684-698.
 
     Args:
-        sample:             Vector of magnitudes.
-        delta_m:            Discretization of the magnitudes.
+        sample:             Array of magnitudes.
+        delta_m:            Discretization of magnitudes.
         stability_range:    Magnitude range to consider for the stability test.
                         Default compatible with the original definition of
                         Cao & Gao 2002.
