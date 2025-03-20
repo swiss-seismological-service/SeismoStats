@@ -44,12 +44,15 @@ class ClassicBValueEstimator(BValueEstimator):
             >>> import numpy as np
             >>> from seismostats.analysis.bvalue import ClassicBValueEstimator
 
-            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
+            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
+            ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
+            ...                        2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
             >>> mc = 2.0
             >>> delta_m = 0.1
 
             >>> my_estimator = ClassicBValueEstimator()
-            >>> b_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc, delta_m=delta_m)
+            >>> b_value = my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m)
 
             >>> print(b_value)
 

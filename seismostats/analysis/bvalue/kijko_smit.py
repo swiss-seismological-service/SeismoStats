@@ -29,7 +29,7 @@ def estimate_b_kijko_smit(
 
     Args:
         magnitudes:         Array of magnitudes.
-        dates:              Array of datetime objects of occurrence of each earthquake.
+        dates:              Array of datetime objects of earthquake occurrences.
         completeness_table: Nx2 array, where the first column
             contains the leftmost edge of magnitude bins and
             the second column the associated year of completeness, i.e.
@@ -42,15 +42,15 @@ def estimate_b_kijko_smit(
             ...           [ 5.95, 1810],
             ...           [ 6.95, 1520]])
 
-        last_year:          Last year of observation (the default is None, in which case
-            it is set to the latest year in years).
-        delta_m:            Bin size of discretized magnitudes, the default is 0.1.
-        b_parameter:        either 'b-value', then the corresponding value of the
-            Gutenberg-Richter law is returned, otherwise 'beta'
+        last_year:          Last year of observation (the default is `None`,
+            in which case it is set to the latest year in years).
+        delta_m:            Bin size of discretized magnitudes, default is 0.1.
+        b_parameter:        either 'b-value', then the corresponding value of
+            the Gutenberg-Richter law is returned, otherwise 'beta'
             from the exponential distribution [p(M) = exp(-beta*(M-mc))]
 
     Returns:
-        b_parameter:        Maximum likelihood point estimate of 'b-value' or 'beta'.
+        b_parameter:        Maximum likelihood estimate of 'b-value' or 'beta'.
         std_b_parameter:    Standard error of b_parameter.
         rate_at_lmc:        Maximum likelihood point estimate of earthquake rate
                     at the lower magnitude of completeness.

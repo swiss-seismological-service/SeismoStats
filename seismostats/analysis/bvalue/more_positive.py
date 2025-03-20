@@ -22,15 +22,19 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.bvalue import BMorePositiveBValueEstimator
+            >>> from seismostats.analysis.bvalue import
+            ...     BMorePositiveBValueEstimator
 
-            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
+            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
+            ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
+            ...                        2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
             >>> mc = 2.0
             >>> delta_m = 0.1
             >>> dmc = 0.2
 
             >>> my_estimator = BMorePositiveBValueEstimator()
-            >>> b_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc, delta_m=delta_m, dmc=dmc)
+            >>> b_value = my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m, dmc=dmc)
 
             >>> print(b_value)
 
@@ -47,7 +51,8 @@ class BMorePositiveBValueEstimator(BValueEstimator):
             >>> print("b-value:              ", my_estimator.b_value)
             >>> print("b-value uncertainty:  ", my_estimator.std)
 
-            used magnitudes:       [0.5 0.2 0.4 0.3 0.2 0.4 0.4 0.2 0.3 0.7 0.2 0.3 0.3 0.2 0.5 0.5 0.3]
+            used magnitudes:       [0.5 0.2 0.4 0.3 0.2 0.4 0.4 0.2 0.3 0.7 0.2
+                0.3 0.3 0.2 0.5 0.5 0.3]
             used mc:               2.0
             used delta_m:          0.1
             used dmc:              0.2
@@ -70,7 +75,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                   dmc: float | None = None) -> float:
         '''
         Args:
-            magnitudes: Array of magnitudes
+            magnitudes: Array of magnitudes.
             mc:         Completeness magnitude.
             delta_m:    Bin size of discretized magnitudes.
             times:      Array of times of the events, in any format (datetime,

@@ -9,7 +9,7 @@ from seismostats.utils._config import get_option
 class APositiveAValueEstimator(AValueEstimator):
     '''
     Returns the a-value of the Gutenberg-Richter (GR) law using only the
-    earthquakes with magnitudes :math:`m_i \ge m_{i-1} + dmc`.
+    earthquakes with magnitudes :math:`m_i \\ge m_{i-1} + dmc`.
 
     Source:
         Following the idea of positivity of
@@ -25,13 +25,15 @@ class APositiveAValueEstimator(AValueEstimator):
         >>> import numpy as np
         >>> from seismostats.analysis.avalue import APositiveAValueEstimator
 
-        >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3, 2.0, 2.0])
+        >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3, 2.0,
+        ...                        2.0])
         >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         >>> mc = 2.0
         >>> delta_m = 0.1
 
         >>> my_estimator = APositiveAValueEstimator()
-        >>> a_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc, delta_m=delta_m, times=times)
+        >>> a_value = my_estimator.calculate(
+        ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m, times=times)
 
         >>> print(a_value)
 

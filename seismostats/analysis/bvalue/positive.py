@@ -10,7 +10,7 @@ from seismostats.utils._config import get_option
 class BPositiveBValueEstimator(BValueEstimator):
     '''
     Returns the b-value of the Gutenberg-Richter (GR) law using only the
-    earthquakes with magnitudes :math:`m_i \ge m_{i-1} + dmc`.
+    earthquakes with magnitudes :math:`m_i \\ge m_{i-1} + dmc`.
 
     Source:
         Van der Elst 2021 (J Geophysical Research: Solid Earth, Vol 126,
@@ -22,13 +22,16 @@ class BPositiveBValueEstimator(BValueEstimator):
             >>> import numpy as np
             >>> from seismostats.analysis.bvalue import BPositiveBValueEstimator
 
-            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
+            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
+            ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
+            ...                        2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
             >>> mc = 2.0
             >>> delta_m = 0.1
             >>> dmc = 0.2
 
             >>> my_estimator = BPositiveBValueEstimator()
-            >>> b_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc, delta_m=delta_m, dmc=dmc)
+            >>> b_value = my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m, dmc=dmc)
 
             >>> print(b_value)
 

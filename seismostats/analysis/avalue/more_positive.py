@@ -11,7 +11,7 @@ class AMorePositiveAValueEstimator(AValueEstimator):
     '''
     Returns the a-value of the Gutenberg-Richter (GR) law using earthquake
     pairs for which the latter is larger than the former
-    by some margin, :math:`m_j \ge m_{i} + dmc`.
+    by some margin, :math:`m_j \\ge m_{i} + dmc`.
 
     Source:
         van der Elst and Page 2023 (JGR: Solid Earth, Vol 128, Issue 10).
@@ -20,16 +20,19 @@ class AMorePositiveAValueEstimator(AValueEstimator):
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.avalue import AMorePositiveAValueEstimator
+            >>> from seismostats.analysis.avalue import
+            ...     AMorePositiveAValueEstimator
 
-            >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3, 2.0, 2.0])
+            >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
+            ...                        2.0, 2.0])
             >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
             >>> mc = 2.0
             >>> delta_m = 0.1
             >>> b_value = 1.0
 
             >>> my_estimator = AMorePositiveAValueEstimator()
-            >>> a_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc, delta_m=delta_m, times=times, b_value=b_value)
+            >>> a_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc,
+            ...     delta_m=delta_m, times=times, b_value=b_value)
 
             >>> print(a_value)
 

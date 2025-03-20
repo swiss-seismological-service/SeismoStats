@@ -81,8 +81,8 @@ def find_next_larger(magnitudes: np.array,
     next magnitude exists.
 
     Args:
-        magnitudes:     Array of magnitudes, ordered by a dimension of interest, e.g.
-                    time).
+        magnitudes:     Array of magnitudes, ordered by a dimension of interest,
+                    e.g., time).
         delta_m:        Bin size of discretized magnitudes.
         dmc:            Minimum magnitude difference between consecutive events.
                     If `None`, the default value is `delta_m`.
