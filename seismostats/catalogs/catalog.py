@@ -7,25 +7,24 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
+import cartopy
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from shapely import Polygon
-import matplotlib.pyplot as plt
-import cartopy
 
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
+from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
+                                      plot_mags_in_time)
+from seismostats.plots.seismicity import plot_in_space
+from seismostats.plots.statistical import plot_mc_vs_b
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
-from seismostats.plots.seismicity import plot_in_space
-from seismostats.plots.basics import (plot_cum_count, plot_mags_in_time,
-                                      plot_cum_fmd, plot_fmd)
-from seismostats.plots.statistical import plot_mc_vs_b
-
 
 try:
     from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
@@ -461,7 +460,6 @@ class Catalog(pd.DataFrame):
                                  self.magnitude.max(),
                                  delta_m)
 
-        # TODO change once we have a global estimate_mc
         mc_est = mc_ks(self.magnitude,
                        mcs_test,
                        delta_m,
