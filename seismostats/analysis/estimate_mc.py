@@ -350,8 +350,8 @@ def mc_by_bvalue_stability(
         mcs_test:           Array of tested completeness magnitudes. If None,
                         it will be generated automatically based on the sample
                         and delta_m.
-        stop_when_passed:   Boolean that indicates whether to stop computation when 
-                        a completeness magnitude (mc) has passed the test.
+        stop_when_passed:   Boolean that indicates whether to stop computation
+                        when a completeness magnitude (mc) has passed the test.
 
     Returns:
         - best_mc:  Best magnitude of completeness estimate.
