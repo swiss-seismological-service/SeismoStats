@@ -26,9 +26,9 @@ def cdf_discrete_exp(
     exponential distribution at the points of the sample.
 
     Args:
-        sample:     Magnitude sample.
+        sample:     Array of magnitudes.
         mc:         Completeness magnitude.
-        delta_m:    Magnitude bins.
+        delta_m:    Bin size of discretized magnitudes.
         beta:       Rate parameter of the exponential distribution.
 
     Returns:
@@ -58,9 +58,9 @@ def ks_test_gr(
     parameters can be rejected.
 
     Args:
-        sample:     Magnitude sample.
+        sample:     Array of magnitudes.
         mc:         Completeness magnitude.
-        delta_m:    Magnitude bin size.
+        delta_m:    Bin size of discretized magnitudes.
         b_value:    b-value of the Gutenberg-Richter law.
         n:          Number of times the KS distance is calculated from
                 synthetic samples with the given parameters, used for
@@ -72,7 +72,7 @@ def ks_test_gr(
     Returns:
         p_val:      p-value.
         ks_d_obs:   KS distance of the sample.
-        ks_ds:      KS distances.
+        ks_ds:      Array of KS distances.
     """
     if get_option("warnings") is True:
         if np.min(sample) < mc - delta_m / 2:
@@ -148,9 +148,9 @@ def mc_ks(
     **kwargs,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
-    Returns the smallest magnitude for a given list of completeness magnitudes
-    for which the ks-test passes, i.e. where the null-hypothesis that the
-    sample is drawn from a Gutenberg-Richter cannot be rejected.
+    Returns the smallest magnitude in a given list of completeness magnitudes
+    for which the KS test is passed, i.e., where the null hypothesis that the
+    sample is drawn from a Gutenberg-Richter law cannot be rejected.
 
     Source:
         - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
@@ -160,22 +160,25 @@ def mc_ks(
           Society of America, 92(4), pp.2333-2342.
 
     Args:
-        sample:             Magnitudes to test.
-        delta_m:            Magnitude bins (sample has to be rounded to bins
-                        beforehand).
-        mcs_test:           Completeness magnitudes to test. If None,
-                        all magnitudes between the minimum and maximum of the
-                        sample are tested.
-        p_pass:             P-value with which the test is passed.
+        sample:             Array of magnitudes to test.
+        delta_m:            Bin size of discretized magnitudes. Sample has to be
+                        rounded to bins beforehand).
+        mcs_test:           Array of tested completeness magnitudes. If `None`,
+                        it will be generated automatically based on `sample`
+                        and `delta_m`.
+        p_pass:             Boolean that indicates whether to stop calculations
+                        when first mc passes the test.
         stop_when_passed:   Stop calculations when first mc passes the test.
-        verbose:            Verbose output.
-        b_value:            If b_value is 'known', only estimate mc.
+        verbose:            Boolean that indicates whether to print verbose
+                        output.
+        b_value:            If `b_value` is 'known', only estimate `mc` assuming
+                        the given `b_value`.
+        b_method:           b-value estimator class to use.
         n:                  Number of number of times the KS distance is
                         calculated for estimating the p-value.
-        ks_ds_list:         KS distances from synthetic data
-                        (needed for testing). If None, they will be estimated
-                        in this funciton.
-        *args,              Additional arguments for the b-value estimator
+        ks_ds_list:         KS distances from synthetic data with the given
+                        parameters. If `None`, they will be estimated here.
+        *args,              Additional arguments for the b-value estimator.
         **kwargs:           Additional keyword arguments for the b-value
                         estimator.
 
@@ -183,8 +186,8 @@ def mc_ks(
         mcs_test:       Tested completeness magnitudes.
         ks_ds:          KS distances.
         ps:             p-values.
-        best_mc:        mc for which the p-value is lowest.
-        best_b_value:   b_value corresponding to the best mc.
+        best_mc:        `mc` for which the p-value is lowest.
+        best_b_value:   `b_value` corresponding to the best `mc`.
     """
 
     if mcs_test is None:
@@ -301,13 +304,14 @@ def mc_max_curvature(
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
 
     Args:
-        sample:     Magnitudes to test.
-        delta_m:    Magnitude bins (sample has to be rounded to bins beforehand)
-                correction_factor:  Correction factor for the maximum curvature
+        sample:             Array of magnitudes to test.
+        delta_m:            Bin size of discretized magnitudes. Sample has to be
+                        rounded to bins beforehand).
+        correction_factor:  Correction factor for the maximum curvature
                 method (default value after Woessner & Wiemer 2005).
 
     Returns:
-        mc:         Estimated completeness magnitude.
+        mc:                 Estimated completeness magnitude.
     """
     bins, count, _ = get_fmd(
         magnitudes=sample, delta_m=delta_m, bin_position="center"
@@ -324,7 +328,7 @@ def mc_by_bvalue_stability(
         stop_when_passed: bool = True,
 ):
     """
-    Estimates Mc using a test of stability.
+    Estimates the completeness magnitude (mc) using b-value stability.
 
     The stability of the b-value is tested by default on half a magnitude unit
     (in line with the 5x0.1 in the orginial paper). Users can change the range
@@ -338,18 +342,19 @@ def mc_by_bvalue_stability(
 
     Args:
         sample:             Array of magnitudes.
-        delta_m:            Discretization of magnitudes.
+        delta_m:            Bin size of discretized magnitudes. Sample has to be
+                        rounded to bins beforehand.
         stability_range:    Magnitude range to consider for the stability test.
                         Default compatible with the original definition of
                         Cao & Gao 2002.
         mcs_test:           Array of tested completeness magnitudes. If None,
                         it will be generated automatically based on the sample
                         and delta_m.
-        stop_when_passed:   Whether to stop the stability test when a passing
-                        completeness magnitude (Mc) is found.
+        stop_when_passed:   Boolean that indicates whether to stop computation when 
+                        a completeness magnitude (mc) has passed the test.
 
     Returns:
-        - best_mc:  Single best magnitude of completeness estimate.
+        - best_mc:  Best magnitude of completeness estimate.
         - best_b:   b-value associated with best_mc.
         - mcs_test: Array of tested completeness magnitudes.
         - bs:       Array of b-values associated to tested mcs.
