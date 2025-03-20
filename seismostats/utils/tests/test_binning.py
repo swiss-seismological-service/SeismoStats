@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from seismostats.utils.binning import (bin_to_precision, get_cum_fmd, get_fmd,
-                                       normal_round, normal_round_to_int,
+                                       normal_round, _normal_round_to_int,
                                        binning_test)
 
 
@@ -12,7 +12,7 @@ from seismostats.utils.binning import (bin_to_precision, get_cum_fmd, get_fmd,
      (4.499, 4), (4.5, 5), (5.5, 6), (6.5, 7)]
 )
 def test_normal_round_to_int(x: float, rounded_value: int):
-    y = normal_round_to_int(x)
+    y = _normal_round_to_int(x)
     assert y == rounded_value
 
 
