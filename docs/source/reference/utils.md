@@ -10,7 +10,7 @@
 .. autosummary::
     :toctree: api/
 
-    bin_to_precision
+    utils.bin_to_precision
     utils.get_fmd
     utils.get_cum_fmd
 

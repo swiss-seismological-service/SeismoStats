@@ -1,0 +1,29 @@
+name: test
+
+on:
+    push:
+        branches:
+            - '**'
+        tags-ignore:
+            - '**'
+
+jobs:
+    tests:
+        uses: ./.github/workflows/_tests.yml
+        with:
+            python-versions: '["3.10", "3.12"]'
+    codecov:
+        name: Upload coverage reports to Codecov
+        needs:
+            - tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download coverage report
+              uses: actions/download-artifact@v4
+              with:
+                  name: coverage-report
+            - name: Upload to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  slug: swiss-seismological-service/SeismoStats

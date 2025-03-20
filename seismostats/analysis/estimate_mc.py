@@ -9,8 +9,9 @@ import numpy as np
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
+from seismostats.analysis.bvalue.utils import b_value_to_beta, beta_to_b_value
 from seismostats.utils._config import get_option
-from seismostats.utils.binning import bin_to_precision, get_fmd
+from seismostats.utils.binning import bin_to_precision, binning_test, get_fmd
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
@@ -21,18 +22,18 @@ def cdf_discrete_GR(
     beta: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Calculate the cumulative distribution function (CDF)
-    for a discrete Gutenberg-Richter distribution at the points of the sample.
+    Calculates the cumulative distribution function (CDF) for a discrete
+    Gutenberg-Richter distribution at the points of the sample.
 
-    Parameters:
-        sample:     Magnitude sample
-        mc:         Completeness magnitude
-        delta_m:    Magnitude bins
-        beta:       Beta parameter for the Gutenberg-Richter distribution
+    Args:
+        sample:     Magnitude sample.
+        mc:         Completeness magnitude.
+        delta_m:    Magnitude bins.
+        beta:       Beta parameter for the Gutenberg-Richter distribution.
 
     Returns:
-        x: unique x-values of the sample
-        y: corresponding y-values of the CDF of the GR distribution
+        x: Unique x-values of the sample.
+        y: Corresponding y-values of the CDF of the GR distribution.
     """
 
     x = np.sort(sample)
@@ -50,27 +51,28 @@ def ks_test_gr(
     ks_ds: list | None = None,
 ) -> tuple[float, float, list[float]]:
     """
-    For a given magnitude sample and mc and beta,
-    perform the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
-    distribution, to check if the sample
-    could have been drawn from a GR distribution.
+    Performs the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
+    distribution for a given magnitude sample and mc and beta. When the p-value
+    is below a certain threshold (e.g., 0.1), the null hypothesis that the
+    sample is drawn from a Gutenberg-Richter distribution with the given
+    parameters can be rejected.
 
     Args:
-        sample:     Magnitude sample
-        mc:         Completeness magnitude
-        delta_m:    Magnitude bin size
+        sample:     Magnitude sample.
+        mc:         Completeness magnitude.
+        delta_m:    Magnitude bin size.
         beta :      Beta parameter for the Gutenberg-Richter distribution
         n:          Number of times the KS distance is calculated from
                 synthetic samples with the given parameters, used for
-                estimating the p-value. By default 10000.
-        ks_ds:      List of KS distances from synthetic data with the given
+                estimating the p-value.
+        ks_ds:      KS distances from synthetic data with the given
                 paramters. If None, they will be estimated here (then, n is
-                not needed). By default None.
+                not needed).
 
     Returns:
         p_val:      p-value
-        ks_d_obs:   KS distance of the sample
-        ks_ds:      list of KS distances
+        ks_d_obs:   KS distance of the sample.
+        ks_ds:      KS distances.
     """
     if get_option("warnings") is True:
         if np.min(sample) < mc - delta_m / 2:
@@ -135,16 +137,17 @@ def mc_ks(
     p_pass: float = 0.1,
     stop_when_passed: bool = True,
     verbose: bool = False,
-    beta: float | None = None,
+    b_value: float | None = None,
     b_method: BValueEstimator = ClassicBValueEstimator,
     n: int = 10000,
     ks_ds_list: list[list] | None = None,
+    *args,
     **kwargs,
 ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
     """
-    Return the completeness magnitude (mc) estimate
-    for a given list of completeness
-    magnitudes using the K-S distance method.
+    Returns the smallest magnitude for a given list of completeness magnitudes
+    for which the ks-test passes, i.e. where the null-hypothesis that the
+    sample is drawn from a Gutenberg-Richter cannot be rejected.
 
     Source:
         - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
@@ -154,32 +157,31 @@ def mc_ks(
           Society of America, 92(4), pp.2333-2342.
 
     Args:
-        sample:             Magnitudes to test
+        sample:             Magnitudes to test.
         delta_m:            Magnitude bins (sample has to be rounded to bins
-                            beforehand)
-        mcs_test:           Completeness magnitudes to test, by default None
-        p_pass:             P-value with which the test is passed, by default
-                            0.1
-        stop_when_passed:   Stop calculations when first mc passes the test, by
-                            default True
-        verbose:            Verbose output, by default False
-        beta:               If beta is 'known', only estimate mc, by default
-                            None
+                        beforehand).
+        mcs_test:           Completeness magnitudes to test. If None,
+                        all magnitudes between the minimum and maximum of the
+                        sample are tested.
+        p_pass:             P-value with which the test is passed.
+        stop_when_passed:   Stop calculations when first mc passes the test.
+        verbose:            Verbose output.
+        b_value:            If b_value is 'known', only estimate mc.
         n:                  Number of number of times the KS distance is
-                            calculated for estimating the p-value,
-                            by default 10000
-        ks_ds_list:         List of list of KS distances from synthetic data
-                            (needed for testing). If None, they will be
-                            estimated in this funciton. By default None
+                        calculated for estimating the p-value.
+        ks_ds_list:         KS distances from synthetic data
+                        (needed for testing). If None, they will be estimated
+                        in this funciton.
+        *args,              Additional arguments for the b-value estimator
         **kwargs:           Additional keyword arguments for the b-value
-                            estimator.
+                        estimator.
 
     Returns:
-        mcs_test:   tested completeness magnitudes
-        ks_ds:      KS distances
-        ps:         p-values
-        best_mc:    best mc
-        beta:       corresponding best beta
+        mcs_test:       Tested completeness magnitudes.
+        ks_ds:          KS distances.
+        ps:             p-values.
+        best_mc:        mc for which the p-value is lowest.
+        best_b_value:   b_value corresponding to the best mc.
     """
 
     if mcs_test is None:
@@ -187,39 +189,30 @@ def mc_ks(
             np.arange(np.min(sample), np.max(sample), delta_m), delta_m
         )
     else:
-        # check that they are ordered by size
-        if get_option("warnings") is True:
-            if not np.all(np.diff(mcs_test) > 0):
-                warnings.warn("mcs_test are being re-ordered by size.")
-                mcs_test = np.sort(np.unique(mcs_test))
-            if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
-                warnings.warn(
-                    "mc_test are not binned correctly,"
-                    "this might affect the test."
-                )
+        # sort mcs
+        mcs_test = np.sort(np.unique(mcs_test))
 
     if get_option("warnings") is True:
         # check if binning is correct
-        if not np.allclose(sample, bin_to_precision(sample, delta_m)):
+        if not binning_test(sample, delta_m, check_larger_binning=False):
             warnings.warn(
                 "Magnitudes are not binned correctly. "
                 "Test might fail because of this."
             )
-
-        if not np.allclose(mcs_test, bin_to_precision(mcs_test, delta_m)):
+        if not binning_test(mcs_test, delta_m, check_larger_binning=False):
             warnings.warn(
                 "Mcs to test are not binned correctly. "
                 "Test might fail because of this."
             )
 
-        # check if beta is given (then b_method is not needed)
-        if beta is not None and verbose:
-            print("Using given beta instead of estimating it.")
+        # check if b-value is given (then b_method is not needed)
+        if b_value is not None and verbose:
+            print("Using given b-value instead of estimating it.")
 
     mcs_tested = []
     ks_ds = []
     ps = []
-    betas = []
+    b_values = []
 
     for ii, mc in enumerate(mcs_test):
 
@@ -229,12 +222,13 @@ def mc_ks(
         mc_sample = sample[sample >= mc - delta_m / 2]
 
         # if no beta is given, estimate beta
-        if beta is None:
+        if b_value is None:
             estimator = b_method()
-            estimator.calculate(mc_sample, mc=mc, delta_m=delta_m, **kwargs)
+            estimator.calculate(
+                mc_sample, mc=mc, delta_m=delta_m, *args, **kwargs)
             mc_beta = estimator.beta
         else:
-            mc_beta = beta
+            mc_beta = b_value_to_beta(b_value)
 
         if ks_ds_list is None:
             p, ks_d, _ = ks_test_gr(
@@ -253,7 +247,7 @@ def mc_ks(
         mcs_tested.append(mc)
         ks_ds.append(ks_d)
         ps.append(p)
-        betas.append(mc_beta)
+        b_values.append(beta_to_b_value(mc_beta))
 
         if verbose:
             print("..p-value: ", p)
@@ -265,24 +259,23 @@ def mc_ks(
 
     if np.any(ps >= p_pass):
         best_mc = mcs_tested[np.argmax(ps >= p_pass)]
-        best_beta = betas[np.argmax(ps >= p_pass)]
+        best_b_value = b_values[np.argmax(ps >= p_pass)]
 
         if verbose:
             print(
                 "\n\nFirst mc to pass the test:",
                 best_mc,
-                "\nwith a beta of:",
-                beta,
+                "\nwith a b-value of:",
+                best_b_value,
             )
     else:
         best_mc = None
-        beta = None
-        best_beta = None
+        best_b_value = None
 
         if verbose:
             print("None of the mcs passed the test.")
 
-    return best_mc, best_beta, mcs_tested, betas, ks_ds, ps
+    return best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps
 
 
 def mc_max_curvature(
@@ -291,8 +284,8 @@ def mc_max_curvature(
     correction_factor: float = 0.2,
 ) -> float:
     """
-    Return the completeness magnitude (mc) estimate
-    using the maximum curvature method.
+    Returns the completeness magnitude (mc) estimate using the maximum
+    curvature method.
 
     Source:
         - Wiemer, S. and Wyss, M., 2000. Minimum magnitude of completeness
@@ -305,13 +298,13 @@ def mc_max_curvature(
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
 
     Args:
-        sample:     Magnitudes to test
+        sample:     Magnitudes to test.
         delta_m:    Magnitude bins (sample has to be rounded to bins beforehand)
-            correction_factor:  Correction factor for the maximum curvature
-            method (default 0.2 after Woessner & Wiemer 2005)
+                correction_factor:  Correction factor for the maximum curvature
+                method (default value after Woessner & Wiemer 2005).
 
     Returns:
-        mc:                 estimated completeness magnitude
+        mc:         Estimated completeness magnitude.
     """
     bins, count, _ = get_fmd(
         magnitudes=sample, delta_m=delta_m, bin_position="center"
@@ -343,21 +336,20 @@ def mc_by_bvalue_stability(
     Args:
         sample:             Vector of magnitudes.
         delta_m:            Discretization of the magnitudes.
-        stability_range:    Magnitude range to consider for the
-            stability test. Default is 0.5 to consider half a magnitude unit,
-            this is compatible with the original definition of Cao & Gao 2002.
-        mcs_test:           Array of tested completeness magnitudes.
-            If None, it will be generated automatically based on the sample and
-            delta_m.
-        stop_when_passed:   Whether to stop the stability test
-            when a passing completeness magnitude (Mc) is found. Default is
-            True.
+        stability_range:    Magnitude range to consider for the stability test.
+                        Default compatible with the original definition of
+                        Cao & Gao 2002.
+        mcs_test:           Array of tested completeness magnitudes. If None,
+                        it will be generated automatically based on the sample
+                        and delta_m.
+        stop_when_passed:   Whether to stop the stability test when a passing
+                        completeness magnitude (Mc) is found.
 
     Returns:
         - best_mc:  Single best magnitude of completeness estimate.
         - best_b:   b-value associated with best_mc.
         - mcs_test: Array of tested completeness magnitudes.
-        - bs:       Array of b-values associated to tested mcs
+        - bs:       Array of b-values associated to tested mcs.
         - diff_bs:  Array of differences divided by std, associated with tested
             mcs. If a value is smaller than one, this means that the stability
             criterion is met.
@@ -419,4 +411,4 @@ def mc_by_bvalue_stability(
     if value:
         return bin_to_precision(best_mc, delta_m), best_b, mcs_test, bs, diff_bs
     else:
-        raise ValueError("No Mc passes the stability test")
+        raise ValueError("No Mc passes the stability test.")

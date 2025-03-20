@@ -10,6 +10,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from shapely import Polygon
+import matplotlib.pyplot as plt
+import cartopy
 
 from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
@@ -19,6 +21,11 @@ from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.utils import (_check_required_cols, _render_template,
                                require_cols)
 from seismostats.utils.binning import bin_to_precision
+from seismostats.plots.seismicity import plot_in_space
+from seismostats.plots.basics import (plot_cum_count, plot_mags_in_time,
+                                      plot_cum_fmd, plot_fmd)
+from seismostats.plots.statistical import plot_mc_vs_b
+
 
 try:
     from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
@@ -50,9 +57,9 @@ class Catalog(pd.DataFrame):
     A subclass of pandas DataFrame that represents a catalog of earthquakes.
 
     To be a valid Catalog object, the DataFrame must have at least a
-    `magnitude`column. Depending on the method the following
-    columns: `longitude, latitude, depth, time, and magnitude` are
-    also required.
+    `magnitude` column. Depending on the method the following
+    columns are also required: `longitude`, `latitude`, `depth`, `time`,
+    and `magnitude` .
 
         data: Any | None = None,
         name: str | None = None,
@@ -77,7 +84,7 @@ class Catalog(pd.DataFrame):
         depth_min:  Minimum depth for which events are included in the catalog.
         depth_max:  Maximum depth for which events are included in the catalog.
         kwargs:     Additional keyword arguments to pass to pandas
-                    DataFrame constructor.
+                DataFrame constructor.
 
     Notes:
         The Catalog class is a subclass of pandas DataFrame, and inherits
@@ -257,8 +264,8 @@ class Catalog(pd.DataFrame):
         Args:
             oq_catalogue:       The openquake catalogue.
             keep_time_cols:     Whether the time columns: 'year', 'month',
-                                'day', 'hour', 'minute', 'second'
-                                should be kept (they are converted to 'time').
+                            'day', 'hour', 'minute', 'second'
+                            should be kept (they are converted to 'time').
         Returns:
             Catalog
         """
@@ -388,7 +395,7 @@ class Catalog(pd.DataFrame):
         precision ``delta_m``.
 
         Args:
-            delta_m:    size of the bin, optional
+            delta_m:    The size of the bins to round the magnitudes to.
             inplace:    Whether to perform the operation in place on the data.
 
         Returns:
@@ -429,13 +436,13 @@ class Catalog(pd.DataFrame):
         Args:
             mcs_test:           Completeness magnitudes to test.
             delta_m:            Magnitude bins (sample has to be rounded to bins
-                                beforehand).
+                            beforehand).
             p_pass:             P-value with which the test is passed.
             stop_when_passed:   Stop calculations when first mc passes the test.
             verbose:            Verbose output.
             beta:               If beta is 'known', only estimate mc.
             n_samples:          Number of magnitude samples to be generated in
-                                p-value calculation of KS distance.
+                            p-value calculation of KS distance.
 
         Returns:
             mcs_test:   Tested completeness magnitudes.
@@ -487,26 +494,26 @@ class Catalog(pd.DataFrame):
 
         Args:
             mc:         Completeness magnitude, etiher given as parameter or
-                        taken from the object attribute.
+                    taken from the object attribute.
             delta_m:    Discretization of magnitudes, etiher given as parameter
-                        or taken from the object attribute.
+                    or taken from the object attribute.
             weights:    Weights of each magnitude can be specified here.
-            b_parameter:Either 'b-value', then the corresponding value  of the
-                        Gutenberg-Richter law is returned, otherwise 'beta'
-                        from the exponential distribution
-                        :math:`p(M) = exp(-beta*(M-mc))`
+            b_parameter: Either 'b-value', then the corresponding value  of the
+                    Gutenberg-Richter law is returned, otherwise 'beta' from
+                    the exponential distribution
+                    :math:`p(M) = exp(-beta*(M-mc))`
             return_std: If True the standard deviation of beta/b-value (see
                         above) is returned.
             method:     Method to use for estimation of beta/b-value. Options
                         are: 'tinti', 'utsu', 'positive', 'laplace'.
-            return_n:   If True, the number of events used for the estimation is
-                        returned. This is only relevant for the 'positive'
-                        method.
+            return_n:   If True, the number of events used for the estimation
+                    is returned. This is only relevant for the 'positive'
+                    method.
 
         Returns:
             b:      Maximum likelihood beta or b-value, depending on value of
-                    input variable 'b_parameter'. Note that the difference
-                    is just a factor :math:`b = beta * log10(e)`.
+                input variable 'b_parameter'. Note that the difference
+                is just a factor :math:`b = beta * log10(e)`.
             std:    Shi and Bolt estimate of the beta/b-value error estimate
             n:      number of events used for the estimation.
         """
@@ -545,6 +552,298 @@ class Catalog(pd.DataFrame):
             self.b_value = b_estimate
 
         return b_estimate
+
+    @require_cols(require=['latitude', 'longitude', 'magnitude'])
+    def plot_in_space(self,
+                      resolution: str = "10m",
+                      include_map: bool | None = False,
+                      country: str | None = None,
+                      colors: str | None = None,
+                      style: str = "satellite",
+                      dot_smallest: int = 10,
+                      dot_largest: int = 200,
+                      dot_interpolation_power: int = 2,
+                      dot_labels: str = "auto"
+                      ) -> cartopy.mpl.geoaxes.GeoAxes:
+        """
+        This function plots seismicity on a surface. If ``include_map`` is
+        set to ``True``, a nice natural earth map is used, otherwise the
+        seismicity is just plotted on a blank grid. In the latter case,
+        the grid is stretched according to the midpoint latitude.
+
+        Args:
+            resolution:     Resolution of the map, "10m", "50m" and "110m"
+                        available.
+            include_map:    If True, seismicity will be plotted on natural
+                        earth map, otherwise it will be plotted on a blank
+                        grid.
+            country:        Name of country, if None map will fit to data
+                        points.
+            colors:         Color of background. If None is chosen, it will be
+                        either white or standard natural earth colors.
+            style:          Style of map, "satellite" or "street" are
+                        available.
+            dot_smallest:   Smallest dot size for magnitude scaling.
+            dot_largest:    Largest dot size for magnitude scaling.
+            dot_interpolation_power: Interpolation power for scaling.
+            dot_labels:     Determines how labels for
+                        magnitudes can be created. Input for matplotlib's
+                        ``PathCollection.legend_elements``. If ``None``, no
+                        label is shown. If an integer, target to use
+                        ``dot_labels`` elements in the normed range.
+                        If "auto", an automatic range is chosen for the
+                        labels (default). If a list, uses elements of list
+                        which are between minimum and maximum magnitude of
+                        dataset for the legend.
+                        Finally, a ``~.ticker.Locator`` can be provided to use
+                        a predefined ``matplotlib.ticker`` (e.g.
+                        ``FixedLocator``, which results in the same legend as
+                        providing a list of values).
+        Returns:
+            ax: GeoAxis object
+        """
+        ax = plot_in_space(self.longitude,
+                           self.latitude,
+                           self.magnitude,
+                           resolution=resolution,
+                           include_map=include_map,
+                           country=country,
+                           colors=colors,
+                           style=style,
+                           dot_smallest=dot_smallest,
+                           dot_largest=dot_largest,
+                           dot_interpolation_power=dot_interpolation_power,
+                           dot_labels=dot_labels)
+        return ax
+
+    @require_cols(require=['time', 'magnitude'])
+    def plot_cum_count(self,
+                       ax: plt.Axes | None = None,
+                       mcs: np.ndarray = np.array([0]),
+                       delta_m: float | None = None
+                       ) -> plt.Axes:
+        """
+        Plots cumulative count of earthquakes in given catalog above given Mc
+        through time. Plots a line for each given completeness magnitude in
+        the array ``mcs``.
+
+        Args:
+            times:      Array containing times of events.
+            magnitudes: Array of magnitudes of events corresponding to the
+                    ``times``.
+            ax:         Axis where figure should be plotted.
+            mcs:        The list of completeness magnitudes for which we show
+                    lines on the plot.
+            delta_m:    Binning precision of the magnitudes.
+
+        Returns:
+            ax: Ax that was plotted on.
+        """
+
+        if delta_m is None:
+            delta_m = self.delta_m
+        ax = plot_cum_count(self.time,
+                            self.magnitude,
+                            ax=ax,
+                            mcs=mcs,
+                            delta_m=delta_m)
+        return ax
+
+    @require_cols(require=['time', 'magnitude'])
+    def plot_mags_in_time(self,
+                          ax: plt.Axes | None = None,
+                          mc_change_times: list | None = None,
+                          mcs: list | None = None,
+                          dot_smallest: int = 10,
+                          dot_largest: int = 200,
+                          dot_interpolation_power: int = 2,
+                          color_dots: str = "blue",
+                          color_line: str = "#eb4034",
+                          ) -> plt.Axes:
+        """
+        Creates a scatter plot, each dot is an event. Time shown on the x-axis,
+        magnitude shown on the y-axis, but also reflected in the size of dots.
+
+        Optionally, adds lines that represent the change in completeness
+        magnitude. For example, ``mc_change_times = [2000, 2005]`` and
+        ``mcs = [3.5, 3.0]`` means that between 2000 and 2005, Mc is 3.5
+        and after 2005, Mc is 3.0.
+
+        Args:
+            times:      Array containing times of events.
+            magnitudes: Array of magnitudes of events corresponding to the
+                    ``times``.
+            ax:         Axis where figure should be plotted.
+            mc_change_times: List of points in time when Mc changes, sorted in
+                    increasing order, can be given as a list of datetimes
+                    or integers (years).
+            mcs:        Changed values of Mc at times given in
+                    ``mc_change_times``.
+            dot_smallest: Smallest dot size for magnitude scaling.
+            dot_largest: Largest dot size for magnitude scaling.
+            dot_interpolation_power: Interpolation power for scaling.
+            color_dots: Color of the dots representing the events.
+            color_line: Color of the line representing the Mc changes.
+
+        Returns:
+            ax: ax that was plotted on
+        """
+        ax = plot_mags_in_time(self.time,
+                               self.magnitude,
+                               ax=ax,
+                               mc_change_times=mc_change_times,
+                               mcs=mcs,
+                               dot_smallest=dot_smallest,
+                               dot_largest=dot_largest,
+                               dot_interpolation_power=dot_interpolation_power,
+                               color_dots=color_dots,
+                               color_line=color_line)
+        return ax
+
+    @require_cols(require=['magnitude'])
+    def plot_cum_fmd(self,
+                     ax: plt.Axes | None = None,
+                     b_value: float | None = None,
+                     mc: float | None = None,
+                     delta_m: float = 0,
+                     color: str | list = None,
+                     size: int = None,
+                     grid: bool = False,
+                     bin_position: str = "center",
+                     legend: bool | str | list = True
+                     ) -> plt.Axes:
+        """
+        Plots cumulative frequency magnitude distribution, optionally with a
+        corresponding theoretical Gutenberg-Richter (GR) distribution. The GR
+        distribution is plotted provided the b-value is given.
+
+        Args:
+            magnitudes: Array of magnitudes.
+            ax:         Axis where figure should be plotted.
+            b_value:    The b-value of the theoretical GR distribution to plot.
+            mc:         Completeness magnitude of the theoretical GR
+                    distribution.
+            delta_m:    Discretization of the magnitudes; important for the
+                    correct visualization of the data.
+            color:      Color of the data. If one value is given, it is used
+                    for points, and the line of the theoretical GR distribution
+                    if it is plotted. If a list of colors is given, the first
+                    entry is the color of the points, and the second of the
+                    line representing the GR distribution.
+            size:       Size of the data points.
+            grid:       Indicates whether or not to include grid lines.
+            bin_position: Position of the bin, options are  'center' and 'left'
+                    accordingly, left edges of bins or center points are
+                    returned.
+
+        Returns:
+            ax: The ax object that was plotted on.
+        """
+        if delta_m is None:
+            delta_m = self.delta_m
+        if mc is None:
+            mc = self.mc
+        if b_value is None:
+            b_value = self.b_value
+        ax = plot_cum_fmd(self.magnitude,
+                          ax=ax,
+                          b_value=b_value,
+                          mc=mc,
+                          delta_m=delta_m,
+                          color=color,
+                          size=size,
+                          grid=grid,
+                          bin_position=bin_position,
+                          legend=legend)
+        return ax
+
+    @require_cols(require=['magnitude'])
+    def plot_fmd(self,
+                 ax: plt.Axes | None = None,
+                 delta_m: float = None,
+                 color: str = None,
+                 size: int = None,
+                 grid: bool = False,
+                 bin_position: str = "center",
+                 legend: bool | str | list = True
+                 ) -> plt.Axes:
+        """
+        Plots frequency magnitude distribution. If no binning is specified, the
+        assumed value of ``delta_m`` is 0.1.
+
+        Args:
+            magnitudes:     Array of magnitudes.
+            ax:             The axis where figure should be plotted.
+            delta_m:        Discretization of the magnitudes, important for the
+                        correct visualization of the data.
+            color:          Color of the data.
+            size:           Size of data points.
+            grid:           Indicates whether or not to include grid lines.
+            bin_position:   Position of the bin, options are  "center" and
+                        "left" accordingly, left edges of bins or center points
+                        are returned.
+
+        Returns:
+            ax: The ax object that was plotted on.
+        """
+        if delta_m is None:
+            delta_m = self.delta_m
+        ax = plot_fmd(self.magnitude,
+                      ax=ax,
+                      delta_m=delta_m,
+                      color=color,
+                      size=size,
+                      grid=grid,
+                      bin_position=bin_position,
+                      legend=legend)
+
+        return ax
+
+    @require_cols(require=['magnitude'])
+    def plot_mc_vs_b(self,
+                     mcs: np.ndarray,
+                     delta_m: float = None,
+                     b_method: BValueEstimator = ClassicBValueEstimator,
+                     confidence_interval: float = 0.95,
+                     ax: plt.Axes | None = None,
+                     color: str = "blue",
+                     label: str | None = None,
+                     *args,
+                     **kwargs
+                     ) -> plt.Axes:
+        """
+        Plots the estimated b-value in dependence of the completeness
+        magnitude.
+
+        Args:
+            magnitudes:     Array of magnitudes.
+            mcs:            Array of completeness magnitudes.
+            delta_m:        Discretization of the magnitudes.
+            b_method:       Method used for b-value estimation.
+            confidence_interval: Confidence interval that should be plotted.
+            ax:             Axis where figure should be plotted.
+            color:          Color of the data.
+            label:          Label of the data that will be put in the legend.
+            **kwargs:       Additional keyword arguments for the b-value
+                        estimator.
+
+        Returns:
+            ax: ax that was plotted on
+        """
+
+        if delta_m is None:
+            delta_m = self.delta_m
+        ax = plot_mc_vs_b(self.magnitude,
+                          mcs,
+                          delta_m,
+                          b_method,
+                          confidence_interval,
+                          ax,
+                          color,
+                          label,
+                          *args,
+                          **kwargs)
+        return ax
 
     def _secondary_magnitudekeys(self) -> list[str]:
         """

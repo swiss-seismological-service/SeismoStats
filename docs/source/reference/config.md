@@ -11,6 +11,6 @@
 .. autosummary::
     :toctree: api/
 
-    set_option
-    get_option
+    utils.set_option
+    utils.get_option
 ```

@@ -1,3 +1,11 @@
+![pypi](https://img.shields.io/pypi/v/SeismoStats)
+[![PyPI - License](https://img.shields.io/pypi/l/seismostats.svg)](https://pypi.org/project/seismostats/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/seismostats.svg)](https://pypi.org/project/seismostats/)
+[![test](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml/badge.svg)](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/github/swiss-seismological-service/SeismoStats/graph/badge.svg?token=RVJFHYLBKA)](https://codecov.io/github/swiss-seismological-service/SeismoStats)
+[![Documentation Status](https://readthedocs.org/projects/seismostats/badge/?version=latest)](https://seismostats.readthedocs.io/en/latest/?badge=latest)
+
+
 # SeismoStats
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
@@ -5,40 +13,31 @@ Measure your seismicity with **SeismoStats**, a Python package for seismicity an
 >[!IMPORTANT]  
 >We are actively working on a first stable version of `SeismoStats`. The API is not final yet and will still change until the first release coming in the next months. We are happy to receive feedback and suggestions for improvement.
 
-## Start developing:
+## Start using `SeismoStats`:
+
+This is intended for people interested in using existing functionalities and functions in `SeismoStats`, for example if you want to calculate an Mc, a-value and b-value for your catalogue and plot the frequency magnitude distribution.
 
 ```
-# just use a basic virtual environment
-python3 -m venv env
+pip install seismostats
+```
 
-# activate it
-source env/bin/activate
+That's all, you can now use SeismoStats!
 
-# update build tools
-pip install -U pip wheel setuptools
+## Installation from source
 
-# install this package + requirements + development requirements ([dev])
+To get the very latest version of SeismoStats, you can install it directly from the source code. This is especially useful if you want to contribute to the development of SeismoStats.
+
+After cloning, you can install SeismoStats by running the following command in the root directory of the repository:
+```
+pip install .
+```
+Or in development mode, including the development dependencies.
+```
 pip install -e '.[dev]'
-
-# run tests
+```
+To run the tests.
+```
 tox
-```
-
-## Use this repository inside another environment/code
-
-```
-# use it locally, being able to switch back and forth doing changes
-# enter this in your other environment
-pip install -e ../path/to/catalog-tools
-
-# if you don't need to do live changes in catalog-tools you can install it "from source"
-pip install git+https://github.com/swiss-seismological-service/SeismoStats.git
-
-# if you want to install a specific branch:
-pip install git+https://github.com/swiss-seismological-service/SeismoStats.git@feature/branch
-
-# update it once the repo has changed:
-pip install --force-reinstall git+https://github.com/swiss-seismological-service/SeismoStats.git
 ```
 
 ## Citing
