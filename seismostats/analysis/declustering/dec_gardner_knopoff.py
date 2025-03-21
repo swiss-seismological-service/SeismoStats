@@ -19,6 +19,14 @@ class GardnerKnopoffType1(Declusterer):
         Gardner, J. K. and Knopoff, L. (1974). Is the sequence of aftershocks
         in Southern California, with aftershocks removed, poissonian?. Bull.
         Seism. Soc. Am., 64(5): 1363-1367.
+
+    Args:
+        time_distance_window:
+                            :class:`seismostats.analysis.BaseDistanceTimeWindow`
+        fs_time_prop:           Float in the interval [0,1], expressing
+                            the size of the time window used for searching
+                            for foreshocks, as a fractional proportion of
+                            the size of the aftershock window.
     """
 
     def __init__(
@@ -26,14 +34,6 @@ class GardnerKnopoffType1(Declusterer):
         time_distance_window: BaseDistanceTimeWindow,
         fs_time_prop: float = 1.0,
     ):
-        """
-        Args:
-            time_distance_window:   BaseDistanceTimeWindow.
-            fs_time_prop:           Float in the interval [0,1], expressing
-                                the size of the time window used for searching
-                                for foreshocks, as a fractional proportion of
-                                the size of the aftershock window.
-        """
         super().__init__()
         self.time_distance_window = time_distance_window
         self.fs_time_prop = fs_time_prop
