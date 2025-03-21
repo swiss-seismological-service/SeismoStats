@@ -24,16 +24,6 @@
     analysis.BMorePositiveBValueEstimator
     analysis.UtsuBValueEstimator
 ```
-<!-- 
-```{eval-rst}
-.. autodoc::
-    analysis.ClassicBValueEstimator.b_value
-    analysis.ClassicBValueEstimator.beta
-    analysis.ClassicBValueEstimator.std
-    analysis.ClassicBValueEstimator.std_beta
-    analysis.ClassicBValueEstimator.weights_supported
-    analysis.ClassicBValueEstimator.calculate
-``` -->
 
 ## B-Significant
 ```{eval-rst}

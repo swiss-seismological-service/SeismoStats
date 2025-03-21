@@ -25,8 +25,9 @@ from seismostats.analysis.declustering.base import Declusterer
 from seismostats.analysis.declustering.dec_gardner_knopoff import \
     GardnerKnopoffType1
 from seismostats.analysis.declustering.distance_time_windows import (
-    BaseDistanceTimeWindow, GardnerKnopoffWindow, GruenthalWindow,
-    UhrhammerWindow)
+    GardnerKnopoffWindow, GruenthalWindow, UhrhammerWindow)
 # mc functions
 from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
                                               mc_max_curvature)
+# various
+from seismostats.analysis.magnitudes import apply_edwards

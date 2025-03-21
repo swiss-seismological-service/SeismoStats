@@ -2,16 +2,34 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
-...
+<!-- Template for a new unreleased block, copy, do not uncomment -------------------------- -->
 
 <!-- Add your changes to the relevant section below, while uncommenting the section header. -->
+<!-- ## [Unreleased] -->
 
 <!-- #### Added -->
 
 <!-- #### Changed -->
 
 <!-- #### Fixed -->
+
+<!-- #### Removed -->
+
+<!-- #### Deprecated -->
+<!-- -------------------------------------------------------------------------------------- -->
+
+## [Unreleased]
+
+<!-- Add your changes to the relevant section below, while uncommenting the section header. -->
+
+<!-- #### Added -->
+
+#### Changed
+- `analysis.mc_ks` now takes the `b-value` as a parameter instead of `beta`.
+
+#### Fixed
+- Build process for the documentation.
+- API Reference Documentation
 
 <!-- #### Removed -->
 
