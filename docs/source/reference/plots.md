@@ -9,6 +9,7 @@
 ```{eval-rst}
 .. autosummary::
     :toctree: api/
+    :nosignatures:
 
     :func: 
     plots.plot_cum_fmd

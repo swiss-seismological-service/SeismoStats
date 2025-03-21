@@ -42,6 +42,7 @@
 ```{eval-rst}
 .. autosummary::
     :toctree: api/
+    :nosignatures:
     
     utils.CoordinateTransformer
 ```
@@ -51,6 +52,7 @@
 ```{eval-rst}
 .. autosummary::
     :toctree: api/
+    :nosignatures:
 
     utils.cat_intersect_polygon
 

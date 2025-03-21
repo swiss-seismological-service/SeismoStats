@@ -11,7 +11,6 @@
       .. rubric:: {{ _('Attributes') }}
 
       .. autosummary::
-         :toctree: ../api/
          :nosignatures:
          {% for item in attributes %}
             {% if item in members and not item.startswith('_') %}
@@ -28,7 +27,6 @@
       .. rubric:: {{ _('Methods') }}
 
       .. autosummary::
-         :toctree: ../api/
          :nosignatures:
          {% for item in methods %}
                {% if item in members and (not item.startswith('_') or item in ['__call__']) %}

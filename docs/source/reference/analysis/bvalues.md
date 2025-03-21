@@ -6,7 +6,7 @@
 ## Functions
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.estimate_b
@@ -16,7 +16,7 @@
 ## Estimators
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.ClassicBValueEstimator
@@ -38,7 +38,7 @@
 ## B-Significant
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.b_significant_1D
@@ -47,7 +47,7 @@
 ## Other
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.make_more_incomplete

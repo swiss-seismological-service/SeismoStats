@@ -7,7 +7,7 @@
 ## Functions
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.mc_ks
