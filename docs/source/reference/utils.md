@@ -44,10 +44,6 @@
     :toctree: api/
     
     utils.CoordinateTransformer
-    utils.CoordinateTransformer.to_local_coords
-    utils.CoordinateTransformer.from_local_coords
-    utils.CoordinateTransformer.polygon_from_local_coords
-    utils.CoordinateTransformer.polygon_to_local_coords
 ```
 
 ## Spatial Filtering
