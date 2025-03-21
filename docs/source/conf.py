@@ -62,6 +62,8 @@ autosummary_context = {  # this is available in the template
                          'ForecastGRRateGrid',
                          'CoordinateTransformer']
 }
+autosummary_generate = True
+autosummary_generate_overwrite = True
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -78,7 +80,8 @@ html_theme_options = {
             "icon": "fa-brands fa-square-github",
             "type": "fontawesome",
         }
-    ]
+    ],
+    # "navigation_depth": 3,
 }
 html_show_sourcelink = False
 navigation_with_keys = True
