@@ -27,13 +27,13 @@ class BValueEstimator(ABC):
                   delta_m: float,
                   weights: np.ndarray | list | None = None) -> float:
         '''
-        Return the b-value estimate.
+        Returns the b-value of the Gutenberg-Richter (GR) law.
 
         Args:
-            magnitudes: Array of magnitudes
-            mc:         Completeness magnitude
-            delta_m:    Discretization of magnitudes.
-            weights:    Array of weights for the magnitudes.
+            magnitudes:     Array of magnitudes.
+            mc:             Completeness magnitude.
+            delta_m:        Bin size of discretized magnitudes.
+            weights:        Array of weights for the magnitudes.
 
         Returns:
             b: b-value of the Gutenberg-Richter law.
@@ -63,7 +63,7 @@ class BValueEstimator(ABC):
 
     def _filter_magnitudes(self):
         '''
-        Filter out magnitudes below the completeness magnitude.
+        Filters out magnitudes below the completeness magnitude.
         '''
         self.idx = (self.magnitudes >= self.mc - self.delta_m / 2).nonzero()[0]
         self.magnitudes = self.magnitudes[self.idx]
@@ -77,7 +77,7 @@ class BValueEstimator(ABC):
 
     def _sanity_checks(self):
         '''
-        Perform sanity checks on the input data.
+        Performs sanity checks on the input data.
         '''
         # test magnitude binnning
         if len(self.magnitudes) > 0:
@@ -128,7 +128,7 @@ class BValueEstimator(ABC):
     @property
     def std(self):
         '''
-        Shi and Bolt estimate of the b-value estimate.
+        Returns the Shi and Bolt uncertainty of the b-value estimate.
         '''
         self.__is_estimated()
 
@@ -140,7 +140,7 @@ class BValueEstimator(ABC):
     @property
     def std_beta(self):
         '''
-        Shi and Bolt estimate of the beta estimate.
+        Returns the Shi and Bolt uncertainty of the beta estimate.
         '''
         self.__is_estimated()
 
@@ -156,7 +156,7 @@ class BValueEstimator(ABC):
 
     def __is_estimated(self) -> bool:
         '''
-        Check if the b-value has been estimated.
+        Checks if the b-value has been estimated.
         '''
         if self.__b_value is None:
             raise AttributeError('Please calculate the b value first.')

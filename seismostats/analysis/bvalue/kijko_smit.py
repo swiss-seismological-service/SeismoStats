@@ -15,8 +15,10 @@ def estimate_b_kijko_smit(
     delta_m: float = 0.1,
     b_parameter: str = "b_value",
 ) -> tuple[float, float, float, float]:
-    """Return the b-value estimate calculated using the Kijko and Smit (2012)
-    algorithm for the case of unequal completeness periods for different
+    """
+    Returns the b-value of the Gutenberg-Richter (GR) law
+    calculated using the Kijko and Smit (2012) algorithm
+    for the case of unequal completeness periods for different
     magnitude values.
 
     Source:
@@ -26,35 +28,35 @@ def estimate_b_kijko_smit(
 
 
     Args:
-        magnitudes: vector of earthquake magnitudes
-        dates: list of datetime objects of occurrence of each earthquake
+        magnitudes:         Array of magnitudes.
+        dates:              Array of datetime objects of earthquake occurrences.
         completeness_table: Nx2 array, where the first column
             contains the leftmost edge of magnitude bins and
             the second column the associated year of completeness, i.e.
             the year after which all earthquakes larger than the value in
             the first column are considered detected. An example is given
-            below:
+            below.
 
             >>> np.array([[ 3.95, 1980],
             ...           [ 4.95, 1920],
             ...           [ 5.95, 1810],
             ...           [ 6.95, 1520]])
 
-        last_year: last year of observation (the default is None, in which case
-              it is set to the latest year in years).
-        delta_m: magnitude resolution, the default is 0.1.
-        b_parameter:either 'b-value', then the corresponding value of the
-                    Gutenberg-Richter law is returned, otherwise 'beta'
-                    from the exponential distribution [p(M) = exp(-beta*(M-mc))]
+        last_year:          Last year of observation (the default is `None`,
+            in which case it is set to the latest year in years).
+        delta_m:            Bin size of discretized magnitudes, default is 0.1.
+        b_parameter:        either 'b-value', then the corresponding value of
+            the Gutenberg-Richter law is returned, otherwise 'beta'
+            from the exponential distribution [p(M) = exp(-beta*(M-mc))]
 
     Returns:
-        b_parameter: maximum likelihood point estimate of 'b-value' or 'beta'
-        std_b_parameter: standard error of b_parameter
-        rate_at_lmc: maximum likelihood point estimate of earthquake rate
-                     at the lower magnitude of completeness
-        a_val: maximum likelihood point estimate of a-value
-               ( =log10(rate at mag=0) ) of Gutenberg-Richter
-               magnitude frequency distribution
+        b_parameter:        Maximum likelihood estimate of 'b-value' or 'beta'.
+        std_b_parameter:    Standard error of b_parameter.
+        rate_at_lmc:        Maximum likelihood point estimate of earthquake rate
+                    at the lower magnitude of completeness.
+        a_val:              Maximum likelihood point estimate of a-value
+                    ( =log10(rate at mag=0) ) of Gutenberg-Richter
+                    magnitude frequency distribution.
     """
 
     assert len(magnitudes) == len(

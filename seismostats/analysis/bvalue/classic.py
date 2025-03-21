@@ -23,13 +23,54 @@ def _mle_estimator(magnitudes: np.ndarray,
 
 class ClassicBValueEstimator(BValueEstimator):
     '''
-    Estimator for the b-value using the maximum likelihood estimator.
+    Returns the b-value of the Gutenberg-Richter (GR) law.
+
+    .. math::
+        N(m) = 10 ^ {a - b \\cdot (m - m_{ref})},
+
+    where :math:`N(m)` is the number of events with magnitude larger than
+    or equal to :math:`m` that occurred in the timeframe of the catalog,
+    :math:`a` and :math:`b` are the a- and b-value, and :math:`m_{ref}`
+    is the reference magnitude above which earthquakes are counted.
 
     Source:
         - Aki 1965 (Bull. Earthquake research institute, vol 43, pp 237-239)
         - Tinti and Mulargia 1987 (Bulletin of the Seismological Society of
-          America, 77(6), 2125-2134.)
+        America, 77(6), 2125-2134.)
 
+    Examples:
+        .. code-block:: python
+
+            >>> import numpy as np
+            >>> from seismostats.analysis.bvalue import ClassicBValueEstimator
+
+            >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
+            ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
+            ...                        2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
+            >>> mc = 2.0
+            >>> delta_m = 0.1
+
+            >>> my_estimator = ClassicBValueEstimator()
+            >>> b_value = my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m)
+
+            >>> print(b_value)
+
+            1.114920128810535
+
+        .. code-block:: python
+
+            >>> print("used magnitudes:      ", my_estimator.magnitudes)
+            >>> print("used mc:              ", my_estimator.mc)
+            >>> print("used delta_m:         ", my_estimator.delta_m)
+            >>> print("b-value:              ", my_estimator.b_value)
+            >>> print("b-value uncertainty:  ", my_estimator.std)
+
+            print("used magnitudes:      ", my_estimator.magnitudes)
+            print("used mc:              ", my_estimator.mc)
+            print("used delta_m:         ", my_estimator.delta_m)
+            print("b-value:              ", my_estimator.b_value)
+            print("b-value uncertainty:  ", my_estimator.std)
     '''
 
     weights_supported = True

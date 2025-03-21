@@ -29,21 +29,21 @@ class AValueEstimator(ABC):
                   m_ref: float | None = None,
                   b_value: float | None = None) -> float:
         '''
-        Return the a-value estimate.
+        Returns the a-value of the Gutenberg-Richter (GR) law.
 
         Args:
             magnitudes:     Array of magnitudes.
             mc:             Completeness magnitude.
-            delta_m:        Discretization of magnitudes.
-            scaling_factor: Scaling factor
-                            If given, this is used to normalize the number of
-                            observed events. For example: Volume or area of the
-                            region considered or length of the time interval,
-                            given in the unit of interest.
+            delta_m:        Bin size of discretized magnitudes.
+            scaling_factor: Scaling factor.
+                        If given, this is used to normalize the number of
+                        observed events. For example: Volume or area of the
+                        region considered or length of the time interval,
+                        given in the unit of interest.
             m_ref:          Reference magnitude for which the a-value
-                            is estimated.
-            b_value:        B-value of the Gutenberg-Richter law. Only relevant
-                            when m_ref is not None.
+                        is estimated.
+            b_value:        b-value of the Gutenberg-Richter law. Only relevant
+                        when `m_ref` is not `None`.
 
         Returns:
             a: a-value of the Gutenberg-Richter law.
@@ -77,7 +77,7 @@ class AValueEstimator(ABC):
 
     def _filter_magnitudes(self) -> np.ndarray:
         '''
-        Filter out magnitudes below the completeness magnitude.
+        Filters out magnitudes below the completeness magnitude.
         '''
         self.idx = (self.magnitudes >= self.mc - self.delta_m / 2).nonzero()[0]
         self.magnitudes = self.magnitudes[self.idx]
@@ -88,7 +88,7 @@ class AValueEstimator(ABC):
 
     def _sanity_checks(self):
         '''
-        Perform sanity checks on the input data.
+        Performs sanity checks on the input data.
         '''
         # test magnitude binnning
         if len(self.magnitudes) > 0:
@@ -130,5 +130,5 @@ class AValueEstimator(ABC):
         Returns the a value of the Gutenberg-Richter law.
         '''
         if self.__a_value is None:
-            raise AttributeError('Please calculate the a value first.')
+            raise AttributeError('Please calculate the a-value first.')
         return self.__a_value

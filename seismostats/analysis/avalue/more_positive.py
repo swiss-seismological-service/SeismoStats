@@ -9,11 +9,50 @@ from seismostats.utils._config import get_option
 
 class AMorePositiveAValueEstimator(AValueEstimator):
     '''
-    Return the a-value of the Gutenberg-Richter (GR) law using only the
-    earthquakes with magnitude m_i >= m_i-1 + dmc.
+    Returns the a-value of the Gutenberg-Richter (GR) law using earthquake
+    pairs for which the latter is larger than the former
+    by some margin, :math:`m_j \\ge m_{i} + dmc`.
 
     Source:
         van der Elst and Page 2023 (JGR: Solid Earth, Vol 128, Issue 10).
+
+    Examples:
+        .. code-block:: python
+
+            >>> import numpy as np
+            >>> from seismostats.analysis.avalue import
+            ...     AMorePositiveAValueEstimator
+
+            >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
+            ...                        2.0, 2.0])
+            >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+            >>> mc = 2.0
+            >>> delta_m = 0.1
+            >>> b_value = 1.0
+
+            >>> my_estimator = AMorePositiveAValueEstimator()
+            >>> a_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc,
+            ...     delta_m=delta_m, times=times, b_value=b_value)
+
+            >>> print(a_value)
+
+            0.730070812347905
+
+        .. code-block:: python
+
+            >>> print("used magnitudes:", my_estimator.magnitudes)
+            >>> print("used times:     ", my_estimator.times)
+            >>> print("used mc:        ", my_estimator.mc)
+            >>> print("used delta_m:   ", my_estimator.delta_m)
+            >>> print("used b_value:   ", my_estimator.b_value)
+            >>> print("a-value:        ", my_estimator.a_value)
+
+            used magnitudes: [2.3 2.1 2.1 2.2 2.3 2.3]
+            used times:      [2 5 5 6 8 8]
+            used mc:         2.0
+            used delta_m:    0.1
+            used b-value:    1.0
+            a-value:         0.730070812347905
     '''
 
     def __init__(self):
@@ -33,22 +72,24 @@ class AMorePositiveAValueEstimator(AValueEstimator):
         Args:
             magnitudes:     Array of magnitudes.
             mc:             Completeness magnitude.
-            delta_m:        Discretization of magnitudes.
-            times:          Vector of times of the events, in any format
-                            (datetime, float, etc.).
-            b_value:        B-value of the Gutenberg-Richter law.
+            delta_m:        Bin size of discretized magnitudes.
+            times:          Array event times, in any format
+                        (datetime, float, etc.).
+            b_value:        b-value of the Gutenberg-Richter law.
             scaling_factor: Scaling factor.
-                            If given, this is used to normalize the number of
-                            observed events. For example: Volume or area of the
-                            region considered or length of the time interval,
-                            given in the unit of interest.
+                        If given, this is used to normalize the number of
+                        observed events. For example: Volume or area of the
+                        region considered or length of the time interval,
+                        given in the unit of interest.
             m_ref:          Reference magnitude for which the a-value
-                            is estimated.
+                        is estimated.
             dmc:            Minimum magnitude difference between consecutive
-                            events. If None, the default value is delta_m.
+                        events. If `None`, the default value is `delta_m`.
 
         Returns:
-            a_pos: The a-value of the Gutenberg-Richter distribution.
+            a_pos: a-value of the Gutenberg-Richter law.
+            Note: This is a-positive as defined by van der Elst and Page 2023
+            (JGR: Solid Earth, Vol 128, Issue 10).
         '''
 
         if not b_value:
@@ -75,7 +116,7 @@ class AMorePositiveAValueEstimator(AValueEstimator):
 
     def _filter_magnitudes(self) -> np.ndarray:
         '''
-        Filter out magnitudes below the completeness magnitude.
+        Filters out magnitudes below the completeness magnitude.
         '''
         super()._filter_magnitudes()
         self.times = self.times[self.idx]
