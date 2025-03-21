@@ -3,9 +3,9 @@
 ```{toctree}
 :maxdepth: 2
 
-catalog
-config
+formats/formats
+analysis/analysis
 plots
-analysis
 utils
+config
 ```

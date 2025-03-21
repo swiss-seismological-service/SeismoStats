@@ -78,8 +78,8 @@ Using the title of the section: {ref}`/reference/catalog.md#modify-catalog`
 ```
 
 **Output**  
-Using a custom name: {ref}`Reference <reference/catalog:modify catalog>`  
-Using the title of the section: {ref}`/reference/catalog.md#modify-catalog`  
+Using a custom name: {ref}`Reference <reference/formats/catalog:modify catalog>`  
+Using the title of the section: {ref}`/reference/formats/catalog.md#modify-catalog`  
 
 #### Function / Class
 How to reference a function or class in the documentation.

@@ -7,7 +7,7 @@
 ## Functions
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.estimate_a
@@ -16,7 +16,7 @@
 ## Estimators
 ```{eval-rst}
 .. autosummary::
-    :toctree: api/
+    :toctree: ../api/
     :nosignatures:
 
     analysis.ClassicAValueEstimator
