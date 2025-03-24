@@ -44,11 +44,11 @@ def _estimate(self):
     return b_value
 ```
 
-4. If your implementation allows using weights, set the `weights_supported` class variable to `True`, or `False` otherwise.
+4. If your implementation allows using weights, set the `_weights_supported` class variable to `True`, or `False` otherwise.
 
 ```python
 class MyBValueEstimator(BValueEstimator):
-    weights_supported = True
+    _weights_supported = True
 ```
 
 5. The basic functionalities should now work automatically, like calculation of the standard deviation or estimation of `beta` instead of `b`. You can still add additional methods to the class if you would like to, or submit a pull request to extend the base functionality of `BValueEstimator` if needed.

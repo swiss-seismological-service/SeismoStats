@@ -9,7 +9,7 @@ from seismostats.utils._config import get_option
 
 class BPositiveBValueEstimator(BValueEstimator):
     '''
-    Returns the b-value of the Gutenberg-Richter (GR) law using only the
+    Estimator to calculate the b-value and other parameters using only the
     earthquakes with magnitudes :math:`m_i \\ge m_{i-1} + dmc`.
 
     Source:
@@ -25,36 +25,17 @@ class BPositiveBValueEstimator(BValueEstimator):
             >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
             ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
             ...                        2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
-            >>> mc = 2.0
-            >>> delta_m = 0.1
-            >>> dmc = 0.2
 
             >>> my_estimator = BPositiveBValueEstimator()
-            >>> b_value = my_estimator.calculate(
-            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m, dmc=dmc)
+            >>> my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1, dmc=0.2)
 
-            >>> print(b_value)
+            >>> my_estimator.b_value
 
             1.9188552623891313
-
-        .. code-block:: python
-
-            >>> print("used magnitudes:      ", my_estimator.magnitudes)
-            >>> print("used mc:              ", my_estimator.mc)
-            >>> print("used delta_m:         ", my_estimator.delta_m)
-            >>> print("used dmc:             ", my_estimator.dmc)
-            >>> print("b-value:              ", my_estimator.b_value)
-            >>> print("b-value uncertainty:  ", my_estimator.std)
-
-            used magnitudes:       [0.5 0.3 0.4 0.4 0.2 0.7 0.3 0.2 0.5 0.3]
-            used mc:               2.0
-            used delta_m:          0.1
-            used dmc:              0.2
-            b-value:               1.9188552623891313
-            b-value uncertainty:   0.4153418993344466
     '''
 
-    weights_supported = True
+    _weights_supported = True
 
     def __init__(self):
         super().__init__()
@@ -67,6 +48,8 @@ class BPositiveBValueEstimator(BValueEstimator):
                   weights: np.ndarray | None = None,
                   dmc: float | None = None) -> float:
         '''
+        Calculates the b-value of the Gutenberg-Richter (GR) law.
+
         Args:
             magnitudes: Array of magnitudes.
             mc:         Completeness magnitude.
@@ -78,6 +61,29 @@ class BPositiveBValueEstimator(BValueEstimator):
             dmc:        Cutoff value for the differences (differences below
                     this value are not considered). If `None`, the cutoff is set
                     to `delta_m`.
+
+        Returns:
+            b:          b-value of the Gutenberg-Richter law.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import numpy as np
+                >>> from seismostats.analysis.bvalue import \
+                        BPositiveBValueEstimator
+
+                >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6,
+                ...                        2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2,
+                ...                        2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7,
+                ...                        2.4, 2.2, 2.5])
+
+                >>> my_estimator = BPositiveBValueEstimator()
+                >>> b_value = my_estimator.calculate(
+                ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1, dmc=0.2)
+
+                >>> b_value
+
+                1.9188552623891313
         '''
         self.times: np.ndarray | None = np.array(
             times) if times is not None else times
@@ -128,3 +134,31 @@ class BPositiveBValueEstimator(BValueEstimator):
                               mc=self.dmc,
                               delta_m=self.delta_m,
                               weights=self.weights)
+
+    @property
+    def dmc(self) -> float:
+        '''
+        The dmc value used for the calculation.
+        '''
+        return self._dmc
+
+    @dmc.setter
+    def dmc(self, dmc: float) -> None:
+        '''
+        Sets the dmc value used for the calculation.
+        '''
+        self._dmc = dmc
+
+    @property
+    def magnitudes(self) -> np.ndarray:
+        '''
+        The positive magnitude differences used for the calculation.
+        '''
+        return self._magnitudes
+
+    @magnitudes.setter
+    def magnitudes(self, magnitudes: np.ndarray) -> None:
+        '''
+        Sets the positive magnitude differences used for the calculation.
+        '''
+        self._magnitudes = magnitudes

@@ -23,7 +23,8 @@ def _mle_estimator(magnitudes: np.ndarray,
 
 class ClassicBValueEstimator(BValueEstimator):
     '''
-    Returns the b-value of the Gutenberg-Richter (GR) law.
+    Estimator to calculate the b-value and other parameters of the
+    Gutenberg-Richter (GR).
 
     .. math::
         N(m) = 10 ^ {a - b \\cdot (m - m_{ref})},
@@ -47,33 +48,17 @@ class ClassicBValueEstimator(BValueEstimator):
             >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
             ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
             ...                        2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
-            >>> mc = 2.0
-            >>> delta_m = 0.1
 
             >>> my_estimator = ClassicBValueEstimator()
-            >>> b_value = my_estimator.calculate(
-            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m)
+            >>> my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1)
 
-            >>> print(b_value)
+            >>> my_estimator.b_value
 
             1.114920128810535
-
-        .. code-block:: python
-
-            >>> print("used magnitudes:      ", my_estimator.magnitudes)
-            >>> print("used mc:              ", my_estimator.mc)
-            >>> print("used delta_m:         ", my_estimator.delta_m)
-            >>> print("b-value:              ", my_estimator.b_value)
-            >>> print("b-value uncertainty:  ", my_estimator.std)
-
-            print("used magnitudes:      ", my_estimator.magnitudes)
-            print("used mc:              ", my_estimator.mc)
-            print("used delta_m:         ", my_estimator.delta_m)
-            print("b-value:              ", my_estimator.b_value)
-            print("b-value uncertainty:  ", my_estimator.std)
     '''
 
-    weights_supported = True
+    _weights_supported = True
 
     def __init__(self):
         super().__init__()
