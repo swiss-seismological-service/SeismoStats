@@ -22,10 +22,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 <!-- Add your changes to the relevant section below, while uncommenting the section header. -->
 
-<!-- #### Added -->
+#### Added
+- API reference for a and b value packages, including full list of attributes.
 
 #### Changed
-- `analysis.mc_ks` now takes the `b-value` as a parameter instead of `beta`.
+- `analysis.ks_test_gr` now takes the `b-value` as a parameter instead of `beta`.
 
 #### Fixed
 - Build process for the documentation.
