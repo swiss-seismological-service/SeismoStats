@@ -80,22 +80,36 @@ class Catalog(pd.DataFrame):
 
     Examples:
         Create a Catalog from a dictionary.
+        .. code-block:: python
 
-        >>> import pandas as pd
-        >>> from seismostats.seismicity import Catalog
-        >>> data = {'longitude': [0, 1, 2],
-        ...         'latitude': [0, 1, 2],
-        ...         'depth': [0, 1, 2],
-        ...         'time': pd.to_datetime(['2021-01-01 00:00:00',
-        ...                                 '2021-01-01 00:00:00',
-        ...                                 '2021-01-01 00:00:00']),
-        ...         'magnitude': [1, 2, 3]}
-        >>> catalog = Catalog(data)
-        >>> catalog
-           longitude  latitude  depth                time  magnitude
-        0          0         0      0 2021-01-01 00:00:00          1
-        1          1         1      1 2021-01-01 00:00:00          2
-        2          2         2      2 2021-01-01 00:00:00          3
+            >>> import pandas as pd
+            >>> from seismostats.seismicity import Catalog
+            >>> data = {'longitude': [0, 1, 2],
+            ...         'latitude': [0, 1, 2],
+            ...         'depth': [0, 1, 2],
+            ...         'time': pd.to_datetime(['2021-01-01 00:00:00',
+            ...                                 '2021-01-01 00:00:00',
+            ...                                 '2021-01-01 00:00:00']),
+            ...         'magnitude': [1, 2, 3]}
+            >>> catalog = Catalog(data)
+            >>> catalog
+            longitude  latitude  depth                time  magnitude
+            0          0         0      0 2021-01-01 00:00:00          1
+            1          1         1      1 2021-01-01 00:00:00          2
+            2          2         2      2 2021-01-01 00:00:00          3
+
+        :ivar name:         Name of the catalog.
+        :ivar mc:           Completeness magnitude of the catalog.
+        :ivar delta_m:      Magnitude binning of the catalog.
+        :ivar b_value:      Gutenberg-Richter b-value of the catalog.
+        :ivar starttime:    Start time of the catalog.
+        :ivar endtime:      End time of the catalog.
+        :ivar bounding_polygon: 2D boundary of the catalog.
+        :ivar depth_min:    Minimum depth for which events are included in the
+                        catalog.
+        :ivar depth_max:    Maximum depth for which events are included in the
+                        catalog.
+        :ivar logger:       Logger for the catalog.
     """
 
     _metadata = ['name', '_required_cols', 'mc',
@@ -197,6 +211,17 @@ class Catalog(pd.DataFrame):
 
         Returns:
             catalog:                Catalog object
+
+        Examples:
+            .. code-block:: python
+
+                >>> from seismostats import Catalog
+                >>> catalog = Catalog.from_quakeml("path/to/quakeml.xml")
+                >>> catalog
+                   longitude   latitude  depth                time  magnitude
+                0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
+                1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
+                2       2.35    2.13400  50.40 2020-11-30 12:30:59        3.9
         """
         if os.path.isfile(quakeml):
             catalog = parse_quakeml_file(
@@ -230,6 +255,23 @@ class Catalog(pd.DataFrame):
 
         Returns:
             Catalog
+
+        Examples:
+            .. code-block:: python
+
+                >>> from seismostats import Catalog
+                >>> data = [
+                ...     {'longitude': 42.35, 'latitude': 3.34444,
+                ...      'depth': 5.50, 'time': '1900-01-01 05:05:13',
+                ...      'magnitude': 1.0},
+                ...     {'longitude': 1.35, 'latitude': 5.13500,
+                ...      'depth': 10.52, 'time': '1982-04-07 07:07:15',
+                ...      'magnitude': 2.5}]
+                >>> catalog = Catalog.from_dict(data)
+                >>> catalog
+                   longitude   latitude  depth                time  magnitude
+                0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
+                1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
         """
 
         df = pd.DataFrame.from_dict(data, **kwargs)
@@ -256,6 +298,35 @@ class Catalog(pd.DataFrame):
                             should be kept (they are converted to 'time').
         Returns:
             Catalog
+
+        Examples:
+            .. code-block:: python
+
+                >>> from openquake.hmtk.seismicity.catalogue import \
+                ...     Catalogue as OQCatalog
+                >>> from seismostats import Catalog
+
+                >>> simple_oq_catalogue = OQCatalog.make_from_dict({
+                ...     'eventID': ["event0", "event1", "event2"],
+                ...     'longitude': np.array([42.35, 1.35, 2.35], dtype=float),
+                ...     'latitude': np.array([3.34444, 5.135, 2.134],
+                ...                          dtype=float),
+                ...     'depth': np.array([5.5, 10.52, 50.4], dtype=float),
+                ...     'year': np.array([1900, 1982, 2020], dtype=int),
+                ...     'month': np.array([1, 4, 11], dtype=int),
+                ...     'day': np.array([1, 7, 30], dtype=int),
+                ...     'hour': np.array([5, 7, 12], dtype=int),
+                ...     'minute': np.array([5, 7, 30], dtype=int),
+                ...     'second': np.array([13.1234, 15.0, 59.9999],
+                ...                        dtype=float),
+                ...     'magnitude': np.array([1.0, 2.5, 3.9], dtype=float)
+                ...     })
+                >>> catalog = Catalog.from_openquake(simple_oq_catalogue)
+                >>> catalog
+                   longitude   latitude  depth                time  magnitude
+                0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
+                1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
+                2       2.35    2.13400  50.40 2020-11-30 12:30:59        3.9
         """
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
@@ -302,6 +373,24 @@ class Catalog(pd.DataFrame):
 
         Returns:
             OQCatalogue:        the converted Catalogue
+
+        Examples:
+            .. code-block:: python
+
+                >>> import pandas as pd
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'longitude': [42.35, 1.35, 2.35],
+                ...     'latitude': [3.34444, 5.135, 2.134],
+                ...     'depth': [5.5, 10.52, 50.4],
+                ...     'time': pd.to_datetime(['1900-01-01 05:05:13',
+                ...                             '1982-04-07 07:07:15',
+                ...                             '2020-11-30 12:30:59']),
+                ...     'magnitude': [1.0, 2.5, 3.9]
+                ...     })
+                >>> oq_catalog = simple_catalog.to_openquake()
+                >>> type(oq_catalog)
+                <class 'openquake.hmtk.seismicity.catalogue.Catalogue'>
         """
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
@@ -388,6 +477,38 @@ class Catalog(pd.DataFrame):
 
         Returns:
             catalog:    Catalog with rounded magnitudes.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import pandas as pd
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'longitude': [42.35, 1.35, 2.35],
+                ...     'latitude': [3.34444, 5.135, 2.134],
+                ...     'magnitude': [1.02, 2.53, 3.99]
+                ...     })
+                >>> simple_catalog.bin_magnitudes(delta_m=0.1)
+                    longitude   latitude  magnitude
+                0       42.35    3.34444        1.0
+                1        1.35    5.13500        2.5
+                2        2.35    2.13400        4.0
+
+            .. code-block:: python
+
+                >>> import pandas as pd
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'longitude': [42.35, 1.35, 2.35],
+                ...     'latitude': [3.34444, 5.135, 2.134],
+                ...     'magnitude': [1.02, 2.53, 3.99]
+                ...     })
+                >>> simple_catalog.delta_m = 0.1
+                >>> simple_catalog.bin_magnitudes()
+                    longitude   latitude  magnitude
+                0       42.35    3.34444        1.0
+                1        1.35    5.13500        2.5
+                2        2.35    2.13400        4.0
         """
         if delta_m is None and self.delta_m is None:
             raise ValueError("binning (delta_m) needs to be set")
@@ -408,55 +529,96 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def estimate_mc(
         self,
-        mcs_test: list | None = None,
         delta_m: float | None = None,
+        mcs_test: list | None = None,
         p_pass: float = 0.05,
         stop_when_passed: bool = True,
         verbose: bool = False,
-        beta: float | None = None,
-        n_samples: int = 10000
+        b_value: float | None = None,
+        b_method: BValueEstimator = ClassicBValueEstimator,
+        n_samples: int = 10000,
+        ks_ds_list: list[list] | None = None,
+        *args,
+        **kwargs,
     ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
         """
-        Estimate the completeness magnitude (mc), possible mc values given as
-        an argument, or set to a range of values between min and max magnitude
-        in the catalog.
+        Returns the smallest magnitude in a given list of completeness
+        magnitudes for which the KS test is passed, i.e., where the null
+        hypothesis that the sample is drawn from a Gutenberg-Richter law cannot
+        be rejected.
+
+        Source:
+            - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
+              distributions in empirical data. SIAM review, 51(4), pp.661-703.
+            - Mizrahi, L., Nandan, S. and Wiemer, S., 2021. The effect of
+              declustering on the size distribution of mainshocks. Seismological
+              Society of America, 92(4), pp.2333-2342.
 
         Args:
-            mcs_test:           Completeness magnitudes to test.
-            delta_m:            Magnitude bins (sample has to be rounded to bins
-                            beforehand).
-            p_pass:             P-value with which the test is passed.
-            stop_when_passed:   Stop calculations when first mc passes the test.
-            verbose:            Verbose output.
-            beta:               If beta is 'known', only estimate mc.
-            n_samples:          Number of magnitude samples to be generated in
-                            p-value calculation of KS distance.
+            delta_m:        Bin size of discretized magnitudes. Sample has to be
+                        rounded to bins beforehand).
+            mcs_test:       Array of tested completeness magnitudes. If `None`,
+                        it will be generated automatically based on `sample`
+                        and `delta_m`.
+            p_pass:         Boolean that indicates whether to stop calculations
+                        when first mc passes the test.
+            stop_when_passed:  Stop calculations when first mc passes the test.
+            verbose:           Boolean that indicates whether to print verbose
+                        output.
+            b_value:        If `b_value` is 'known', only estimate `mc` assuming
+                        the given `b_value`. If `None`, the b-value is either
+                        taken from the object attribute or estimated.
+            b_method:       b-value estimator to use if b-value needs to be
+                        calculated from data.
+            n:              Number of number of times the KS distance is
+                        calculated for estimating the p-value.
+            ks_ds_list:     KS distances from synthetic data with the given
+                        parameters. If `None`, they will be estimated here.
+            *args,          Additional arguments for the b-value estimator.
+            **kwargs:       Additional keyword arguments for the b-value
+                        estimator.
 
         Returns:
-            mcs_test:   Tested completeness magnitudes.
-            ks_ds:      KS distances.
-            ps:         p-values.
-            best_mc:    Best mc.
-            beta:       Corresponding best beta.
+            mcs_test:       Tested completeness magnitudes.
+            ks_ds:          KS distances.
+            ps:             p-values.
+            best_mc:        `mc` for which the p-value is lowest.
+            best_b_value:   `b_value` corresponding to the best `mc`.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import pandas as pd
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'longitude': [42.35, 1.35, 2.35],
+                ...     'latitude': [3.34444, 5.135, 2.134],
+                ...     'magnitude': [1.0, 2.5, 3.9]
+                ...     })
+                >>> simple_catalog.estimate_mc()
+                (1.0, 0.28645181449530005, [1.0], [0.28645181449530005],
+                    [0.29485562894395984], array([0.866]))
         """
         if delta_m is None and self.delta_m is None:
             raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
             delta_m = self.delta_m
 
-        if mcs_test is None:
-            mcs_test = np.arange(self.magnitude.min(),
-                                 self.magnitude.max(),
-                                 delta_m)
+        if b_value is None and self.b_value is not None:
+            b_value = self.b_value
 
         mc_est = mc_ks(self.magnitude,
-                       mcs_test,
                        delta_m,
+                       mcs_test,
                        p_pass,
                        stop_when_passed,
                        verbose,
-                       beta,
-                       n_samples)
+                       b_value,
+                       b_method,
+                       n_samples,
+                       ks_ds_list,
+                       *args,
+                       **kwargs)
 
         self.mc = mc_est[3]
         return mc_est
@@ -503,6 +665,19 @@ class Catalog(pd.DataFrame):
                 is just a factor :math:`b = beta * log10(e)`.
             std:    Shi and Bolt estimate of the beta/b-value error estimate
             n:      number of events used for the estimation.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import pandas as pd
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'longitude': [42.35, 1.35, 2.35],
+                ...     'latitude': [3.34444, 5.135, 2.134],
+                ...     'magnitude': [1.0, 2.5, 3.9]
+                ...     })
+                >>> simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
+                0.28645181449530005
         """
         mc = self.mc if mc is None else mc
         if mc is None:
@@ -890,6 +1065,27 @@ class Catalog(pd.DataFrame):
 
         Returns:
             catalog:    The catalog in QuakeML format.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import pandas as pd
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'longitude': [42.35, 1.35, 2.35],
+                ...     'latitude': [3.34444, 5.135, 2.134],
+                ...     'depth': [5.5, 10.52, 50.4],
+                ...     'time': pd.to_datetime(['1900-01-01 05:05:13',
+                ...                             '1982-04-07 07:07:15',
+                ...                             '2020-11-30 12:30:59']),
+                ...     'magnitude': [1.0, 2.5, 3.9],
+                ...     'magnitude_type': ['Ml', 'Ml', 'Ml'],
+                ...     })
+                >>> simple_catalog.to_quakeml()
+                <?xml version="1.0" encoding="UTF-8"?>
+                <q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2"
+                    xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
+                ...
         """
 
         df = self.copy()

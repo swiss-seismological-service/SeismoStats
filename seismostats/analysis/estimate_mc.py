@@ -173,7 +173,8 @@ def mc_ks(
                         output.
         b_value:            If `b_value` is 'known', only estimate `mc` assuming
                         the given `b_value`.
-        b_method:           b-value estimator class to use.
+        b_method:           b-value estimator to use if b-value needs to be
+                        calculated from data
         n:                  Number of number of times the KS distance is
                         calculated for estimating the p-value.
         ks_ds_list:         KS distances from synthetic data with the given
