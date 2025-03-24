@@ -4,10 +4,10 @@
 
 .. autoclass:: {{ objname }}
 
-
    {% block attributes %}
 
-      {% if attributes %}
+      {% if attributes | reject("in", inherited_members) | list %}
+
       .. rubric:: {{ _('Attributes') }}
 
       .. autosummary::
