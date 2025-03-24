@@ -64,6 +64,7 @@ autosummary_context = {  # this is available in the template
 }
 autosummary_generate = True
 autosummary_generate_overwrite = True
+autodoc_default_options = {}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

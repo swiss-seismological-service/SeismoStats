@@ -47,6 +47,24 @@ class AValueEstimator(ABC):
 
         Returns:
             a: a-value of the Gutenberg-Richter law.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import numpy as np
+                >>> from seismostats.analysis.avalue import \
+                ...     ClassicAValueEstimator
+
+                >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1,
+                ...                        2.3, 2.0, 2.0])
+
+                >>> my_estimator = ClassicAValueEstimator()
+                >>> a_value = my_estimator.calculate(
+                ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1)
+
+                >>> a_value
+
+                1.0
         '''
 
         self.magnitudes = np.array(magnitudes)
@@ -132,3 +150,87 @@ class AValueEstimator(ABC):
         if self.__a_value is None:
             raise AttributeError('Please calculate the a-value first.')
         return self.__a_value
+
+    @property
+    def magnitudes(self) -> np.ndarray:
+        '''
+        The magnitudes used to estimate the a-value.
+        '''
+        return self._magnitudes
+
+    @magnitudes.setter
+    def magnitudes(self, value: np.ndarray):
+        '''
+        Sets the magnitudes used to estimate the a-value.
+        '''
+        self._magnitudes = np.array(value)
+
+    @property
+    def mc(self) -> float:
+        '''
+        The completeness magnitude.
+        '''
+        return self._mc
+
+    @mc.setter
+    def mc(self, value: float):
+        '''
+        Sets the completeness magnitude.
+        '''
+        self._mc = value
+
+    @property
+    def delta_m(self) -> float:
+        '''
+        The bin size of the discretized magnitudes.
+        '''
+        return self._delta_m
+
+    @delta_m.setter
+    def delta_m(self, value: float):
+        '''
+        Sets the bin size of the discretized magnitudes.
+        '''
+        self._delta_m = value
+
+    @property
+    def scaling_factor(self) -> float | None:
+        '''
+        The scaling factor.
+        '''
+        return self._scaling_factor
+
+    @scaling_factor.setter
+    def scaling_factor(self, value: float | None):
+        '''
+        Sets the scaling factor.
+        '''
+        self._scaling_factor = value
+
+    @property
+    def m_ref(self) -> float | None:
+        '''
+        The reference magnitude.
+        '''
+        return self._m_ref
+
+    @m_ref.setter
+    def m_ref(self, value: float | None):
+        '''
+        Sets the reference magnitude.
+        '''
+        self._m_ref = value
+
+    @property
+    def b_value(self) -> float | None:
+        '''
+        The b-value of the Gutenberg-Richter law.
+        '''
+        return self._b_value
+
+    @b_value.setter
+    def b_value(self, value: float | None):
+        '''
+        Sets the b-value of the Gutenberg-Richter law.
+        '''
+        self._b_value = value

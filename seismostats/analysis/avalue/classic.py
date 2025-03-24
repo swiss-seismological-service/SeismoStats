@@ -23,28 +23,14 @@ class ClassicAValueEstimator(AValueEstimator):
 
             >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
             ...                        2.0, 2.0])
-            >>> mc = 2.0
-            >>> delta_m = 0.1
 
             >>> my_estimator = ClassicAValueEstimator()
-            >>> a_value = my_estimator.calculate(
-            ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m)
+            >>> my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1)
 
-            >>> print(a_value)
+            >>> my_estimator.a_value
 
             1.0
-
-        .. code-block:: python
-
-            >>> print("used magnitudes:", my_estimator.magnitudes)
-            >>> print("used mc:        ", my_estimator.mc)
-            >>> print("used delta_m:   ", my_estimator.delta_m)
-            >>> print("a-value:        ", my_estimator.a_value)
-
-            used magnitudes: [2.1 2.3 2.  2.  2.1 2.2 2.1 2.3 2.  2. ]
-            used mc:         2.0
-            used delta_m:    0.1
-            a-value:         1.0
     '''
 
     def __init__(self):
