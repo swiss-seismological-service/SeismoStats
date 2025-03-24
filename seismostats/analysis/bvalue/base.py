@@ -13,10 +13,10 @@ from seismostats.utils.binning import binning_test
 class BValueEstimator(ABC):
 
     def __init__(self) -> Self:
-        self.magnitudes: np.ndarray | None = None
-        self.mc: float | None = None
-        self.delta_m: float | None = None
-        self.weights: np.ndarray | None = None
+        self._magnitudes: np.ndarray | None = None
+        self._mc: float | None = None
+        self._delta_m: float | None = None
+        self._weights: np.ndarray | None = None
         self.idx: np.ndarray | None = None
 
         self.__b_value: float | None = None
@@ -27,7 +27,7 @@ class BValueEstimator(ABC):
                   delta_m: float,
                   weights: np.ndarray | list | None = None) -> float:
         '''
-        Returns the b-value of the Gutenberg-Richter (GR) law.
+        Calculates the b-value of the Gutenberg-Richter (GR) law.
 
         Args:
             magnitudes:     Array of magnitudes.
@@ -37,6 +37,26 @@ class BValueEstimator(ABC):
 
         Returns:
             b: b-value of the Gutenberg-Richter law.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import numpy as np
+                >>> from seismostats.analysis.bvalue import \
+                ...     ClassicBValueEstimator
+
+                >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6,
+                ...                        2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2,
+                ...                        2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7,
+                ...                        2.4, 2.2, 2.5])
+
+                >>> my_estimator = ClassicBValueEstimator()
+                >>> b_value = calculate(
+                ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1)
+
+                >>> b_value
+
+                1.114920128810535 # depending on the method used
         '''
 
         self.magnitudes = np.array(magnitudes)
@@ -103,7 +123,7 @@ class BValueEstimator(ABC):
 
     @classmethod
     @abstractmethod
-    def weights_supported(self) -> bool:
+    def _weights_supported(self) -> bool:
         '''
         Set to True if the estimator supports weights, False otherwise.
         '''
@@ -112,7 +132,7 @@ class BValueEstimator(ABC):
     @property
     def b_value(self) -> float:
         '''
-        Returns the b value of the Gutenberg-Richter law.
+        The b-value of the Gutenberg-Richter law.
         '''
         self.__is_estimated()
         return self.__b_value
@@ -120,7 +140,7 @@ class BValueEstimator(ABC):
     @property
     def beta(self) -> float:
         '''
-        Returns the beta value of the Gutenberg-Richter law.
+        The beta value of the Gutenberg-Richter law.
         '''
         self.__is_estimated()
         return b_value_to_beta(self.__b_value)
@@ -128,7 +148,7 @@ class BValueEstimator(ABC):
     @property
     def std(self):
         '''
-        Returns the Shi and Bolt uncertainty of the b-value estimate.
+        Shi and Bolt uncertainty of the b-value estimate.
         '''
         self.__is_estimated()
 
@@ -140,7 +160,7 @@ class BValueEstimator(ABC):
     @property
     def std_beta(self):
         '''
-        Returns the Shi and Bolt uncertainty of the beta estimate.
+        Shi and Bolt uncertainty of the beta estimate.
         '''
         self.__is_estimated()
 
@@ -151,6 +171,9 @@ class BValueEstimator(ABC):
 
     @property
     def n(self):
+        '''
+        Number of magnitudes used to estimate the b-value.
+        '''
         self.__is_estimated()
         return len(self.magnitudes)
 
@@ -160,3 +183,60 @@ class BValueEstimator(ABC):
         '''
         if self.__b_value is None:
             raise AttributeError('Please calculate the b value first.')
+
+    @property
+    def magnitudes(self) -> np.ndarray:
+        '''
+        The magnitudes used to estimate the b-value.
+        '''
+        return self._magnitudes
+
+    @magnitudes.setter
+    def magnitudes(self, magnitudes: np.ndarray) -> None:
+        '''
+        Sets the magnitudes used to estimate the b-value.
+        '''
+        self._magnitudes = magnitudes
+
+    @property
+    def mc(self) -> float:
+        '''
+        Returns the completeness magnitude.
+        '''
+        return self._mc
+
+    @mc.setter
+    def mc(self, mc: float) -> None:
+        '''
+        Sets the completeness magnitude.
+        '''
+        self._mc = mc
+
+    @property
+    def delta_m(self) -> float:
+        '''
+        Bin size of the discretized magnitudes.
+        '''
+        return self._delta_m
+
+    @delta_m.setter
+    def delta_m(self, delta_m: float) -> None:
+        '''
+        Sets the bin size of the discretized magnitudes.
+        '''
+        self._delta_m = delta_m
+
+    @property
+    def weights(self) -> np.ndarray | None:
+        '''
+        The weights used to estimate the b-value.
+        '''
+        return self._weights
+
+    @weights.setter
+    def weights(self, weights: np.ndarray | None) -> None:
+        '''
+        Sets the weights used to estimate the b-value.
+        '''
+
+        self._weights = weights

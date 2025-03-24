@@ -3,7 +3,6 @@
 .. currentmodule:: seismostats
 ```
 
-## Functions
 ```{eval-rst}
 .. autosummary::
     :toctree: ../api/
