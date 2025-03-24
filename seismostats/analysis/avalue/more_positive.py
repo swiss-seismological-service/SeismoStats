@@ -26,33 +26,14 @@ class AMorePositiveAValueEstimator(AValueEstimator):
             >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
             ...                        2.0, 2.0])
             >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-            >>> mc = 2.0
-            >>> delta_m = 0.1
-            >>> b_value = 1.0
 
             >>> my_estimator = AMorePositiveAValueEstimator()
-            >>> a_value = my_estimator.calculate(magnitudes=magnitudes, mc=mc,
-            ...     delta_m=delta_m, times=times, b_value=b_value)
+            >>> my_estimator.calculate(magnitudes=magnitudes, mc=2.0,
+            ...     delta_m=0.1, times=times, b_value=1.0)
 
-            >>> print(a_value)
+            >>> my_estimator.a_value
 
             0.730070812347905
-
-        .. code-block:: python
-
-            >>> print("used magnitudes:", my_estimator.magnitudes)
-            >>> print("used times:     ", my_estimator.times)
-            >>> print("used mc:        ", my_estimator.mc)
-            >>> print("used delta_m:   ", my_estimator.delta_m)
-            >>> print("used b_value:   ", my_estimator.b_value)
-            >>> print("a-value:        ", my_estimator.a_value)
-
-            used magnitudes: [2.3 2.1 2.1 2.2 2.3 2.3]
-            used times:      [2 5 5 6 8 8]
-            used mc:         2.0
-            used delta_m:    0.1
-            used b-value:    1.0
-            a-value:         0.730070812347905
     '''
 
     def __init__(self):
@@ -90,6 +71,25 @@ class AMorePositiveAValueEstimator(AValueEstimator):
             a_pos: a-value of the Gutenberg-Richter law.
             Note: This is a-positive as defined by van der Elst and Page 2023
             (JGR: Solid Earth, Vol 128, Issue 10).
+
+        Examples:
+            .. code-block:: python
+
+                >>> import numpy as np
+                >>> from seismostats.analysis.avalue import
+                ...     AMorePositiveAValueEstimator
+
+                >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1,
+                ...                        2.3,2.0, 2.0])
+                >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+                >>> my_estimator = AMorePositiveAValueEstimator()
+                >>> a_value = my_estimator.calculate(magnitudes=magnitudes,
+                ...     mc=2.0, delta_m=0.1, times=times, b_value=1.0)
+
+                >>> a_value
+
+                0.730070812347905
         '''
 
         if not b_value:

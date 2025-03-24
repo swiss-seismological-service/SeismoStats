@@ -19,39 +19,22 @@ class APositiveAValueEstimator(AValueEstimator):
         (JGR: Solid Earth, Vol 128, Issue 10).
 
     Examples:
+        .. code-block:: python
 
-    .. code-block:: python
+            >>> import numpy as np
+            >>> from seismostats.analysis.avalue import APositiveAValueEstimator
 
-        >>> import numpy as np
-        >>> from seismostats.analysis.avalue import APositiveAValueEstimator
+            >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
+            ...                        2.0, 2.0])
+            >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-        >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3, 2.0,
-        ...                        2.0])
-        >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        >>> mc = 2.0
-        >>> delta_m = 0.1
+            >>> my_estimator = APositiveAValueEstimator()
+            >>> my_estimator.calculate(
+            ...     magnitudes=magnitudes, mc=2.0, delta_m=0.1, times=times)
 
-        >>> my_estimator = APositiveAValueEstimator()
-        >>> a_value = my_estimator.calculate(
-        ...     magnitudes=magnitudes, mc=mc, delta_m=delta_m, times=times)
+            >>> my_estimator.a_value
 
-        >>> print(a_value)
-
-        0.9542425094393249
-
-    .. code-block:: python
-
-        >>> print("used magnitudes:", my_estimator.magnitudes)
-        >>> print("used times:     ", my_estimator.times)
-        >>> print("used mc:        ", my_estimator.mc)
-        >>> print("used delta_m:   ", my_estimator.delta_m)
-        >>> print("a-value:        ", my_estimator.a_value)
-
-        used magnitudes: [2.3 2.1 2.2 2.3]
-        used times:      [2 5 6 8]
-        used mc:         2.0
-        used delta_m:    0.1
-        a-value:         0.9542425094393249
+            0.9542425094393249
     '''
 
     def __init__(self):
@@ -88,6 +71,25 @@ class APositiveAValueEstimator(AValueEstimator):
 
         Returns:
             a_pos: a-value of the Gutenberg-Richter law.
+
+        Examples:
+            .. code-block:: python
+
+                >>> import numpy as np
+                >>> from seismostats.analysis.avalue import \
+                        APositiveAValueEstimator
+
+                >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1,
+                ...                        2.3, 2.0, 2.0])
+                >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+                >>> my_estimator = APositiveAValueEstimator()
+                >>> a_value = my_estimator.calculate(magnitudes=magnitudes,
+                ...     mc=2.0, delta_m=0.1, times=times)
+
+                >>> a_value
+
+                0.9542425094393249
         '''
 
         self.times: np.ndarray = np.array(times)
