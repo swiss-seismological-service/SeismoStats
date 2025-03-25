@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import logging
 import os
 import uuid
@@ -13,7 +14,6 @@ import numpy as np
 import pandas as pd
 from shapely import Polygon
 
-from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.estimate_mc import mc_ks
@@ -602,7 +602,7 @@ class Catalog(pd.DataFrame):
                     [0.29485562894395984], array([0.866]))
         """
         if delta_m is None and self.delta_m is None:
-            raise ValueError("binning (delta_m) needs to be set")
+            raise ValueError("Binning (delta_m) needs to be set.")
         if delta_m is None:
             delta_m = self.delta_m
 
@@ -633,11 +633,10 @@ class Catalog(pd.DataFrame):
         mc: float | None = None,
         delta_m: float | None = None,
         weights: list | None = None,
-        b_parameter: str = "b_value",
-        return_std: bool = False,
         method: BValueEstimator = ClassicBValueEstimator,
-        return_n: bool = False,
-    ) -> float | tuple[float, float] | tuple[float, float, float]:
+        *args,
+        **kwargs
+    ) -> BValueEstimator:
         """
         Estimates b-value of magnitudes in the Catalog based on settings given
         by the input parameters. Sets attribute b-value to the computed value,
@@ -683,41 +682,56 @@ class Catalog(pd.DataFrame):
                 >>> simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
                 0.28645181449530005
         """
-        mc = self.mc if mc is None else mc
+        if mc is None and self.mc is None:
+            raise ValueError("Completeness magnitude (mc) needs to be set.")
         if mc is None:
-            raise ValueError("completeness magnitude (mc) needs to be set")
+            mc = self.mc
 
-        delta_m = self.delta_m if delta_m is None else delta_m
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("Binning (delta_m) needs to be set.")
         if delta_m is None:
-            raise ValueError("binning (delta_m) needs to be set")
+            delta_m = self.delta_m
 
-        # filter magnitudes above mc without changing the original dataframe
-        df = self[self.magnitude >= mc]
+        if not method._weights_supported:
+            weights = None
+        elif weights is not None:
+            pass
+        elif 'weight' in self.columns:
+            weights = self.weight
 
-        if method == "positive":
-            # dataframe needs 'time' column to be sorted
-            if 'time' not in df.columns:
-                raise ValueError('"time" column needs to be set in order to \
-                                 use the b-positive method')
-            mags = df.sort_values("time").magnitude
-        else:
-            mags = df.magnitude
+        # The next part checks, whether one argument required for the
+        # 'calculate' method is available as a column in the dataframe.
+        # If so, it is passed to the method.
 
-        b_estimate = estimate_b(mags,
-                                mc,
-                                delta_m,
-                                weights,
-                                b_parameter,
-                                return_std,
-                                method,
-                                return_n)
+        # Get the argument names, skipping 'self'
+        sig = inspect.signature(method.calculate)
+        extra_args = [
+            name for name, _ in sig.parameters.items()
+            if name not in ['self', 'magnitudes', 'mc', 'delta_m', 'weights']]
+        # singular form version of the extra arguments
+        sing_args = [item if not item.endswith('s') else
+                     item[:-1] for item in extra_args]
 
-        if return_std or return_n:
-            self.b_value = b_estimate[0]
-        else:
-            self.b_value = b_estimate
+        # Collect the matching arguments from the DataFrame
+        col_kwargs = {
+            arg: self[sarg] for arg, sarg in zip(extra_args + extra_args,
+                                                 sing_args + extra_args)
+            if sarg in self.columns
+        }
+        col_kwargs.update(**kwargs)
 
-        return b_estimate
+        # Create and call the estimator
+        b_estimator = method()
+        b_estimator.calculate(self.magnitude,
+                              mc,
+                              delta_m,
+                              *args,
+                              weights=weights,
+                              **col_kwargs)
+
+        self.b_value = b_estimator.b_value
+
+        return b_estimator
 
     @require_cols(require=['latitude', 'longitude', 'magnitude'])
     def plot_in_space(self,
