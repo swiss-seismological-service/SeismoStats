@@ -11,6 +11,7 @@ import pandas as pd
 import pytest
 
 from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
                                           ForecastCatalog)
 from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
@@ -120,14 +121,6 @@ def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
             == bin_to_precision(mag_values, delta_m)).all()
     assert return_value is None
     assert catalog.delta_m == delta_m
-
-
-def test_catalog_estimate_mc():
-    # TODO once global_mc method is implemented
-    catalog = Catalog({'magnitude': [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]})
-
-    with pytest.raises(ValueError):
-        catalog.estimate_mc()
 
 
 @pytest.mark.parametrize(
@@ -363,3 +356,39 @@ def test_empty_catalog():
 
     catalog = Catalog.from_dict({'magnitude': []}, include_ids=False)
     assert isinstance(catalog, Catalog)
+
+
+def test_catalog_estimate_mc():
+    catalog = Catalog({'magnitude': [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]})
+
+    with pytest.raises(ValueError):
+        catalog.estimate_mc()
+
+
+def test_mc_is_up_to_date():
+    sig1 = inspect.signature(Catalog.estimate_mc)
+    sig2 = inspect.signature(mc_ks)
+
+    params1 = list(sig1.parameters.values())
+    params2 = list(sig2.parameters.values())
+
+    # Check if the number of parameters match
+    assert len(params1) == len(params2), "Number of parameters do not match"
+
+    # Second argument: name must match, default can differ
+    assert params1[1].name == params2[1].name, \
+        "Second argument names don't match"
+    assert params1[1].kind == params2[1].kind, \
+        "Second argument kinds don't match"
+
+    # Remaining arguments: check name, kind, and default
+    for i in range(2, len(params1)):
+        p1 = params1[i]
+        p2 = params2[i]
+
+        assert p1.name == p2.name, \
+            f"Param {i + 1} names don't match: {p1.name} != {p2.name}"
+        assert p1.kind == p2.kind, \
+            f"Param {p1.name} kind mismatch: {p1.kind} != {p2.kind}"
+        assert p1.default == p2.default, \
+            f"Param {p1.name} default mismatch: {p1.default} != {p2.default}"
