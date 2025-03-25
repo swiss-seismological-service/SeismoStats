@@ -1,4 +1,5 @@
 import uuid
+from unittest.mock import patch
 
 try:
     from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
@@ -216,3 +217,17 @@ def test_without_eventid():
     assert 'eventID' in cat.data
     assert len(cat.data['eventID']) == len(df)
     assert all(isinstance(x, str) for x in cat.data['eventID'])
+
+
+@patch('seismostats.catalogs.catalog._openquake_available', False)
+def test_import_error():
+    with pytest.raises(ImportError):
+        df = simple_df.copy()
+        df.to_openquake()
+
+
+@patch('seismostats.catalogs.catalog._openquake_available', False)
+def test_import_error_from():
+    with pytest.raises(ImportError):
+        empty_catalogue = OQCatalog()
+        SeismoCatalog.from_openquake(empty_catalogue)
