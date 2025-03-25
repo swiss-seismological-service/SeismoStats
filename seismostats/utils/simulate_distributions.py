@@ -30,7 +30,7 @@ def simulate_magnitudes(
         array([1.3249975 , 1.63120196, 3.56443043, 1.15384524]) #random
 
     See also:
-        {func}`~seismostats.utils.simulate_distributions.simulate_magnitudes_binned`
+        :func:`~seismostats.utils.simulate_distributions.simulate_magnitudes_binned`
 
     """
     if mag_max:
