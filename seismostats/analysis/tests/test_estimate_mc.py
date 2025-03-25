@@ -10,50 +10,39 @@ from seismostats.analysis.bvalue.utils import beta_to_b_value
 from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
                                               mc_max_curvature)
 
+MAGNITUDES = np.array(
+    [
+        2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5, 1.8, 1.6, 1.2, 1.5,
+        1.2, 1.7, 1.6, 1.1, 1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+        1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3, 1.3, 1.1, 1.5, 1.4,
+        1.1, 2.1, 1.2, 2.2, 1.7, 1.6, 1.1, 2.0, 2.1, 1.2, 1.0, 1.5,
+        1.2, 1.7, 1.8, 1.1, 1.3, 1.1, 1.3, 1.4, 2.1, 2.0, 1.1, 2.2,
+        1.8, 1.4, 1.1, 1.0, 2.0, 2.0, 1.1, 1.0, 1.0, 1.5, 1.6, 3.7,
+        2.8, 1.5, 1.1, 1.2, 1.4, 2.3, 1.5, 1.2, 1.7, 1.1, 1.6, 1.2,
+        1.5, 1.1, 1.2, 1.7, 1.2, 1.6, 1.2, 1.1, 1.8, 1.2, 1.1, 1.0,
+        1.3, 1.1, 1.6, 1.6,
+    ]
+)
 
-@pytest.fixture
-def magnitudes():
-    mags = np.array(
-        [
-            2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5, 1.8, 1.6, 1.2, 1.5,
-            1.2, 1.7, 1.6, 1.1, 1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
-            1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3, 1.3, 1.1, 1.5, 1.4,
-            1.1, 2.1, 1.2, 2.2, 1.7, 1.6, 1.1, 2.0, 2.1, 1.2, 1.0, 1.5,
-            1.2, 1.7, 1.8, 1.1, 1.3, 1.1, 1.3, 1.4, 2.1, 2.0, 1.1, 2.2,
-            1.8, 1.4, 1.1, 1.0, 2.0, 2.0, 1.1, 1.0, 1.0, 1.5, 1.6, 3.7,
-            2.8, 1.5, 1.1, 1.2, 1.4, 2.3, 1.5, 1.2, 1.7, 1.1, 1.6, 1.2,
-            1.5, 1.1, 1.2, 1.7, 1.2, 1.6, 1.2, 1.1, 1.8, 1.2, 1.1, 1.0,
-            1.3, 1.1, 1.6, 1.6,
-        ]
-    )
-    return mags
-
-
-@pytest.fixture
-def ks_dists():
-    ks_ds_df = pd.read_csv(
-        'seismostats/analysis/tests/data/ks_ds.csv', index_col=0)
-    ks_ds_list = ks_ds_df.values.T
-    return ks_ds_list
+KS_DISTS = pd.read_csv(
+    'seismostats/analysis/tests/data/ks_ds.csv', index_col=0).values.T
 
 
-def test_estimate_mc_ks(
-        magnitudes,
-        ks_dists,
-        mcs=[0.8, 0.9, 1.0, 1.1]
-):
+def test_estimate_mc_ks():
+    mcs = [0.8, 0.9, 1.0, 1.1]
+
     # test when beta is given
     best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
-        magnitudes,
+        MAGNITUDES,
         delta_m=0.1,
         mcs_test=mcs,
         p_pass=0.1,
         b_value=beta_to_b_value(2.24),
-        ks_ds_list=ks_dists,
+        ks_ds_list=KS_DISTS,
     )
     assert_equal(1.1, best_mc)
     assert_equal(beta_to_b_value(2.24), best_b_value)
-    print(ps)
+
     assert_allclose(
         [beta_to_b_value(2.24), beta_to_b_value(
             2.24), beta_to_b_value(2.24), beta_to_b_value(2.24)],
@@ -65,7 +54,7 @@ def test_estimate_mc_ks(
 
     # test when beta is not given
     best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
-        magnitudes,
+        MAGNITUDES,
         delta_m=0.1,
         mcs_test=[1.1],
         p_pass=0.1,
@@ -89,18 +78,18 @@ def test_estimate_mc_ks(
 
     # test when mcs are not given
     best_mc, best_beta, mcs_tested, b_values, ks_ds, ps = mc_ks(
-        magnitudes,
+        MAGNITUDES,
         delta_m=0.1,
         p_pass=0.1,
         b_value=beta_to_b_value(2.24),
-        ks_ds_list=ks_dists[2:],
+        ks_ds_list=KS_DISTS[2:],
     )
     assert_equal(1.1, best_mc)
     assert_equal([1.0, 1.1], mcs_tested)
 
     # test when b-positive is used
     best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
-        magnitudes,
+        MAGNITUDES,
         delta_m=0.1,
         mcs_test=[1.5],
         b_method=BPositiveBValueEstimator
@@ -113,8 +102,8 @@ def test_estimate_mc_ks(
     assert_equal(len(ps), 1)
 
 
-def test_estimate_mc_maxc(magnitudes):
-    mc = mc_max_curvature(magnitudes, delta_m=0.1, correction_factor=0.2)
+def test_estimate_mc_maxc():
+    mc = mc_max_curvature(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
 
     assert_equal(1.3, mc)
 
@@ -141,8 +130,8 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     assert_almost_equal(1.44, mc)
 
 
-def test_estimate_mc_bvalue_stability_larger_bins(magnitudes):
+def test_estimate_mc_bvalue_stability_larger_bins():
     mc, _, _, _, _ = mc_by_bvalue_stability(
-        magnitudes, delta_m=0.1, stability_range=0.5)
+        MAGNITUDES, delta_m=0.1, stability_range=0.5)
 
     assert_almost_equal(1.1, mc)

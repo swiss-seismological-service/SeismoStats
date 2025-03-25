@@ -4,7 +4,7 @@ from unittest.mock import patch
 try:
     from openquake.hmtk.parsers.catalogue import CsvCatalogueParser
     from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalog
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 import os
