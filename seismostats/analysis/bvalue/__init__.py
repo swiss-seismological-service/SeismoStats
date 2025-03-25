@@ -1,4 +1,3 @@
-# flake8: noqa
 from typing import Literal
 
 import numpy as np
@@ -6,12 +5,13 @@ import numpy as np
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.bvalue.more_positive import \
-    BMorePositiveBValueEstimator
-from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
-from seismostats.analysis.bvalue.utils import (b_value_to_beta,
-                                               beta_to_b_value,
-                                               shi_bolt_confidence)
-from seismostats.analysis.bvalue.utsu import UtsuBValueEstimator
+    BMorePositiveBValueEstimator  # noqa
+from seismostats.analysis.bvalue.positive import \
+    BPositiveBValueEstimator  # noqa
+from seismostats.analysis.bvalue.utils import b_value_to_beta  # noqa
+from seismostats.analysis.bvalue.utils import beta_to_b_value  # noqa
+from seismostats.analysis.bvalue.utils import shi_bolt_confidence  # noqa
+from seismostats.analysis.bvalue.utsu import UtsuBValueEstimator  # noqa
 
 
 def estimate_b(
@@ -32,7 +32,7 @@ def estimate_b(
         .. math::
             N(m) = 10 ^ {a - b \\cdot (m - m_{ref})},
 
-        where :math:`N(m)` is the number of events with magnitude larger than 
+        where :math:`N(m)` is the number of events with magnitude larger than
         or equal to :math:`m` that occurred in the timeframe of the catalog,
         :math:`a` and :math:`b` are the a- and b-value, and :math:`m_{ref}`
         is the reference magnitude above which earthquakes are counted.
@@ -42,16 +42,18 @@ def estimate_b(
             mc:             Completeness magnitude.
             delta_m:        Bin size of discretized magnitudes.
             weights:        Array of weights for the magnitudes.
-            b_parameter:    If 'b_value', the b-value is returned. If 'beta', the
-                        beta-value is returned. beta is the analogous value to
-                        b, but when formulating the GR law with base e.
-            return_std:     If True, the standard deviation of the b-value is also returned.
-            method:         BValueEstimator class to use for calculation.
-            return_n:       If True, the number of events used for the estimation is
+            b_parameter:    If 'b_value', the b-value is returned. If 'beta',
+                        the beta-value is returned. beta is the analogous value
+                        to b, but when formulating the GR law with base e.
+            return_std:     If True, the standard deviation of the b-value is
                         also returned.
-            *args:          Additional arguments to pass to the :func:`calculate` method.
-            **kwargs:       Additional keyword arguments to pass to the :func:`calculate`
-                        method.
+            method:         BValueEstimator class to use for calculation.
+            return_n:       If True, the number of events used for the
+                        estimation is also returned.
+            *args:          Additional arguments to pass to the
+                        :func:`calculate` method.
+            **kwargs:       Additional keyword arguments to pass to the
+                        :func:`calculate` method.
 
         Returns:
             b: b-value of the Gutenberg-Richter law.
@@ -62,21 +64,31 @@ def estimate_b(
                 >>> import numpy as np
                 >>> from seismostats.analysis.bvalue import estimate_b
 
-                >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7, 2.4, 2.2, 2.5])
+                >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6,
+                ...                        2.3, 2.7, 2.2, 2.4, 2. , 2.7, 2.2,
+                ...                        2.3, 2.1, 2.4, 2.6, 2.2, 2.2, 2.7,
+                ...                        2.4, 2.2, 2.5])
                 >>> mc = 2.0
                 >>> delta_m = 0.1
 
-                >>> b = estimate_b(magnitudes=magnitudes, mc=mc, delta_m=delta_m)
-                >>> print(b)
+                >>> b = estimate_b(magnitudes=magnitudes,
+                ...                mc=mc,
+                ...                delta_m=delta_m)
+                >>> b
 
                 1.114920128810535
 
             .. code-block:: python
 
-                >>> from seismostats.analysis.bvalue import BPositiveBValueEstimator
+                >>> from seismostats.analysis.bvalue import \
+                ...     BPositiveBValueEstimator
 
                 >>> times = np.arange(len(magnitudes))
-                >>> b = estimate_b(magnitudes, mc, delta_m, times=times, method=BPositiveBValueEstimator)
+                >>> b = estimate_b(magnitudes,
+                ...                mc,
+                ...                delta_m,
+                ...                times=times,
+                ...                method=BPositiveBValueEstimator)
                 >>> b
 
                 1.5490195998574323

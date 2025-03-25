@@ -650,29 +650,22 @@ class Catalog(pd.DataFrame):
             delta_m:    Discretization of magnitudes, etiher given as parameter
                     or taken from the object attribute.
             weights:    Weights of each magnitude can be specified here.
-            b_parameter: Either 'b-value', then the corresponding value  of the
-                    Gutenberg-Richter law is returned, otherwise 'beta' from
-                    the exponential distribution
-                    :math:`p(M) = exp(-beta*(M-mc))`
-            return_std: If True the standard deviation of beta/b-value (see
-                        above) is returned.
-            method:     Method to use for estimation of beta/b-value. Options
-                        are: 'tinti', 'utsu', 'positive', 'laplace'.
-            return_n:   If True, the number of events used for the estimation
-                    is returned. This is only relevant for the 'positive'
-                    method.
+            method:     BValueEstimator class to use for calculation.
+            *args:      Additional arguments to pass to the selected estimator.
+            **kwargs:   Additional keyword arguments to pass
+                    to the selected estimator.
 
         Returns:
-            b:      Maximum likelihood beta or b-value, depending on value of
-                input variable 'b_parameter'. Note that the difference
-                is just a factor :math:`b = beta * log10(e)`.
-            std:    Shi and Bolt estimate of the beta/b-value error estimate
-            n:      number of events used for the estimation.
+            estimator: Object of type
+                    :func:`~seismostats.analysis.bvalue.classic.ClassicBValueEstimator`
+                    or of the type provided by the `method` parameter.
 
         Examples:
+            The `estimate_b` method sets the `b_value` attribute of
+            the catalog to the computed value.
+
             .. code-block:: python
 
-                >>> import pandas as pd
                 >>> from seismostats import Catalog
                 >>> simple_catalog = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
@@ -680,7 +673,27 @@ class Catalog(pd.DataFrame):
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
                 >>> simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
+                >>> simple_catalog.b_value
                 0.28645181449530005
+
+            The returned estimator can be used to access the remaining results,
+            see the documentation of
+            :func:`~seismostats.analysis.bvalue.classic.ClassicBValueEstimator`
+            or the explicitly used estimator for more information.
+
+            .. code-block:: python
+
+                >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
+                >>> estimator.beta, estimator.std
+                (0.6595796779179737, 0.15820210898689366)
+
+            .. code-block:: python
+
+                >>> from seismostats.analysis import BPositiveBValueEstimator
+                >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1,
+                ...     method=BPositiveBValueEstimator, dmc=0.3)
+                >>> type(estimator)
+                <class 'seismostats.analysis.BPositiveBValueEstimator'>
         """
         if mc is None and self.mc is None:
             raise ValueError("Completeness magnitude (mc) needs to be set.")
