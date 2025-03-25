@@ -24,9 +24,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 - API reference for a and b value packages, including full list of attributes.
+- Thorough API documentation for the `Catalog` class.
 
 #### Changed
 - `analysis.ks_test_gr` now takes the `b-value` as a parameter instead of `beta`.
+- `Catalog.estimate_mc` got updated to the latest version of the `mc_ks` function.
+- `Catalog.estimate_b` got updated to the class-based API of the `b_value` package.
 
 #### Fixed
 - Build process for the documentation.
