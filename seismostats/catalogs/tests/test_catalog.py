@@ -4,14 +4,19 @@ import os
 import re
 import uuid
 from collections import OrderedDict
+from unittest.mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose, assert_equal
+from typing_extensions import get_type_hints
 
 from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.bvalue.utils import beta_to_b_value
 from seismostats.analysis.estimate_mc import mc_ks
+from seismostats.analysis.tests.test_estimate_mc import KS_DISTS, MAGNITUDES
 from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
                                           ForecastCatalog)
 from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
@@ -365,15 +370,28 @@ def test_catalog_estimate_mc():
         catalog.estimate_mc()
 
 
-def test_mc_is_up_to_date():
-    sig1 = inspect.signature(Catalog.estimate_mc)
-    sig2 = inspect.signature(mc_ks)
+def test_estimate_mc_regression():
+    func1 = Catalog.estimate_mc
+    func2 = mc_ks
+
+    sig1 = inspect.signature(func1)
+    sig2 = inspect.signature(func2)
 
     params1 = list(sig1.parameters.values())
     params2 = list(sig2.parameters.values())
 
     # Check if the number of parameters match
     assert len(params1) == len(params2), "Number of parameters do not match"
+
+    # Check return type hints
+    hints1 = get_type_hints(func1)
+    hints2 = get_type_hints(func2)
+
+    return1 = hints1.get('return', None)
+    return2 = hints2.get('return', None)
+
+    assert return1 == return2, \
+        f"Return type hints differ:\n{return1}\n!=\n{return2}"
 
     # Second argument: name must match, default can differ
     assert params1[1].name == params2[1].name, \
@@ -392,3 +410,63 @@ def test_mc_is_up_to_date():
             f"Param {p1.name} kind mismatch: {p1.kind} != {p2.kind}"
         assert p1.default == p2.default, \
             f"Param {p1.name} default mismatch: {p1.default} != {p2.default}"
+
+
+def test_estimate_mc_functionality():
+    cat = Catalog({'magnitude': MAGNITUDES})
+    mcs = [0.8, 0.9, 1.0, 1.1]
+
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
+        cat.estimate_mc(0.1,
+                        mcs,
+                        0.1,
+                        b_value=beta_to_b_value(2.24),
+                        ks_ds_list=KS_DISTS,
+                        )
+
+    assert_equal(1.1, best_mc)
+    assert_equal(cat.mc, 1.1)
+
+    assert_equal(beta_to_b_value(2.24), best_b_value)
+
+    assert_allclose(
+        [beta_to_b_value(2.24), beta_to_b_value(
+            2.24), beta_to_b_value(2.24), beta_to_b_value(2.24)],
+        b_values,
+        rtol=1e-7,
+    )
+    assert_allclose([0.0, 0.0, 0.0128, 0.4405], ps, atol=0.03)
+    assert_equal(mcs_tested, mcs)
+    assert_allclose(ks_ds, [0.42931381663381224, 0.30109531596808387,
+                    0.14068486563063504, 0.07052420897739642], rtol=1e-7)
+
+
+@patch('seismostats.catalogs.catalog.mc_ks',
+       return_value=np.arange(0, 6))
+def test_estimate_mc_catalog(mc_ks_mock: MagicMock):
+    cat = Catalog({'magnitude': MAGNITUDES})
+
+    with pytest.raises(ValueError):
+        cat.estimate_mc()
+
+    cat.estimate_mc(delta_m=0.123)
+    args, _ = mc_ks_mock.call_args
+    assert args[:2] == (cat.magnitude, 0.123)
+
+    cat.delta_m = 0.321
+    cat.estimate_mc()
+    args, _ = mc_ks_mock.call_args
+    assert args[:2] == (cat.magnitude, 0.321)
+
+    cat.estimate_mc(b_value=1.0)
+    args, _ = mc_ks_mock.call_args
+    assert args[6] == 1.0
+
+    cat.b_value = 2.0
+    cat.estimate_mc()
+    args, _ = mc_ks_mock.call_args
+    assert args[6] == 2.0
+
+    cat.estimate_mc(b_value=1.0)
+    args, _ = mc_ks_mock.call_args
+    assert args[6] == 1.0

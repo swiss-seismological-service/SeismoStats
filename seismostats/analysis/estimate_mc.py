@@ -146,7 +146,8 @@ def mc_ks(
     ks_ds_list: list[list] | None = None,
     *args,
     **kwargs,
-) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
+) -> tuple[float | None, float | None, list[float],
+           list[float], list[float], np.ndarray]:
     """
     Returns the smallest magnitude in a given list of completeness magnitudes
     for which the KS test is passed, i.e., where the null hypothesis that the
@@ -184,11 +185,12 @@ def mc_ks(
                         estimator.
 
     Returns:
-        mcs_test:       Tested completeness magnitudes.
-        ks_ds:          KS distances.
-        ps:             p-values.
         best_mc:        `mc` for which the p-value is lowest.
         best_b_value:   `b_value` corresponding to the best `mc`.
+        mcs_test:       Tested completeness magnitudes.
+        b_values:       Tested b-values.
+        ks_ds:          KS distances.
+        ps:             Corresponding p-values.
     """
 
     if mcs_test is None:

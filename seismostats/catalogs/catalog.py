@@ -28,7 +28,7 @@ from seismostats.utils.binning import bin_to_precision
 
 try:
     from openquake.hmtk.seismicity.catalogue import Catalogue as OQCatalogue
-except ImportError:
+except ImportError:  # pragma: no cover
     _openquake_available = False
 else:
     _openquake_available = True
@@ -540,7 +540,8 @@ class Catalog(pd.DataFrame):
         ks_ds_list: list[list] | None = None,
         *args,
         **kwargs,
-    ) -> tuple[np.ndarray, list[float], np.ndarray, float | None, float | None]:
+    ) -> tuple[float | None, float | None, list[float],
+               list[float], list[float], np.ndarray]:
         """
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
@@ -579,11 +580,12 @@ class Catalog(pd.DataFrame):
                         estimator.
 
         Returns:
-            mcs_test:       Tested completeness magnitudes.
-            ks_ds:          KS distances.
-            ps:             p-values.
             best_mc:        `mc` for which the p-value is lowest.
             best_b_value:   `b_value` corresponding to the best `mc`.
+            mcs_test:       Tested completeness magnitudes.
+            b_values:       Tested b-values.
+            ks_ds:          KS distances.
+            ps:             Corresponding p-values.
 
         Examples:
             .. code-block:: python
@@ -607,21 +609,23 @@ class Catalog(pd.DataFrame):
         if b_value is None and self.b_value is not None:
             b_value = self.b_value
 
-        mc_est = mc_ks(self.magnitude,
-                       delta_m,
-                       mcs_test,
-                       p_pass,
-                       stop_when_passed,
-                       verbose,
-                       b_value,
-                       b_method,
-                       n,
-                       ks_ds_list,
-                       *args,
-                       **kwargs)
+        best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
+            mc_ks(self.magnitude,
+                  delta_m,
+                  mcs_test,
+                  p_pass,
+                  stop_when_passed,
+                  verbose,
+                  b_value,
+                  b_method,
+                  n,
+                  ks_ds_list,
+                  *args,
+                  **kwargs)
 
-        self.mc = mc_est[3]
-        return mc_est
+        self.mc = best_mc
+
+        return best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps
 
     @require_cols(require=['magnitude'])
     def estimate_b(
