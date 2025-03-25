@@ -4,16 +4,18 @@ import os
 import re
 import uuid
 from collections import OrderedDict
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose, assert_equal
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 from typing_extensions import get_type_hints
 
-from seismostats.analysis.bvalue import estimate_b
+from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
+from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import beta_to_b_value
 from seismostats.analysis.estimate_mc import mc_ks
 from seismostats.analysis.tests.test_estimate_mc import KS_DISTS, MAGNITUDES
@@ -128,30 +130,6 @@ def test_catalog_bin(mag_values: np.ndarray, delta_m: float):
     assert catalog.delta_m == delta_m
 
 
-@pytest.mark.parametrize(
-    "mag_values, delta_m, mc",
-    [
-        (np.array([0.0, 0.235, 0.238, 4.499, 4.5, 6, 0.1, 1.6]),
-         0.001, 0.0)
-    ]
-)
-def test_catalog_estimate_b(mag_values, delta_m, mc):
-    catalog = Catalog({'magnitude': mag_values})
-
-    b_value = estimate_b(catalog['magnitude'],
-                         mc=mc,
-                         delta_m=delta_m)
-    return_value = catalog.estimate_b(mc=mc, delta_m=delta_m)
-    assert catalog.b_value == b_value
-    assert return_value == b_value
-
-    catalog.mc = mc
-    catalog.delta_m = delta_m
-    return_value = catalog.estimate_b()
-    assert catalog.b_value == b_value
-    assert return_value == b_value
-
-
 @pytest.fixture
 def catalog_example():
     times = [dt.datetime(2020, 1, i) for i in range(1, 10)]
@@ -167,11 +145,6 @@ def catalog_example():
     cat.b_value = 1.0
 
     return cat
-
-
-@pytest.fixture
-def mcs_for_plot_mc_vs_b():
-    return [3.0, 3.5, 4.0]
 
 
 def extract_names_and_default_values(parameters, exclude_args):
@@ -228,11 +201,11 @@ def compare_method_and_function(method,
      ["magnitudes"], ["delta_m", "mcs"])
 ])
 def test_catalog_methods(catalog_example,
-                         mcs_for_plot_mc_vs_b,
                          method,
                          function,
                          exclude_args,
                          other_args):
+    mcs = [3.0, 3.5, 4.0]
     method_ref = getattr(catalog_example, method)
     kwargs_dict = {}
     method_kwargs = {}
@@ -249,9 +222,9 @@ def test_catalog_methods(catalog_example,
         if arg in arg_to_value_map:
             kwargs_dict[arg] = arg_to_value_map[arg]
         elif arg == "mcs":
-            kwargs_dict[arg] = mcs_for_plot_mc_vs_b
+            kwargs_dict[arg] = mcs
             other_args.remove("mcs")
-            method_kwargs[arg] = mcs_for_plot_mc_vs_b
+            method_kwargs[arg] = mcs
     exclude_args = ["self", *exclude_args, *other_args]
     compare_method_and_function(method_ref,
                                 function,
@@ -470,3 +443,108 @@ def test_estimate_mc_catalog(mc_ks_mock: MagicMock):
     cat.estimate_mc(b_value=1.0)
     args, _ = mc_ks_mock.call_args
     assert args[6] == 1.0
+
+
+def test_estimate_b_functionality():
+    delta_m = 0.1
+    mags = bin_to_precision(magnitudes(1), delta_m)
+    mc = 0
+    b_est_correct = 0.9985052730956719
+    weights = np.ones(len(mags))
+
+    cat = Catalog({'magnitude': mags, 'weight': weights})
+    cat.delta_m = delta_m
+    cat.mc = mc
+
+    b_estimate = cat.estimate_b()
+    assert_almost_equal(b_est_correct, b_estimate.b_value)
+
+    b_estimate_weighted = cat.estimate_b(weights=weights)
+    assert_almost_equal(b_est_correct, b_estimate_weighted.b_value)
+
+
+def test_estimate_b_method():
+    delta_m = 0.1
+    mc = 0
+    mags = bin_to_precision(magnitudes(1), delta_m)
+    mags = mags[mags >= mc - delta_m / 2]
+    weights = np.ones(len(mags))
+
+    cat = Catalog({'magnitude': mags, 'weight': weights})
+    cat.delta_m = delta_m
+    cat.mc = mc
+
+    dmc = 0.3
+    b_est_correct = 1.00768483769521
+    b_est_correct_new = 1.009680716817806
+
+    bmethod = BPositiveBValueEstimator
+
+    b_estimate = cat.estimate_b(method=bmethod, dmc=dmc)
+    assert_almost_equal(b_est_correct, b_estimate.b_value)
+
+    new_weights = cat['weight'].copy()
+    new_weights[0:100] = 0
+
+    b_estimate = cat.estimate_b(method=bmethod, dmc=dmc, weights=new_weights)
+    assert_almost_equal(b_est_correct_new, b_estimate.b_value)
+
+    cat['weight'] = new_weights
+    b_estimate = cat.estimate_b(method=bmethod, dmc=dmc)
+    assert_almost_equal(b_est_correct_new, b_estimate.b_value)
+
+
+def test_estimate_b_dynamic_col_arg():
+    # test that time (or any other additional argument) is correctly used
+    mags = np.array([0, 0.9, 0.5, 0.2, -1])
+    times = np.array([datetime(2000, 1, 1),
+                      datetime(2000, 1, 2),
+                      datetime(2000, 1, 5),
+                      datetime(2000, 1, 4),
+                      datetime(2000, 1, 3)])
+
+    cat = Catalog({'magnitude': mags, 'time': times})
+    bmethod = BPositiveBValueEstimator
+    estimator = cat.estimate_b(mc=-1, delta_m=0.1, method=bmethod, times=times)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+
+    estimator = cat.estimate_b(mc=-1, delta_m=0.1, method=bmethod)
+    assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
+
+
+def test_estimate_b_catalog():
+    mags = bin_to_precision(magnitudes(1), 0.1)
+
+    estimator = MagicMock
+    estimator._weights_supported = True
+    estimator.calculate = MagicMock()
+
+    cat = Catalog({'magnitude': mags})
+
+    with pytest.raises(ValueError):
+        cat.estimate_b()
+
+    with pytest.raises(ValueError):
+        cat.estimate_b(delta_m=0.1)
+
+    with pytest.raises(ValueError):
+        cat.estimate_b(mc=0)
+
+    cat.estimate_b(mc=0, delta_m=0.123, method=estimator)
+    args, _ = estimator.calculate.call_args
+    assert args[1:3] == (0, 0.123)
+
+    cat.delta_m = 0.321
+    cat.mc = 1
+    cat.estimate_b(mc=0, delta_m=0.123, method=estimator)
+    args, _ = estimator.calculate.call_args
+    assert args[1:3] == (0, 0.123)
+
+    cat.estimate_b(method=estimator)
+    args, _ = estimator.calculate.call_args
+    assert args[1:3] == (1, 0.321)
+
+    estimator._weights_supported = False
+    cat.estimate_b(method=estimator, weights=np.ones(len(mags)))
+    _, kwargs = estimator.calculate.call_args
+    assert kwargs['weights'] is None

@@ -48,8 +48,8 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                   magnitudes: np.ndarray,
                   mc: float,
                   delta_m: float,
-                  times: np.ndarray | None = None,
                   weights: np.ndarray | None = None,
+                  times: np.ndarray | None = None,
                   dmc: float | None = None) -> float:
         '''
         Calculates the b-value of the Gutenberg-Richter (GR) law.
@@ -58,10 +58,10 @@ class BMorePositiveBValueEstimator(BValueEstimator):
             magnitudes: Array of magnitudes.
             mc:         Completeness magnitude.
             delta_m:    Bin size of discretized magnitudes.
+            weights:    Array of weights for the magnitudes.
             times:      Array of times of the events, in any format (datetime,
                     float, etc.). If `None`, it is assumed that the events are
                     ordered in time.
-            weights:    Array of weights for the magnitudes.
             dmc:        Cutoff value for the differences (differences below
                     this value are not considered). If `None`, the cutoff is set
                     to `delta_m`.
