@@ -6,7 +6,7 @@ import os
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from typing import Any
+from typing import Any, Callable
 
 import cartopy
 import matplotlib.pyplot as plt
@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 from shapely import Polygon
 
+from seismostats.analysis.avalue.base import AValueEstimator
+from seismostats.analysis.avalue.classic import ClassicAValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.estimate_mc import mc_ks
@@ -102,6 +104,7 @@ class Catalog(pd.DataFrame):
         :ivar mc:           Completeness magnitude of the catalog.
         :ivar delta_m:      Magnitude binning of the catalog.
         :ivar b_value:      Gutenberg-Richter b-value of the catalog.
+        :ivar a_value:      Gutenberg-Richter a-value of the catalog.
         :ivar starttime:    Start time of the catalog.
         :ivar endtime:      End time of the catalog.
         :ivar bounding_polygon: 2D boundary of the catalog.
@@ -112,7 +115,7 @@ class Catalog(pd.DataFrame):
         :ivar logger:       Logger for the catalog.
     """
 
-    _metadata = ['name', '_required_cols', 'mc',
+    _metadata = ['name', '_required_cols', 'mc', 'a_value',
                  'delta_m', 'b_value', 'starttime', 'endtime',
                  'bounding_polygon', 'depth_min', 'depth_max',
                  'logger']
@@ -135,6 +138,7 @@ class Catalog(pd.DataFrame):
             mc: float | None = None,
             delta_m: float | None = None,
             b_value: float | None = None,
+            a_value: float | None = None,
             bounding_polygon: Polygon | str | None = None,
             depth_min: float | None = None,
             depth_max: float | None = None,
@@ -152,6 +156,7 @@ class Catalog(pd.DataFrame):
         self.name = name
         self.mc = mc
         self.b_value = b_value
+        self.a_value = a_value
         self.delta_m = delta_m
         self.starttime = pd.to_datetime(starttime)
         self.endtime = pd.to_datetime(endtime)
@@ -746,6 +751,45 @@ class Catalog(pd.DataFrame):
 
         return b_estimator
 
+    @require_cols(require=['magnitude'])
+    def estimate_a(self,
+                   mc: float | None = None,
+                   delta_m: float | None = None,
+                   scaling_factor: float | None = None,
+                   m_ref: float | None = None,
+                   b_value: float | None = None,
+                   method: AValueEstimator = ClassicAValueEstimator,
+                   **kwargs) -> AValueEstimator:
+        """
+        """
+        if mc is None and self.mc is None:
+            raise ValueError("Completeness magnitude (mc) needs to be set.")
+        if mc is None:
+            mc = self.mc
+
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("Binning (delta_m) needs to be set.")
+        if delta_m is None:
+            delta_m = self.delta_m
+
+        col_kwargs = _check_catalog_cols(
+            method.calculate, AValueEstimator.calculate, self)
+        col_kwargs.update(**kwargs)
+
+        a_estimator = method()
+        a_estimator.calculate(self.magnitude,
+                              mc,
+                              delta_m,
+                              scaling_factor=scaling_factor,
+                              m_ref=m_ref,
+                              b_value=b_value,
+                              **col_kwargs
+                              )
+
+        self.a_value = a_estimator.a_value
+
+        return a_estimator
+
     @require_cols(require=['latitude', 'longitude', 'magnitude'])
     def plot_in_space(self,
                       resolution: str = "10m",
@@ -1228,3 +1272,32 @@ class ForecastCatalog(Catalog):
         for _, group in self.groupby('catalog_id'):
             catalogs.append(Catalog(group).to_quakeml(agencyID, author))
         return catalogs
+
+
+def _check_catalog_cols(method: Callable,
+                        reference: Callable,
+                        catalog: Catalog) -> dict:
+    '''
+    Check if any of the parameters of the `method`, which are not
+    part of the parameters of the `reference` method, are present
+    as columns in the DataFrame. If so, collect them and return them as
+    keyword arguments.
+    Also checks for singular form of the extra arguments.
+    '''
+    sig = inspect.signature(method).parameters.keys()
+    base_args = inspect.signature(reference).parameters.keys()
+
+    extra_args = [name for name in sig if name not in base_args]
+
+    # singular form version of the extra arguments
+    sing_args = [item if not item.endswith('s') else
+                 item[:-1] for item in extra_args]
+
+    # create list to check against
+    check_list = zip(extra_args + extra_args, sing_args + extra_args)
+
+    # Collect the matching arguments from the DataFrame
+    col_kwargs = {arg: catalog[sarg] for arg, sarg in check_list
+                  if sarg in catalog.columns}
+
+    return col_kwargs
