@@ -543,7 +543,6 @@ class Catalog(pd.DataFrame):
         b_method: BValueEstimator = ClassicBValueEstimator,
         n: int = 10000,
         ks_ds_list: list[list] | None = None,
-        *args,
         **kwargs,
     ) -> tuple[float | None, float | None, list[float],
                list[float], list[float], np.ndarray]:
@@ -580,8 +579,7 @@ class Catalog(pd.DataFrame):
                         calculated for estimating the p-value.
             ks_ds_list:     KS distances from synthetic data with the given
                         parameters. If `None`, they will be estimated here.
-            *args,          Additional arguments for the b-value estimator.
-            **kwargs:       Additional keyword arguments for the b-value
+            **kwargs:       Additional parameters to be passed to the b-value
                         estimator.
 
         Returns:
@@ -616,16 +614,15 @@ class Catalog(pd.DataFrame):
 
         best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
             mc_ks(self.magnitude,
-                  delta_m,
-                  mcs_test,
-                  p_pass,
-                  stop_when_passed,
-                  verbose,
-                  b_value,
-                  b_method,
-                  n,
-                  ks_ds_list,
-                  *args,
+                  delta_m=delta_m,
+                  mcs_test=mcs_test,
+                  p_pass=p_pass,
+                  stop_when_passed=stop_when_passed,
+                  verbose=verbose,
+                  b_value=b_value,
+                  b_method=b_method,
+                  n=n,
+                  ks_ds_list=ks_ds_list,
                   **kwargs)
 
         self.mc = best_mc
@@ -639,7 +636,6 @@ class Catalog(pd.DataFrame):
         delta_m: float | None = None,
         weights: list | None = None,
         method: BValueEstimator = ClassicBValueEstimator,
-        *args,
         **kwargs
     ) -> BValueEstimator:
         """
@@ -656,9 +652,8 @@ class Catalog(pd.DataFrame):
                     or taken from the object attribute.
             weights:    Weights of each magnitude can be specified here.
             method:     BValueEstimator class to use for calculation.
-            *args:      Additional arguments to pass to the selected estimator.
-            **kwargs:   Additional keyword arguments to pass
-                    to the selected estimator.
+            **kwargs:   Additional parameters to be passed to the b-value
+                    estimator.
 
         Returns:
             estimator: Object of type
@@ -717,25 +712,9 @@ class Catalog(pd.DataFrame):
         elif 'weight' in self.columns:
             weights = self.weight
 
-        # The next part checks, whether one argument required for the
-        # 'calculate' method is available as a column in the dataframe.
-        # If so, it is passed to the method.
-
-        # Get the argument names, skipping 'self'
-        sig = inspect.signature(method.calculate)
-        extra_args = [
-            name for name, _ in sig.parameters.items()
-            if name not in ['self', 'magnitudes', 'mc', 'delta_m', 'weights']]
-        # singular form version of the extra arguments
-        sing_args = [item if not item.endswith('s') else
-                     item[:-1] for item in extra_args]
-
-        # Collect the matching arguments from the DataFrame
-        col_kwargs = {
-            arg: self[sarg] for arg, sarg in zip(extra_args + extra_args,
-                                                 sing_args + extra_args)
-            if sarg in self.columns
-        }
+        # check catalog columns for additional argument values.
+        col_kwargs = _check_catalog_cols(
+            method.calculate, BValueEstimator.calculate, self)
         col_kwargs.update(**kwargs)
 
         # Create and call the estimator
@@ -743,7 +722,6 @@ class Catalog(pd.DataFrame):
         b_estimator.calculate(self.magnitude,
                               mc,
                               delta_m,
-                              *args,
                               weights=weights,
                               **col_kwargs)
 
@@ -772,6 +750,7 @@ class Catalog(pd.DataFrame):
         if delta_m is None:
             delta_m = self.delta_m
 
+        # check catalog columns for additional argument values.
         col_kwargs = _check_catalog_cols(
             method.calculate, AValueEstimator.calculate, self)
         col_kwargs.update(**kwargs)
@@ -1045,7 +1024,6 @@ class Catalog(pd.DataFrame):
                      ax: plt.Axes | None = None,
                      color: str = "blue",
                      label: str | None = None,
-                     *args,
                      **kwargs
                      ) -> plt.Axes:
         """
@@ -1061,7 +1039,7 @@ class Catalog(pd.DataFrame):
             ax:             Axis where figure should be plotted.
             color:          Color of the data.
             label:          Label of the data that will be put in the legend.
-            **kwargs:       Additional keyword arguments for the b-value
+            **kwargs:       Additional parameters to be passed to the b-value
                         estimator.
 
         Returns:
@@ -1078,7 +1056,6 @@ class Catalog(pd.DataFrame):
                           ax,
                           color,
                           label,
-                          *args,
                           **kwargs)
         return ax
 

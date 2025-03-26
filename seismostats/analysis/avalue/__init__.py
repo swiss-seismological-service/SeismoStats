@@ -17,7 +17,6 @@ def estimate_a(
     m_ref: float | None = None,
     b_value: float | None = None,
     method: AValueEstimator = ClassicAValueEstimator,
-    *args,
     **kwargs
 ) -> float:
     '''
@@ -45,8 +44,7 @@ def estimate_a(
         b_value:        b-value of the Gutenberg-Richter law. Only relevant
                     when `m_ref` is not `None`.
         method:         AValueEstimator class to use for calculation.
-        *args:          Additional arguments to pass to the :func:`calculate` method.
-        **kwargs:       Additional keyword arguments to pass to the :func:`calculate`
+        **kwargs:       Additional parameters to be passed to the :func:`calculate`
                     method.
 
     Returns:
@@ -80,6 +78,6 @@ def estimate_a(
     estimator = method()
     estimator.calculate(magnitudes, mc=mc, delta_m=delta_m,
                         scaling_factor=scaling_factor, m_ref=m_ref,
-                        b_value=b_value, *args, **kwargs)
+                        b_value=b_value, **kwargs)
 
     return estimator.a_value

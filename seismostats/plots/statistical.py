@@ -22,7 +22,6 @@ def plot_mc_vs_b(
     ax: plt.Axes | None = None,
     color: str = "blue",
     label: str | None = None,
-    *args,
     **kwargs,
 ) -> plt.Axes:
     """
@@ -37,8 +36,8 @@ def plot_mc_vs_b(
         ax:             Axis where figure should be plotted.
         color:          Color of the data.
         label:          Label of the data that will be put in the legend.
-        *args:          Additional arguments for the b-value estimator.
-        **kwargs:       Additional keyword arguments for the b-value estimator.
+        **kwargs:       Additional parameters to be passed to the b-value
+                    estimator.
 
     Returns:
         ax: ax that was plotted on
@@ -50,7 +49,7 @@ def plot_mc_vs_b(
 
     for mc in mcs:
         estimator.calculate(
-            magnitudes, mc=mc, delta_m=delta_m, *args, **kwargs)
+            magnitudes, mc=mc, delta_m=delta_m, **kwargs)
         b_values.append(estimator.b_value)
         b_errors.append(estimator.std)
 
@@ -93,7 +92,6 @@ def plot_b_series_constant_nm(
         ax: plt.Axes | None = None,
         color: str = "blue",
         label: str | None = None,
-        *args,
         **kwargs,
 ) -> plt.Axes:
     """
@@ -130,9 +128,8 @@ def plot_b_series_constant_nm(
         ax:             Axis where the plot should be plotted.
         color:          Color of the data.
         label:          Label of the data that will be put in the legend.
-        *args:          Additional positional arguments for the b-value
+        **kwargs:       Additional parameters to be passed to the b-value
                     estimator.
-        **kwargs:       Additional keyword arguments for the b-value estimator.
 
     Returns:
         ax:         Ax that was plotted on.
@@ -196,7 +193,7 @@ def plot_b_series_constant_nm(
 
         # estimate the b-value
         estimator.calculate(
-            mags_window, mc=max(mc_window), delta_m=delta_m, *args, **kwargs)
+            mags_window, mc=max(mc_window), delta_m=delta_m, **kwargs)
         if estimator.n < min_num:
             b_values[idx_start + ii] = np.nan
             std_bs[idx_start + ii] = np.nan

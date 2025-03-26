@@ -23,7 +23,6 @@ def estimate_b(
     return_std: bool = False,
     method: BValueEstimator = ClassicBValueEstimator,
     return_n: bool = False,
-    *args,
     **kwargs
 ) -> float | tuple[float, float] | tuple[float, float, float]:
     '''
@@ -50,9 +49,7 @@ def estimate_b(
             method:         BValueEstimator class to use for calculation.
             return_n:       If True, the number of events used for the
                         estimation is also returned.
-            *args:          Additional arguments to pass to the
-                        :func:`calculate` method.
-            **kwargs:       Additional keyword arguments to pass to the
+            **kwargs:       Additional parameters to be passed to the
                         :func:`calculate` method.
 
         Returns:
@@ -96,7 +93,7 @@ def estimate_b(
 
     estimator = method()
     estimator.calculate(magnitudes, mc=mc, delta_m=delta_m,
-                        weights=weights, *args, **kwargs)
+                        weights=weights, **kwargs)
 
     if b_parameter == 'b_value':
         b = estimator.b_value
