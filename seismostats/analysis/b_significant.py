@@ -150,7 +150,6 @@ def values_from_partitioning(
     delta_m: float,
     method: AValueEstimator | BValueEstimator = ClassicBValueEstimator,
     list_scaling: list | None = None,
-    * args,
     **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """ Estimates the series of b-values from a list of subsets of magnitudes
@@ -168,9 +167,8 @@ def values_from_partitioning(
                 b-value estimator.
         list_scaling: List of scaling factors for the a-value estimation. Only
                 used in case the method is an a-value estimator.
-        *args:      Additional arguments to the a/b-value estimation method.
-        **kwargs:   Additional keyword arguments to the a/b-value estimation
-                method.
+        **kwargs:   Additional parameters to be passed to the a/b-value
+                estimation method.
 
     Returns:
         values:     Series of b-values (or a-values), each one is estimated
@@ -236,11 +234,11 @@ def values_from_partitioning(
                 mc=list_mc[ii],
                 delta_m=delta_m,
                 scaling_factor=list_scaling[ii],
-                *args, **kwargs)
+                **kwargs)
             values[ii] = estimator.a_value
         elif isinstance(estimator, BValueEstimator):
             estimator.calculate(
-                mags_loop, mc=list_mc[ii], delta_m=delta_m, *args, **kwargs)
+                mags_loop, mc=list_mc[ii], delta_m=delta_m, **kwargs)
             values[ii] = estimator.b_value
         stds[ii] = estimator.std
         n_ms[ii] = estimator.n
@@ -290,7 +288,6 @@ def b_significant_1D(
         min_num: int = 10,
         method: BValueEstimator | AValueEstimator = ClassicBValueEstimator,
         conservative: bool = True,
-        *args,
         ** kwargs,
 ) -> tuple[float, float, float, float]:
     """
@@ -320,8 +317,8 @@ def b_significant_1D(
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
                     i.e., gamma = 0.81 (see Mirwald et al, SRL (2024)).
-        *args:          Additional arguments to the b-value estimation method.
-        **kwargs:       Keyword arguments to the b-value estimation method.
+        **kwargs:       Additional parameters to be passed to the b-value
+                    estimation method.
 
     Returns:
         p_value:    P-value of the null hypothesis that the b-values are
@@ -397,7 +394,7 @@ def b_significant_1D(
         # Estimate b-values (a-values)
         vec, _, n_m_loop = values_from_partitioning(
             list_magnitudes, list_times, list_mc,
-            delta_m, method=method, *args, **kwargs)
+            delta_m, method=method, **kwargs)
         vec[n_m_loop < min_num] = np.nan
 
         # Estimate average events per b-value estimate.

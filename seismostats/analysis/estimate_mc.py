@@ -144,7 +144,6 @@ def mc_ks(
     b_method: BValueEstimator = ClassicBValueEstimator,
     n: int = 10000,
     ks_ds_list: list[list] | None = None,
-    *args,
     **kwargs,
 ) -> tuple[float | None, float | None, list[float],
            list[float], list[float], np.ndarray]:
@@ -180,8 +179,7 @@ def mc_ks(
                         calculated for estimating the p-value.
         ks_ds_list:         KS distances from synthetic data with the given
                         parameters. If `None`, they will be estimated here.
-        *args,              Additional arguments for the b-value estimator.
-        **kwargs:           Additional keyword arguments for the b-value
+        **kwargs:           Additional parameters to be passed to the b-value
                         estimator.
 
     Returns:
@@ -234,7 +232,7 @@ def mc_ks(
         if b_value is None:
             estimator = b_method()
             estimator.calculate(
-                mc_sample, mc=mc, delta_m=delta_m, *args, **kwargs)
+                mc_sample, mc=mc, delta_m=delta_m, **kwargs)
             mc_b_value = estimator.b_value
         else:
             mc_b_value = b_value

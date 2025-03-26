@@ -424,26 +424,26 @@ def test_estimate_mc_catalog(mc_ks_mock: MagicMock):
         cat.estimate_mc()
 
     cat.estimate_mc(delta_m=0.123)
-    args, _ = mc_ks_mock.call_args
-    assert args[:2] == (cat.magnitude, 0.123)
+    _, kwargs = mc_ks_mock.call_args
+    assert kwargs['delta_m'] == 0.123
 
     cat.delta_m = 0.321
     cat.estimate_mc()
-    args, _ = mc_ks_mock.call_args
-    assert args[:2] == (cat.magnitude, 0.321)
+    _, kwargs = mc_ks_mock.call_args
+    assert kwargs['delta_m'] == 0.321
 
     cat.estimate_mc(b_value=1.0)
-    args, _ = mc_ks_mock.call_args
-    assert args[6] == 1.0
+    _, kwargs = mc_ks_mock.call_args
+    assert kwargs['b_value'] == 1.0
 
     cat.b_value = 2.0
     cat.estimate_mc()
-    args, _ = mc_ks_mock.call_args
-    assert args[6] == 2.0
+    _, kwargs = mc_ks_mock.call_args
+    assert kwargs['b_value'] == 2.0
 
     cat.estimate_mc(b_value=1.0)
-    args, _ = mc_ks_mock.call_args
-    assert args[6] == 1.0
+    _, kwargs = mc_ks_mock.call_args
+    assert kwargs['b_value'] == 1.0
 
 
 def test_estimate_b_functionality():
