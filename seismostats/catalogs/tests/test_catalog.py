@@ -4,7 +4,7 @@ import os
 import re
 import uuid
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import matplotlib.pyplot as plt
@@ -14,6 +14,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 from typing_extensions import get_type_hints
 
+from seismostats.analysis.avalue.positive import APositiveAValueEstimator
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import beta_to_b_value
@@ -548,3 +549,84 @@ def test_estimate_b_catalog():
     cat.estimate_b(method=estimator, weights=np.ones(len(mags)))
     _, kwargs = estimator.calculate.call_args
     assert kwargs['weights'] is None
+
+
+def test_estimate_a_functionality():
+    # should mainly test that the method is called correctly and
+    # the two functions are consistent with each other.
+
+    mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+    cat = Catalog({'magnitude': mags})
+
+    estimator = cat.estimate_a(mc=1, delta_m=1)
+    assert estimator.a_value == 1.0
+
+    # reference magnitude is given and b-value given
+    estimator = cat.estimate_a(mc=1, delta_m=0.0,
+                               m_ref=0, b_value=1)
+    assert estimator.a_value == 2.0
+
+    # reference magnitude but no b-value
+    with pytest.raises(ValueError):
+        cat.estimate_a(mc=1, delta_m=0.0001, m_ref=0)
+
+    # reference time is given
+    estimator = cat.estimate_a(mc=1, delta_m=0.0001,
+                               scaling_factor=10)
+    assert estimator.a_value == 0.0
+
+
+def test_estimate_a_method():
+    mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 10])
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 12), timedelta(days=1)).astype(datetime)
+
+    cat = Catalog({'magnitude': mags, 'time': times})
+
+    amethod = APositiveAValueEstimator
+    estimator = cat.estimate_a(mc=1, delta_m=1, method=amethod, times=times)
+    assert_almost_equal(10**estimator.a_value, 10.0)
+
+    # reference magnitude is given and b-value given
+    estimator = cat.estimate_a(mc=1, delta_m=1,
+                               m_ref=0, b_value=1, method=amethod)
+    assert_almost_equal(10**estimator.a_value, 100.0)
+
+    cat = Catalog({'magnitude': mags})
+    estimator = cat.estimate_a(mc=1, delta_m=1, method=amethod, times=times)
+    assert_almost_equal(10**estimator.a_value, 10.0)
+
+
+def test_estimate_a_catalog():
+    mags = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 10])
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 12), timedelta(days=1)).astype(datetime)
+
+    estimator = MagicMock
+    estimator.calculate = MagicMock()
+
+    cat = Catalog({'magnitude': mags, 'time': times})
+
+    with pytest.raises(ValueError):
+        cat.estimate_a()
+
+    with pytest.raises(ValueError):
+        cat.estimate_a(mc=0)
+
+    with pytest.raises(ValueError):
+        cat.estimate_a(delta_m=0.1)
+
+    cat.estimate_a(mc=0, delta_m=0.123, method=estimator)
+    args, _ = estimator.calculate.call_args
+    assert args[1:3] == (0, 0.123)
+
+    cat.delta_m = 0.321
+    cat.mc = 1
+    cat.estimate_a(mc=0, delta_m=0.123, method=estimator)
+    args, _ = estimator.calculate.call_args
+    assert args[1:3] == (0, 0.123)
+
+    cat.estimate_a(method=estimator)
+    args, _ = estimator.calculate.call_args
+    assert args[1:3] == (1, 0.321)
