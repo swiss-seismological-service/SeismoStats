@@ -3,7 +3,7 @@
 ```{eval-rst}
 .. currentmodule:: seismostats
 ```
-
+(avalues)=
 ## Functions
 ```{eval-rst}
 .. autosummary::

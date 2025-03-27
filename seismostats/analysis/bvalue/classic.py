@@ -24,7 +24,7 @@ def _mle_estimator(magnitudes: np.ndarray,
 class ClassicBValueEstimator(BValueEstimator):
     '''
     Estimator to calculate the b-value and other parameters of the
-    Gutenberg-Richter (GR).
+    Gutenberg-Richter (GR) law.
 
     .. math::
         N(m) = 10 ^ {a - b \\cdot (m - m_{ref})},

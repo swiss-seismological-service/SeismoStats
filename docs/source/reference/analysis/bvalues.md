@@ -11,7 +11,7 @@
     analysis.estimate_b
     analysis.shi_bolt_confidence
 ```
-
+(bvalues)=
 ## Estimators
 ```{eval-rst}
 .. autosummary::

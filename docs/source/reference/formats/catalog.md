@@ -28,6 +28,18 @@ Simple representation of an earthquake catalog, storing each single event as a r
     Catalog.from_dict
 ```
 
+### Estimate from Catalog
+
+```{eval-rst}
+.. autosummary::
+    :toctree: ../api/
+    :nosignatures:
+
+    Catalog.estimate_b
+    Catalog.estimate_mc
+    Catalog.estimate_a
+```
+
 ### Modify Catalog
 
 ```{eval-rst}
@@ -41,16 +53,6 @@ Simple representation of an earthquake catalog, storing each single event as a r
     Catalog.drop_uncertainties
 ```
 
-### Estimate from Catalog
-
-```{eval-rst}
-.. autosummary::
-    :toctree: ../api/
-    :nosignatures:
-
-    Catalog.estimate_b
-    Catalog.estimate_mc
-```
 
 (convert-cat)=
 ### Convert to other format
