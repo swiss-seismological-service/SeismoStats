@@ -54,7 +54,7 @@ def _catalog_constructor_with_fallback(df, **kwargs):
 
 
 class Catalog(pd.DataFrame):
-    """
+    '''
     A subclass of pandas DataFrame that represents a catalog of earthquakes.
 
     To be a valid Catalog object, the DataFrame must have at least a
@@ -95,6 +95,7 @@ class Catalog(pd.DataFrame):
             ...         'magnitude': [1, 2, 3]}
             >>> catalog = Catalog(data)
             >>> catalog
+
             longitude  latitude  depth                time  magnitude
             0          0         0      0 2021-01-01 00:00:00          1
             1          1         1      1 2021-01-01 00:00:00          2
@@ -113,7 +114,7 @@ class Catalog(pd.DataFrame):
         :ivar depth_max:    Maximum depth for which events are included in the
                         catalog.
         :ivar logger:       Logger for the catalog.
-    """
+    '''
 
     _metadata = ['name', '_required_cols', 'mc', 'a_value',
                  'delta_m', 'b_value', 'starttime', 'endtime',
@@ -124,9 +125,9 @@ class Catalog(pd.DataFrame):
 
     @property
     def _constructor(self):
-        """
+        '''
         Required for subclassing Pandas DataFrame.
-        """
+        '''
         return _catalog_constructor_with_fallback
 
     def __init__(
@@ -199,7 +200,7 @@ class Catalog(pd.DataFrame):
                      include_uncertainties: bool = False,
                      include_ids: bool = False,
                      include_quality: bool = False) -> Catalog:
-        """
+        '''
         Create a Catalog from a QuakeML file.
 
         Args:
@@ -223,11 +224,12 @@ class Catalog(pd.DataFrame):
                 >>> from seismostats import Catalog
                 >>> catalog = Catalog.from_quakeml("path/to/quakeml.xml")
                 >>> catalog
+
                    longitude   latitude  depth                time  magnitude
                 0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
                 1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
                 2       2.35    2.13400  50.40 2020-11-30 12:30:59        3.9
-        """
+        '''
         if os.path.isfile(quakeml):
             catalog = parse_quakeml_file(
                 quakeml, include_all_magnitudes, include_quality)
@@ -247,7 +249,7 @@ class Catalog(pd.DataFrame):
                   include_uncertainties: bool = True,
                   include_ids: bool = True,
                   **kwargs) -> Catalog:
-        """
+        '''
         Create a Catalog from a list of dictionaries.
 
         Args:
@@ -274,10 +276,11 @@ class Catalog(pd.DataFrame):
                 ...      'magnitude': 2.5}]
                 >>> catalog = Catalog.from_dict(data)
                 >>> catalog
+
                    longitude   latitude  depth                time  magnitude
                 0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
                 1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
-        """
+        '''
 
         df = pd.DataFrame.from_dict(data, **kwargs)
         df = cls(df)
@@ -292,7 +295,7 @@ class Catalog(pd.DataFrame):
     @classmethod
     def from_openquake(cls, oq_catalogue: OQCatalogue,
                        keep_time_cols=False) -> Catalog:
-        """
+        '''
         Create a (seismostats) Catalog from an openquake Catalogue.
         The optional dependency group openquake is required for this method.
 
@@ -328,11 +331,12 @@ class Catalog(pd.DataFrame):
                 ...     })
                 >>> catalog = Catalog.from_openquake(simple_oq_catalogue)
                 >>> catalog
+
                    longitude   latitude  depth                time  magnitude
                 0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
                 1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
                 2       2.35    2.13400  50.40 2020-11-30 12:30:59        3.9
-        """
+        '''
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
 
@@ -369,7 +373,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=[
         'longitude', 'latitude', 'depth', 'time', 'magnitude'])
     def to_openquake(self) -> OQCatalogue:
-        """
+        '''
         Converts the Catalog to an openquake Catalogue
         The optional dependency group openquake is required for this method.
         The required columns are mapped to the openquake columns, except
@@ -395,8 +399,9 @@ class Catalog(pd.DataFrame):
                 ...     })
                 >>> oq_catalog = simple_catalog.to_openquake()
                 >>> type(oq_catalog)
+
                 <class 'openquake.hmtk.seismicity.catalogue.Catalogue'>
-        """
+        '''
         if not _openquake_available:
             raise ImportError("the optional openquake package is not available")
         if len(self) == 0:
@@ -420,7 +425,7 @@ class Catalog(pd.DataFrame):
         return OQCatalogue.make_from_dict(data)
 
     def drop_uncertainties(self) -> Catalog:
-        """
+        '''
         Drop uncertainty columns from the catalog.
 
         Drops columns with names ending in '_uncertainty', '_lowerUncertainty',
@@ -428,7 +433,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             catalog: Catalog with uncertainty columns removed.
-        """
+        '''
 
         rgx = "(_uncertainty|_lowerUncertainty|" \
             "_upperUncertainty|_confidenceLevel)$"
@@ -438,14 +443,14 @@ class Catalog(pd.DataFrame):
         return df
 
     def drop_ids(self) -> Catalog:
-        """
+        '''
         Drop event, origin, and magnitude IDs from the catalog.
 
         Drops columns named 'eventID', 'originID', and 'magnitudeID'.
 
         Returns:
             catalog: Catalog with ID columns removed.
-        """
+        '''
 
         rgx = "(eventID|originID|magnitudeID)$"
         cols = self.filter(regex=rgx).columns
@@ -454,7 +459,7 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=_required_cols)
     def strip(self, inplace: bool = False) -> Catalog | None:
-        """
+        '''
         Remove all columns except the required ones
         defined in ``_required_cols``.
 
@@ -463,7 +468,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             catalog:    Catalog with the stripped columns.
-        """
+        '''
         df = self.drop(columns=set(self.columns).difference(
             set(self._required_cols)), inplace=inplace)
         if not inplace:
@@ -472,7 +477,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def bin_magnitudes(self, delta_m: float = None, inplace: bool = False) \
             -> Catalog | None:
-        """
+        '''
         Rounds values in the ``magnitude`` column of the catalog to a given
         precision ``delta_m``.
 
@@ -494,6 +499,7 @@ class Catalog(pd.DataFrame):
                 ...     'magnitude': [1.02, 2.53, 3.99]
                 ...     })
                 >>> simple_catalog.bin_magnitudes(delta_m=0.1)
+
                     longitude   latitude  magnitude
                 0       42.35    3.34444        1.0
                 1        1.35    5.13500        2.5
@@ -510,11 +516,12 @@ class Catalog(pd.DataFrame):
                 ...     })
                 >>> simple_catalog.delta_m = 0.1
                 >>> simple_catalog.bin_magnitudes()
+
                     longitude   latitude  magnitude
                 0       42.35    3.34444        1.0
                 1        1.35    5.13500        2.5
                 2        2.35    2.13400        4.0
-        """
+        '''
         if delta_m is None and self.delta_m is None:
             raise ValueError("binning (delta_m) needs to be set")
         if delta_m is None:
@@ -546,7 +553,7 @@ class Catalog(pd.DataFrame):
         **kwargs,
     ) -> tuple[float | None, float | None, list[float],
                list[float], list[float], np.ndarray]:
-        """
+        '''
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
         hypothesis that the sample is drawn from a Gutenberg-Richter law cannot
@@ -601,9 +608,10 @@ class Catalog(pd.DataFrame):
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
                 >>> simple_catalog.estimate_mc()
+
                 (1.0, 0.28645181449530005, [1.0], [0.28645181449530005],
                     [0.29485562894395984], array([0.866]))
-        """
+        '''
         if delta_m is None and self.delta_m is None:
             raise ValueError("Binning (delta_m) needs to be set.")
         if delta_m is None:
@@ -638,12 +646,10 @@ class Catalog(pd.DataFrame):
         method: BValueEstimator = ClassicBValueEstimator,
         **kwargs
     ) -> BValueEstimator:
-        """
-        Estimates b-value of magnitudes in the Catalog based on settings given
-        by the input parameters. Sets attribute b-value to the computed value,
-        but also returns the computed b-value. If return_std or return_n set
-        to True, also returns the uncertainty and/or number of magnitudes used
-        to estimate the b-value.
+        '''
+        Estimates b-value of the Gutenberg-Richter (GR) law, using the
+        magnitudes in the `Catalog`. Sets attribute b-value to the computed
+        value, but also returns the b-value estimator object.
 
         Args:
             mc:         Completeness magnitude, etiher given as parameter or
@@ -652,13 +658,19 @@ class Catalog(pd.DataFrame):
                     or taken from the object attribute.
             weights:    Weights of each magnitude can be specified here.
             method:     BValueEstimator class to use for calculation.
-            **kwargs:   Additional parameters to be passed to the b-value
-                    estimator.
+            **kwargs:   Additional parameters to be passed to the
+                    `BValueEstimator.calculate` method.
 
         Returns:
             estimator: Object of type
                     :func:`~seismostats.analysis.bvalue.classic.ClassicBValueEstimator`
                     or of the type provided by the `method` parameter.
+
+        See Also:
+            By default uses
+            :func:`~seismostats.analysis.bvalue.classic.ClassicBValueEstimator`
+            as estimator. All available estimators can be found in the
+            :ref:`bvalues <bvalues>` module.
 
         Examples:
             The `estimate_b` method sets the `b_value` attribute of
@@ -674,27 +686,41 @@ class Catalog(pd.DataFrame):
                 ...     })
                 >>> simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
                 >>> simple_catalog.b_value
+
                 0.28645181449530005
 
             The returned estimator can be used to access the remaining results,
             see the documentation of
             :func:`~seismostats.analysis.bvalue.classic.ClassicBValueEstimator`
-            or the explicitly used estimator for more information.
+            or the explicitly used :ref:`estimator <bvalues>` for more
+            information.
 
             .. code-block:: python
 
                 >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
                 >>> estimator.beta, estimator.std
+
                 (0.6595796779179737, 0.15820210898689366)
+
+            Using for example the
+            :func:`~seismostats.analysis.bvalue.positive.BPositiveBValueEstimator`,
+            the ``time`` parameter can either be passed in the ``kwargs``,
+            like the additional ``dmc`` parameter. If not passed, it will be
+            taken from the catalog columns directly.
 
             .. code-block:: python
 
+                >>> from datetime import datetime
                 >>> from seismostats.analysis import BPositiveBValueEstimator
+                >>> simple_catalog['time'] = [datetime(2000, 1, 1),
+                ...                           datetime(2000, 1, 2),
+                ...                           datetime(2000, 1, 3)]
                 >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1,
                 ...     method=BPositiveBValueEstimator, dmc=0.3)
                 >>> type(estimator)
+
                 <class 'seismostats.analysis.BPositiveBValueEstimator'>
-        """
+        '''
         if mc is None and self.mc is None:
             raise ValueError("Completeness magnitude (mc) needs to be set.")
         if mc is None:
@@ -738,8 +764,92 @@ class Catalog(pd.DataFrame):
                    b_value: float | None = None,
                    method: AValueEstimator = ClassicAValueEstimator,
                    **kwargs) -> AValueEstimator:
-        """
-        """
+        '''
+
+        Estimates a-value of the Gutenberg-Richter (GR) law, using the
+        magnitudes in the `Catalog`. Sets attribute a-value to the computed
+        value, but also returns the a-value estimator object.
+
+        Args:
+            magnitudes:     Array of magnitudes.
+            mc:             Completeness magnitude.
+            delta_m:        Bin size of discretized magnitudes.
+            scaling_factor: Scaling factor.
+                        If given, this is used to normalize the number of
+                        observed events. For example: Volume or area of the
+                        region considered or length of the time interval,
+                        given in the unit of interest.
+            m_ref:          Reference magnitude for which the a-value
+                        is estimated.
+            b_value:        b-value of the Gutenberg-Richter law. Only relevant
+                        when `m_ref` is not `None`.
+            method:         AValueEstimator class to use for calculation.
+            **kwargs:       Additional parameters to be passed to the
+                        `AValueEstimator.calculate` method.
+
+        Returns:
+            estimator: Object of type
+                    :func:`~seismostats.analysis.avalue.classic.ClassicAValueEstimator`
+                    or of the type provided by the `method` parameter.
+
+        See Also:
+            By default uses
+            :func:`~seismostats.analysis.avalue.classic.ClassicAValueEstimator`
+            as estimator. All available estimators can be found in the
+            :ref:`avalues <avalues>` module.
+
+        Examples:
+            The `estimate_a` method sets the `a_value` attribute of
+            the catalog to the computed value.
+
+            .. code-block:: python
+
+                >>> from datetime import datetime
+                >>> from seismostats import Catalog
+
+                >>> simple_catalog = Catalog.from_dict({
+                ...         'magnitude': [0, 0.9, -1, 0.2, 0.5],
+                ...         'time': [datetime(2000, 1, 1),
+                ...                  datetime(2000, 1, 2),
+                ...                  datetime(2000, 1, 3),
+                ...                  datetime(2000, 1, 4),
+                ...                  datetime(2000, 1, 5)]})
+                >>> simple_catalog.mc = -1.0
+
+                >>> simple_catalog.estimate_a(delta_m=0.1)
+                >>> simple_catalog.a_value
+
+                0.6989700043360189
+
+            The returned estimator can be used to access the remaining results,
+            see the documentation of
+            :func:`~seismostats.analysis.avalue.classic.ClassicAValueEstimator`
+            or the explicitly used :ref:`estimator <avalues>` for more
+            information.
+
+            .. code-block:: python
+
+                >>> estimator = simple_catalog.estimate_a(delta_m=0.1)
+                >>> estimator.a_value, estimator.mc
+
+                (0.6989700043360189, -1.0)
+
+            Using for example the
+            :func:`~seismostats.analysis.avalue.positive.APositiveAValueEstimator`,
+            the ``time`` parameter can either be passed in the ``kwargs``, like
+            the additional ``dmc`` parameter. If not passed, it will be taken
+            from the catalog columns directly.
+
+            .. code-block:: python
+
+                >>> from seismostats.analysis import APositiveAValueEstimator
+                >>> estimator = simple_catalog.estimate_a(delta_m=0.1,
+                ...                   method=APositiveAValueEstimator, dmc=0.1)
+                >>> type(estimator)
+
+                <class 'seismostats.analysis.APositiveAValueEstimator'>
+        '''
+
         if mc is None and self.mc is None:
             raise ValueError("Completeness magnitude (mc) needs to be set.")
         if mc is None:
@@ -781,7 +891,7 @@ class Catalog(pd.DataFrame):
                       dot_interpolation_power: int = 2,
                       dot_labels: str = "auto"
                       ) -> cartopy.mpl.geoaxes.GeoAxes:
-        """
+        '''
         This function plots seismicity on a surface. If ``include_map`` is
         set to ``True``, a nice natural earth map is used, otherwise the
         seismicity is just plotted on a blank grid. In the latter case,
@@ -817,7 +927,7 @@ class Catalog(pd.DataFrame):
                         providing a list of values).
         Returns:
             ax: GeoAxis object
-        """
+        '''
         ax = plot_in_space(self.longitude,
                            self.latitude,
                            self.magnitude,
@@ -838,7 +948,7 @@ class Catalog(pd.DataFrame):
                        mcs: np.ndarray = np.array([0]),
                        delta_m: float | None = None
                        ) -> plt.Axes:
-        """
+        '''
         Plots cumulative count of earthquakes in given catalog above given Mc
         through time. Plots a line for each given completeness magnitude in
         the array ``mcs``.
@@ -854,7 +964,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             ax: Ax that was plotted on.
-        """
+        '''
 
         if delta_m is None:
             delta_m = self.delta_m
@@ -876,7 +986,7 @@ class Catalog(pd.DataFrame):
                           color_dots: str = "blue",
                           color_line: str = "#eb4034",
                           ) -> plt.Axes:
-        """
+        '''
         Creates a scatter plot, each dot is an event. Time shown on the x-axis,
         magnitude shown on the y-axis, but also reflected in the size of dots.
 
@@ -903,7 +1013,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             ax: ax that was plotted on
-        """
+        '''
         ax = plot_mags_in_time(self.time,
                                self.magnitude,
                                ax=ax,
@@ -928,7 +1038,7 @@ class Catalog(pd.DataFrame):
                      bin_position: str = "center",
                      legend: bool | str | list = True
                      ) -> plt.Axes:
-        """
+        '''
         Plots cumulative frequency magnitude distribution, optionally with a
         corresponding theoretical Gutenberg-Richter (GR) distribution. The GR
         distribution is plotted provided the b-value is given.
@@ -954,7 +1064,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             ax: The ax object that was plotted on.
-        """
+        '''
         if delta_m is None:
             delta_m = self.delta_m
         if mc is None:
@@ -983,7 +1093,7 @@ class Catalog(pd.DataFrame):
                  bin_position: str = "center",
                  legend: bool | str | list = True
                  ) -> plt.Axes:
-        """
+        '''
         Plots frequency magnitude distribution. If no binning is specified, the
         assumed value of ``delta_m`` is 0.1.
 
@@ -1001,7 +1111,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             ax: The ax object that was plotted on.
-        """
+        '''
         if delta_m is None:
             delta_m = self.delta_m
         ax = plot_fmd(self.magnitude,
@@ -1026,7 +1136,7 @@ class Catalog(pd.DataFrame):
                      label: str | None = None,
                      **kwargs
                      ) -> plt.Axes:
-        """
+        '''
         Plots the estimated b-value in dependence of the completeness
         magnitude.
 
@@ -1044,7 +1154,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             ax: ax that was plotted on
-        """
+        '''
 
         if delta_m is None:
             delta_m = self.delta_m
@@ -1060,14 +1170,14 @@ class Catalog(pd.DataFrame):
         return ax
 
     def _secondary_magnitudekeys(self) -> list[str]:
-        """
+        '''
         Get a list of secondary magnitude keys in the catalog.
 
         This will always include also the preferred magnitude type.
 
         Returns:
             keys: List of secondary magnitude keys in the catalog.
-        """
+        '''
 
         vals = ['_uncertainty',
                 '_lowerUncertainty',
@@ -1082,11 +1192,11 @@ class Catalog(pd.DataFrame):
         return secondary_mags
 
     def _create_ids(self) -> Catalog:
-        """
+        '''
         Create missing event, origin, and magnitude IDs for the catalog.
 
         Will fill in missing IDs with UUIDs, represented as strings.
-        """
+        '''
         df = self.copy()
 
         for col in ['eventID', 'originID', 'magnitudeID']:
@@ -1108,7 +1218,7 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=_required_cols)
     def to_quakeml(self, agencyID=' ', author=' ') -> str:
-        """
+        '''
         Convert the catalog to QuakeML format.
 
         Args:
@@ -1138,7 +1248,7 @@ class Catalog(pd.DataFrame):
                 <q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2"
                     xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
                 ...
-        """
+        '''
 
         df = self.copy()
         df = df._create_ids()
@@ -1168,7 +1278,7 @@ class Catalog(pd.DataFrame):
         return _render_template(data, QML_TEMPLATE)
 
     def __finalize__(self, other, method=None, **kwargs) -> Catalog:
-        """ Propagate metadata from other to self.
+        ''' Propagate metadata from other to self.
             Source: https://github.com/geopandas/geopandas
 
         Args:
@@ -1178,7 +1288,7 @@ class Catalog(pd.DataFrame):
 
         Returns:
             self:   The finalized object.
-        """
+        '''
         self = super().__finalize__(other, method=method, **kwargs)
 
         # merge operation: using metadata of the left object
@@ -1194,7 +1304,7 @@ class Catalog(pd.DataFrame):
 
 
 class ForecastCatalog(Catalog):
-    """
+    '''
     A subclass of pandas DataFrame that represents catalogs of earthquake
     forecasts.
 
@@ -1223,7 +1333,7 @@ class ForecastCatalog(Catalog):
         The ForecastCatalog class is a subclass of
         :class:`seismostats.Catalog`, and inherits all of its
         methods and attributes.
-    """
+    '''
 
     _required_cols = CATALOG_COLUMNS + ['catalog_id']
     _metadata = Catalog._metadata + ['n_catalogs']
@@ -1235,7 +1345,7 @@ class ForecastCatalog(Catalog):
 
     @require_cols(require=_required_cols)
     def to_quakeml(self, agencyID: str = ' ', author: str = ' ') -> list[str]:
-        """
+        '''
         Convert the catalogs to QuakeML format.
 
         Args:
@@ -1244,7 +1354,7 @@ class ForecastCatalog(Catalog):
 
         Returns:
             catalogs:   List of catalogs in QuakeML format.
-        """
+        '''
         catalogs = []
         for _, group in self.groupby('catalog_id'):
             catalogs.append(Catalog(group).to_quakeml(agencyID, author))
