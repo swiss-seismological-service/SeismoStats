@@ -539,7 +539,7 @@ class Catalog(pd.DataFrame):
             return df
 
     @require_cols(require=['magnitude'])
-    def estimate_mc(
+    def estimate_mc_ks(
         self,
         delta_m: float | None = None,
         mcs_test: list | None = None,
@@ -565,6 +565,9 @@ class Catalog(pd.DataFrame):
             - Mizrahi, L., Nandan, S. and Wiemer, S., 2021. The effect of
               declustering on the size distribution of mainshocks. Seismological
               Society of America, 92(4), pp.2333-2342.
+
+        Attention:
+            Catalog.mc will be replaced by the ``best_mc`` return value.
 
         Args:
             delta_m:        Bin size of discretized magnitudes. Sample has to be
@@ -599,14 +602,14 @@ class Catalog(pd.DataFrame):
         Examples:
             .. code-block:: python
 
-                >>> import pandas as pd
                 >>> from seismostats import Catalog
                 >>> simple_catalog = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
-                >>> simple_catalog.estimate_mc()
+                >>> simple_catalog.delta_m = 0.1
+                >>> simple_catalog.estimate_mc_ks()
 
                 (1.0, 0.28645181449530005, [1.0], [0.28645181449530005],
                     [0.29485562894395984], array([0.866]))
