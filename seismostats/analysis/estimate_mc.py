@@ -6,7 +6,6 @@ import warnings
 
 import numpy as np
 
-from seismostats.analysis.bvalue import estimate_b
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.bvalue.utils import b_value_to_beta
@@ -198,38 +197,38 @@ def mc_ks(
         # sort mcs
         mcs_test = np.sort(np.unique(mcs_test))
 
-    if get_option("warnings") is True:
-        # check if binning is correct
-        if not binning_test(sample, delta_m, check_larger_binning=False):
-            warnings.warn(
-                "Magnitudes are not binned correctly. "
-                "Test might fail because of this."
-            )
-        if not binning_test(mcs_test, delta_m, check_larger_binning=False):
-            warnings.warn(
-                "Mcs to test are not binned correctly. "
-                "Test might fail because of this."
-            )
+    # if magnitude binning is incorrect, b-value calculation will fail anyway
+    if b_value is None and not binning_test(sample, delta_m,
+                                            check_larger_binning=False):
+        raise ValueError('Magnitudes are not binned correctly.')
 
-        # check if b-value is given (then b_method is not needed)
-        if b_value is not None and verbose:
-            print("Using given b-value instead of estimating it.")
+    if get_option("warnings") is True:
+        if not binning_test(sample, delta_m, check_larger_binning=False):
+            warnings.warn("Magnitudes are not binned correctly. "
+                          "Test might fail because of this.")
+        if not binning_test(mcs_test, delta_m, check_larger_binning=False):
+            warnings.warn("Mcs to test are not binned correctly. "
+                          "Test might fail because of this.")
+
+    # check if b-value is given (then b_method is not needed)
+    if b_value is not None and verbose:
+        print("Using given b-value instead of estimating it.")
 
     mcs_tested = []
     ks_ds = []
     ps = []
     b_values_test = []
+    estimator = b_method()
 
     for ii, mc in enumerate(mcs_test):
 
         if verbose:
-            print("\ntesting mc", mc)
+            print(f'\nTesting mc: {mc}.')
 
         mc_sample = sample[sample >= mc - delta_m / 2]
 
         # if no b_value is given, estimate b_value
         if b_value is None:
-            estimator = b_method()
             estimator.calculate(
                 mc_sample, mc=mc, delta_m=delta_m, **kwargs)
             mc_b_value = estimator.b_value
@@ -237,18 +236,18 @@ def mc_ks(
             mc_b_value = b_value
 
         if ks_ds_list is None:
-            p, ks_d, _ = ks_test_gr(
-                mc_sample, mc=mc, delta_m=delta_m, b_value=mc_b_value, n=n
-            )
+            p, ks_d, _ = ks_test_gr(mc_sample,
+                                    mc=mc,
+                                    delta_m=delta_m,
+                                    b_value=mc_b_value,
+                                    n=n)
         else:
-            p, ks_d, _ = ks_test_gr(
-                mc_sample,
-                mc=mc,
-                delta_m=delta_m,
-                b_value=mc_b_value,
-                n=n,
-                ks_ds=ks_ds_list[ii],
-            )
+            p, ks_d, _ = ks_test_gr(mc_sample,
+                                    mc=mc,
+                                    delta_m=delta_m,
+                                    b_value=mc_b_value,
+                                    n=n,
+                                    ks_ds=ks_ds_list[ii],)
 
         mcs_tested.append(mc)
         ks_ds.append(ks_d)
@@ -256,7 +255,7 @@ def mc_ks(
         b_values_test.append(mc_b_value)
 
         if verbose:
-            print("..p-value: ", p)
+            print(f'..p-value: {p}')
 
         if p >= p_pass and stop_when_passed:
             break
@@ -268,12 +267,8 @@ def mc_ks(
         best_b_value = b_values_test[np.argmax(ps >= p_pass)]
 
         if verbose:
-            print(
-                "\n\nFirst mc to pass the test:",
-                best_mc,
-                "\nwith a b-value of:",
-                best_b_value,
-            )
+            print(f'\n\nBest mc to pass the test: {best_mc}',
+                  f'\nwith a b-value of: {best_b_value}.')
     else:
         best_mc = None
         best_b_value = None
@@ -306,13 +301,18 @@ def mc_max_curvature(
     Args:
         sample:             Array of magnitudes to test.
         delta_m:            Bin size of discretized magnitudes. Sample has to be
-                        rounded to bins beforehand).
+                        rounded to bins beforehand.
         correction_factor:  Correction factor for the maximum curvature
                 method (default value after Woessner & Wiemer 2005).
 
     Returns:
         mc:                 Estimated completeness magnitude.
     """
+    if get_option("warnings") is True:
+        if not binning_test(sample, delta_m, check_larger_binning=False):
+            warnings.warn("Magnitudes are not binned correctly. "
+                          "Test might fail because of this.")
+
     bins, count, _ = get_fmd(
         magnitudes=sample, delta_m=delta_m, bin_position="center"
     )
@@ -325,7 +325,10 @@ def mc_by_bvalue_stability(
         delta_m: float,
         mcs_test: np.ndarray | None = None,
         stop_when_passed: bool = True,
+        b_method: BValueEstimator = ClassicBValueEstimator,
         stability_range: float = 0.5,
+        verbose: bool = False,
+        **kwargs,
 ):
     """
     Estimates the completeness magnitude (mc) using b-value stability.
@@ -349,9 +352,15 @@ def mc_by_bvalue_stability(
                         and delta_m.
         stop_when_passed:   Boolean that indicates whether to stop computation
                         when a completeness magnitude (mc) has passed the test.
+        b_method:           b-value estimator to use if b-value needs to be
+                        calculated from data
         stability_range:    Magnitude range to consider for the stability test.
                         Default compatible with the original definition of
                         Cao & Gao 2002.
+        verbose:            Boolean that indicates whether to print verbose
+                        output.
+        **kwargs:           Additional parameters to be passed to the b-value
+                        estimator.
 
     Returns:
         - best_mc:          Best magnitude of completeness estimate.
@@ -362,9 +371,6 @@ def mc_by_bvalue_stability(
                         with tested mcs. If a value is smaller than one, this
                         means that the stability criterion is met.
     """
-    # TODO: include a test if the sample is tested the correct way
-    # instead of binning it here
-    sample = bin_to_precision(sample, delta_x=delta_m)
     steps = len(np.arange(0, stability_range, delta_m))
 
     if mcs_test is None:
@@ -372,41 +378,57 @@ def mc_by_bvalue_stability(
         mcs_test = bin_to_precision(mcs_test, delta_m)
         if len(mcs_test) <= steps:
             raise ValueError(
-                "The range of magnitudes is smaller than the stability range."
-            )
+                "The range of magnitudes is smaller than the stability range.")
         mcs_test = mcs_test[:-steps + 1]
     else:
         mcs_test = mcs_test[mcs_test + stability_range <= np.max(sample)]
         if len(mcs_test) < 1:
             raise ValueError(
-                "The range of magnitudes is smaller than the stability range."
-            )
+                "The range of magnitudes is smaller than the stability range.")
+
+    # if magnitude binning is incorrect, b-value calculation will fail anyway
+    if not binning_test(sample, delta_m, check_larger_binning=False):
+        raise ValueError('Magnitudes are not binned correctly.')
+
+    if get_option("warnings") is True:
+        if not binning_test(mcs_test, delta_m, check_larger_binning=False):
+            warnings.warn("Mcs to test are not binned correctly. "
+                          "Test might fail because of this.")
 
     b_values_test = []
     diff_bs = []
+    estimator = b_method()
+
     for ii, mc in enumerate(mcs_test):
-        # TODO: here, one should be able to choose the method
-        b, std = estimate_b(
-            sample[sample >= mc - delta_m / 2], mc, delta_m,
-            return_std=True)
-        if len(sample[sample >= mc - delta_m / 2]) < 30:
-            warnings.warn(
-                "Number of events above tested Mc is less than 30. "
-                "This might affect the stability test."
-            )
+
+        if verbose:
+            print(f'\nTesting mc: {mc}.')
+
+        sample_selected = sample[sample >= mc - delta_m / 2]
+
+        if len(sample_selected) < 30:
+            warnings.warn("Number of events above tested Mc is less than 30. "
+                          "This might affect the stability test.")
+
+        estimator.calculate(sample_selected, mc, delta_m, **kwargs)
+        b = estimator.b_value
+        std = estimator.std
         b_values_test.append(b)
 
         mc_plus = np.arange(mc, mc + stability_range, delta_m)
         mc_plus = mc_plus[mc_plus <= np.max(sample)]
         b_ex = []
         for mc_p in mc_plus:
-            # TODO: here, one should be able to choose the method
-            b_p = estimate_b(sample[sample >= mc_p - delta_m / 2],
-                             mc_p, delta_m)
-            b_ex.append(b_p)
+            sample_selected = sample[sample >= mc_p - delta_m / 2]
+            estimator.calculate(sample_selected, mc_p, delta_m, **kwargs)
+            b_ex.append(estimator.b_value)
         b_avg = np.sum(b_ex) / steps
         diff_b = np.abs(b_avg - b) / std
         diff_bs.append(diff_b)
+
+        if verbose:
+            print(f'..diff_b: {diff_b}')
+
         if diff_b <= 1:
             value = True
             if diff_b == min(diff_bs):
@@ -416,8 +438,15 @@ def mc_by_bvalue_stability(
                 mcs_test = mcs_test[:ii + 1]
                 break
 
-    if value:
-        return bin_to_precision(best_mc, delta_m), best_b_value, \
-            mcs_test, b_values_test, diff_bs
-    else:
-        raise ValueError("No Mc passes the stability test.")
+    if verbose:
+        print(f'\n\nBest mc to pass the test: {best_mc}',
+              f'\nwith a b-value of: {best_b_value}.')
+
+    if not value:
+        best_mc = None
+        best_b_value = None
+        if verbose:
+            print("None of the mcs passed the stability test.")
+
+    return bin_to_precision(best_mc, delta_m) if best_mc else None, \
+        best_b_value, mcs_test, b_values_test, diff_bs
