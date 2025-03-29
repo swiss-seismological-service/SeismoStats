@@ -38,6 +38,8 @@ Simple representation of an earthquake catalog, storing each single event as a r
     Catalog.estimate_b
     Catalog.estimate_a
     Catalog.estimate_mc_ks
+    Catalog.estimate_mc_bvalue_stability
+    Catalog.estimate_mc_maxc
 ```
 
 ### Modify Catalog
