@@ -186,7 +186,7 @@ def estimate_mc_ks(
         mcs_test:       Tested completeness magnitudes.
         b_values_test:  Tested b-values.
         ks_ds:          KS distances.
-        ps:             Corresponding p-values.
+        p_values:       Corresponding p-values.
     """
 
     if mcs_test is None:
@@ -216,7 +216,7 @@ def estimate_mc_ks(
 
     mcs_tested = []
     ks_ds = []
-    ps = []
+    p_values = []
     b_values_test = []
     estimator = b_method()
 
@@ -251,7 +251,7 @@ def estimate_mc_ks(
 
         mcs_tested.append(mc)
         ks_ds.append(ks_d)
-        ps.append(p)
+        p_values.append(p)
         b_values_test.append(mc_b_value)
 
         if verbose:
@@ -260,11 +260,11 @@ def estimate_mc_ks(
         if p >= p_pass and stop_when_passed:
             break
 
-    ps = np.array(ps)
+    p_values = np.array(p_values)
 
-    if np.any(ps >= p_pass):
-        best_mc = mcs_tested[np.argmax(ps >= p_pass)]
-        best_b_value = b_values_test[np.argmax(ps >= p_pass)]
+    if np.any(p_values >= p_pass):
+        best_mc = mcs_tested[np.argmax(p_values >= p_pass)]
+        best_b_value = b_values_test[np.argmax(p_values >= p_pass)]
 
         if verbose:
             print(f'\n\nBest mc to pass the test: {best_mc}',
@@ -276,7 +276,7 @@ def estimate_mc_ks(
         if verbose:
             print("None of the mcs passed the test.")
 
-    return best_mc, best_b_value, mcs_tested, b_values_test, ks_ds, ps
+    return best_mc, best_b_value, mcs_tested, b_values_test, ks_ds, p_values
 
 
 def estimate_mc_maxc(
@@ -329,7 +329,8 @@ def estimate_mc_bvalue_stability(
         stability_range: float = 0.5,
         verbose: bool = False,
         **kwargs,
-):
+) -> tuple[float | None, float | None, list[float],
+           list[float], list[float], list[float]]:
     """
     Estimates the completeness magnitude (mc) using b-value stability.
 
