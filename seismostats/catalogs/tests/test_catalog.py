@@ -18,7 +18,8 @@ from seismostats.analysis.avalue.positive import APositiveAValueEstimator
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import beta_to_b_value
-from seismostats.analysis.estimate_mc import estimate_mc_ks
+from seismostats.analysis.estimate_mc import (estimate_mc_bvalue_stability,
+                                              estimate_mc_ks, estimate_mc_maxc)
 from seismostats.analysis.tests.test_estimate_mc import KS_DISTS, MAGNITUDES
 from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
                                           ForecastCatalog)
@@ -344,10 +345,7 @@ def test_catalog_estimate_mc():
         catalog.estimate_mc_ks()
 
 
-def test_estimate_mc_regression():
-    func1 = Catalog.estimate_mc_ks
-    func2 = estimate_mc_ks
-
+def function_signature_match(func1, func2):
     sig1 = inspect.signature(func1)
     sig2 = inspect.signature(func2)
 
@@ -386,6 +384,24 @@ def test_estimate_mc_regression():
             f"Param {p1.name} default mismatch: {p1.default} != {p2.default}"
 
 
+def test_estimate_mc_ks_regression():
+    func1 = Catalog.estimate_mc_ks
+    func2 = estimate_mc_ks
+    function_signature_match(func1, func2)
+
+
+def test_estimate_mc_maxc_regression():
+    func1 = Catalog.estimate_mc_maxc
+    func2 = estimate_mc_maxc
+    function_signature_match(func1, func2)
+
+
+def test_estimate_mc_bvalue_stability_regression():
+    func1 = Catalog.estimate_mc_bvalue_stability
+    func2 = estimate_mc_bvalue_stability
+    function_signature_match(func1, func2)
+
+
 def test_estimate_mc_functionality():
     cat = Catalog({'magnitude': MAGNITUDES})
     mcs = [0.8, 0.9, 1.0, 1.1]
@@ -413,6 +429,53 @@ def test_estimate_mc_functionality():
     assert_equal(mcs_tested, mcs)
     assert_allclose(ks_ds, [0.42931381663381224, 0.30109531596808387,
                     0.14068486563063504, 0.07052420897739642], rtol=1e-7)
+
+
+def test_estimate_mc_maxc_functionality():
+    cat = Catalog({'magnitude': MAGNITUDES})
+    cat.estimate_mc_maxc(delta_m=0.1, correction_factor=0.2)
+    assert_equal(1.3, cat.mc)
+
+
+def test_estimate_mc_bvalue_stability():
+    cat = Catalog({'magnitude': MAGNITUDES})
+    cat.estimate_mc_bvalue_stability(delta_m=0.1, stability_range=0.5)
+    assert_almost_equal(1.1, cat.mc)
+
+
+@patch('seismostats.catalogs.catalog.estimate_mc_maxc')
+def test_estimate_mc_maxc_catalog(mc_maxc_mock: MagicMock):
+    cat = Catalog({'magnitude': MAGNITUDES})
+
+    with pytest.raises(ValueError):
+        cat.estimate_mc_maxc()
+
+    cat.estimate_mc_maxc(delta_m=0.123)
+    _, kwargs = mc_maxc_mock.call_args
+    assert kwargs['delta_m'] == 0.123
+
+    cat.delta_m = 0.321
+    cat.estimate_mc_maxc()
+    _, kwargs = mc_maxc_mock.call_args
+    assert kwargs['delta_m'] == 0.321
+
+
+@patch('seismostats.catalogs.catalog.estimate_mc_bvalue_stability',
+       return_value=np.arange(0, 5))
+def test_estimate_mc_bvalue_stability_catalog(mc_bvalue_mock: MagicMock):
+    cat = Catalog({'magnitude': MAGNITUDES})
+
+    with pytest.raises(ValueError):
+        cat.estimate_mc_bvalue_stability()
+
+    cat.estimate_mc_bvalue_stability(delta_m=0.123)
+    _, kwargs = mc_bvalue_mock.call_args
+    assert kwargs['delta_m'] == 0.123
+
+    cat.delta_m = 0.321
+    cat.estimate_mc_bvalue_stability()
+    _, kwargs = mc_bvalue_mock.call_args
+    assert kwargs['delta_m'] == 0.321
 
 
 @patch('seismostats.catalogs.catalog.estimate_mc_ks',

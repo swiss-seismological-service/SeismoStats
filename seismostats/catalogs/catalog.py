@@ -587,7 +587,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def estimate_mc_bvalue_stability(
         self,
-        delta_m: float,
+        delta_m: float | None = None,
         mcs_test: np.ndarray | None = None,
         stop_when_passed: bool = True,
         b_method: BValueEstimator = ClassicBValueEstimator,
@@ -757,7 +757,7 @@ class Catalog(pd.DataFrame):
         if b_value is None and self.b_value is not None:
             b_value = self.b_value
 
-        best_mc, best_b_value, mcs_test, b_values_test, ks_ds, ps = \
+        best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values = \
             estimate_mc_ks(self.magnitude,
                            delta_m=delta_m,
                            mcs_test=mcs_test,
@@ -772,7 +772,7 @@ class Catalog(pd.DataFrame):
 
         self.mc = best_mc
 
-        return best_mc, best_b_value, mcs_test, b_values_test, ks_ds, ps
+        return best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values
 
     @require_cols(require=['magnitude'])
     def estimate_b(
