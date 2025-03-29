@@ -18,7 +18,7 @@ from seismostats.analysis.avalue.positive import APositiveAValueEstimator
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import beta_to_b_value
-from seismostats.analysis.estimate_mc import mc_ks
+from seismostats.analysis.estimate_mc import estimate_mc_ks
 from seismostats.analysis.tests.test_estimate_mc import KS_DISTS, MAGNITUDES
 from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
                                           ForecastCatalog)
@@ -346,7 +346,7 @@ def test_catalog_estimate_mc():
 
 def test_estimate_mc_regression():
     func1 = Catalog.estimate_mc_ks
-    func2 = mc_ks
+    func2 = estimate_mc_ks
 
     sig1 = inspect.signature(func1)
     sig2 = inspect.signature(func2)
@@ -415,7 +415,7 @@ def test_estimate_mc_functionality():
                     0.14068486563063504, 0.07052420897739642], rtol=1e-7)
 
 
-@patch('seismostats.catalogs.catalog.mc_ks',
+@patch('seismostats.catalogs.catalog.estimate_mc_ks',
        return_value=np.arange(0, 6))
 def test_estimate_mc_catalog(mc_ks_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
