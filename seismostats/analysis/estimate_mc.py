@@ -132,7 +132,7 @@ def ks_test_gr(
     return p_val, ks_d_obs, ks_ds
 
 
-def mc_ks(
+def estimate_mc_ks(
     sample: np.ndarray,
     delta_m: float,
     mcs_test: np.ndarray | None = None,
@@ -279,7 +279,7 @@ def mc_ks(
     return best_mc, best_b_value, mcs_tested, b_values_test, ks_ds, ps
 
 
-def mc_max_curvature(
+def estimate_mc_maxc(
     sample: np.ndarray,
     delta_m: float,
     correction_factor: float = 0.2,
@@ -320,7 +320,7 @@ def mc_max_curvature(
     return mc
 
 
-def mc_by_bvalue_stability(
+def estimate_mc_bvalue_stability(
         sample: np.ndarray,
         delta_m: float,
         mcs_test: np.ndarray | None = None,

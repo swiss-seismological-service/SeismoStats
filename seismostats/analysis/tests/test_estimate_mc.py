@@ -7,8 +7,8 @@ from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import beta_to_b_value
-from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
-                                              mc_max_curvature)
+from seismostats.analysis.estimate_mc import (estimate_mc_bvalue_stability,
+                                              estimate_mc_ks, estimate_mc_maxc)
 from seismostats.utils.binning import bin_to_precision
 
 MAGNITUDES = np.array(
@@ -33,7 +33,7 @@ def test_estimate_mc_ks():
     mcs = [0.8, 0.9, 1.0, 1.1]
 
     # test when beta is given
-    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = estimate_mc_ks(
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=mcs,
@@ -54,7 +54,7 @@ def test_estimate_mc_ks():
     assert_equal(mcs_tested, mcs)
 
     # test when beta is not given
-    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = estimate_mc_ks(
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=[1.1],
@@ -78,7 +78,7 @@ def test_estimate_mc_ks():
     assert_allclose([4.362e-01], ps, atol=0.03)
 
     # test when mcs are not given
-    best_mc, best_beta, mcs_tested, b_values, ks_ds, ps = mc_ks(
+    best_mc, best_beta, mcs_tested, b_values, ks_ds, ps = estimate_mc_ks(
         MAGNITUDES,
         delta_m=0.1,
         p_pass=0.1,
@@ -89,7 +89,7 @@ def test_estimate_mc_ks():
     assert_equal([1.0, 1.1], mcs_tested)
 
     # test when b-positive is used
-    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = mc_ks(
+    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = estimate_mc_ks(
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=[1.5],
@@ -104,7 +104,7 @@ def test_estimate_mc_ks():
 
 
 def test_estimate_mc_maxc():
-    mc = mc_max_curvature(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
+    mc = estimate_mc_maxc(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
 
     assert_equal(1.3, mc)
 
@@ -124,7 +124,7 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     # make sure that the warning of no mags in lowest bin is not raised
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        mc, _, _, _, _ = mc_by_bvalue_stability(
+        mc, _, _, _, _ = estimate_mc_bvalue_stability(
             mags, delta_m=delta_m,
             stability_range=0.5,
             mcs_test=np.arange(0.12, 2.0, delta_m))
@@ -133,7 +133,7 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
 
 
 def test_estimate_mc_bvalue_stability_larger_bins():
-    mc, _, _, _, _ = mc_by_bvalue_stability(
+    mc, _, _, _, _ = estimate_mc_bvalue_stability(
         MAGNITUDES, delta_m=0.1, stability_range=0.5)
 
     assert_almost_equal(1.1, mc)
