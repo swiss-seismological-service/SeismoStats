@@ -8,8 +8,9 @@ from responses import matchers
 from seismostats import Catalog
 from seismostats.catalogs.client import FDSNWSEventClient
 
-PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'query.xml')
+PATH_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'data')
+PATH_RESOURCES = os.path.join(PATH_DATA, 'query.xml')
 
 date_format = "%Y-%m-%dT%H:%M:%S"
 
