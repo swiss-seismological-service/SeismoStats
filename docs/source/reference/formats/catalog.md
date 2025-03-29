@@ -36,8 +36,8 @@ Simple representation of an earthquake catalog, storing each single event as a r
     :nosignatures:
 
     Catalog.estimate_b
-    Catalog.estimate_mc
     Catalog.estimate_a
+    Catalog.estimate_mc_ks
 ```
 
 ### Modify Catalog
