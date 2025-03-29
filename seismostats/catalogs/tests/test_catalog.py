@@ -341,11 +341,11 @@ def test_catalog_estimate_mc():
     catalog = Catalog({'magnitude': [0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6]})
 
     with pytest.raises(ValueError):
-        catalog.estimate_mc()
+        catalog.estimate_mc_ks()
 
 
 def test_estimate_mc_regression():
-    func1 = Catalog.estimate_mc
+    func1 = Catalog.estimate_mc_ks
     func2 = mc_ks
 
     sig1 = inspect.signature(func1)
@@ -391,12 +391,12 @@ def test_estimate_mc_functionality():
     mcs = [0.8, 0.9, 1.0, 1.1]
 
     best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
-        cat.estimate_mc(0.1,
-                        mcs,
-                        0.1,
-                        b_value=beta_to_b_value(2.24),
-                        ks_ds_list=KS_DISTS,
-                        )
+        cat.estimate_mc_ks(0.1,
+                           mcs,
+                           0.1,
+                           b_value=beta_to_b_value(2.24),
+                           ks_ds_list=KS_DISTS,
+                           )
 
     assert_equal(1.1, best_mc)
     assert_equal(cat.mc, 1.1)
@@ -421,27 +421,27 @@ def test_estimate_mc_catalog(mc_ks_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
 
     with pytest.raises(ValueError):
-        cat.estimate_mc()
+        cat.estimate_mc_ks()
 
-    cat.estimate_mc(delta_m=0.123)
+    cat.estimate_mc_ks(delta_m=0.123)
     _, kwargs = mc_ks_mock.call_args
     assert kwargs['delta_m'] == 0.123
 
     cat.delta_m = 0.321
-    cat.estimate_mc()
+    cat.estimate_mc_ks()
     _, kwargs = mc_ks_mock.call_args
     assert kwargs['delta_m'] == 0.321
 
-    cat.estimate_mc(b_value=1.0)
+    cat.estimate_mc_ks(b_value=1.0)
     _, kwargs = mc_ks_mock.call_args
     assert kwargs['b_value'] == 1.0
 
     cat.b_value = 2.0
-    cat.estimate_mc()
+    cat.estimate_mc_ks()
     _, kwargs = mc_ks_mock.call_args
     assert kwargs['b_value'] == 2.0
 
-    cat.estimate_mc(b_value=1.0)
+    cat.estimate_mc_ks(b_value=1.0)
     _, kwargs = mc_ks_mock.call_args
     assert kwargs['b_value'] == 1.0
 
