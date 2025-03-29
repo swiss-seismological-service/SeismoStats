@@ -61,10 +61,10 @@ class FDSNWSEventClient():
         Examples:
             Create a Catalog from a dictionary.
 
-            >>> from seismostats.io import FDSNWSClient
+            >>> from seismostats import FDSNWSEventClient
             >>> from datetime import datetime
             >>> url = 'http://eida.ethz.ch/fdsnws/event/1/query'
-            >>> client = FDSNWSClient(url)
+            >>> client = FDSNWSEventClient(url)
             >>> df = client.get_events(
             ...     start_time=datetime(2020, 1, 1),
             ...     end_time=datetime(2022, 1, 1),
@@ -83,8 +83,6 @@ class FDSNWSEventClient():
             4  earthquake 2021-12-28 11:51:38 45.752843 7.080092  0.897306  ...
                ...        ...                 ...       ...       ...       ...
         """
-
-        request_url = self.url + '?'
         date_format = "%Y-%m-%dT%H:%M:%S"
 
         params = {}
@@ -114,7 +112,7 @@ class FDSNWSEventClient():
 
         catalog = []
 
-        r = requests.get(request_url, stream=True, params=params)
+        r = requests.get(self.url, stream=True, params=params)
 
         catalog = parse_quakeml_response(r, include_quality=include_quality)
 
