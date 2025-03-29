@@ -9,6 +9,7 @@ from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import beta_to_b_value
 from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
                                               mc_max_curvature)
+from seismostats.utils.binning import bin_to_precision
 
 MAGNITUDES = np.array(
     [
@@ -119,6 +120,7 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     swiss_catalog = setup_catalog[0]
     mags = swiss_catalog['magnitude'].values
     delta_m = setup_catalog[1]
+    mags = bin_to_precision(mags, delta_m)
     # make sure that the warning of no mags in lowest bin is not raised
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
