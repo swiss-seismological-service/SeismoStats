@@ -352,8 +352,7 @@ def estimate_mc_bvalue_stability(
                         and delta_m.
         stop_when_passed:   Boolean that indicates whether to stop computation
                         when a completeness magnitude (mc) has passed the test.
-        b_method:           b-value estimator to use if b-value needs to be
-                        calculated from data
+        b_method:           b-value estimator to use for b-value calculation.
         stability_range:    Magnitude range to consider for the stability test.
                         Default compatible with the original definition of
                         Cao & Gao 2002.
