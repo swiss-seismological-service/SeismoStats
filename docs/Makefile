@@ -23,4 +23,4 @@ server:
 	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) --watch "../seismostats" --re-ignore "api/.*" --re-ignore "changelog.md"
 
 clean:
-	rm -rf $(BUILDDIR)/
+	rm -rf $(BUILDDIR)/ && rm -rf "$(SOURCEDIR)/reference/api"
