@@ -105,7 +105,6 @@ def test_estimate_mc_ks():
 
 def test_estimate_mc_maxc():
     mc = estimate_mc_maxc(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
-
     assert_equal(1.3, mc)
 
 
@@ -135,5 +134,4 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
 def test_estimate_mc_bvalue_stability_larger_bins():
     mc, _, _, _, _ = estimate_mc_bvalue_stability(
         MAGNITUDES, delta_m=0.1, stability_range=0.5)
-
     assert_almost_equal(1.1, mc)
