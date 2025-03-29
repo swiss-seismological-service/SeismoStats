@@ -145,7 +145,7 @@ def estimate_mc_ks(
     verbose: bool = False,
     **kwargs,
 ) -> tuple[float | None, float | None, list[float],
-           list[float], list[float], np.ndarray]:
+           list[float], list[float], list[float]]:
     """
     Returns the smallest magnitude in a given list of completeness magnitudes
     for which the KS test is passed, i.e., where the null hypothesis that the
@@ -276,7 +276,8 @@ def estimate_mc_ks(
         if verbose:
             print("None of the mcs passed the test.")
 
-    return best_mc, best_b_value, mcs_tested, b_values_test, ks_ds, p_values
+    return best_mc, best_b_value, mcs_tested, b_values_test, \
+        ks_ds, p_values.tolist()
 
 
 def estimate_mc_maxc(
@@ -363,13 +364,13 @@ def estimate_mc_bvalue_stability(
                         estimator.
 
     Returns:
-        - best_mc:          Best magnitude of completeness estimate.
-        - best_b_value:     b-value associated with best_mc.
-        - mcs_test:         Array of tested completeness magnitudes.
-        - b_values_test:    Array of b-values associated to tested mcs.
-        - diff_bs:          Array of differences divided by std, associated
-                        with tested mcs. If a value is smaller than one, this
-                        means that the stability criterion is met.
+        best_mc:        Best magnitude of completeness estimate.
+        best_b_value:   b-value associated with best_mc.
+        mcs_test:       Array of tested completeness magnitudes.
+        b_values_test:  Array of b-values associated to tested mcs.
+        diff_bs:        Array of differences divided by std, associated
+                    with tested mcs. If a value is smaller than one, this
+                    means that the stability criterion is met.
     """
     steps = len(np.arange(0, stability_range, delta_m))
 
@@ -449,4 +450,4 @@ def estimate_mc_bvalue_stability(
             print("None of the mcs passed the stability test.")
 
     return bin_to_precision(best_mc, delta_m) if best_mc else None, \
-        best_b_value, mcs_test, b_values_test, diff_bs
+        best_b_value, mcs_test.tolist(), b_values_test, diff_bs
