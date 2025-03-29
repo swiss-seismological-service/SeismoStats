@@ -545,11 +545,11 @@ class Catalog(pd.DataFrame):
         mcs_test: list | None = None,
         p_pass: float = 0.1,
         stop_when_passed: bool = True,
-        verbose: bool = False,
         b_value: float | None = None,
         b_method: BValueEstimator = ClassicBValueEstimator,
         n: int = 10000,
         ks_ds_list: list[list] | None = None,
+        verbose: bool = False,
         **kwargs,
     ) -> tuple[float | None, float | None, list[float],
                list[float], list[float], np.ndarray]:
@@ -572,11 +572,8 @@ class Catalog(pd.DataFrame):
             mcs_test:       Array of tested completeness magnitudes. If `None`,
                         it will be generated automatically based on `sample`
                         and `delta_m`.
-            p_pass:         Boolean that indicates whether to stop calculations
-                        when first mc passes the test.
+            p_pass:         p-value required to pass the test.
             stop_when_passed:  Stop calculations when first mc passes the test.
-            verbose:           Boolean that indicates whether to print verbose
-                        output.
             b_value:        If `b_value` is 'known', only estimate `mc` assuming
                         the given `b_value`. If `None`, the b-value is either
                         taken from the object attribute or estimated.
@@ -586,6 +583,8 @@ class Catalog(pd.DataFrame):
                         calculated for estimating the p-value.
             ks_ds_list:     KS distances from synthetic data with the given
                         parameters. If `None`, they will be estimated here.
+            verbose:           Boolean that indicates whether to print verbose
+                        output.
             **kwargs:       Additional parameters to be passed to the b-value
                         estimator.
 
@@ -593,7 +592,7 @@ class Catalog(pd.DataFrame):
             best_mc:        `mc` for which the p-value is lowest.
             best_b_value:   `b_value` corresponding to the best `mc`.
             mcs_test:       Tested completeness magnitudes.
-            b_values:       Tested b-values.
+            b_values_test:  Tested b-values.
             ks_ds:          KS distances.
             ps:             Corresponding p-values.
 
@@ -620,22 +619,22 @@ class Catalog(pd.DataFrame):
         if b_value is None and self.b_value is not None:
             b_value = self.b_value
 
-        best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
+        best_mc, best_b_value, mcs_test, b_values_test, ks_ds, ps = \
             mc_ks(self.magnitude,
                   delta_m=delta_m,
                   mcs_test=mcs_test,
                   p_pass=p_pass,
                   stop_when_passed=stop_when_passed,
-                  verbose=verbose,
                   b_value=b_value,
                   b_method=b_method,
                   n=n,
                   ks_ds_list=ks_ds_list,
+                  verbose=verbose,
                   **kwargs)
 
         self.mc = best_mc
 
-        return best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps
+        return best_mc, best_b_value, mcs_test, b_values_test, ks_ds, ps
 
     @require_cols(require=['magnitude'])
     def estimate_b(

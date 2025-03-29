@@ -139,11 +139,11 @@ def mc_ks(
     mcs_test: np.ndarray | None = None,
     p_pass: float = 0.1,
     stop_when_passed: bool = True,
-    verbose: bool = False,
     b_value: float | None = None,
     b_method: BValueEstimator = ClassicBValueEstimator,
     n: int = 10000,
     ks_ds_list: list[list] | None = None,
+    verbose: bool = False,
     **kwargs,
 ) -> tuple[float | None, float | None, list[float],
            list[float], list[float], np.ndarray]:
@@ -166,11 +166,8 @@ def mc_ks(
         mcs_test:           Array of tested completeness magnitudes. If `None`,
                         it will be generated automatically based on `sample`
                         and `delta_m`.
-        p_pass:             Boolean that indicates whether to stop calculations
-                        when first mc passes the test.
+        p_pass:             p-value required to pass the test.
         stop_when_passed:   Stop calculations when first mc passes the test.
-        verbose:            Boolean that indicates whether to print verbose
-                        output.
         b_value:            If `b_value` is 'known', only estimate `mc` assuming
                         the given `b_value`.
         b_method:           b-value estimator to use if b-value needs to be
@@ -179,6 +176,8 @@ def mc_ks(
                         calculated for estimating the p-value.
         ks_ds_list:         KS distances from synthetic data with the given
                         parameters. If `None`, they will be estimated here.
+        verbose:            Boolean that indicates whether to print verbose
+                        output.
         **kwargs:           Additional parameters to be passed to the b-value
                         estimator.
 
@@ -186,7 +185,7 @@ def mc_ks(
         best_mc:        `mc` for which the p-value is lowest.
         best_b_value:   `b_value` corresponding to the best `mc`.
         mcs_test:       Tested completeness magnitudes.
-        b_values:       Tested b-values.
+        b_values_test:  Tested b-values.
         ks_ds:          KS distances.
         ps:             Corresponding p-values.
     """
@@ -219,7 +218,7 @@ def mc_ks(
     mcs_tested = []
     ks_ds = []
     ps = []
-    b_values = []
+    b_values_test = []
 
     for ii, mc in enumerate(mcs_test):
 
@@ -254,7 +253,7 @@ def mc_ks(
         mcs_tested.append(mc)
         ks_ds.append(ks_d)
         ps.append(p)
-        b_values.append(mc_b_value)
+        b_values_test.append(mc_b_value)
 
         if verbose:
             print("..p-value: ", p)
@@ -266,7 +265,7 @@ def mc_ks(
 
     if np.any(ps >= p_pass):
         best_mc = mcs_tested[np.argmax(ps >= p_pass)]
-        best_b_value = b_values[np.argmax(ps >= p_pass)]
+        best_b_value = b_values_test[np.argmax(ps >= p_pass)]
 
         if verbose:
             print(
@@ -282,7 +281,7 @@ def mc_ks(
         if verbose:
             print("None of the mcs passed the test.")
 
-    return best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps
+    return best_mc, best_b_value, mcs_tested, b_values_test, ks_ds, ps
 
 
 def mc_max_curvature(
@@ -324,9 +323,9 @@ def mc_max_curvature(
 def mc_by_bvalue_stability(
         sample: np.ndarray,
         delta_m: float,
-        stability_range: float = 0.5,
         mcs_test: np.ndarray | None = None,
         stop_when_passed: bool = True,
+        stability_range: float = 0.5,
 ):
     """
     Estimates the completeness magnitude (mc) using b-value stability.
@@ -345,23 +344,23 @@ def mc_by_bvalue_stability(
         sample:             Array of magnitudes.
         delta_m:            Bin size of discretized magnitudes. Sample has to be
                         rounded to bins beforehand.
-        stability_range:    Magnitude range to consider for the stability test.
-                        Default compatible with the original definition of
-                        Cao & Gao 2002.
         mcs_test:           Array of tested completeness magnitudes. If None,
                         it will be generated automatically based on the sample
                         and delta_m.
         stop_when_passed:   Boolean that indicates whether to stop computation
                         when a completeness magnitude (mc) has passed the test.
+        stability_range:    Magnitude range to consider for the stability test.
+                        Default compatible with the original definition of
+                        Cao & Gao 2002.
 
     Returns:
-        - best_mc:  Best magnitude of completeness estimate.
-        - best_b:   b-value associated with best_mc.
-        - mcs_test: Array of tested completeness magnitudes.
-        - bs:       Array of b-values associated to tested mcs.
-        - diff_bs:  Array of differences divided by std, associated with tested
-            mcs. If a value is smaller than one, this means that the stability
-            criterion is met.
+        - best_mc:          Best magnitude of completeness estimate.
+        - best_b_value:     b-value associated with best_mc.
+        - mcs_test:         Array of tested completeness magnitudes.
+        - b_values_test:    Array of b-values associated to tested mcs.
+        - diff_bs:          Array of differences divided by std, associated
+                        with tested mcs. If a value is smaller than one, this
+                        means that the stability criterion is met.
     """
     # TODO: include a test if the sample is tested the correct way
     # instead of binning it here
@@ -383,7 +382,7 @@ def mc_by_bvalue_stability(
                 "The range of magnitudes is smaller than the stability range."
             )
 
-    bs = []
+    b_values_test = []
     diff_bs = []
     for ii, mc in enumerate(mcs_test):
         # TODO: here, one should be able to choose the method
@@ -395,7 +394,7 @@ def mc_by_bvalue_stability(
                 "Number of events above tested Mc is less than 30. "
                 "This might affect the stability test."
             )
-        bs.append(b)
+        b_values_test.append(b)
 
         mc_plus = np.arange(mc, mc + stability_range, delta_m)
         mc_plus = mc_plus[mc_plus <= np.max(sample)]
@@ -412,12 +411,13 @@ def mc_by_bvalue_stability(
             value = True
             if diff_b == min(diff_bs):
                 best_mc = mc
-                best_b = bs[-1]
+                best_b_value = b_values_test[-1]
             if stop_when_passed:
                 mcs_test = mcs_test[:ii + 1]
                 break
 
     if value:
-        return bin_to_precision(best_mc, delta_m), best_b, mcs_test, bs, diff_bs
+        return bin_to_precision(best_mc, delta_m), best_b_value, \
+            mcs_test, b_values_test, diff_bs
     else:
         raise ValueError("No Mc passes the stability test.")
