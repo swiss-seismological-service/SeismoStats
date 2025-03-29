@@ -18,7 +18,7 @@ from seismostats.analysis.avalue.base import AValueEstimator
 from seismostats.analysis.avalue.classic import ClassicAValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.estimate_mc import mc_ks
+from seismostats.analysis.estimate_mc import estimate_mc_ks
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
                                       plot_mags_in_time)
@@ -623,17 +623,17 @@ class Catalog(pd.DataFrame):
             b_value = self.b_value
 
         best_mc, best_b_value, mcs_test, b_values_test, ks_ds, ps = \
-            mc_ks(self.magnitude,
-                  delta_m=delta_m,
-                  mcs_test=mcs_test,
-                  p_pass=p_pass,
-                  stop_when_passed=stop_when_passed,
-                  b_value=b_value,
-                  b_method=b_method,
-                  n=n,
-                  ks_ds_list=ks_ds_list,
-                  verbose=verbose,
-                  **kwargs)
+            estimate_mc_ks(self.magnitude,
+                           delta_m=delta_m,
+                           mcs_test=mcs_test,
+                           p_pass=p_pass,
+                           stop_when_passed=stop_when_passed,
+                           b_value=b_value,
+                           b_method=b_method,
+                           n=n,
+                           ks_ds_list=ks_ds_list,
+                           verbose=verbose,
+                           **kwargs)
 
         self.mc = best_mc
 

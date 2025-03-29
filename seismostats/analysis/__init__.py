@@ -27,7 +27,7 @@ from seismostats.analysis.declustering.dec_gardner_knopoff import \
 from seismostats.analysis.declustering.distance_time_windows import (
     GardnerKnopoffWindow, GruenthalWindow, UhrhammerWindow)
 # mc functions
-from seismostats.analysis.estimate_mc import (mc_by_bvalue_stability, mc_ks,
-                                              mc_max_curvature)
+from seismostats.analysis.estimate_mc import (estimate_mc_bvalue_stability,
+                                              estimate_mc_ks, estimate_mc_maxc)
 # various
 from seismostats.analysis.magnitudes import apply_edwards

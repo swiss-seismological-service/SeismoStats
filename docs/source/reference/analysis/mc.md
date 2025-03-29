@@ -10,7 +10,7 @@
     :toctree: ../api/
     :nosignatures:
 
-    analysis.mc_ks
-    analysis.mc_max_curvature
-    analysis.mc_by_bvalue_stability
+    analysis.estimate_mc_ks
+    analysis.estimate_mc_maxc
+    analysis.estimate_mc_bvalue_stability
 ```
