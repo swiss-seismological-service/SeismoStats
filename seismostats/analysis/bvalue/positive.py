@@ -5,6 +5,7 @@ import numpy as np
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import _mle_estimator
 from seismostats.utils._config import get_option
+from seismostats.utils.binning import bin_to_precision
 
 
 class BPositiveBValueEstimator(BValueEstimator):
@@ -119,9 +120,10 @@ class BPositiveBValueEstimator(BValueEstimator):
             self.idx = self.idx[srt]
 
         # calculate differences, only keep positive ones
-        self.magnitudes = np.diff(self.magnitudes)
-        is_larger = self.magnitudes >= self.dmc - self.delta_m / 2
-        self.magnitudes = self.magnitudes[is_larger]
+        mag_diffs = np.diff(self.magnitudes)
+        mag_diffs = bin_to_precision(mag_diffs, self.delta_m)
+        is_larger = mag_diffs >= self.dmc - self.delta_m / 2
+        self.magnitudes = mag_diffs[is_larger]
         self.idx = self.idx[1:][is_larger]
 
         if self.weights is not None:
