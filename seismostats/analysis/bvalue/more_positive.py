@@ -6,6 +6,7 @@ from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import _mle_estimator
 from seismostats.analysis.bvalue.utils import find_next_larger
 from seismostats.utils._config import get_option
+from seismostats.utils.binning import bin_to_precision
 
 
 class BMorePositiveBValueEstimator(BValueEstimator):
@@ -127,6 +128,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         idx_next_larger = find_next_larger(
             self.magnitudes, self.delta_m, self.dmc)
         mag_diffs = self.magnitudes[idx_next_larger] - self.magnitudes
+        mag_diffs = bin_to_precision(mag_diffs, self.delta_m)
 
         idx_no_next = idx_next_larger == 0
         self.magnitudes = mag_diffs[~idx_no_next]
