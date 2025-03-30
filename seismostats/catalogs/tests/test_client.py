@@ -104,3 +104,28 @@ def test_download_catalog():
     )
 
     assert len(cat.columns) == 21
+
+
+@responses.activate
+def test_params_kwargs():
+    # Register the expected endpoint
+    responses.add(
+        responses.GET,
+        'http://mocked_url',
+        body='',
+        status=200
+    )
+
+    client = FDSNWSEventClient('http://mocked_url')
+
+    client.get_events(someparam='value')
+
+    # Check the request
+    assert len(responses.calls) == 1
+    req = responses.calls[0].request
+
+    # Now inspect query params
+    from urllib.parse import parse_qs, urlparse
+
+    query_params = parse_qs(urlparse(req.url).query)
+    assert query_params["someparam"] == ["value"]
