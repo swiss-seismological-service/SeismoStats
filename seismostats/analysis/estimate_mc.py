@@ -267,8 +267,8 @@ def estimate_mc_ks(
         best_b_value = b_values_test[np.argmax(p_values >= p_pass)]
 
         if verbose:
-            print(f'\n\nBest mc to pass the test: {best_mc}',
-                  f'\nwith a b-value of: {best_b_value}.')
+            print(f'\n\nBest mc to pass the test: {best_mc:.3f}',
+                  f'\nwith a b-value of: {best_b_value:.3f}.')
     else:
         best_mc = None
         best_b_value = None
@@ -382,6 +382,7 @@ def estimate_mc_bvalue_stability(
                 "The range of magnitudes is smaller than the stability range.")
         mcs_test = mcs_test[:-steps + 1]
     else:
+        mcs_test = np.array(mcs_test)
         mcs_test = mcs_test[mcs_test + stability_range <= np.max(sample)]
         if len(mcs_test) < 1:
             raise ValueError(
@@ -399,6 +400,9 @@ def estimate_mc_bvalue_stability(
     b_values_test = []
     diff_bs = []
     estimator = b_method()
+    value = False
+    best_mc = None
+    best_b_value = None
 
     for ii, mc in enumerate(mcs_test):
 
@@ -439,15 +443,11 @@ def estimate_mc_bvalue_stability(
                 mcs_test = mcs_test[:ii + 1]
                 break
 
-    if verbose:
-        print(f'\n\nBest mc to pass the test: {best_mc}',
-              f'\nwith a b-value of: {best_b_value}.')
-
-    if not value:
-        best_mc = None
-        best_b_value = None
-        if verbose:
-            print("None of the mcs passed the stability test.")
+    if value and verbose:
+        print(f'\n\nBest mc to pass the test: {best_mc:.3f}',
+              f'\nwith a b-value of: {best_b_value:.3f}.')
+    elif verbose:
+        print("None of the mcs passed the stability test.")
 
     return bin_to_precision(best_mc, delta_m) if best_mc else None, \
         best_b_value, mcs_test.tolist(), b_values_test, diff_bs
