@@ -29,6 +29,69 @@ KS_DISTS = pd.read_csv(
     'seismostats/analysis/tests/data/ks_ds.csv', index_col=0).values.T
 
 
+def test_estimate_mc_ks_out(capfd):
+    mcs = [0.8, 0.9, 1.0, 1.1]
+
+    # test when beta is given
+    _ = estimate_mc_ks(
+        MAGNITUDES,
+        delta_m=0.1,
+        mcs_test=mcs,
+        p_pass=0.1,
+        b_value=beta_to_b_value(2.24),
+        ks_ds_list=KS_DISTS,
+        verbose=True)
+
+    out, err = capfd.readouterr()
+    assert f"with a b-value of: {beta_to_b_value(2.24):.3f}" in out
+    assert "..p-value: " in out
+
+    with pytest.raises(ValueError):
+        _ = estimate_mc_ks(
+            MAGNITUDES * 1.01234,
+            delta_m=0.1,
+            mcs_test=mcs,
+            p_pass=0.1,
+            ks_ds_list=KS_DISTS)
+
+    with pytest.warns(UserWarning):
+        _ = estimate_mc_ks(
+            MAGNITUDES * 1.01234,
+            delta_m=0.1,
+            mcs_test=mcs,
+            p_pass=0.1,
+            b_value=beta_to_b_value(2.24),
+            ks_ds_list=KS_DISTS)
+
+    with pytest.warns():
+        _ = estimate_mc_ks(
+            MAGNITUDES,
+            delta_m=0.1,
+            mcs_test=np.array(mcs) * 1.11234,
+            p_pass=0.1,
+            b_value=beta_to_b_value(2.24),
+            ks_ds_list=KS_DISTS)
+
+
+def test_estimate_mc_ks_fail(capfd):
+    mcs = [2]
+
+    # test when beta is given
+    best_mc, best_b_value, _, _, _, _ = estimate_mc_ks(
+        MAGNITUDES,
+        delta_m=0.1,
+        mcs_test=mcs,
+        p_pass=0.1,
+        b_value=beta_to_b_value(2.24),
+        ks_ds_list=KS_DISTS,
+        verbose=True
+    )
+    out, err = capfd.readouterr()
+    assert best_mc is None
+    assert best_b_value is None
+    assert "None of the mcs passed the test." in out
+
+
 def test_estimate_mc_ks():
     mcs = [0.8, 0.9, 1.0, 1.1]
 
@@ -107,6 +170,10 @@ def test_estimate_mc_maxc():
     mc = estimate_mc_maxc(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
     assert_equal(1.3, mc)
 
+    with pytest.warns(UserWarning):
+        mc = estimate_mc_maxc(MAGNITUDES * 1.01234,
+                              delta_m=0.1, correction_factor=0.2)
+
 
 @pytest.fixture
 def setup_catalog():
@@ -131,7 +198,30 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     assert_almost_equal(1.44, mc)
 
 
-def test_estimate_mc_bvalue_stability_larger_bins():
+def test_estimate_mc_bvalue_stability_larger_bins(capfd):
     mc, _, _, _, _ = estimate_mc_bvalue_stability(
-        MAGNITUDES, delta_m=0.1, stability_range=0.5)
+        MAGNITUDES, delta_m=0.1, stability_range=0.5, verbose=True)
     assert_almost_equal(1.1, mc)
+    out, err = capfd.readouterr()
+    assert f"Best mc to pass the test: {mc:.3f}" in out
+
+
+def test_estimate_mc_bvalue_stability_fail(capfd):
+    with pytest.warns():
+        mc, b_value, _, _, _ = estimate_mc_bvalue_stability(
+            MAGNITUDES, delta_m=0.1, mcs_test=[0.5], stability_range=0.5,
+            verbose=True)
+    out, err = capfd.readouterr()
+    assert mc is None
+    assert b_value is None
+    assert "None of the mcs passed the stability test." in out
+
+    with pytest.warns():
+        estimate_mc_bvalue_stability(
+            MAGNITUDES, delta_m=0.1, mcs_test=[1.123, 1.231],
+            stability_range=0.5)
+
+    with pytest.raises(ValueError):
+        estimate_mc_bvalue_stability(
+            MAGNITUDES * 1.01234, delta_m=0.1, mcs_test=[1.1],
+            stability_range=0.5, b_value=1.2)
