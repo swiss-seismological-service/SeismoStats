@@ -33,7 +33,8 @@ class FDSNWSEventClient():
                    delta_m: float | None = 0.1,
                    include_uncertainty: bool = False,
                    include_ids: bool = False,
-                   include_quality: bool = False) -> pd.DataFrame:
+                   include_quality: bool = False,
+                   **kwargs) -> pd.DataFrame:
         """Downloads an earthquake catalog based on a URL.
 
         Args:
@@ -54,6 +55,8 @@ class FDSNWSEventClient():
             include_ids:        Whether to include event,
                             magnitude and origin IDs.
             include_quality:    Whether to include quality columns.
+            kwargs:             Additional parameters to be passed to the
+                            FDSNWS event service.
 
         Returns:
             catalog: The catalog as a Catalog Object.
@@ -109,6 +112,7 @@ class FDSNWSEventClient():
             params['includeallmagnitudes'] = include_all_magnitudes
         if event_type is not None:
             params['eventtype'] = event_type
+        params.update(kwargs)
 
         catalog = []
 
