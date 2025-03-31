@@ -30,7 +30,7 @@ def set_option(key: str, value: Any):
         :func:`seismostats.utils._config.get_option`
 
     """
-    global __options
+    global __options  # noqa
     if key in __options:
         __options[key] = value
     else:
