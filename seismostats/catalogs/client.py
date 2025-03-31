@@ -34,6 +34,7 @@ class FDSNWSEventClient():
                    include_uncertainty: bool = False,
                    include_ids: bool = False,
                    include_quality: bool = False,
+                   batch_size: int | None = None,
                    **kwargs) -> pd.DataFrame:
         """Downloads an earthquake catalog based on a URL.
 
@@ -55,6 +56,9 @@ class FDSNWSEventClient():
             include_ids:        Whether to include event,
                             magnitude and origin IDs.
             include_quality:    Whether to include quality columns.
+            batch_size:         If set to None, will download all events
+                            in one request. If set, will download
+                            events in batches of `batch_size`.
             kwargs:             Additional parameters to be passed to the
                             FDSNWS event service.
 
