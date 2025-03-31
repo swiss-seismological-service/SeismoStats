@@ -18,6 +18,7 @@ class FDSNWSEventClient():
                     (eg. 'https://earthquake.usgs.gov/fdsnws/event/1/query')
         """
         self.url = url
+        self.params = {}
 
     def get_events(self,
                    start_time: datetime | None = None,
@@ -57,8 +58,9 @@ class FDSNWSEventClient():
                             magnitude and origin IDs.
             include_quality:    Whether to include quality columns.
             batch_size:         If set to None, will download all events
-                            in one request. If set, will download
-                            events in batches of `batch_size`.
+                            in one request. If set, will download events
+                            in batches of `batch_size`, but return the entire
+                            catalog.
             kwargs:             Additional parameters to be passed to the
                             FDSNWS event service.
 
@@ -80,7 +82,7 @@ class FDSNWSEventClient():
             ...     max_longitude=11,
             ...     min_latitude=45,
             ...     max_latitude=48)
-            >>> print(df)
+            >>> df
 
                event_type time                latitude  longitude magnitude
             0  earthquake 2021-12-30 07:43:14 46.051445 7.388025  2.510115  ...
@@ -91,38 +93,39 @@ class FDSNWSEventClient():
                ...        ...                 ...       ...       ...       ...
         """
         date_format = "%Y-%m-%dT%H:%M:%S"
-
-        params = {}
+        self.params = {}
 
         if start_time is not None:
-            params['starttime'] = start_time.strftime(date_format)
+            self.params['starttime'] = start_time.strftime(date_format)
         if end_time is not None:
-            params['endtime'] = end_time.strftime(date_format)
+            self.params['endtime'] = end_time.strftime(date_format)
         if min_latitude is not None:
-            params['minlatitude'] = min_latitude
+            self.params['minlatitude'] = min_latitude
         if max_latitude is not None:
-            params['maxlatitude'] = max_latitude
+            self.params['maxlatitude'] = max_latitude
         if min_longitude is not None:
-            params['minlongitude'] = min_longitude
+            self.params['minlongitude'] = min_longitude
         if max_longitude is not None:
-            params['maxlongitude'] = max_longitude
+            self.params['maxlongitude'] = max_longitude
         if min_magnitude is not None and delta_m is not None:
-            params['minmagnitude'] = min_magnitude - (delta_m / 2)
+            self.params['minmagnitude'] = min_magnitude - (delta_m / 2)
         elif min_magnitude is not None:
-            params['minmagnitude'] = min_magnitude
+            self.params['minmagnitude'] = min_magnitude
         if max_magnitude is not None:
-            params['maxmagnitude'] = max_magnitude
+            self.params['maxmagnitude'] = max_magnitude
         if include_all_magnitudes is not None:
-            params['includeallmagnitudes'] = include_all_magnitudes
+            self.params['includeallmagnitudes'] = include_all_magnitudes
         if event_type is not None:
-            params['eventtype'] = event_type
-        params.update(kwargs)
+            self.params['eventtype'] = event_type
+        self.params.update(kwargs)
 
         catalog = []
 
-        r = requests.get(self.url, stream=True, params=params)
-
-        catalog = parse_quakeml_response(r, include_quality=include_quality)
+        if batch_size is not None:
+            catalog = self._get_events_batched(batch_size, include_quality)
+        else:
+            r = requests.get(self.url, stream=True, params=self.params)
+            catalog = parse_quakeml_response(r, include_quality=include_quality)
 
         catalog = Catalog.from_dict(
             catalog, include_uncertainty, include_ids)
@@ -133,3 +136,52 @@ class FDSNWSEventClient():
             catalog.endtime = end_time
 
         return catalog
+
+    def _get_events_batched(self, batch_size: int, include_quality: bool
+                            ) -> list[dict]:
+        """
+        Download the events in batches of `batch_size` in order to avoid
+        timeouts.
+        """
+        catalog = []
+
+        for i in range(0, self._get_batch_count(batch_size)):
+            offset = 1 + (i * batch_size)
+            params = self.params | {'limit': batch_size, 'offset': offset}
+            r = requests.get(self.url, stream=True, params=params)
+            batch = parse_quakeml_response(r, include_quality=include_quality)
+            catalog.extend(batch)
+
+        return catalog
+
+    def _exists_with_offset(self, limit: int, offset: int) -> bool:
+        """
+        Check if there are events with the given offset. Can be used
+        to find the number of events available.
+        """
+        params = self.params | {'limit': limit, 'offset': offset}
+        r = requests.get(self.url, params=params)
+        return (r.status_code == 200 and r.content)
+
+    def _get_batch_count(self, batch_size: int) -> int:
+        """
+        Get the number of batches available, given a certain batch size.
+        """
+        chunk = 1
+        while self._exists_with_offset(1, (chunk * batch_size) + 1):
+            chunk *= 2
+
+        low = chunk // 2
+        high = chunk
+        last_valid_chunk = 0
+
+        while low <= high:
+            mid = (low + high) // 2
+            offset = (mid * batch_size) + 1
+            if self._exists_with_offset(1, offset):
+                last_valid_chunk = mid
+                low = mid + 1
+            else:
+                high = mid - 1
+
+        return last_valid_chunk + 1

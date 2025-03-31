@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import pandas as pd
 import responses
 from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 from responses import matchers
@@ -30,6 +31,73 @@ def test_empty_catalog():
 
     assert cat.empty
     assert isinstance(cat, Catalog)
+
+
+@responses.activate
+def test_download_chunks():
+    url = 'http://mocked_url'
+    start_time = datetime(2024, 1, 1)
+    end_time = datetime(2024, 1, 14)
+
+    responses.add(
+        responses.GET,
+        url,
+        body=open(os.path.join(PATH_DATA, 'query_first.xml'), 'rb'),
+        status=200,
+        match=[matchers.query_param_matcher(
+            {'starttime': start_time.strftime(date_format),
+             'endtime': end_time.strftime(date_format),
+             'includeallmagnitudes': False,
+             'limit': 50,
+             'offset': 1})])
+    responses.add(
+        responses.GET,
+        url,
+        body=open(os.path.join(PATH_DATA, 'query_second.xml'), 'rb'),
+        status=200,
+        match=[matchers.query_param_matcher(
+            {'starttime': start_time.strftime(date_format),
+             'endtime': end_time.strftime(date_format),
+             'includeallmagnitudes': False,
+             'limit': 50,
+             'offset': 51})])
+    responses.add(
+        responses.GET,
+        url,
+        body=open(os.path.join(PATH_DATA, 'query_full.xml'), 'rb'),
+        status=200,
+        match=[matchers.query_param_matcher(
+            {'starttime': start_time.strftime(date_format),
+             'endtime': end_time.strftime(date_format),
+             'includeallmagnitudes': False})])
+    responses.add(
+        responses.GET,
+        url,
+        body='{}',
+        status=200,
+        match=[matchers.query_param_matcher(
+            {'starttime': start_time.strftime(date_format),
+             'endtime': end_time.strftime(date_format),
+             'includeallmagnitudes': False,
+             'limit': 1,
+             'offset': 51})])
+    responses.add(
+        responses.GET,
+        url,
+        status=204,
+        match=[matchers.query_param_matcher(
+            {'starttime': start_time.strftime(date_format),
+             'endtime': end_time.strftime(date_format),
+             'includeallmagnitudes': False,
+             'limit': 1,
+             'offset': 101})])
+
+    client = FDSNWSEventClient(url)
+    cat_full = client.get_events(start_time=start_time, end_time=end_time)
+    cat_batched = client.get_events(start_time=start_time, end_time=end_time,
+                                    batch_size=50)
+
+    pd.testing.assert_frame_equal(cat_full, cat_batched)
 
 
 @responses.activate
