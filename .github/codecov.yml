@@ -1,0 +1,11 @@
+coverage:
+    status:
+        project:
+            default:
+                target: 90%
+        patch:
+            default:
+                target: 80%
+comment:
+    layout: 'condensed_header, condensed_files, condensed_footer'
+    hide_project_coverage: true
