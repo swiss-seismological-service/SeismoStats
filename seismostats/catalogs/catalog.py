@@ -18,7 +18,7 @@ from seismostats.analysis.avalue.base import AValueEstimator
 from seismostats.analysis.avalue.classic import ClassicAValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.estimate_mc import (estimate_mc_bvalue_stability,
+from seismostats.analysis.estimate_mc import (estimate_mc_b_stability,
                                               estimate_mc_ks, estimate_mc_maxc)
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
@@ -601,7 +601,7 @@ class Catalog(pd.DataFrame):
         return best_mc
 
     @require_cols(require=['magnitude'])
-    def estimate_mc_bvalue_stability(
+    def estimate_mc_b_stability(
         self,
         delta_m: float | None = None,
         mcs_test: np.ndarray | None = None,
@@ -667,7 +667,7 @@ class Catalog(pd.DataFrame):
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
                 >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.estimate_mc_bvalue_stability()
+                >>> simple_catalog.estimate_mc_b_stability()
                 >>> simple_catalog.mc
 
                 1.1
@@ -680,7 +680,7 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     diff_bs = simple_catalog.estimate_mc_bvalue_stability()
+                ...     diff_bs = simple_catalog.estimate_mc_b_stability()
                 >>> mcs_test, diff_bs
 
                 (array([1. , 1.1]), [2.23375277112158, 0.9457747650207577])
@@ -691,14 +691,14 @@ class Catalog(pd.DataFrame):
             delta_m = self.delta_m
 
         best_mc, best_b_value, mcs_test, b_values_test, diff_bs = \
-            estimate_mc_bvalue_stability(self.magnitude,
-                                         delta_m=delta_m,
-                                         mcs_test=mcs_test,
-                                         stop_when_passed=stop_when_passed,
-                                         b_method=b_method,
-                                         stability_range=stability_range,
-                                         verbose=verbose,
-                                         **kwargs)
+            estimate_mc_b_stability(self.magnitude,
+                                    delta_m=delta_m,
+                                    mcs_test=mcs_test,
+                                    stop_when_passed=stop_when_passed,
+                                    b_method=b_method,
+                                    stability_range=stability_range,
+                                    verbose=verbose,
+                                    **kwargs)
 
         self.mc = best_mc
 

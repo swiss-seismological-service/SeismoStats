@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import beta_to_b_value
-from seismostats.analysis.estimate_mc import (estimate_mc_bvalue_stability,
+from seismostats.analysis.estimate_mc import (estimate_mc_b_stability,
                                               estimate_mc_ks, estimate_mc_maxc)
 from seismostats.utils.binning import bin_to_precision
 
@@ -182,7 +182,7 @@ def setup_catalog():
     return swiss_catalog, 0.01
 
 
-def test_estimate_mc_bvalue_stability(setup_catalog):
+def test_estimate_mc_b_stability(setup_catalog):
     swiss_catalog = setup_catalog[0]
     mags = swiss_catalog['magnitude'].values
     delta_m = setup_catalog[1]
@@ -190,7 +190,7 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     # make sure that the warning of no mags in lowest bin is not raised
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        mc, _, _, _, _ = estimate_mc_bvalue_stability(
+        mc, _, _, _, _ = estimate_mc_b_stability(
             mags, delta_m=delta_m,
             stability_range=0.5,
             mcs_test=np.arange(0.12, 2.0, delta_m))
@@ -198,17 +198,17 @@ def test_estimate_mc_bvalue_stability(setup_catalog):
     assert_almost_equal(1.44, mc)
 
 
-def test_estimate_mc_bvalue_stability_larger_bins(capfd):
-    mc, _, _, _, _ = estimate_mc_bvalue_stability(
+def test_estimate_mc_b_stability_larger_bins(capfd):
+    mc, _, _, _, _ = estimate_mc_b_stability(
         MAGNITUDES, delta_m=0.1, stability_range=0.5, verbose=True)
     assert_almost_equal(1.1, mc)
     out, err = capfd.readouterr()
     assert f"Best mc to pass the test: {mc:.3f}" in out
 
 
-def test_estimate_mc_bvalue_stability_fail(capfd):
+def test_estimate_mc_b_stability_fail(capfd):
     with pytest.warns():
-        mc, b_value, _, _, _ = estimate_mc_bvalue_stability(
+        mc, b_value, _, _, _ = estimate_mc_b_stability(
             MAGNITUDES, delta_m=0.1, mcs_test=[0.5], stability_range=0.5,
             verbose=True)
     out, err = capfd.readouterr()
@@ -217,11 +217,11 @@ def test_estimate_mc_bvalue_stability_fail(capfd):
     assert "None of the mcs passed the stability test." in out
 
     with pytest.warns():
-        estimate_mc_bvalue_stability(
+        estimate_mc_b_stability(
             MAGNITUDES, delta_m=0.1, mcs_test=[1.123, 1.231],
             stability_range=0.5)
 
     with pytest.raises(ValueError):
-        estimate_mc_bvalue_stability(
+        estimate_mc_b_stability(
             MAGNITUDES * 1.01234, delta_m=0.1, mcs_test=[1.1],
             stability_range=0.5, b_value=1.2)

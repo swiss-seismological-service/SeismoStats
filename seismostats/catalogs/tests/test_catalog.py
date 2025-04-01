@@ -18,7 +18,7 @@ from seismostats.analysis.avalue.positive import APositiveAValueEstimator
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import beta_to_b_value
-from seismostats.analysis.estimate_mc import (estimate_mc_bvalue_stability,
+from seismostats.analysis.estimate_mc import (estimate_mc_b_stability,
                                               estimate_mc_ks, estimate_mc_maxc)
 from seismostats.analysis.tests.test_estimate_mc import KS_DISTS, MAGNITUDES
 from seismostats.catalogs.catalog import (CATALOG_COLUMNS, Catalog,
@@ -396,9 +396,9 @@ def test_estimate_mc_maxc_regression():
     function_signature_match(func1, func2)
 
 
-def test_estimate_mc_bvalue_stability_regression():
-    func1 = Catalog.estimate_mc_bvalue_stability
-    func2 = estimate_mc_bvalue_stability
+def test_estimate_mc_b_stability_regression():
+    func1 = Catalog.estimate_mc_b_stability
+    func2 = estimate_mc_b_stability
     function_signature_match(func1, func2)
 
 
@@ -437,9 +437,9 @@ def test_estimate_mc_maxc_functionality():
     assert_equal(1.3, cat.mc)
 
 
-def test_estimate_mc_bvalue_stability():
+def test_estimate_mc_b_stability():
     cat = Catalog({'magnitude': MAGNITUDES})
-    cat.estimate_mc_bvalue_stability(delta_m=0.1, stability_range=0.5)
+    cat.estimate_mc_b_stability(delta_m=0.1, stability_range=0.5)
     assert_almost_equal(1.1, cat.mc)
 
 
@@ -460,20 +460,20 @@ def test_estimate_mc_maxc_catalog(mc_maxc_mock: MagicMock):
     assert kwargs['delta_m'] == 0.321
 
 
-@patch('seismostats.catalogs.catalog.estimate_mc_bvalue_stability',
+@patch('seismostats.catalogs.catalog.estimate_mc_b_stability',
        return_value=np.arange(0, 5))
-def test_estimate_mc_bvalue_stability_catalog(mc_bvalue_mock: MagicMock):
+def test_estimate_mc_b_stability_catalog(mc_bvalue_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
 
     with pytest.raises(ValueError):
-        cat.estimate_mc_bvalue_stability()
+        cat.estimate_mc_b_stability()
 
-    cat.estimate_mc_bvalue_stability(delta_m=0.123)
+    cat.estimate_mc_b_stability(delta_m=0.123)
     _, kwargs = mc_bvalue_mock.call_args
     assert kwargs['delta_m'] == 0.123
 
     cat.delta_m = 0.321
-    cat.estimate_mc_bvalue_stability()
+    cat.estimate_mc_b_stability()
     _, kwargs = mc_bvalue_mock.call_args
     assert kwargs['delta_m'] == 0.321
 
