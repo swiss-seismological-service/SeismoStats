@@ -121,8 +121,8 @@ class BPositiveBValueEstimator(BValueEstimator):
 
         # calculate differences, only keep positive ones
         mag_diffs = np.diff(self.magnitudes)
-        mag_diffs = bin_to_precision(mag_diffs, self.delta_m)
         is_larger = mag_diffs >= self.dmc - self.delta_m / 2
+        mag_diffs = bin_to_precision(mag_diffs, self.delta_m)
         self.magnitudes = mag_diffs[is_larger]
         self.idx = self.idx[1:][is_larger]
 
