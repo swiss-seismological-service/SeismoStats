@@ -321,7 +321,7 @@ def estimate_mc_maxc(
     return mc
 
 
-def estimate_mc_bvalue_stability(
+def estimate_mc_b_stability(
         sample: np.ndarray,
         delta_m: float,
         mcs_test: np.ndarray | None = None,
