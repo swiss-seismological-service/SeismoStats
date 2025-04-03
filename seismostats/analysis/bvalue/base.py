@@ -201,7 +201,7 @@ class BValueEstimator(ABC):
     @property
     def mc(self) -> float:
         '''
-        Returns the completeness magnitude.
+        The completeness magnitude used to estimate the b-value.
         '''
         return self._mc
 
