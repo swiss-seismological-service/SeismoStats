@@ -167,9 +167,12 @@ def mc_ks(
         mcs_test:           Array of tested completeness magnitudes. If `None`,
                         it will be generated automatically based on `sample`
                         and `delta_m`.
-        p_pass:             Boolean that indicates whether to stop calculations
+        p_pass:             p-value threshold for the KS test. Below this value,
+                        the null hypothesis that the sample is drawn from a
+                        Gutenberg-Richter distribution with the given mc is
+                        rejected.
+        stop_when_passed:   Boolean that indicates whether to stop calculations
                         when first mc passes the test.
-        stop_when_passed:   Stop calculations when first mc passes the test.
         verbose:            Boolean that indicates whether to print verbose
                         output.
         b_value:            If `b_value` is 'known', only estimate `mc` assuming
@@ -356,13 +359,13 @@ def mc_by_bvalue_stability(
                         when a completeness magnitude (mc) has passed the test.
 
     Returns:
-        - best_mc:  Best magnitude of completeness estimate.
-        - best_b:   b-value associated with best_mc.
-        - mcs_test: Array of tested completeness magnitudes.
-        - bs:       Array of b-values associated to tested mcs.
-        - diff_bs:  Array of differences divided by std, associated with tested
-            mcs. If a value is smaller than one, this means that the stability
-            criterion is met.
+        best_mc:    Best magnitude of completeness estimate.
+        best_b:     b-value associated with best_mc.
+        mcs_test:   Array of tested completeness magnitudes.
+        bs:         Array of b-values associated to tested mcs.
+        diff_bs:    Array of differences divided by std, associated with tested
+                mcs. If a value is smaller than one, this means that the
+                stability criterion is met.
     """
     # TODO: include a test if the sample is tested the correct way
     # instead of binning it here
