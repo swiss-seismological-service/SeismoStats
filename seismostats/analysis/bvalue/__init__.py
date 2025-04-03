@@ -81,8 +81,9 @@ def estimate_b(
 
             .. code-block:: python
 
-                >>> from seismostats.analysis.bvalue import \
+                >>> from seismostats.analysis.bvalue import (
                 ...     BPositiveBValueEstimator
+                ... )
 
                 >>> times = np.arange(len(magnitudes))
                 >>> b = estimate_b(magnitudes,
