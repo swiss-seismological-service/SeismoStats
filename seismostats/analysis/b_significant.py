@@ -163,8 +163,8 @@ def values_from_partitioning(
                 magnitudes. If a single value is provided, it is used for all
                 magnitudes.
         delta_m:    Bin size of discretized magnitudes.
-        method:     Method to estimate the value. This could be an a-value or
-                b-value estimator.
+        method:     AValueEstimator or BValueEstimator class to use for 
+                calculation.
         list_scaling: List of scaling factors for the a-value estimation. Only
                 used in case the method is an a-value estimator.
         **kwargs:   Additional parameters to be passed to the a/b-value
@@ -312,7 +312,8 @@ def b_significant_1D(
         times:          Array of times of the events.
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events in a partition.
-        method:         Method to estimate the b-values (or a-values).
+        method:         AValueEstimator or BValueEstimator class to use for 
+                    calculation.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
