@@ -22,7 +22,7 @@ class APositiveAValueEstimator(AValueEstimator):
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.avalue import APositiveAValueEstimator
+            >>> from seismostats.analysis import APositiveAValueEstimator
 
             >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
             ...                        2.0, 2.0])
