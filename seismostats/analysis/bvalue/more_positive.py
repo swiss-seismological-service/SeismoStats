@@ -63,7 +63,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                     float, etc.). If `None`, it is assumed that the events are
                     ordered in time.
             dmc:        Margin by which the latter magnitude has to be
-                    larger than the former. If `None`, the default value is 
+                    larger than the former. If `None`, the default value is
                     `delta_m`.
 
         Returns:
