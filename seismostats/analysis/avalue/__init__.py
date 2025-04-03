@@ -54,7 +54,7 @@ def estimate_a(
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.avalue import estimate_a
+            >>> from seismostats.analysis import estimate_a
 
             >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3, 2.0, 2.0])
             >>> mc = 2.0
@@ -66,7 +66,7 @@ def estimate_a(
 
         .. code-block:: python
 
-            >>> from seismostats.analysis.avalue import APositiveAValueEstimator
+            >>> from seismostats.analysis import APositiveAValueEstimator
 
             >>> times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
             >>> a = estimate_a(magnitudes, mc, delta_m, times=times, method=APositiveAValueEstimator)
