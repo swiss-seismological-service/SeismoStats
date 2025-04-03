@@ -21,7 +21,7 @@ class BPositiveBValueEstimator(BValueEstimator):
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.bvalue import BPositiveBValueEstimator
+            >>> from seismostats.analysis import BPositiveBValueEstimator
 
             >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
             ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
