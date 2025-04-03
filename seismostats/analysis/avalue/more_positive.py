@@ -63,8 +63,9 @@ class AMorePositiveAValueEstimator(AValueEstimator):
                         given in the unit of interest.
             m_ref:          Reference magnitude for which the a-value
                         is estimated.
-            dmc:            Minimum magnitude difference between consecutive
-                        events. If `None`, the default value is `delta_m`.
+            dmc:            Margin by which the latter magnitude has to be
+                        larger than the former. If `None`, the default value
+                        is `delta_m`.
 
         Returns:
             a_pos: a-value of the Gutenberg-Richter law.

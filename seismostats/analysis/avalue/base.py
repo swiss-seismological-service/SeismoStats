@@ -144,7 +144,7 @@ class AValueEstimator(ABC):
     @property
     def a_value(self) -> float:
         '''
-        Returns the a value of the Gutenberg-Richter law.
+        The a value of the Gutenberg-Richter law.
         '''
         if self.__a_value is None:
             raise AttributeError('Please calculate the a-value first.')

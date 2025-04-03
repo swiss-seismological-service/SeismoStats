@@ -62,9 +62,9 @@ class BMorePositiveBValueEstimator(BValueEstimator):
             times:      Array of times of the events, in any format (datetime,
                     float, etc.). If `None`, it is assumed that the events are
                     ordered in time.
-            dmc:        Cutoff value for the differences (differences below
-                    this value are not considered). If `None`, the cutoff is set
-                    to `delta_m`.
+            dmc:        Margin by which the latter magnitude has to be
+                    larger than the former. If `None`, the default value is 
+                    `delta_m`.
 
         Returns:
             b: b-value of the Gutenberg-Richter law.
