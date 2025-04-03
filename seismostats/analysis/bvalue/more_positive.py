@@ -13,7 +13,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
     '''
     Estimator to calculate the b-value and other parameters of the
     Gutenberg-Richter (GR) law using earthquake pairs for which
-    the latter is larger than the former by some margin,
+    the latter is the first one that is larger than the former by some margin,
     :math:`m_j \\ge m_{i} + dmc`.
 
     Source:
