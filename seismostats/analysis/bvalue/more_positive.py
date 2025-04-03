@@ -13,7 +13,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
     '''
     Estimator to calculate the b-value and other parameters of the
     Gutenberg-Richter (GR) law using earthquake pairs for which
-    the latter is larger than the former by some margin,
+    the latter is the first one that is larger than the former by some margin,
     :math:`m_j \\ge m_{i} + dmc`.
 
     Source:
@@ -24,8 +24,7 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.bvalue import \
-            ...     BMorePositiveBValueEstimator
+            >>> from seismostats.analysis import BMorePositiveBValueEstimator
 
             >>> magnitudes = np.array([2. , 2.5, 2.1, 2.2, 2.5, 2.2, 2.6, 2.3,
             ...                        2.7, 2.2, 2.4, 2. , 2.7, 2.2, 2.3, 2.1,
@@ -63,9 +62,9 @@ class BMorePositiveBValueEstimator(BValueEstimator):
             times:      Array of times of the events, in any format (datetime,
                     float, etc.). If `None`, it is assumed that the events are
                     ordered in time.
-            dmc:        Cutoff value for the differences (differences below
-                    this value are not considered). If `None`, the cutoff is set
-                    to `delta_m`.
+            dmc:        Margin by which the latter magnitude has to be
+                    larger than the former. If `None`, the default value is
+                    `delta_m`.
 
         Returns:
             b: b-value of the Gutenberg-Richter law.

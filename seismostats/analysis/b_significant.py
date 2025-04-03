@@ -162,9 +162,9 @@ def values_from_partitioning(
         list_mc:    List of completeness magnitude corresponding to the
                 magnitudes. If a single value is provided, it is used for all
                 magnitudes.
-        delta_m:    Discretization of magnitudes.
-        method:     Method to estimate the value. This could be an a-value or
-                b-value estimator.
+        delta_m:    Bin size of discretized magnitudes.
+        method:     AValueEstimator or BValueEstimator class to use for
+                calculation.
         list_scaling: List of scaling factors for the a-value estimation. Only
                 used in case the method is an a-value estimator.
         **kwargs:   Additional parameters to be passed to the a/b-value
@@ -302,34 +302,36 @@ def b_significant_1D(
     (which can be estimated by len(magnitudes) / n_m) should be used.
 
     Args:
-        magnitudes:     Magnitudes of the events. They are assumed to be order
-                    along the dimension of interest (e.g. time or depth)
+        magnitudes:     Array of magnitudes of the events. They are assumed to
+                    be ordered along the dimension of interest (e.g. time or
+                    depth).
         mc:             Completeness magnitude. If a single value is provided,
                     it is used for all magnitudes. Otherwise, the individual
                     completeness of each magnitude can be provided. This will
                     be used to filter the magnitudes.
-        delta_m:        Magnitude bin width.
-        times:          Times of the events.
+        delta_m:        Bin size of discretized magnitudes.
+        times:          Array of times of the events.
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events in a partition.
-        method:         Method to estimate the b-values (or a-values).
+        method:         AValueEstimator or BValueEstimator class to use for
+                    calculation.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
-                    i.e., gamma = 0.81 (see Mirwald et al, SRL (2024)).
+                    i.e., gamma = 0.81 (see Mirwald et al., SRL (2024)).
         **kwargs:       Additional parameters to be passed to the b-value
                     estimation method.
 
     Returns:
-        p_value:    P-value of the null hypothesis that the b-values are
+        p_value:    p-value of the null hypothesis that the b-values are
                 constant.
         mac:        Mean autocorrelation.
-        mu_mac:     Expected mean autocorrelation und H0.
+        mu_mac:     Expected mean autocorrelation under H0.
         std_mac:    Standard deviation of the mean autocorrelation under H0.
-                (i.e. constant b-value). Here, the conservatice estimate is
+                (i.e., constant b-value). Here, the conservatice estimate is
                 used - in case the non-conservative estimate is needed, the
                 standard deviation can be mulitplied by the factor gamma = 0.81
-                given by Mirwald et al, SRL (2024).
+                given by Mirwald et al., SRL (2024).
 
     See Also:
         To plot the time series, use
