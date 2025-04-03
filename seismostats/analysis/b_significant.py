@@ -163,7 +163,7 @@ def values_from_partitioning(
                 magnitudes. If a single value is provided, it is used for all
                 magnitudes.
         delta_m:    Bin size of discretized magnitudes.
-        method:     AValueEstimator or BValueEstimator class to use for 
+        method:     AValueEstimator or BValueEstimator class to use for
                 calculation.
         list_scaling: List of scaling factors for the a-value estimation. Only
                 used in case the method is an a-value estimator.
@@ -302,8 +302,9 @@ def b_significant_1D(
     (which can be estimated by len(magnitudes) / n_m) should be used.
 
     Args:
-        magnitudes:     Array of magnitudes of the events. They are assumed to be
-                    ordered along the dimension of interest (e.g. time or depth)
+        magnitudes:     Array of magnitudes of the events. They are assumed to
+                    be ordered along the dimension of interest (e.g. time or
+                    depth).
         mc:             Completeness magnitude. If a single value is provided,
                     it is used for all magnitudes. Otherwise, the individual
                     completeness of each magnitude can be provided. This will
@@ -312,7 +313,7 @@ def b_significant_1D(
         times:          Array of times of the events.
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events in a partition.
-        method:         AValueEstimator or BValueEstimator class to use for 
+        method:         AValueEstimator or BValueEstimator class to use for
                     calculation.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
