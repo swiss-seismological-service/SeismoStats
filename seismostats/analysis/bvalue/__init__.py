@@ -53,7 +53,11 @@ def estimate_b(
                         :func:`calculate` method.
 
         Returns:
-            b: b-value of the Gutenberg-Richter law.
+            b:      b-value or beta of the Gutenberg-Richter law.
+            std:    Standard deviation of the b-value or beta. Only returned if
+                `return_std` is True.
+            n:      Number of events used for the estimation. Only returned if
+                `return_n` is True.
 
         Examples:
             .. code-block:: python
