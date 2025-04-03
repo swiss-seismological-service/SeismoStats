@@ -150,7 +150,8 @@ def mc_ks(
     """
     Returns the smallest magnitude in a given list of completeness magnitudes
     for which the KS test is passed, i.e., where the null hypothesis that the
-    sample is drawn from a Gutenberg-Richter law cannot be rejected.
+    sample is drawn from a Gutenberg-Richter law with that mc cannot be
+    rejected.
 
     Source:
         - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
