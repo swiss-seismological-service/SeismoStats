@@ -136,7 +136,7 @@ def estimate_mc_ks(
     magnitudes: np.ndarray,
     delta_m: float,
     mcs_test: np.ndarray | None = None,
-    p_pass: float = 0.1,
+    p_value_pass: float = 0.1,
     stop_when_passed: bool = True,
     b_value: float | None = None,
     b_method: BValueEstimator = ClassicBValueEstimator,
@@ -165,7 +165,7 @@ def estimate_mc_ks(
         mcs_test:           Array of tested completeness magnitudes. If `None`,
                         it will be generated automatically based on
                         ``magnitudes`` and ``delta_m``.
-        p_pass:             p-value required to pass the test.
+        p_value_pass:       p-value required to pass the test.
         stop_when_passed:   Stop calculations when first mc passes the test.
         b_value:            If ``b_value`` is 'known', only estimate ``mc``
                         assuming the given ``b_value``.
@@ -257,14 +257,14 @@ def estimate_mc_ks(
         if verbose:
             print(f'..p-value: {p}')
 
-        if p >= p_pass and stop_when_passed:
+        if p >= p_value_pass and stop_when_passed:
             break
 
     p_values = np.array(p_values)
 
-    if np.any(p_values >= p_pass):
-        best_mc = mcs_tested[np.argmax(p_values >= p_pass)]
-        best_b_value = b_values_test[np.argmax(p_values >= p_pass)]
+    if np.any(p_values >= p_value_pass):
+        best_mc = mcs_tested[np.argmax(p_values >= p_value_pass)]
+        best_b_value = b_values_test[np.argmax(p_values >= p_value_pass)]
 
         if verbose:
             print(f'\n\nBest mc to pass the test: {best_mc:.3f}',

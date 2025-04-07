@@ -709,7 +709,7 @@ class Catalog(pd.DataFrame):
         self,
         delta_m: float | None = None,
         mcs_test: list | None = None,
-        p_pass: float = 0.1,
+        p_value_pass: float = 0.1,
         stop_when_passed: bool = True,
         b_value: float | None = None,
         b_method: BValueEstimator = ClassicBValueEstimator,
@@ -742,7 +742,7 @@ class Catalog(pd.DataFrame):
             mcs_test:       Array of tested completeness magnitudes. If `None`,
                         it will be generated automatically based on `sample`
                         and `delta_m`.
-            p_pass:         p-value required to pass the test.
+            p_value_pass:   p-value required to pass the test.
             stop_when_passed:  Stop calculations when first mc passes the test.
             b_value:        If `b_value` is 'known', only estimate `mc` assuming
                         the given `b_value`. If `None`, the b-value is either
@@ -807,7 +807,7 @@ class Catalog(pd.DataFrame):
             estimate_mc_ks(self.magnitude,
                            delta_m=delta_m,
                            mcs_test=mcs_test,
-                           p_pass=p_pass,
+                           p_value_pass=p_value_pass,
                            stop_when_passed=stop_when_passed,
                            b_value=b_value,
                            b_method=b_method,
