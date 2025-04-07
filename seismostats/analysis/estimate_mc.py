@@ -15,27 +15,27 @@ from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 
 
 def cdf_discrete_exp(
-    sample: np.ndarray,
+    magnitudes: np.ndarray,
     mc: float,
     delta_m: float,
     beta: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Calculates the cumulative distribution function (CDF) for a discrete
-    exponential distribution at the points of the sample.
+    exponential distribution at the points of the magnitudes.
 
     Args:
-        sample:     Array of magnitudes.
+        magnitudes: Array of magnitudes.
         mc:         Completeness magnitude.
         delta_m:    Bin size of discretized magnitudes.
         beta:       Rate parameter of the exponential distribution.
 
     Returns:
-        x: Unique x-values of the sample.
+        x: Unique x-values of the magnitudes.
         y: Corresponding y-values of the CDF of the GR distribution.
     """
 
-    x = np.sort(sample)
+    x = np.sort(magnitudes)
     x = np.unique(x)
     y = 1 - np.exp(-beta * (x + delta_m - mc))
     return x, y
