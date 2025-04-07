@@ -37,7 +37,7 @@ def test_estimate_mc_ks_out(capfd):
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=mcs,
-        p_pass=0.1,
+        p_value_pass=0.1,
         b_value=beta_to_b_value(2.24),
         ks_ds_list=KS_DISTS,
         verbose=True)
@@ -51,7 +51,7 @@ def test_estimate_mc_ks_out(capfd):
             MAGNITUDES * 1.01234,
             delta_m=0.1,
             mcs_test=mcs,
-            p_pass=0.1,
+            p_value_pass=0.1,
             ks_ds_list=KS_DISTS)
 
     with pytest.warns(UserWarning):
@@ -59,7 +59,7 @@ def test_estimate_mc_ks_out(capfd):
             MAGNITUDES * 1.01234,
             delta_m=0.1,
             mcs_test=mcs,
-            p_pass=0.1,
+            p_value_pass=0.1,
             b_value=beta_to_b_value(2.24),
             ks_ds_list=KS_DISTS)
 
@@ -68,7 +68,7 @@ def test_estimate_mc_ks_out(capfd):
             MAGNITUDES,
             delta_m=0.1,
             mcs_test=np.array(mcs) * 1.11234,
-            p_pass=0.1,
+            p_value_pass=0.1,
             b_value=beta_to_b_value(2.24),
             ks_ds_list=KS_DISTS)
 
@@ -81,7 +81,7 @@ def test_estimate_mc_ks_fail(capfd):
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=mcs,
-        p_pass=0.1,
+        p_value_pass=0.1,
         b_value=beta_to_b_value(2.24),
         ks_ds_list=KS_DISTS,
         verbose=True
@@ -100,7 +100,7 @@ def test_estimate_mc_ks():
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=mcs,
-        p_pass=0.1,
+        p_value_pass=0.1,
         b_value=beta_to_b_value(2.24),
         ks_ds_list=KS_DISTS,
     )
@@ -121,7 +121,7 @@ def test_estimate_mc_ks():
         MAGNITUDES,
         delta_m=0.1,
         mcs_test=[1.1],
-        p_pass=0.1,
+        p_value_pass=0.1,
     )
     assert_almost_equal(beta_to_b_value(2.242124985031149), best_b_value)
     assert_allclose(
@@ -144,7 +144,7 @@ def test_estimate_mc_ks():
     best_mc, best_beta, mcs_tested, b_values, ks_ds, ps = estimate_mc_ks(
         MAGNITUDES,
         delta_m=0.1,
-        p_pass=0.1,
+        p_value_pass=0.1,
         b_value=beta_to_b_value(2.24),
         ks_ds_list=KS_DISTS[2:],
     )
