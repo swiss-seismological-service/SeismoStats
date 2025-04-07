@@ -563,7 +563,7 @@ class Catalog(pd.DataFrame):
             ``Catalog.mc`` will be replaced by the ``mc`` return value.
 
         Args:
-            sample:             Array of magnitudes to test.
+            magnitudes:         Array of magnitudes to test.
             delta_m:            Bin size of discretized magnitudes. Catalog
                             needs to be rounded to bins beforehand. Either given
                             as parameter or taken from the object attribute.
@@ -633,8 +633,8 @@ class Catalog(pd.DataFrame):
                         needs to be rounded to bins beforehand. Either given
                         as parameter or taken from the object attribute.
             mcs_test:       Array of tested completeness magnitudes. If None,
-                        it will be generated automatically based on the sample
-                        and delta_m.
+                        it will be generated automatically based on the 
+                        ``magnitudes`` and ``delta_m``
             stop_when_passed: Boolean that indicates whether to stop
                         computation when a completeness magnitude (mc) has
                         passed the test.
@@ -722,8 +722,8 @@ class Catalog(pd.DataFrame):
         '''
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
-        hypothesis that the sample is drawn from a Gutenberg-Richter law cannot
-        be rejected.
+        hypothesis that the sample of magnitudes is drawn from a 
+        Gutenberg-Richter law cannot be rejected.
 
         Source:
             - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
@@ -740,7 +740,7 @@ class Catalog(pd.DataFrame):
                         needs to be rounded to bins beforehand. Either given
                         as parameter or taken from the object attribute.
             mcs_test:       Array of tested completeness magnitudes. If `None`,
-                        it will be generated automatically based on `sample`
+                        it will be generated automatically based on `magnitudes`
                         and `delta_m`.
             p_value_pass:   p-value required to pass the test.
             stop_when_passed:  Stop calculations when first mc passes the test.
