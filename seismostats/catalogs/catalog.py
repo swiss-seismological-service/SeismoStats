@@ -633,7 +633,7 @@ class Catalog(pd.DataFrame):
                         needs to be rounded to bins beforehand. Either given
                         as parameter or taken from the object attribute.
             mcs_test:       Array of tested completeness magnitudes. If None,
-                        it will be generated automatically based on the 
+                        it will be generated automatically based on the
                         ``magnitudes`` and ``delta_m``
             stop_when_passed: Boolean that indicates whether to stop
                         computation when a completeness magnitude (mc) has
@@ -722,7 +722,7 @@ class Catalog(pd.DataFrame):
         '''
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
-        hypothesis that the sample of magnitudes is drawn from a 
+        hypothesis that the sample of magnitudes is drawn from a
         Gutenberg-Richter law cannot be rejected.
 
         Source:
