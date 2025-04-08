@@ -446,7 +446,7 @@ def estimate_mc_b_stability(
     if value and verbose:
         print(f'\n\nBest mc to pass the test: {best_mc:.3f}',
               f'\nwith a b-value of: {best_b_value:.3f}.')
-    elif verbose:
+    elif not value:
         print("None of the mcs passed the stability test.")
 
     return bin_to_precision(best_mc, delta_m) if best_mc else None, \

@@ -672,10 +672,10 @@ class Catalog(pd.DataFrame):
 
                 1.1
 
-            The mc_ks method returns additional information about the
-            calculation of the best mc, like b-values tested and ks
-            distances. Those are returned by the method and can be
-            used for further analysis.
+            The mc_b_stability method returns additional information about the
+            calculation of the best mc, like b-values tested and the array of
+            differences. Those are returned by the method and can be used for
+            further analysis.
 
             .. code-block:: python
 
