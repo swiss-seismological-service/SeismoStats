@@ -137,6 +137,14 @@ class FDSNWSEventClient():
 
         return catalog
 
+    def _get_batch_params(self, batch_size: int) -> dict:
+        batch_params = []
+        for i in range(0, self._get_batch_count(batch_size)):
+            offset = 1 + (i * batch_size)
+            params = self.params | {'limit': batch_size, 'offset': offset}
+            batch_params.append(params)
+        return batch_params
+
     def _get_events_batched(self, batch_size: int, include_quality: bool
                             ) -> list[dict]:
         """
@@ -144,10 +152,8 @@ class FDSNWSEventClient():
         timeouts.
         """
         catalog = []
-
-        for i in range(0, self._get_batch_count(batch_size)):
-            offset = 1 + (i * batch_size)
-            params = self.params | {'limit': batch_size, 'offset': offset}
+        batch_params = self._get_batch_params(batch_size)
+        for params in batch_params:
             r = requests.get(self.url, stream=True, params=params)
             batch = parse_quakeml_response(r, include_quality=include_quality)
             catalog.extend(batch)
