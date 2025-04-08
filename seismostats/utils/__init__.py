@@ -1,33 +1,20 @@
 # flake8: noqa
 import functools
 import math
+from datetime import datetime
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from seismostats.utils.binning import (
-    bin_to_precision,
-    get_cum_fmd,
-    get_fmd,
-    normal_round,
-    binning_test
-)
-from seismostats.utils.coordinates import CoordinateTransformer
-from seismostats.utils.coordinates import (
-    bounding_box_to_polygon,
-    polygon_to_bounding_box,
-)
+from seismostats.utils._config import get_option, set_option
+from seismostats.utils.binning import (bin_to_precision, binning_test,
+                                       get_cum_fmd, get_fmd, normal_round)
+from seismostats.utils.coordinates import (CoordinateTransformer,
+                                           bounding_box_to_polygon,
+                                           polygon_to_bounding_box)
 from seismostats.utils.filtering import cat_intersect_polygon
-
 from seismostats.utils.simulate_distributions import (
-    simulate_magnitudes,
-    simulate_magnitudes_binned,
-)
-
-from seismostats.utils._config import (
-    get_option,
-    set_option
-)
+    simulate_magnitudes, simulate_magnitudes_binned)
 
 
 def _check_required_cols(df: pd.DataFrame, required_cols: list[str]) -> bool:
@@ -119,3 +106,45 @@ def _render_template(data: dict, template_path: str) -> str:
 
     qml = template.render(**data)
     return qml
+
+
+def _pad_year(val):
+    # Extract year part and pad with zeros if necessary
+    if 'T' in val:
+        date_part, time_part = val.split('T')
+        parts = date_part.split('-')
+        if len(parts[0]) < 4:
+            parts[0] = parts[0].zfill(4)  # Pad year to 4 digits
+        date_part = '-'.join(parts)
+        val = f"{date_part}T{time_part}"
+    return val
+
+
+def _robust_parse_datetime(date: str) -> datetime:
+    """
+    Used to convert datetime strings which in general follow
+    the ISO 8601 format to datetime objects, ignoring timezone
+    and nanosecond information.
+    Mainly for the use of converting a pd.DataFrame column
+    which has formats which are incompatible with pd.Timestamp.
+
+    Args:
+        date:   Date string to convert.
+
+    Returns:
+        date:   Datetime object.
+    """
+    if pd.isna(date):
+        return pd.NaT
+
+    if isinstance(date, datetime):
+        return date
+
+    if isinstance(date, pd.Timestamp):
+        return date.to_pydatetime()
+
+    date = date.split('Z')[0]
+    date = date.split('.')[0]
+    date = _pad_year(date)
+
+    return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")

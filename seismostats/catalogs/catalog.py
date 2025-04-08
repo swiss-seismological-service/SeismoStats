@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pandas.errors import OutOfBoundsDatetime
 
 import inspect
 import logging
@@ -26,7 +27,7 @@ from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
 from seismostats.plots.seismicity import plot_in_space
 from seismostats.plots.statistical import plot_mc_vs_b
 from seismostats.utils import (_check_required_cols, _render_template,
-                               require_cols)
+                               _robust_parse_datetime, require_cols)
 from seismostats.utils.binning import bin_to_precision
 
 try:
@@ -181,7 +182,10 @@ class Catalog(pd.DataFrame):
 
         for tc in time_cols:
             if tc in self.columns:
-                self[tc] = pd.to_datetime(self[tc]).dt.tz_localize(None)
+                try:
+                    self[tc] = pd.to_datetime(self[tc]).dt.tz_localize(None)
+                except OutOfBoundsDatetime:
+                    self[tc] = self[tc].apply(_robust_parse_datetime)
 
         # make sure empty rows in string columns are NoneType
         for strc in string_cols:
