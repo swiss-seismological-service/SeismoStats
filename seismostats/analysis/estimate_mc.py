@@ -149,7 +149,8 @@ def estimate_mc_ks(
     """
     Returns the smallest magnitude in a given list of completeness magnitudes
     for which the KS test is passed, i.e., where the null hypothesis that the
-    sample is drawn from a Gutenberg-Richter law cannot be rejected.
+    sample is drawn from a Gutenberg-Richter law with that mc cannot be
+    rejected.
 
     Source:
         - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
@@ -162,11 +163,15 @@ def estimate_mc_ks(
         magnitudes:         Array of magnitudes to test.
         delta_m:            Bin size of discretized magnitudes. Sample has to be
                         rounded to bins beforehand).
-        mcs_test:           Array of tested completeness magnitudes. If `None`,
-                        it will be generated automatically based on
+        mcs_test:           Array of tested completeness magnitudes. If
+                        ``None``, it will be generated automatically based on
                         ``magnitudes`` and ``delta_m``.
-        p_value_pass:       p-value required to pass the test.
-        stop_when_passed:   Stop calculations when first mc passes the test.
+        p_value_pass:       p-value threshold for the KS test. Below this value,
+                        the null hypothesis that the sample is drawn from a
+                        Gutenberg-Richter distribution with the given mc is
+                        rejected.
+        stop_when_passed:   Whether to stop calculations when first mc
+                        passes the test.
         b_value:            If ``b_value`` is 'known', only estimate ``mc``
                         assuming the given ``b_value``.
         b_method:           b-value estimator to use if b-value needs to be
@@ -175,8 +180,7 @@ def estimate_mc_ks(
                         calculated for estimating the p-value.
         ks_ds_list:         KS distances from synthetic data with the given
                         parameters. If `None`, they will be estimated here.
-        verbose:            Boolean that indicates whether to print verbose
-                        output.
+        verbose:            Whether to print verbose output.
         **kwargs:           Additional parameters to be passed to the b-value
                         estimator.
 

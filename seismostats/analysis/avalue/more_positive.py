@@ -10,7 +10,7 @@ from seismostats.utils._config import get_option
 class AMorePositiveAValueEstimator(AValueEstimator):
     '''
     Returns the a-value of the Gutenberg-Richter (GR) law using earthquake
-    pairs for which the latter is larger than the former
+    pairs for which the latter is the first one that is larger than the former
     by some margin, :math:`m_j \\ge m_{i} + dmc`.
 
     Source:
@@ -20,8 +20,7 @@ class AMorePositiveAValueEstimator(AValueEstimator):
         .. code-block:: python
 
             >>> import numpy as np
-            >>> from seismostats.analysis.avalue import
-            ...     AMorePositiveAValueEstimator
+            >>> from seismostats.analysis import AMorePositiveAValueEstimator
 
             >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1, 2.3,
             ...                        2.0, 2.0])
@@ -64,8 +63,9 @@ class AMorePositiveAValueEstimator(AValueEstimator):
                         given in the unit of interest.
             m_ref:          Reference magnitude for which the a-value
                         is estimated.
-            dmc:            Minimum magnitude difference between consecutive
-                        events. If `None`, the default value is `delta_m`.
+            dmc:            Margin by which the latter magnitude has to be
+                        larger than the former. If `None`, the default value
+                        is `delta_m`.
 
         Returns:
             a_pos: a-value of the Gutenberg-Richter law.
@@ -76,7 +76,7 @@ class AMorePositiveAValueEstimator(AValueEstimator):
             .. code-block:: python
 
                 >>> import numpy as np
-                >>> from seismostats.analysis.avalue import
+                >>> from seismostats.analysis import
                 ...     AMorePositiveAValueEstimator
 
                 >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1,

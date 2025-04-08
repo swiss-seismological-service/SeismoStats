@@ -52,8 +52,7 @@ class AValueEstimator(ABC):
             .. code-block:: python
 
                 >>> import numpy as np
-                >>> from seismostats.analysis.avalue import \
-                ...     ClassicAValueEstimator
+                >>> from seismostats.analysis import ClassicAValueEstimator
 
                 >>> magnitudes = np.array([2.1, 2.3, 2.0, 2.0, 2.1, 2.2, 2.1,
                 ...                        2.3, 2.0, 2.0])
@@ -145,7 +144,7 @@ class AValueEstimator(ABC):
     @property
     def a_value(self) -> float:
         '''
-        Returns the a value of the Gutenberg-Richter law.
+        The a value of the Gutenberg-Richter law.
         '''
         if self.__a_value is None:
             raise AttributeError('Please calculate the a-value first.')
