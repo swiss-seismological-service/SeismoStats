@@ -62,6 +62,20 @@ def test_catalog_init():
     catalog = Catalog(data, columns=['name', 'magnitude'])
 
 
+def test_catalog_init_datetime():
+    mags = np.array([0, 0.9])
+    times = np.array(['2000-01-01T00:00:00Z',
+                      '2000-01-02T00:00:00.0000Z'])
+
+    cat = Catalog({'magnitude': mags, 'time': times})
+    assert isinstance(cat.time[0], pd.Timestamp)
+
+    times = np.array(['250-01-01T00:00:00Z',
+                      '1500-01-02T00:00:00.0000Z'])
+    cat = Catalog({'magnitude': mags, 'time': times})
+    assert isinstance(cat.time[0], datetime)
+
+
 def test_forecast_catalog_init():
     # Test initialization with data
     data = {'name': ['Object 1', 'Object 2', 'Object 3'],

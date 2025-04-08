@@ -1,5 +1,4 @@
 from __future__ import annotations
-from pandas.errors import OutOfBoundsDatetime
 
 import inspect
 import logging
@@ -13,6 +12,7 @@ import cartopy
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas.errors import OutOfBoundsDatetime
 from shapely import Polygon
 
 from seismostats.analysis.avalue.base import AValueEstimator
@@ -183,8 +183,9 @@ class Catalog(pd.DataFrame):
         for tc in time_cols:
             if tc in self.columns:
                 try:
-                    self[tc] = pd.to_datetime(self[tc]).dt.tz_localize(None)
-                except OutOfBoundsDatetime:
+                    self[tc] = pd.to_datetime(
+                        self[tc], format='ISO8601').dt.tz_localize(None)
+                except (ValueError, OutOfBoundsDatetime):
                     self[tc] = self[tc].apply(_robust_parse_datetime)
 
         # make sure empty rows in string columns are NoneType
