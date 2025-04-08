@@ -18,7 +18,8 @@ from seismostats.analysis.avalue.base import AValueEstimator
 from seismostats.analysis.avalue.classic import ClassicAValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.estimate_mc import mc_ks
+from seismostats.analysis.estimate_mc import (estimate_mc_b_stability,
+                                              estimate_mc_ks, estimate_mc_maxc)
 from seismostats.io.parser import parse_quakeml, parse_quakeml_file
 from seismostats.plots.basics import (plot_cum_count, plot_cum_fmd, plot_fmd,
                                       plot_mags_in_time)
@@ -539,25 +540,190 @@ class Catalog(pd.DataFrame):
             return df
 
     @require_cols(require=['magnitude'])
-    def estimate_mc(
+    def estimate_mc_maxc(
+        self,
+        delta_m: float | None = None,
+        correction_factor: float = 0.2,
+    ) -> float:
+        '''
+        Returns the completeness magnitude (mc) estimate using the maximum
+        curvature method.
+
+        Source:
+            - Wiemer, S. and Wyss, M., 2000. Minimum magnitude of completeness
+              in earthquake catalogs: Examples from Alaska, the western United
+              States, and Japan. Bulletin of the Seismological Society of
+              America, 90(4), pp.859-869.
+            - Woessner, J. and Wiemer, S., 2005. Assessing the quality of
+              earthquake catalogues: Estimating the magnitude of completeness
+              and its uncertainty. Bulletin of the Seismological Society of
+              America, 95(2), pp.684-698.
+
+        Attention:
+            ``Catalog.mc`` will be replaced by the ``mc`` return value.
+
+        Args:
+            magnitudes:         Array of magnitudes to test.
+            delta_m:            Bin size of discretized magnitudes. Catalog
+                            needs to be rounded to bins beforehand. Either given
+                            as parameter or taken from the object attribute.
+            correction_factor:  Correction factor for the maximum curvature
+                            method (default value after Woessner & Wiemer 2005).
+
+        Returns:
+            mc:                 Estimated completeness magnitude.
+
+        Examples:
+            .. code-block:: python
+
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
+                ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+                ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+                ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+                ...                   1.3, 1.1, 1.5, 1.4]})
+                >>> simple_catalog.delta_m = 0.1
+                >>> simple_catalog.estimate_mc_maxc()
+                >>> simple_catalog.mc
+
+                1.4
+        '''
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("Binning (delta_m) needs to be set.")
+        if delta_m is None:
+            delta_m = self.delta_m
+
+        best_mc = estimate_mc_maxc(self.magnitude,
+                                   delta_m=delta_m,
+                                   correction_factor=correction_factor)
+        self.mc = best_mc
+        return best_mc
+
+    @require_cols(require=['magnitude'])
+    def estimate_mc_b_stability(
+        self,
+        delta_m: float | None = None,
+        mcs_test: np.ndarray | None = None,
+        stop_when_passed: bool = True,
+        b_method: BValueEstimator = ClassicBValueEstimator,
+        stability_range: float = 0.5,
+        verbose: bool = False,
+        **kwargs,
+    ) -> tuple[float | None, float | None, list[float],
+               list[float], list[float], list[float]]:
+        '''
+        Estimates the completeness magnitude (mc) using b-value stability.
+
+        The stability of the b-value is tested by default on half a magnitude
+        unit (in line with the 5x0.1 in the orginial paper). Users can change
+        the range for the stability test by changing the stability_range.
+
+        Source:
+            Woessner, J, and Stefan W. "Assessing the quality of earthquake
+            catalogues: Estimating the magnitude of completeness and its
+            uncertainty." Bulletin of the Seismological Society of America 95.2
+            (2005): 684-698.
+
+        Attention:
+            ``Catalog.mc`` will be replaced by the ``best_mc`` return value.
+
+        Args:
+            delta_m:        Bin size of discretized magnitudes. Catalog
+                        needs to be rounded to bins beforehand. Either given
+                        as parameter or taken from the object attribute.
+            mcs_test:       Array of tested completeness magnitudes. If None,
+                        it will be generated automatically based on the
+                        ``magnitudes`` and ``delta_m``
+            stop_when_passed: Boolean that indicates whether to stop
+                        computation when a completeness magnitude (mc) has
+                        passed the test.
+            b_method:       b-value estimator to use for b-value calculation.
+            stability_range: Magnitude range to consider for the stability test.
+                        Default compatible with the original definition of
+                        Cao & Gao 2002.
+            verbose:        Boolean that indicates whether to print verbose
+                        output.
+            **kwargs:       Additional parameters to be passed to the b-value
+                        estimator.
+
+        Returns:
+            best_mc:        Best magnitude of completeness estimate.
+            best_b_value:   b-value associated with best_mc.
+            mcs_test:       Array of tested completeness magnitudes.
+            b_values_test:  Array of b-values associated to tested mcs.
+            diff_bs:        Array of differences divided by std, associated
+                        with tested mcs. If a value is smaller than one, this
+                        means that the stability criterion is met.
+
+        Examples:
+            .. code-block:: python
+
+                >>> from seismostats import Catalog
+                >>> simple_catalog = Catalog.from_dict({
+                ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
+                ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+                ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+                ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+                ...                   1.3, 1.1, 1.5, 1.4]})
+                >>> simple_catalog.delta_m = 0.1
+                >>> simple_catalog.estimate_mc_b_stability()
+                >>> simple_catalog.mc
+
+                1.1
+
+            The mc_b_stability method returns additional information about the
+            calculation of the best mc, like b-values tested and the array of
+            differences. Those are returned by the method and can be used for
+            further analysis.
+
+            .. code-block:: python
+
+                >>> best_mc, best_b_value, mcs_test, b_values_test,
+                ...     diff_bs = simple_catalog.estimate_mc_b_stability()
+                >>> mcs_test, diff_bs
+
+                (array([1. , 1.1]), [2.23375277112158, 0.9457747650207577])
+        '''
+        if delta_m is None and self.delta_m is None:
+            raise ValueError("Binning (delta_m) needs to be set.")
+        if delta_m is None:
+            delta_m = self.delta_m
+
+        best_mc, best_b_value, mcs_test, b_values_test, diff_bs = \
+            estimate_mc_b_stability(self.magnitude,
+                                    delta_m=delta_m,
+                                    mcs_test=mcs_test,
+                                    stop_when_passed=stop_when_passed,
+                                    b_method=b_method,
+                                    stability_range=stability_range,
+                                    verbose=verbose,
+                                    **kwargs)
+
+        self.mc = best_mc
+
+        return best_mc, best_b_value, mcs_test, b_values_test, diff_bs
+
+    @require_cols(require=['magnitude'])
+    def estimate_mc_ks(
         self,
         delta_m: float | None = None,
         mcs_test: list | None = None,
-        p_pass: float = 0.1,
+        p_value_pass: float = 0.1,
         stop_when_passed: bool = True,
-        verbose: bool = False,
         b_value: float | None = None,
         b_method: BValueEstimator = ClassicBValueEstimator,
         n: int = 10000,
         ks_ds_list: list[list] | None = None,
+        verbose: bool = False,
         **kwargs,
     ) -> tuple[float | None, float | None, list[float],
-               list[float], list[float], np.ndarray]:
+               list[float], list[float], list[float]]:
         '''
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
-        hypothesis that the sample is drawn from a Gutenberg-Richter law cannot
-        be rejected.
+        hypothesis that the sample of magnitudes is drawn from a
+        Gutenberg-Richter law cannot be rejected.
 
         Source:
             - Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law
@@ -566,17 +732,18 @@ class Catalog(pd.DataFrame):
               declustering on the size distribution of mainshocks. Seismological
               Society of America, 92(4), pp.2333-2342.
 
+        Attention:
+            ``Catalog.mc`` will be replaced by the ``best_mc`` return value.
+
         Args:
-            delta_m:        Bin size of discretized magnitudes. Sample has to be
-                        rounded to bins beforehand).
+            delta_m:        Bin size of discretized magnitudes. Catalog
+                        needs to be rounded to bins beforehand. Either given
+                        as parameter or taken from the object attribute.
             mcs_test:       Array of tested completeness magnitudes. If `None`,
-                        it will be generated automatically based on `sample`
+                        it will be generated automatically based on `magnitudes`
                         and `delta_m`.
-            p_pass:         Boolean that indicates whether to stop calculations
-                        when first mc passes the test.
+            p_value_pass:   p-value required to pass the test.
             stop_when_passed:  Stop calculations when first mc passes the test.
-            verbose:           Boolean that indicates whether to print verbose
-                        output.
             b_value:        If `b_value` is 'known', only estimate `mc` assuming
                         the given `b_value`. If `None`, the b-value is either
                         taken from the object attribute or estimated.
@@ -586,6 +753,8 @@ class Catalog(pd.DataFrame):
                         calculated for estimating the p-value.
             ks_ds_list:     KS distances from synthetic data with the given
                         parameters. If `None`, they will be estimated here.
+            verbose:           Boolean that indicates whether to print verbose
+                        output.
             **kwargs:       Additional parameters to be passed to the b-value
                         estimator.
 
@@ -593,24 +762,38 @@ class Catalog(pd.DataFrame):
             best_mc:        `mc` for which the p-value is lowest.
             best_b_value:   `b_value` corresponding to the best `mc`.
             mcs_test:       Tested completeness magnitudes.
-            b_values:       Tested b-values.
+            b_values_test:  Tested b-values.
             ks_ds:          KS distances.
-            ps:             Corresponding p-values.
+            p-values:       Corresponding p-values.
 
         Examples:
             .. code-block:: python
 
-                >>> import pandas as pd
                 >>> from seismostats import Catalog
                 >>> simple_catalog = Catalog.from_dict({
-                ...     'longitude': [42.35, 1.35, 2.35],
-                ...     'latitude': [3.34444, 5.135, 2.134],
-                ...     'magnitude': [1.0, 2.5, 3.9]
-                ...     })
-                >>> simple_catalog.estimate_mc()
+                ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
+                ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+                ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+                ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+                ...                   1.3, 1.1, 1.5, 1.4]})
+                >>> simple_catalog.delta_m = 0.1
+                >>> simple_catalog.estimate_mc_ks()
+                >>> simple_catalog.mc
 
-                (1.0, 0.28645181449530005, [1.0], [0.28645181449530005],
-                    [0.29485562894395984], array([0.866]))
+                1.0
+
+            The mc_ks method returns additional information about the
+            calculation of the best mc, like b-values tested and ks
+            distances. Those are returned by the method and can be
+            used for further analysis.
+
+            .. code-block:: python
+
+                >>> best_mc, best_b_value, mcs_test, b_values_test,
+                ...     ks_ds, p_values = simple_catalog.estimate_mc_ks()
+                >>> b_values_test, ks_ds
+
+                ([0.9571853220063774], [0.1700244200244202])
         '''
         if delta_m is None and self.delta_m is None:
             raise ValueError("Binning (delta_m) needs to be set.")
@@ -620,22 +803,22 @@ class Catalog(pd.DataFrame):
         if b_value is None and self.b_value is not None:
             b_value = self.b_value
 
-        best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
-            mc_ks(self.magnitude,
-                  delta_m=delta_m,
-                  mcs_test=mcs_test,
-                  p_pass=p_pass,
-                  stop_when_passed=stop_when_passed,
-                  verbose=verbose,
-                  b_value=b_value,
-                  b_method=b_method,
-                  n=n,
-                  ks_ds_list=ks_ds_list,
-                  **kwargs)
+        best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values = \
+            estimate_mc_ks(self.magnitude,
+                           delta_m=delta_m,
+                           mcs_test=mcs_test,
+                           p_value_pass=p_value_pass,
+                           stop_when_passed=stop_when_passed,
+                           b_value=b_value,
+                           b_method=b_method,
+                           n=n,
+                           ks_ds_list=ks_ds_list,
+                           verbose=verbose,
+                           **kwargs)
 
         self.mc = best_mc
 
-        return best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps
+        return best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values
 
     @require_cols(require=['magnitude'])
     def estimate_b(
@@ -652,9 +835,9 @@ class Catalog(pd.DataFrame):
         value, but also returns the b-value estimator object.
 
         Args:
-            mc:         Completeness magnitude, etiher given as parameter or
+            mc:         Completeness magnitude, either given as parameter or
                     taken from the object attribute.
-            delta_m:    Discretization of magnitudes, etiher given as parameter
+            delta_m:    Discretization of magnitudes, either given as parameter
                     or taken from the object attribute.
             weights:    Weights of each magnitude can be specified here.
             method:     BValueEstimator class to use for calculation.
