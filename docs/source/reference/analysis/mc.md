@@ -12,5 +12,5 @@
 
     analysis.estimate_mc_ks
     analysis.estimate_mc_maxc
-    analysis.estimate_mc_bvalue_stability
+    analysis.estimate_mc_b_stability
 ```
