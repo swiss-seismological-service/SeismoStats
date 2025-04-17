@@ -43,7 +43,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'nbsphinx_link'
 ]
-
+myst_enable_extensions = ["dollarmath", "amsmath"]
+myst_dmath_allow_labels = True
 autosectionlabel_prefix_document = True
 
 templates_path = ['_templates']
