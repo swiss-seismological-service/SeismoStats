@@ -12,11 +12,9 @@ Additionally, we demonstrate how to easily visualize your data and explore key f
 
 ---
 
-## 1. Catalog Object
-
 A central feature of SeismoStats is the `Catalog` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported.
 
-### 1.1 Creating a Catalog
+## 1 Creating a Catalog
 
 Catalogs can be created from:
 
@@ -28,9 +26,8 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 
 > **Note:** Your catalog must include a `magnitude` column. For full functionality (especially plotting and analysis), it is recommended to also include `time`, `latitude`, `longitude`, and `depth`.
 
----
 
-### 1.1.1 Example: Creating a Catalog from a DataFrame
+### 1.1 Example: Creating a Catalog from a DataFrame
 
 ```python
 >>> from seismostats import Catalog
@@ -56,7 +53,8 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 
 ```
 
-### 1.1.2 Example: Creating a Catalog from QuakeML
+
+### 1.2 Example: Creating a Catalog from QuakeML
 ```python
 >>> cat = Catalog.from_quakeml(quakefile)
 
@@ -66,9 +64,9 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 0  earthquake  2021-12-30 07:43:14.681975   46.051445   7.388025  1181.640625        manual   2.510115           MLhc        2.510115344        2.301758471
 1  earthquake  2021-12-25 14:49:40.125942   47.371755   6.917057  3364.257812        manual   3.539687           MLhc        3.539687307               NaN
 ```
----
 
-### 1.1.3 Example: Downloading a catalog from a FDSN-Server
+
+### 1.3 Example: Downloading a catalog from a FDSN-Server
 Since downloads are limited to a maximum of 20,000 events, you can use the batch download option for larger datasets. This method downloads the data in subsets of events based on the specified `batch_size`.
 ```python
 >>> from seismostats.catalogs.client import FDSNWSEventClient
@@ -111,7 +109,7 @@ Since downloads are limited to a maximum of 20,000 events, you can use the batch
 
 ---
 
-## 1.2 Visualizing the Catalog
+## 2 Visualizing the Catalog
 
 The `Catalog` class offers several built-in methods for analyzing and visualizing your seismic data.
 
@@ -155,7 +153,7 @@ Use these methods to gain insights into your catalog before performing more adva
 
 ---
 
-## 1.3 First analysis 
+## 3 First analysis 
 Before performing statistical analysis, it's important to bin the magnitudes in your catalog correctly.  
 The choice of bin size should reflect the magnitude resolution of your dataset to ensure accurate results.
 
@@ -183,9 +181,9 @@ Name: magnitude, dtype: float64
 Name: magnitude, dtype: float64
 ```
 
-### 1.3.1 Estimating the Magnitude of Completeness
+### 3.1 Estimating the Magnitude of Completeness
 
-**Seismostats** provides three methods to estimate the magnitude of completeness ($M_c$) in earthquake catalogs:
+Seismostats provides three methods to estimate the **magnitude of completeness** ($M_c$) in earthquake catalogs:
 
 - **Maximum Curvature**
 - **B-Stability**
@@ -195,9 +193,8 @@ These methods help assess the quality of your catalog by identifying the lowest 
 
 For more a more theoretical background on these methods, refer to the following studies:
 
-- Woessner, J., & Wiemer, S. (2005). *Assessing the quality of earthquake catalogues: Estimating the magnitude of completeness and its uncertainty*. Bulletin of the Seismological Society of America, *95*(2), 684–698.
-- Mizrahi, L., Nandan, S., & Wiemer, S. (2021). *The effect of declustering on the size distribution of mainshocks*. Seismological Society of America, *92*(4), 2333–2342.
-
+- Woessner, J., & Wiemer, S. (2005). *Assessing the quality of earthquake catalogues: Estimating the magnitude of completeness and its uncertainty*. Bulletin of the Seismological Society of America, 95(2), 684–698.
+- Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. *Power-law distributions in empirical data*. SIAM review, 51(4), 661-703.
 
 > **Note:** 
 > Calling any of the methods below will overwrite the `Catalog.mc` property with the newly estimated magnitude of completeness.
@@ -214,11 +211,11 @@ For more a more theoretical background on these methods, refer to the following 
 2.1
 ```
 
-### 1.3.2 Estimating the B-value
+### 3.2 Estimating the B-value
 The **b-value** in the Gutenberg-Richter law quantifies the relative frequency of large versus small earthquakes in a seismic catalog. 
-The most common approach to estimate the b-value is through the **maximum likelihood method**, assuming an exponential distribution of magnitudes. Additional estimation techniques are discussed in the section on {ref}`B-value estimations <estimat_b.md>`.
+The most common approach to estimate the b-value is through the **maximum likelihood method**, assuming an exponential distribution of magnitudes. Additional estimation techniques are discussed in the section on {ref}`B-value estimations <estimate_b.md>`.
 
-Before estimating the b-value, make sure that the properties `Catalog.mc`, `Catalog.delta_m` are set. Alternatively, or the information are directly handed over as arguments of `estimate_b`:
+Before estimating the b-value, make sure that the properties `Catalog.mc`, `Catalog.delta_m` are set. Alternatively, these parameter can be directly provided when calling `estimate_b`:
 ```python
 >>> cat.mc = 1.8
 >>> cat.delta_m = 0.1
@@ -230,11 +227,15 @@ Before estimating the b-value, make sure that the properties `Catalog.mc`, `Cata
 1.064816286818266
 ```
 
-### 1.3.3 Estimating the A-value
-The **a-value** of the Gutenberg-Richter law is a measure for the number of earthquakes that occurred in a given volume and time.
+### 3.3 Estimating the A-value
+The **a-value** of the Gutenberg-Richter law  describes the overall earthquake activity in a specific area and time span. It reflects how many events are expected, regardless of their magnitude.
 
+Similar to the b-value estimations, the parameter `Catalog.mc`, `Catalog.delta_m` must be defined beforehand or provided directly as arguments to the a-value estimation method.
 ```python
 >>> cat.estimate_a()
 >>> print(cat.a_value)
 2.2121876044039577
+>>> cat.estimate_a(delta_m = 0.1, mc=1.8)
+>>> print(cat.a_value)
 ```
+
