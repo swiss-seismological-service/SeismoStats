@@ -144,15 +144,10 @@ Use these methods to gain insights into your catalog before performing more adva
 >>> plt.show()
 ```
 
-```{figure} ../_static/catalog_plots_mc_None.png
-:align: center
-:width: 60%
-:name: fig-catalog-overview
+![catalog_plot](../_static/catalog_plots_mc_None.png "Overview on catalog properties")
 
-```{figure} ../_static/catalog_map.png
-:align: center
-:width: 70%
-:name: fig-catalog-map
+![catalog_map](../_static/catalog_map.png "Earthquake location")
+
 
 ---
 
