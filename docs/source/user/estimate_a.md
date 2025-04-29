@@ -42,7 +42,7 @@ $$
 
 where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation. The result of this computation can be directly compared with the classical a-value.
 
-For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i 10^{m_i + \delta m_c}$. Finally, we have to include the open intervalls, $T_j = (T-t_j)  10^{m_i + \delta m_c}$ in order to prevent the a-value estimate to be biased. Finally, the a-value estimate is as follows:
+For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i 10^{-b(m_i + \delta m_c})$. Here, $m_i$ is the magnitude of the first earthquake. Finally, we have to include the open intervalls, $T_j = (T-t_j)  10^{-b(m_i + \delta m_c)}$ in order to prevent the a-value estimate to be biased. Finally, the a-value estimate is as follows:
 
 $$
 a^+ = \log n^{++} - \log \frac{\sum_{i=1}^{n^{++}} \Delta 
@@ -112,7 +112,7 @@ np.float64(1)
 
 Note that the function `estimate_a` automatically cuts off magnitudes below $m_c$ and does not count them. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$.
 
-### 2.3 cat.estimate_a
+### 2.3 cat.estimate_a()
 When you have already transformed your data into a Catalog object, you can directly use the internal method of the Catalog class, which works exactly in the same way as the function shown above.
 
 ```python
@@ -144,7 +144,6 @@ This is especially practical since these attributes are set by the the binning m
 2.113
 ```
 
-
-### References
+## References
 - Van der Elst, Nicholas J., and Morgan T. Page. "a‐positive: A robust estimator of the earthquake rate in incomplete or saturated catalogs." *Journal of Geophysical Research: Solid Earth* 128.10 (2023): e2023JB027089.
 - Lippiello, E., and G. Petrillo. "b‐more‐incomplete and b‐more‐positive: Insights on a robust estimator of magnitude distribution." Journal of Geophysical Research: Solid Earth 129.2 (2024): e2023JB027849.
