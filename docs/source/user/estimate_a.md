@@ -12,13 +12,13 @@ $$
 where $N(m)$ is the number of events with magnitudes larger than or equal to $m$ that occurred in the catalog. With this definition of the a-value, we can estimate the a-value as the logarithm of the number of earthquakes above completeness:
 
 $$
-a = \log N(m_c).  	ag{1}
+a = \log N(m_c)  \tag{1}
 $$
 
 There are, however, two commonly used modifications of the function above, which are relevant if we want to compare different a-values to each other.
 
 ### 1.1 Reference Magnitude
-First, it might be that the level of completeness is not constant. Therefore, in practice, many instead estimate the a-value with respect to a certain reference magnitude, such that $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual number of earthquakes above $m_{ref}$, but the extrapolated number if the GR law were perfectly valid above and below $m_c$, as shown in Fig. 1 below. The new a-value can now be estimated using the a-value defined in eq. (1): $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
+First, it might be that the level of completeness is not constant. Therefore, in practice, many instead estimate the a-value with respect to a certain reference magnitude, such that $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual number of earthquakes above $m_{ref}$, but the extrapolated number if the GR law were perfectly valid above and below $m_c$, as shown in Fig. 1 below. The new a-value can now be estimated using the a-value defined in Eq. (1): $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
 
 <figure>
   <img src="../_static/a_value_reference.png" alt="Alt text" width="400"/>
@@ -40,7 +40,7 @@ $$
 a^+ = \log n^+ - \log \frac{\sum_{i=1}^{n^+} \Delta t_i}{T},
 $$
 
-where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation.
+where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation. The result of this computation can be directly compared with the classical a-value.
 
 For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i 10^{-b(m_i + \delta m_c})$. Here, $m_i$ is the magnitude of the first earthquake. Finally, we have to include the open intervalls, $T_j = (T-t_j)  10^{-b(m_i + \delta m_c)}$ in order to prevent the a-value estimate to be biased. Finally, the a-value estimate is as follows:
 
@@ -101,7 +101,7 @@ np.float64(1.5)
 Note that for `APositiveAValueEstimator` and `AMorePositiveAValueEstimator`, the parameter `mc` still is used as in the classical case: magnitudes below will be disregarded.
 
 ### 2.2 estimate_a
-In order to estimate the a-value with eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
+In order to estimate the a-value with Eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
 
 ```python
 >>> from seismostats.analysis import estimate_a
