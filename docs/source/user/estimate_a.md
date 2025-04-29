@@ -50,10 +50,10 @@ For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we
 
 $$
 a^+ = \log n^{++} - \log \frac{\sum_{i=1}^{n^{++}} \Delta 
-\tau_i + \sum_{j=1}^{m}T_j}{T}.
+\tau_i + \sum_{j=1}^{m}T_j}{T},
 $$
 
-Note that this equation is the same as put forward by Van der Elst and Page, 2023, with the only exeption that we included the total time $T$. This detail has the effect that the classical a-value estimator and the more-positive a-value estimator have the same expectation value and can therefore be directly compared.
+where $n^{++}$ is the number of closed intervals, and $m$ is the number of open intervals (i.e., events after which no larger magnitude occurs within the catalog), and $n^{++} + m$ is the total number of events above the completeness. Note that this equation is the same as put forward by Van der Elst and Page, 2023, with the only exeption that we included the total time $T$. This detail has the effect that the classical a-value estimator and the more-positive a-value estimator have the same expectation value and can therefore be directly compared.
 
 ## 2. Estimation of the a-value
 In SeismoStats, we provide several ways to estimate the a-value:
