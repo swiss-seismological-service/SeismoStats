@@ -18,13 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <!-- #### Deprecated -->
 <!-- -------------------------------------------------------------------------------------- -->
 
-## [Unreleased]
-<!-- Add your changes to the relevant section below, while uncommenting the section header. -->
-
+## [1.0.0rc1] - 2025-04-09
 #### Added
 - API reference for a and b value packages, including full list of attributes.
 - Thorough API documentation for the `Catalog` class.
-- Added `estimate_mc_maxc` and `estimate_mc_bvalue_stability` methods to the `Catalog` class.
+- Added `estimate_mc_maxc` and `estimate_mc_b_stability` methods to the `Catalog` class.
+- Option to download catalogs in batches from FDSNWS in order to avoid timeouts.
 
 #### Changed
 - `analysis.ks_test_gr` now takes the `b-value` as a parameter instead of `beta`.
@@ -36,11 +35,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 #### Fixed
 - Build process for the documentation.
 - API Reference Documentation
-
-<!-- #### Removed -->
-
-<!-- #### Deprecated -->
-
 
 ## [1.0.0rc0] - 2025-03-18
 #### Added

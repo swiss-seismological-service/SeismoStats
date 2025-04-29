@@ -58,7 +58,7 @@ If you would like to have the documentation for a function or class directly in 
 #### Document
 How to reference a document in the documentation.
 
-**Code**
+**Code**  
 ```
 Using a custom name:              {doc}`Reference <../reference/index>`  
 Using the title of the document:  {doc}`../reference/index`
@@ -71,7 +71,7 @@ Using the top level title of the document: {doc}`../reference/index`
 #### Reference
 How to reference a section in the documentation.
 
-**Code**
+**Code**  
 ```
 Using a custom name:            {ref}`Reference <reference/catalog:modify catalog>`  
 Using the title of the section: {ref}`/reference/catalog.md#modify-catalog`  
@@ -84,7 +84,7 @@ Using the title of the section: {ref}`/reference/formats/catalog.md#modify-catal
 #### Function / Class
 How to reference a function or class in the documentation.
 
-**Code**
+**Code**  
 ```
 Using a custom name:        {func}`Bin Magnitudes <seismostats.Catalog.bin_magnitudes>`  
 Using the function name:    {func}`~seismostats.Catalog.bin_magnitudes`  
@@ -99,7 +99,7 @@ Or with the whole path:  {func}`seismostats.Catalog.bin_magnitudes`
 #### Use Crossreferences in a Docstring
 How to use crossreferences in a docstring.
 
-**Code**
+**Code**  
 ```python
 def _example():
     """
@@ -127,24 +127,54 @@ The expressions can be added in text or in docstrings.
 
 #### In Text
 
-**Code**
+**Code**  
 ```
-$$
+$
 \frac{\partial u}{\partial t}=-u \frac{\partial u}{\partial x}- \\
 v \frac{\partial u}{\partial y}-w \frac{\partial u}{\partial z}
-$$
+$
 ```
 
-**Output**
-$$
+**Output**  
+$
 \frac{\partial u}{\partial t}=-u \frac{\partial u}{\partial x}- \\
 v \frac{\partial u}{\partial y}-w \frac{\partial u}{\partial z}
-$$
+$
+
+#### In Text as Equation Blocks
+
+**Code** 
+````
+```{math}
+:label: mymath
+(a + b)^2 = a^2 + 2ab + b^2
+```
+
+```{math}
+:label: mymath2
+(a + b)^2  &=  (a + b)(a + b) \\
+           &=  a^2 + 2ab + b^2
+```
+The equation {eq}`mymath` is a quadratic equation, so is equation {eq}`mymath2`.
+````
+
+**Output**  
+```{math}
+:label: mymath
+(a + b)^2 = a^2 + 2ab + b^2
+```
+
+```{math}
+:label: mymath2
+(a + b)^2  &=  (a + b)(a + b) \\
+           &=  a^2 + 2ab + b^2
+```
+The equation {eq}`mymath` is a quadratic equation, so is equation {eq}`mymath2`.
 
 
 #### In Docstrings
 
-**Code**
+**Code**  
 ```python
 def _math():
     """
