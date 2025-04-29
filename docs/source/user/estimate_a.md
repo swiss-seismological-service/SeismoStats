@@ -29,10 +29,27 @@ First, it might be that the level of completeness is not constant. Therefore, in
 Second, the time intervals that are compared are often not the same, making it hard to compare. In many cases, researchers scale the a-value so that $N(m)$ means the number of earthquakes above $m$ within a year (which is effectively a rate). We include this possibility in the form of a scaling factor. This scaling factor encompasses information about how many time-units fit within the time interval of observation. E.g., if the interval of observation is 10 years but we want to scale the a-value to one year, the scaling factor is 10. Note that the same can be applied for spatial comparison: If we want to compare the number of earthquakes in two different volumes, we might be interested in the number of earthquakes per cubic km. If we have a volume of 100 cubic km, the scaling factor is therefore 100.
 
 ### 1.3 Positive Methods
-Finally, similarly to the b-value estimation, it was proposed to estimate the a-value by taking only the earthquakes that are larger than the previous one into account. This is built on the implicit assumption that the momentary completeness is given by the magnitude of the last detected earthquake (plus a buffer, called $\delta m_c$). We based our definitions on the article by Van der Elst and Page, 2023, with the difference that we homogenized the naming convention with the b-value methods:
+Finally, similarly to the b-value estimation, we have implemented "positive" a-value estimation methods. These are built on the implicit assumption that the momentary completeness is given by the magnitude of the last detected earthquake (plus a buffer, called $\delta m_c$). We based our definitions on the article by Van der Elst and Page, 2023, with the difference that we homogenized the naming convention with the b-value methods:
 
-- "positive" means that for ( )
-- "more positive" means that (the method is taken from Van der Elst and Page, 2023), but the naming is taken
+- "positive" means that only earthquakes that are larger than the previous one are taken into account.
+- "more positive" means that for each earthquake, the next larger one in the catalog is used for the rate estimation. (this is the method is described by Van der Elst and Page, 2023, but the naming convention is taken from Lipiello and Petrillo, 2024)
+
+For both methods, the main idea is to estimate the share of the time that is covered by the used events in order to estimate the a-value. For the positive method, this is quite straight forward: for each positive difference $m_{i+1} - m_i > \delta m_c$, the time difference can be taken as $\Delta t = t_{i+1} - t_i$. Then, the a-value can be estimated as:
+
+$$
+a^+ = \log n^+ - \log \frac{\sum_{i=1}^{n^+} \Delta t_i}{T},
+$$
+
+where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation. The result of this computation can be directly compared with the classical a-value.
+
+For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i 10^{m_i + \delta m_c}$. Finally, we have to include the open intervalls, $T_j = (T-t_j)  10^{m_i + \delta m_c}$ in order to prevent the a-value estimate to be biased. Finally, the a-value estimate is as follows:
+
+$$
+a^+ = \log n^{++} - \log \frac{\sum_{i=1}^{n^{++}} \Delta 
+\tau_i + \sum_{j=1}^{m}T_j}{T}.
+$$
+
+Note that this equation is the same as put forward by Van der Elst and Page, 2023, with the only exeption that we included the total time $T$. This detail has the effect that the classical a-value estimator and the more-positive a-value estimator have the same expectation value and can therefore be directly compared.
 
 ## 2. Estimation of the a-value
 In SeismoStats, we provide several ways to estimate the a-value:
@@ -59,18 +76,29 @@ np.float64(3)
 
 In the example above, `mags` is a vector of magnitudes with 1000 values above $m_c$. Note that the estimator automatically cuts off magnitudes below $m_c$ and does not count them. This is true for all a-value estimations. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$. The estimated a-value is finally stored within the instance of the class, which we called `estimator` in our example.
 
-`APositiveAValueEstimator` and `AMorePositiveAValueEstimator` work in a similar way. However, they have the additional possible arguments `dmc` (see $\delta m_c$ above) and `time`. If `dmc` is not given, it is set to $\Delta m$. If `time` is given, the estimator will assume that the magnitudes are already ordered in time.
+`APositiveAValueEstimator` works in a similar way. However, they have the additional arguments `dmc` (see $\delta m_c$ above) and `time`. If `dmc` is not given, it is set to $\Delta m$. `times`, on the other hand, has to be provided, as it plays an important role to estimate a (as described in the section above).
 
 ```python
->>> from seismostats.analysis import AMorePositiveAValueEstimator
->>> estimator = ClassicAValueEstimator()
->>> estimator.calculate(mags, mc, delta_m, dmc=dmc, time=time)
+>>> from seismostats.analysis import APositiveAValueEstimator
+>>> estimator = APositiveAValueEstimator()
+>>> estimator.calculate(mags, mc, delta_m, times, dmc=dmc)
 np.float64(1.5)
 >>> estimator.a_value
 np.float64(1.5)
 ```
 
-Note that for `APositiveAValueEstimator` and `AMorePositiveAValueEstimator`, the parameter `mc` still cuts the original magnitudes.
+Finally, `AMorePositiveAValueEstimator` requires one more additional argument: the b-value. This is because the time differences have to be scaled using the GR-law. 
+
+```python
+>>> from seismostats.analysis import AMorePositiveAValueEstimator
+>>> estimator = AMorePositiveAValueEstimator()
+>>> estimator.calculate(mags, mc, delta_m, times, b_value=1)
+np.float64(1.5)
+>>> estimator.a_value
+np.float64(1.5)
+```
+
+Note that for `APositiveAValueEstimator` and `AMorePositiveAValueEstimator`, the parameter `mc` still is used as in the classical case: magnitudes below will be disregarded.
 
 ### 2.2 estimate_a
 In order to estimate the a-value with eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
@@ -82,7 +110,7 @@ In order to estimate the a-value with eq. (1), one needs only to know the magnit
 np.float64(1)
 ```
 
-Note that the function `estimate_a` automatically cuts off magnitudes below $m_c$ and does not count them. This is true for all a-value functionalities. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$.
+Note that the function `estimate_a` automatically cuts off magnitudes below $m_c$ and does not count them. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$.
 
 ### 2.3 cat.estimate_a
 When you have already transformed your data into a Catalog object, you can directly use the internal method of the Catalog class, which works exactly in the same way as the function shown above.
@@ -101,7 +129,22 @@ Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the metho
 np.float64(1)
 ```
 
-This is practical: if 
+This is especially practical since these attributes are set by the the binning method and the estimate_mc methods. 
+```python
+>>> # First, estimate mc
+>>>cat.estimate_mc_max()
+>>> # Now, it is set as an attibute 
+>>> cat.mc
+1.0
+>>> # Second, bin the magnitudes
+>>> cat.bin_magnitudes(delta_m=0.1, inplace=True)
+>>> cat.delta_m
+0.1
+>>> cat.estimate_a()
+2.113
+```
+
 
 ### References
 - Van der Elst, Nicholas J., and Morgan T. Page. "a‐positive: A robust estimator of the earthquake rate in incomplete or saturated catalogs." *Journal of Geophysical Research: Solid Earth* 128.10 (2023): e2023JB027089.
+- Lippiello, E., and G. Petrillo. "b‐more‐incomplete and b‐more‐positive: Insights on a robust estimator of magnitude distribution." Journal of Geophysical Research: Solid Earth 129.2 (2024): e2023JB027849.
