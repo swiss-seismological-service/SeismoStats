@@ -40,7 +40,7 @@ $$
 a^+ = \log n^+ - \log \frac{\sum_{i=1}^{n^+} \Delta t_i}{T},
 $$
 
-where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation. The result of this computation can be directly compared with the classical a-value.
+where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation.
 
 For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i 10^{-b(m_i + \delta m_c})$. Here, $m_i$ is the magnitude of the first earthquake. Finally, we have to include the open intervalls, $T_j = (T-t_j)  10^{-b(m_i + \delta m_c)}$ in order to prevent the a-value estimate to be biased. Finally, the a-value estimate is as follows:
 
