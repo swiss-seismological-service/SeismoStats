@@ -1,5 +1,4 @@
 # Estimate a-value
-
 The a-value is the parameter in the Gutenberg-Richter law that contains the information on the rate of seismicity within the volume and time interval of interest. Here, we will shortly explain the way to estimate the a-value, how to scale it correctly such that it can be compared accross catalogs, and explain the different methods available.
 
 ## 1. short introduction on a-value estimation
@@ -15,30 +14,61 @@ $$
 a = \log N(m_c).  \tag{1}
 $$
 
+There are however, two commonnly used modifications of the function above, which are relevant if we want to compare different a-values to each other.
+
 ### 1.1 Reference magnitude
+First, it might be that the level of completeness is not constant. Therefore, in practive many do instead estimate the a-value with respect to a certain reference magnitude, such that the $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual nuber of earthquakes above $m_{ref}$, but the extrapolated number if the GR-law was perfectly valid above and below $m_c$, as shown in Fig. 1 below. The new a-value can now be estimated using the a-value defined in eq. (1): $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
 
-There are however, two commonnly used modifications of the function above, which are relevanbt if we want to compare different a-values to each other.
-
-First, it might be that the level of completeness is not constant. Therefore, in practive many do instead estimate the a-value with respect to a certain reference magnitude, such that the $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual nuber of earthquakes above $m_{ref}$, but the extrapolated number if the GR-law was perfectly valid above and below $m_c$, as shown in the sketch below. Eq. (1) changes effectively to $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
-
-![reference_magnitude](../_static/a_value_reference.png "Sketch of reference magnitude")
+<figure>
+  <img src="../_static/a_value_reference.png" alt="Alt text" width="400"/>
+  <figcaption>Figure 1: Sketch of the reference magnitude.</figcaption>
+</figure>
 
 ### 1.2 Scaling
-
-Second, the time intervals that are compared are often not the same, making it hard to compare. In many cases, researchers scale the a-value such that $N(m)$ means the number of earthquakes above $m$ within a year. We included this possibility in the form of a scaling factor. If the interval of observation is 10 yearsbut we want to scale the a-value to one year
+Second, the time intervals that are compared are often not the same, making it hard to compare. In many cases, researchers scale the a-value such that $N(m)$ means the number of earthquakes above $m$ within a year (which is effectively a rate). We included this possibility in the form of a scaling factor. This scaling factor encompasses information of how many time-units fit within the time interval of observation. E.g., if the interval of observation is 10 years but we want to scale the a-value to one year, the scaling factor is 10. Note that the same can be applied for spatial comparison: If we want to compare the number of earthquakes in two different volumes, we might be interested in the number of earthquakes per cubic kms. If we have a volume of 100 cubic kms, the scaling factor is therefore 100.
 
 ### 1.3 Positive methods
+Finally, similarly as for the b-value estimation, it was proposed to estimate the a-value taking only the earthquakes that are larger than the previous one into account. This is built on the implicit assumption that the momentary completeness is given by the magnitude of the last detected earthquake. 
 
 ## 2. Estimation of the a-value
 In seismostats, we provide several ways to estimate the a-value:
 
+- use the `AValueEstimator` class
 - use the function `estimate_a`
 - use the Catalog class  `estimate_a` method
-- use the `AValueEstimator` class
 
 Below, we explain each way.
 
-### 2.1 
+### 2.1 AValueEstimator
+The basis of all a-value estimations in SeismoStats is the `AValueEstimator`. The AValueEstimator class defines how a-value estimation works in general: the input is at least the magnitudes, the magnitude of completeness and the magnitiude discretization. This class is then used to implement a specific method of a-value estimation. The three methods implemented for now are described above and are called `ClassicAValueEstimator`, `APositiveAValueEstimator`, `AMorePositiveAValueEstimator`. These classes function in a very similar way to the b-value estimators described in {doc}`estimate b <estimate_b>`.
+
+The class can be used as follows:
+
+```python
+>>> from seismostats.analysis import ClassicAValueEstimator
+>>> estimator = ClassicAValueEstimator()
+>>> estimator.calculate(mags, mc, delta_m)
+np.float64(3)
+>>> estimator.a_value
+np.float64(3)
+```
+
+In the example above, we `mags` is a vector of magnitudes with 1000 values above $m_c$. Note that the estimator cuts automatically off magnitudes below $m_c$, and does not count them. This is true for all a-value estimations. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$. The estimated a-value is finally stored within the instance of the class, which we called estimator in our example.
+
+`APositiveAValueEstimator` and `AMorePositiveAValueEstimator` work in a similar way, however they have the additional possible arguments `dmc` (see $\delta m_c$ above) and `time`. If dmc is not given, it is set to $\Delta m$. If `time` is given, the estimator will assume that the magnitudes are already ordered in time.
+
+```python
+>>> from seismostats.analysis import AMorePositiveAValueEstimator
+>>> estimator = ClassicAValueEstimator()
+>>> estimator.calculate(mags, mc, delta_m, dmc=dmc, time=time)
+np.float64(1.5)
+>>> estimator.a_value
+np.float64(1.5)
+```
+
+Note that for `APositiveAValueEstimator` and `AMorePositiveAValueEstimator`, the parameter `mc` still cuts the original magnitudes. 
+
+### 2.2 estimate_a
 In order to estimate the a-value with eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
 
 ```python
@@ -50,7 +80,7 @@ np.float64(1)
 
 Note that the function `estimate_a` cuts automatically off magnitudes below $m_c$, and does not count them. This is true for all a-value functionalities. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$.
 
-### 2.2 using the Catalog classes' method
+### 2.3 cat.estimate_a
 When you already have transformed your data into a Catalog object, one can just directly use the internal method of the Catalog class, which works exactly in the same way as the function shown above.
 
 ```python
@@ -67,28 +97,4 @@ Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the metho
 np.float64(1)
 ```
 
-### 2.3 estimating using the AValueEstimator class
-An equivalent way to estimate the a-value is by using the `AValueEstimator` class. This has the key advantage that 
-
-```python
->>> from seismostats.analysis import ClassicAValueEstimator
->>> magnitudes = [0, 0, 1, 1, 1, 2, 3, 2, 3, 5, 6, 7]
->>> estimator = ClassicAValueEstimator()
->>> estimator.calculate(magnitudes, mc=1, delta_m=1)
-np.float64(1)
->>> estimator.a_value
-np.float64(1)
-```
-
-
-## 2. Scaling and reference magnitude
-
-There are however, two commonnly used modifications of the function above, which are relevanbt if we want to compare different a-values to each other.
-
-First, it might be that the level of completeness is not constant. Therefore, it is often a convention to instead estimate the a-value with respect to a certain reference magnitude, such that the $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual nuber of earthquakes above $m_{ref}$, but the extrapolated number if the GR-law was perfectly valid above and below $m_c$, as shown in the sketch below. Eq. (1) changes effectively to $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
-
-![reference_magnitude](../_static/a_value_reference.png "Sketch of reference magnitude")
-
-Second, one might want to compare time intervals of different length, but be interested in the earthquake rate. In this case, it is custom to estimate the a-value with respect to a reference time interval, which is often taken to be one year. We've included this funcionality by introducing a scaling factor. The scaling 
-
-## 3. Different a-value estimators
+This is practical: if 

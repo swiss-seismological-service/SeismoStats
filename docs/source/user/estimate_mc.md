@@ -22,13 +22,7 @@ where $$N(m)$$ is the number of earthquakes within a magnitude bin of width $$\D
 
 This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 2005 and is implemented in the `estimate_mc_maxc` function.
 
-```{eval-rst}
-.. autosummary::
-    :toctree: ../api/
-    :nosignatures:
-
-    analysis.estimate_mc_maxc
-```
+{func}`~seismostats.analysis.estimate_mc_maxc`
 
 ```python
 from seismostats.analysis import estimate_mc_maxc
