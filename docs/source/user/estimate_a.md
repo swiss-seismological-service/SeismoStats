@@ -28,16 +28,21 @@ First, it might be that the level of completeness is not constant. Therefore, in
 Second, the time intervals that are compared are often not the same, making it hard to compare. In many cases, researchers scale the a-value such that $N(m)$ means the number of earthquakes above $m$ within a year (which is effectively a rate). We included this possibility in the form of a scaling factor. This scaling factor encompasses information of how many time-units fit within the time interval of observation. E.g., if the interval of observation is 10 years but we want to scale the a-value to one year, the scaling factor is 10. Note that the same can be applied for spatial comparison: If we want to compare the number of earthquakes in two different volumes, we might be interested in the number of earthquakes per cubic kms. If we have a volume of 100 cubic kms, the scaling factor is therefore 100.
 
 ### 1.3 Positive methods
-Finally, similarly as for the b-value estimation, it was proposed to estimate the a-value taking only the earthquakes that are larger than the previous one into account. This is built on the implicit assumption that the momentary completeness is given by the magnitude of the last detected earthquake. 
+Finally, similarly as for the b-value estimation, it was proposed to estimate the a-value taking only the earthquakes that are larger than the previous one into account. This is built on the implicit assumption that the momentary completeness is given by the magnitude of the last detected earthquake (plus a buffer, called $
+delta m_c$).  We based our definitions on the article of Van der Elst and Page, 2023, with the difference that we homogenized the naming convention with the b-value methods:
+
+- positive means that for ()
+- more positive means that the (the method is taken from (Van der Elst and Page, 2023), but the naming is taken 
 
 ## 2. Estimation of the a-value
 In seismostats, we provide several ways to estimate the a-value:
 
 - use the `AValueEstimator` class
-- use the function `estimate_a`
+- use the function `estimate_a` (this is the simplest way to do it [here](#estimate_a)) laalal
 - use the Catalog class  `estimate_a` method
 
 Below, we explain each way.
+
 
 ### 2.1 AValueEstimator
 The basis of all a-value estimations in SeismoStats is the `AValueEstimator`. The AValueEstimator class defines how a-value estimation works in general: the input is at least the magnitudes, the magnitude of completeness and the magnitiude discretization. This class is then used to implement a specific method of a-value estimation. The three methods implemented for now are described above and are called `ClassicAValueEstimator`, `APositiveAValueEstimator`, `AMorePositiveAValueEstimator`. These classes function in a very similar way to the b-value estimators described in {doc}`estimate b <estimate_b>`.
@@ -68,6 +73,7 @@ np.float64(1.5)
 
 Note that for `APositiveAValueEstimator` and `AMorePositiveAValueEstimator`, the parameter `mc` still cuts the original magnitudes. 
 
+<a name="estimate_a"></a>
 ### 2.2 estimate_a
 In order to estimate the a-value with eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
 
@@ -98,3 +104,6 @@ np.float64(1)
 ```
 
 This is practical: if 
+
+### References
+- van der Elst, Nicholas J., and Morgan T. Page. "a‐positive: A robust estimator of the earthquake rate in incomplete or saturated catalogs." Journal of Geophysical Research: Solid Earth 128.10 (2023): e2023JB027089.
