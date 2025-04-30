@@ -5,6 +5,7 @@
 
 what_is_seismostats
 getting_started
+10minute_intro
 usage
 docs
 contributing

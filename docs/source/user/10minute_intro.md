@@ -191,10 +191,10 @@ Name: magnitude, dtype: float64
 Seismostats provides three methods to estimate the **magnitude of completeness** ($M_c$) in earthquake catalogs:
 
 - **Maximum Curvature**
-- **B-Stability**
+- **b-Stability**
 - **Kolmogorov-Smirnov (KS) Test**
 
-These methods help assess the quality of your catalog by identifying the lowest magnitude above which events are reliably recorded. More information on the methods can be found in the section {doc}`Magnitude of Completeness<estimat_mc>`.
+These methods help assess the quality of your catalog by identifying the lowest magnitude above which events are reliably recorded. More information on the methods can be found in the section {doc}`Magnitude of Completeness<estimate_mc>`.
 
 For more a more theoretical background on these methods, refer to the following studies:
 
@@ -216,9 +216,9 @@ For more a more theoretical background on these methods, refer to the following 
 2.1
 ```
 
-### 3.2 Estimating the B-value
+### 3.2 Estimating the b-value
 The **b-value** in the Gutenberg-Richter law quantifies the relative frequency of large versus small earthquakes in a seismic catalog. 
-The most common approach to estimate the b-value is through the **maximum likelihood method**, assuming an exponential distribution of magnitudes. Additional estimation techniques are discussed in the section on {doc}`B-value estimations <estimate_b>`.
+The most common approach to estimate the b-value is through the **maximum likelihood method**, assuming an exponential distribution of magnitudes. Additional estimation techniques are discussed in the section on {doc}`b-value estimations <estimate_b>`.
 
 Before estimating the b-value, make sure that the properties `Catalog.mc`, `Catalog.delta_m` are set. Alternatively, these parameter can be directly provided when calling `estimate_b`:
 ```python
@@ -232,8 +232,8 @@ Before estimating the b-value, make sure that the properties `Catalog.mc`, `Cata
 1.064816286818266
 ```
 
-### 3.3 Estimating the A-value
-The **a-value** of the Gutenberg-Richter law  describes the overall earthquake activity in a specific area and time span. It reflects how many events are expected, regardless of their magnitude. Further discussions on the a-value can be found in the section {doc}`A-value estimations <estimate_a>`.
+### 3.3 Estimating the a-value
+The **a-value** of the Gutenberg-Richter law  describes the overall earthquake activity in a specific area and time span. It reflects how many events are expected, regardless of their magnitude. Further discussions on the a-value can be found in the section {doc}`a-value estimations <estimate_a>`.
 
 Similar to the b-value estimations, the parameter `Catalog.mc`, `Catalog.delta_m` must be defined beforehand or provided directly as arguments to the a-value estimation method. 
 ```python
