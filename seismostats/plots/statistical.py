@@ -32,7 +32,7 @@ def plot_mc_vs_b(
         mcs:            Completeness magnitudes.
         delta_m:        Discretization of the magnitudes.
         method:         Method used for b-value estimation.
-        confidence_intvl: Confidence interval that should be plotted.
+        confidence_interval: Confidence interval that should be plotted.
         ax:             Axis where figure should be plotted.
         color:          Color of the data.
         label:          Label of the data that will be put in the legend.
@@ -79,20 +79,20 @@ def plot_mc_vs_b(
 
 
 def plot_b_series_constant_nm(
-        magnitudes: np.ndarray,
-        delta_m: float,
-        mc: float | np.ndarray,
-        times: np.ndarray,
-        n_m: int,
-        min_num: float = 2,
-        b_method: BValueEstimator = ClassicBValueEstimator,
-        plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
-        x_variable: np.ndarray | None = None,
-        confidence_level: float = 0.95,
-        ax: plt.Axes | None = None,
-        color: str = "blue",
-        label: str | None = None,
-        **kwargs,
+    magnitudes: np.ndarray,
+    delta_m: float,
+    mc: float | np.ndarray,
+    times: np.ndarray,
+    n_m: int,
+    min_num: float = 2,
+    b_method: BValueEstimator = ClassicBValueEstimator,
+    plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
+    x_variable: np.ndarray | None = None,
+    confidence_level: float = 0.95,
+    ax: plt.Axes | None = None,
+    color: str = "blue",
+    label: str | None = None,
+    **kwargs,
 ) -> plt.Axes:
     """
     Plots the b-values estimated from a running window of n_m magnitudes.
