@@ -547,7 +547,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def estimate_mc_maxc(
         self,
-        delta_m: float | None = None,
+        delta_m: float,
         correction_factor: float = 0.2,
     ) -> float:
         '''
@@ -588,16 +588,11 @@ class Catalog(pd.DataFrame):
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.estimate_mc_maxc()
+                >>> simple_catalog.estimate_mc_maxc(delta_m=0.1)
                 >>> simple_catalog.mc
 
                 1.4
         '''
-        if delta_m is None and self.delta_m is None:
-            raise ValueError("Binning (delta_m) needs to be set.")
-        if delta_m is None:
-            delta_m = self.delta_m
 
         best_mc = estimate_mc_maxc(self.magnitude,
                                    delta_m=delta_m,

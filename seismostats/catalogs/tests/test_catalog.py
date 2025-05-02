@@ -461,17 +461,12 @@ def test_estimate_mc_b_stability():
 def test_estimate_mc_maxc_catalog(mc_maxc_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         cat.estimate_mc_maxc()
 
     cat.estimate_mc_maxc(delta_m=0.123)
     _, kwargs = mc_maxc_mock.call_args
     assert kwargs['delta_m'] == 0.123
-
-    cat.delta_m = 0.321
-    cat.estimate_mc_maxc()
-    _, kwargs = mc_maxc_mock.call_args
-    assert kwargs['delta_m'] == 0.321
 
 
 @patch('seismostats.catalogs.catalog.estimate_mc_b_stability',
