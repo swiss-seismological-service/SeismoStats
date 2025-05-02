@@ -1,6 +1,6 @@
 # Plotting
 
-Earthquake catalogs normally contain information about location, time, and magnitude of events. Here, we demonstrate the functions available in SeismoStats for visualising these properties. We group the visualisation tools into three categories: **magnitude distributions**, **temporal visualisations**, and **spatial visualisations**.
+Earthquake catalogs normally contain information about location, time, and magnitude of events. Here, we demonstrate the functions available in SeismoStats for visualising these properties. We group the visualisation tools into three categories: **magnitude distributions**, **temporal visualisations**, and **spatial visualisations**. All the functions take the magnitudes, locations, and times as arguments, but are also available as methods of the `Catalog` object, in which case these are not specified, but taken from the catalog directly.
 
 ## 1. Magnitude Distribution
 
@@ -28,6 +28,9 @@ The cumulative FMD shows the total number of events with magnitudes equal to or 
 ```python
 >>> from seismostats.plots import plot_cum_fmd
 >>> plot_cum_fmd(magnitudes, delta_m=0.1, b_value=1.0, mc=2.5)
+
+# Also works as a catalog class method:
+cat.plot_cum_fmd(delta_m=0.1, b_value=1.0, mc=2.5)
 ```
 
 If `b_value` and `mc` are provided, the function overlays the theoretical Gutenberg-Richter line. Different colors can be used for data vs. fit. Output is log-scaled on the y-axis.
@@ -44,6 +47,9 @@ This plot shows the cumulative count of events on the y-axis with the progress o
 ```python
 >>> from seismostats.plots import plot_cum_count
 >>> plot_cum_count(times, magnitudes, mcs=[2.5, 3.0, 3.5, 4.0], delta_m=0.1)
+
+# Also works as a catalog class method:
+cat.plot_cum_count(mcs=[2.5, 3.0, 3.5, 4.0], delta_m=0.1)
 ```
 
 ### 2.2 Magnitudes in time
@@ -55,6 +61,10 @@ Function {func}`plot_mags_in_time <seismostats.plots.plot_mags_in_time>` visuali
 >>> plot_mags_in_time(times,
                       magnitudes,
                       mc_change_times=[1900, 1960, 1980, 2005],
+                      mcs=[7.0, 4.5, 4.0, 2.5])
+
+# Also works as a catalog class method:
+cat.plot_mags_in_time(mc_change_times=[1900, 1960, 1980, 2005],
                       mcs=[7.0, 4.5, 4.0, 2.5])
 ```
 
