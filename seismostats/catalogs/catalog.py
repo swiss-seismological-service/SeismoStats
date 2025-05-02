@@ -1132,9 +1132,9 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['time', 'magnitude'])
     def plot_cum_count(self,
-                       ax: plt.Axes | None = None,
                        mcs: np.ndarray = np.array([0]),
-                       delta_m: float | None = None
+                       delta_m: float | None = None,
+                       ax: plt.Axes | None = None,
                        ) -> plt.Axes:
         '''
         Plots cumulative count of earthquakes in given catalog above given Mc
@@ -1145,10 +1145,10 @@ class Catalog(pd.DataFrame):
             times:      Array containing times of events.
             magnitudes: Array of magnitudes of events corresponding to the
                     ``times``.
-            ax:         Axis where figure should be plotted.
             mcs:        The list of completeness magnitudes for which we show
                     lines on the plot.
             delta_m:    Binning precision of the magnitudes.
+            ax:         Axis where figure should be plotted.
 
         Returns:
             ax: Ax that was plotted on.
@@ -1156,18 +1156,19 @@ class Catalog(pd.DataFrame):
 
         if delta_m is None:
             delta_m = self.delta_m
+
         ax = plot_cum_count(self.time,
                             self.magnitude,
-                            ax=ax,
                             mcs=mcs,
-                            delta_m=delta_m)
+                            delta_m=delta_m,
+                            ax=ax)
         return ax
 
     @require_cols(require=['time', 'magnitude'])
     def plot_mags_in_time(self,
-                          ax: plt.Axes | None = None,
                           mc_change_times: list | None = None,
                           mcs: list | None = None,
+                          ax: plt.Axes | None = None,
                           dot_smallest: int = 10,
                           dot_largest: int = 200,
                           dot_interpolation_power: int = 2,
@@ -1187,12 +1188,12 @@ class Catalog(pd.DataFrame):
             times:      Array containing times of events.
             magnitudes: Array of magnitudes of events corresponding to the
                     ``times``.
-            ax:         Axis where figure should be plotted.
             mc_change_times: List of points in time when Mc changes, sorted in
                     increasing order, can be given as a list of datetimes
                     or integers (years).
             mcs:        Changed values of Mc at times given in
                     ``mc_change_times``.
+            ax:         Axis where figure should be plotted.
             dot_smallest: Smallest dot size for magnitude scaling.
             dot_largest: Largest dot size for magnitude scaling.
             dot_interpolation_power: Interpolation power for scaling.
@@ -1204,9 +1205,9 @@ class Catalog(pd.DataFrame):
         '''
         ax = plot_mags_in_time(self.time,
                                self.magnitude,
-                               ax=ax,
                                mc_change_times=mc_change_times,
                                mcs=mcs,
+                               ax=ax,
                                dot_smallest=dot_smallest,
                                dot_largest=dot_largest,
                                dot_interpolation_power=dot_interpolation_power,
@@ -1216,10 +1217,10 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['magnitude'])
     def plot_cum_fmd(self,
-                     ax: plt.Axes | None = None,
-                     b_value: float | None = None,
                      mc: float | None = None,
-                     delta_m: float = 0,
+                     delta_m: float = None,
+                     b_value: float | None = None,
+                     ax: plt.Axes | None = None,
                      color: str | list = None,
                      size: int = None,
                      grid: bool = False,
@@ -1233,12 +1234,12 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes: Array of magnitudes.
-            ax:         Axis where figure should be plotted.
-            b_value:    The b-value of the theoretical GR distribution to plot.
             mc:         Completeness magnitude of the theoretical GR
                     distribution.
             delta_m:    Discretization of the magnitudes; important for the
                     correct visualization of the data.
+            b_value:    The b-value of the theoretical GR distribution to plot.
+            ax:         Axis where figure should be plotted.
             color:      Color of the data. If one value is given, it is used
                     for points, and the line of the theoretical GR distribution
                     if it is plotted. If a list of colors is given, the first
@@ -1260,10 +1261,10 @@ class Catalog(pd.DataFrame):
         if b_value is None:
             b_value = self.b_value
         ax = plot_cum_fmd(self.magnitude,
-                          ax=ax,
                           b_value=b_value,
                           mc=mc,
                           delta_m=delta_m,
+                          ax=ax,
                           color=color,
                           size=size,
                           grid=grid,
@@ -1273,8 +1274,8 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['magnitude'])
     def plot_fmd(self,
-                 ax: plt.Axes | None = None,
                  delta_m: float = None,
+                 ax: plt.Axes | None = None,
                  color: str = None,
                  size: int = None,
                  grid: bool = False,
@@ -1282,14 +1283,13 @@ class Catalog(pd.DataFrame):
                  legend: bool | str | list = True
                  ) -> plt.Axes:
         '''
-        Plots frequency magnitude distribution. If no binning is specified, the
-        assumed value of ``delta_m`` is 0.1.
+        Plots frequency magnitude distribution.
 
         Args:
             magnitudes:     Array of magnitudes.
-            ax:             The axis where figure should be plotted.
             delta_m:        Discretization of the magnitudes, important for the
                         correct visualization of the data.
+            ax:             The axis where figure should be plotted.
             color:          Color of the data.
             size:           Size of data points.
             grid:           Indicates whether or not to include grid lines.
@@ -1303,8 +1303,8 @@ class Catalog(pd.DataFrame):
         if delta_m is None:
             delta_m = self.delta_m
         ax = plot_fmd(self.magnitude,
-                      ax=ax,
                       delta_m=delta_m,
+                      ax=ax,
                       color=color,
                       size=size,
                       grid=grid,

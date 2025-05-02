@@ -29,10 +29,10 @@ def gutenberg_richter(
 
 def plot_cum_fmd(
     magnitudes: np.ndarray | pd.Series,
-    ax: plt.Axes | None = None,
-    b_value: float | None = None,
     mc: float | None = None,
-    delta_m: float = 0,
+    delta_m: float = None,
+    b_value: float | None = None,
+    ax: plt.Axes | None = None,
     color: str | list = None,
     size: int = None,
     grid: bool = False,
@@ -46,11 +46,11 @@ def plot_cum_fmd(
 
     Args:
         magnitudes: Array of magnitudes.
-        ax:         Axis where figure should be plotted.
-        b_value:    The b-value of the theoretical GR distribution to plot.
         mc:         Completeness magnitude of the theoretical GR distribution.
         delta_m:    Discretization of the magnitudes; important for the correct
-                visualization of the data.
+                visualization of the data. Assumed 0 if not given.
+        b_value:    The b-value of the theoretical GR distribution to plot.
+        ax:         Axis where figure should be plotted.
         color:      Color of the data. If one value is given, it is used for
                 points, and the line of the theoretical GR distribution if it
                 is plotted. If a list of colors is given, the first entry is
@@ -65,6 +65,9 @@ def plot_cum_fmd(
     Returns:
         ax: The ax object that was plotted on.
     """
+
+    if delta_m is None:
+        delta_m = 0
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
     bins, c_counts, magnitudes = get_cum_fmd(
@@ -132,8 +135,8 @@ def plot_cum_fmd(
 
 def plot_fmd(
     magnitudes: np.ndarray | pd.Series,
+    delta_m: float | None = None,
     ax: plt.Axes | None = None,
-    delta_m: float = 0.1,
     color: str = None,
     size: int = None,
     grid: bool = False,
@@ -141,14 +144,13 @@ def plot_fmd(
     legend: bool | str | list = True,
 ) -> plt.Axes:
     """
-    Plots frequency magnitude distribution. If no binning is specified, the
-    assumed value of ``delta_m`` is 0.1.
+    Plots frequency magnitude distribution.
 
     Args:
         magnitudes:     Array of magnitudes.
-        ax:             The axis where figure should be plotted.
         delta_m:        Discretization of the magnitudes, important for the
                     correct visualization of the data.
+        ax:             The axis where figure should be plotted.
         color:          Color of the data.
         size:           Size of data points.
         grid:           Indicates whether or not to include grid lines.
@@ -162,8 +164,8 @@ def plot_fmd(
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
 
-    if delta_m == 0:
-        delta_m = 0.1
+    if delta_m is None:
+        raise ValueError("delta_m must be given")
 
     bins, counts, magnitudes = get_fmd(
         magnitudes,
@@ -199,9 +201,9 @@ def plot_fmd(
 def plot_cum_count(
     times: list | np.ndarray | pd.Series,
     magnitudes: np.ndarray | pd.Series,
-    ax: plt.Axes | None = None,
     mcs: np.ndarray = np.array([0]),
-    delta_m: float | None = 0,
+    delta_m: float | None = None,
+    ax: plt.Axes | None = None,
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -212,11 +214,11 @@ def plot_cum_count(
         times:      Array containing times of events.
         magnitudes: Array of magnitudes of events corresponding to the
                 ``times``.
-        ax:         Axis where figure should be plotted.
         mcs:        The list of completeness magnitudes for which we show
                 lines on the plot.
         delta_m:    Binning precision of the magnitudes, assumed 0 if not
                 given.
+        ax:         Axis where figure should be plotted.
 
     Returns:
         ax: Ax that was plotted on.
@@ -225,6 +227,9 @@ def plot_cum_count(
 
     if ax is None:
         ax = plt.subplots()[1]
+
+    if delta_m is None:
+        delta_m = 0
 
     for mc in mcs:
         filtered_index = magnitudes >= mc - delta_m / 2
@@ -246,9 +251,9 @@ def plot_cum_count(
 def plot_mags_in_time(
     times: list | np.ndarray | pd.Series,
     magnitudes: np.ndarray | pd.Series,
-    ax: plt.Axes | None = None,
     mc_change_times: list | None = None,
     mcs: list | None = None,
+    ax: plt.Axes | None = None,
     dot_smallest: int = 10,
     dot_largest: int = 200,
     dot_interpolation_power: int = 2,
