@@ -68,13 +68,13 @@ Function {func}`plot_mags_in_time <seismostats.plots.plot_mags_in_time>` visuali
 ```python
 >>> from seismostats.plots import plot_mags_in_time
 >>> plot_mags_in_time(times,
-                      magnitudes,
-                      mc_change_times=[1900, 1960, 1980, 2005],
-                      mcs=[7.0, 4.5, 4.0, 2.5])
+...                   magnitudes,
+...                   mc_change_times=[1900, 1960, 1980, 2005],
+...                   mcs=[7.0, 4.5, 4.0, 2.5])
 
 # Also works as a catalog class method:
 >>> cat.plot_mags_in_time(mc_change_times=[1900, 1960, 1980, 2005],
-                          mcs=[7.0, 4.5, 4.0, 2.5])
+...                       mcs=[7.0, 4.5, 4.0, 2.5])
 ```
 
 ## 3. Seismicity in space
