@@ -117,7 +117,7 @@ This is especially practical since these attributes are set by the the binning m
 ```python
 >>> # First, estimate mc
 >>>cat.estimate_mc_max()
->>> # Now, it is set as an attibute 
+>>> # Now, it is set as an attribute 
 >>> cat.mc
 1.0
 >>> # Second, bin the magnitudes
