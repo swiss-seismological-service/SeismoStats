@@ -13,7 +13,7 @@ $$
 N(m) = 10^{a - b (m - m_c)},
 $$
 
-where $N(m)$ is the number of events with magnitudes larger than or equal to $m$ that occurred in the catalog. With this definition of the a-value, we can estimate the a-value as the logarithm of the number of earthquakes above completeness:
+where $N(m)$ is the number of events with magnitudes larger than or equal to $m$ that occurred in the catalog. With this definition we can estimate the a-value as the logarithm of the number of earthquakes above completeness:
 
 $$
 a = \log N(m_c)  \tag{1}
@@ -57,8 +57,7 @@ where $n^{++}$ is the number of closed intervals, and $m$ is the number of open 
 
 ## 2. Estimation of the a-value
 In SeismoStats, we provide several ways to estimate the a-value:
-
-- Use the {class}`AValueEstimator <seismostats.analysis.AValueEstimator>` class
+- Use the {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` class
 - Use the function {func}`estimate_a <seismostats.analysis.estimate_a>` (this is the easiest way, [jump there](estimate-a))
 - Use the method {func}`estimate_a <seismostats.Catalog.estimate_a>` native to the Catalog class (most practical if the catalog format is used [jump there](cat-estimate-a))
 
