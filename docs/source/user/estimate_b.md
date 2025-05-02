@@ -100,7 +100,8 @@ Note that the function {func}`estimate_b <seismostats.analysis.estimate_b>` auto
 When you have already transformed your data into a Catalog object, you can directly use the internal method of the Catalog class, which works exactly in the same way as the function shown above.
 
 ```python
->>> cat.estimate_b(mc=1, delta_m=0.1)
+>>> estimator = cat.estimate_b(mc=1, delta_m=0.1)
+>>> cat.b_value
 0.882
 ```
 
@@ -109,7 +110,8 @@ Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the metho
 ```python
 >>> cat.mc = 1
 >>> cat.delta_m = 0.1
->>> cat.estimate_a()
+>>> estimator = cat.estimate_b()
+>>> cat.b_value
 0.882
 ```
 
@@ -124,7 +126,8 @@ This is especially practical since these attributes are set by the the binning m
 >>> cat.bin_magnitudes(delta_m=0.1, inplace=True)
 >>> cat.delta_m
 0.1
->>> cat.estimate_b()
+>>> estimator = cat.estimate_b()
+>>> cat.b_value
 0.882
 ```
 
