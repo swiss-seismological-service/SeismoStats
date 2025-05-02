@@ -304,20 +304,21 @@ def estimate_mc_maxc(
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
 
     Args:
-        magnitudes:             Array of magnitudes to test.
-        delta_m:            Bin size of discretized magnitudes. Sample has to be
-                        rounded to bins beforehand.
+        magnitudes:         Array of magnitudes to test.
+        delta_m:            Bin size for the maximum curvature method. This can
+                        be independent ofthe descritization of the magnitudes.
+                        The original value for the maximum curvature method is
+                        0.1. However, the user can decide which value to use.
+                        The optimal value would be as small as possible while
+                        at the same time ensuring that there are enough
+                        magnitudes in each bin. If the bin size is too small,
+                        the method will not work properly.
         correction_factor:  Correction factor for the maximum curvature
                 method (default value after Woessner & Wiemer 2005).
 
     Returns:
         mc:                 Estimated completeness magnitude.
     """
-    if get_option("warnings") is True:
-        if not binning_test(magnitudes, delta_m, check_larger_binning=False):
-            warnings.warn("Magnitudes are not binned correctly. "
-                          "Test might fail because of this.")
-
     bins, count, _ = get_fmd(
         magnitudes=magnitudes, delta_m=delta_m, bin_position="center"
     )

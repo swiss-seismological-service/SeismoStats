@@ -1,7 +1,9 @@
 import numpy as np
 from numpy.testing import assert_allclose
+import pytest
 
 from seismostats.plots.basics import dot_size, reverse_dot_size
+from seismostats.plots.basics import plot_fmd
 
 
 def test_dot_size():
@@ -81,3 +83,10 @@ def test_reverse_dot_size():
     assert_allclose(
         magnitudes, magnitudes_expected, rtol=tolerance, atol=tolerance
     )
+
+
+def test_plot_fmd_none():
+    magnitudes = np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6])
+
+    with pytest.raises(ValueError):
+        plot_fmd(magnitudes)

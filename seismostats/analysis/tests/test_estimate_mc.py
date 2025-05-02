@@ -170,10 +170,6 @@ def test_estimate_mc_maxc():
     mc = estimate_mc_maxc(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
     assert_equal(1.3, mc)
 
-    with pytest.warns(UserWarning):
-        mc = estimate_mc_maxc(MAGNITUDES * 1.01234,
-                              delta_m=0.1, correction_factor=0.2)
-
 
 @pytest.fixture
 def setup_catalog():
