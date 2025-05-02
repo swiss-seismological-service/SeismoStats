@@ -136,7 +136,8 @@ Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the metho
 ```python
 >>> cat.mc = 1
 >>> cat.delta_m = 0.1
->>> cat.estimate_a()
+>>> estimator = cat.estimate_a()
+>>> cat.a_value
 2.345
 ```
 
@@ -151,7 +152,8 @@ This is especially practical since these attributes are set by the the binning m
 >>> cat.bin_magnitudes(delta_m=0.1, inplace=True)
 >>> cat.delta_m
 0.1
->>> cat.estimate_a()
+>>> estimator = cat.estimate_a()
+>>> cat.a_value
 2.345
 ```
 
