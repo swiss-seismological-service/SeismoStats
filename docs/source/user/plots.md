@@ -21,7 +21,6 @@ FMD is a histogram-style plot that shows the number of earthquakes per magnitude
 
 Key arguments are the list of magnitudes and width of magnitude bins. The width of the magnitude bins best for visualisation purposes is not necessarily the one corresponding to the catalog binning. If used as a catalog method, the function will assume the catalog binning as the default `delta_m`, but you may still want to specify a different one! Optional arguments include plotting options such as `bin_position`, `color`, `size`, `legend`.
 
-
 ### 1.2 Cumulative frequency-magnitude distribution
 The cumulative FMD shows the total number of events with magnitudes equal to or greater than a given value. This representation is log-linear and fits naturally with the Gutenberg-Richter law.
 
@@ -45,6 +44,11 @@ The function also works as a catalog class method, and assumes `delta_m`, `b_val
 If `b_value` and `mc` are provided, the function overlays the theoretical Gutenberg-Richter line. Different colors can be used for data vs. fit. Output is log-scaled on the y-axis.
 
 
+<figure>
+  <img src="../_static/fmd.png" alt="Alt text" width="600"/>
+  <figcaption>Figure 1: plot_fmd and plot_cum_fmd.</figcaption>
+</figure>
+
 ## 2. Seismicity through time
 
 SeismoStats supports time-based plotting, which is essential for detecting changes in event frequency helping us observe temporal clustering, and detecting completeness magnitude changes.
@@ -55,11 +59,18 @@ This plot shows the cumulative count of events on the y-axis with the progress o
  
 ```python
 >>> from seismostats.plots import plot_cum_count
->>> plot_cum_count(times, magnitudes, mcs=[2.5, 3.0, 3.5, 4.0], delta_m=0.1)
+>>> plot_cum_count(times, magnitudes, mcs=np.arange(0.5, 4.0, 1), delta_m=0.1)
+``` 
 
-# Also works as a catalog class method:
->>> cat.plot_cum_count(mcs=[2.5, 3.0, 3.5, 4.0], delta_m=0.1)
+Also works as a catalog class method:
+``` python
+>>> cat.plot_cum_count(mcs=np.arange(0.5, 4.0, 1), delta_m=0.1)
 ```
+
+<figure>
+  <img src="../_static/cumulative_number.png" alt="Alt text" width="600"/>
+  <figcaption>Figure 2: plot_cum_count.</figcaption>
+</figure>
 
 ### 2.2 Magnitudes in time
 
@@ -67,15 +78,18 @@ Function {func}`plot_mags_in_time <seismostats.plots.plot_mags_in_time>` visuali
 
 ```python
 >>> from seismostats.plots import plot_mags_in_time
->>> plot_mags_in_time(times,
-...                   magnitudes,
-...                   mc_change_times=[1900, 1960, 1980, 2005],
-...                   mcs=[7.0, 4.5, 4.0, 2.5])
-
-# Also works as a catalog class method:
->>> cat.plot_mags_in_time(mc_change_times=[1900, 1960, 1980, 2005],
-...                       mcs=[7.0, 4.5, 4.0, 2.5])
+>>> plot_mags_in_time(times,magnitudes)
 ```
+
+Also works as a catalog class method:
+``` python
+>>> cat.plot_mags_in_time()
+```
+
+<figure>
+  <img src="../_static/mag_vs_time.png" alt="Alt text" width="600"/>
+  <figcaption>Figure 3: plot_mags_in_time.</figcaption>
+</figure>
 
 ## 3. Seismicity in space
 
@@ -89,11 +103,20 @@ The {func}`plot_in_space <seismostats.plots.plot_in_space>` function allows you 
 ```python
 >>> from seismostats.plots import plot_in_space
 >>> plot_in_space(longitudes, latitudes, magnitudes)
-
-# Also works as a catalog class method:
->>> cat.plot_in_space()
 ```
 
+Also works as a catalog class method, and with some additional arguments:
+``` python
+>>> cat.plot_in_space(
+... resolution='10m', include_map=True,
+... country='Switzerland',
+... colors='Greys_r',
+... dot_labels=[1,2,3])
+```
 
+<figure>
+  <img src="../_static/catalog_map.png" alt="Alt text" width="1000"/>
+  <figcaption>Figure 4: plot_in_space.</figcaption>
+</figure>
 
 
