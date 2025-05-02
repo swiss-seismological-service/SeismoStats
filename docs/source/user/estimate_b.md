@@ -27,7 +27,7 @@ $$
 
 where $\text{var }(m)$ is the variance of the magnitudes which can be estimated from the data.
 
-Below we discuss shortly the effect of discretized magnitufdes and two alternative methods of b-value estimation that reduce the effect of short term aftershock incompleteness.
+Below we discuss shortly the effect of discretized magnitudes and two alternative methods of b-value estimation that reduce the effect of short term aftershock incompleteness.
 
 ### 1.1 Binning of magnitudes
 In most cases, the magitudes are discretized. Utsu (1966) came up with an approximative equation for this case, effectively by shifting the magnitudes by half a bin. However, the correct (unbiased) estimate takes a slightly more complicated form (see Tinti and Mulargia, 1987), which we implemented for all available b-value estimators of the package (besides the one that uses Utsu's formula). For all esimtators, $\Delta m$ is a mandatory input. Of course, it can be also set to zero if no discretization is present. For most catalogs of natural seismicity, however, $\Delta m$ is between $0.2$ and $0.01$. We did not adjust the uncertainty estimate (Eq. 2) for the binning, but we did carry out synthetic tests to assure ourselves that the differences are insignificant.
