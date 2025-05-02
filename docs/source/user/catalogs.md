@@ -1,5 +1,7 @@
 # Catalogs
 
+Still incomplete!
+
 The catalog class is a pandas dataframe with some extra functionalities that are usefull if you are working with earthquake catalog data.
 The easiest way to create one is directly from a dataframe:
 
