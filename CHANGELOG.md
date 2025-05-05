@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <!-- #### Deprecated -->
 <!-- -------------------------------------------------------------------------------------- -->
 
+
+## [Unreleased]
+Add your changes to the relevant section below, while uncommenting the section header.
+#### Added
+- User documentation for `estimate_a`, `estimate_b`, and `estimate_mc` modules.
+- User documentation for the `Catalog` class.
+- User Documentation `10 Minutes to Seismostats`.
+
+#### Changed
+- Small changes to the `plots` module api to make it more consistent.
+- Updated the example jupyter notebooks to reflect the new API.
+
 ## [1.0.0rc1] - 2025-04-09
 #### Added
 - API reference for a and b value packages, including full list of attributes.
