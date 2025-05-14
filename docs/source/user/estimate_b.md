@@ -84,10 +84,10 @@ The computed b-value is stored in the estimator instance (in this example, `esti
 0.98
 ```
 
-Note that for {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>` and  {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`, the parameter `mc` still is used as in the classical case: all magnitudes below $m_c$ are excluded from the analysis.
+Note that for {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>` and  {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`, the parameter `mc` still is used in the same way as in the classical case: all magnitudes below $m_c$ are excluded from the analysis.
 
 ### 2.2 estimate_b
-In order to estimate the b-value with Eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
+An alternative way to calculate a b-value is using the function {func}`estimate_b <seismostats.analysis.estimate_b>`. To estimate the b-value using Eq. (1), it only requires an array of magnitudes $m_1, \dots, m_n$, the magnitude of completeness $m_c$ and the discretization of magnitudes $\Delta m$.
 
 ```python
 >>> from seismostats.analysis import estimate_b
@@ -96,7 +96,7 @@ In order to estimate the b-value with Eq. (1), one needs only to know the magnit
 0.169
 ```
 
-Note that the function {func}`estimate_b <seismostats.analysis.estimate_b>` automatically cuts off magnitudes below $m_c$ and does not count them. Therefore, it is of crucial importance to provide the correct $m_c$. The default method for the b-value estimation is the classical method ({class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`). However, it is also possible to specify which method should be used. This can be done as follows:
+Note that the function {func}`estimate_b <seismostats.analysis.estimate_b>` automatically disregards magnitudes below $m_c$. Therefore, it is crucial to provide the correct $m_c$. The default b-value estimation method used by `estimate_b()` is the classical method ({class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`). However, it is also possible to specify which method should be used. This can be done as follows:
 
 ```python
 >>> from seismostats.analysis import estimate_b, BPositiveBValueEstimator
