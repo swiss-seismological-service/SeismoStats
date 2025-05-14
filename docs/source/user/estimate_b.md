@@ -106,7 +106,7 @@ Note that the function {func}`estimate_b <seismostats.analysis.estimate_b>` auto
 ```
 
 ### 2.3 cat.estimate_b()
-When you have already transformed your data into a Catalog object, you can directly use the internal method of the Catalog class, which works exactly in the same way as the function shown above.
+If you have already converted your data into a Catalog object, you can directly estimate the b-value using the internal method of the Catalog class, which functions just like the standalone `estimate_b()` function shown above.
 
 ```python
 >>> estimator = cat.estimate_b(mc=1, delta_m=0.1)
@@ -114,7 +114,7 @@ When you have already transformed your data into a Catalog object, you can direc
 0.882
 ```
 
-Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the method will use these values to estimate the b-value:
+If $\Delta m$ and $m_c$ are already defined for the catalog, you can omit them in the method call, and the stored values will be used:
 
 ```python
 >>> cat.mc = 1
@@ -124,7 +124,7 @@ Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the metho
 0.882
 ```
 
-This is especially practical since these attributes are set by the the binning method and the estimate_mc methods. 
+This is especially convenient because both `mc` and `delta_m` are set typically set using the the `bin_magnitudes` method and the `estimate_mc` methods. 
 ```python
 >>> # First, estimate mc
 >>>cat.estimate_mc_max()
