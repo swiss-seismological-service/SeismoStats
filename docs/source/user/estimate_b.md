@@ -2,7 +2,7 @@
 
 The b-value is the parameter in the Gutenberg-Richter law that quantifies the relative frequency of small earthquakes vs. large earthquakes. A b-value of 1 means that for every increase of one unit in magnitude, the number of earthquakes decreases by a factor of 10. A smaller b-value translates to relatively more large erarthquakes, and vice versa.
 
-Here, we will
+Here, we
 1. Explain the basics of b-value estimation, and 
 2. Show the different methods that b-value estimation can be done with SeismoStats.
 

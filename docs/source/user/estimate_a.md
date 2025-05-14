@@ -2,18 +2,18 @@
 # Estimate a-value
 The a-value is the parameter in the Gutenberg-Richter law that contains information on the rate of seismicity within the volume and time interval of interest.
 
-Here, we will
+Here, we
 1. Explain the basics of a-value estimation, and 
 2. Show the different methods that a-value estimation can be done with SeismoStats.
 
 ## 1. Short Introduction on a-value Estimation
-The GR law above the completeness magnitude $m_c$ can be expressed as follows:
+The GR law above the completeness magnitude $m_c$ can be expressed as
 
 $$
 N(m) = 10^{a - b (m - m_c)},
 $$
 
-where $N(m)$ is the number of events with magnitudes larger than or equal to $m$ that occurred in the catalog. With this definition we can estimate the a-value as the logarithm of the number of earthquakes above completeness:
+where $N(m)$ is the number of events with magnitudes larger than or equal to $m$ in a given catalog, and $a$ and $b$ are the a-value and b-value, respectively. With this definition we can estimate the a-value as the base 10 logarithm of the number of earthquakes above completeness:
 
 $$
 a = \log N(m_c)  \tag{1}
@@ -22,7 +22,7 @@ $$
 There are, however, two commonly used modifications of the function above, which are relevant if we want to compare different a-values to each other.
 
 ### 1.1 Reference Magnitude
-First, it might be that the level of completeness is not constant. Therefore, in practice, many instead estimate the a-value with respect to a certain reference magnitude, such that $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual number of earthquakes above $m_{ref}$, but the extrapolated number if the GR law were perfectly valid above and below $m_c$, as shown in Fig. 1 below. The new a-value can now be estimated using the a-value defined in Eq. (1): $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
+First, it might be that the level of completeness is not the same for different catalogs to be compared. Therefore, in practice, many estimate the a-value with respect to a certain reference magnitude, such that $10^{a_{m_{ref}}} = N(m_{ref})$. Here, $N(m_{ref})$ is not the actual number of earthquakes above $m_{ref}$, but the extrapolated number if the GR law were perfectly valid above and below $m_c$, as shown in Fig. 1. This reference a-value can be estimated using the a-value defined in Eq. (1): $a_{m_{ref}} = a - b(m_{ref} - m_c)$.
 
 <figure>
   <img src="../_static/a_value_reference.png" alt="Alt text" width="400"/>
@@ -30,15 +30,15 @@ First, it might be that the level of completeness is not constant. Therefore, in
 </figure>
 
 ### 1.2 Scaling
-Second, the time intervals that are compared are often not the same, making it hard to compare. In many cases, researchers scale the a-value so that $N(m)$ means the number of earthquakes above $m$ within a year (which is effectively a rate). We include this possibility in the form of a scaling factor. This scaling factor encompasses information about how many time-units fit within the time interval of observation. E.g., if the interval of observation is 10 years but we want to scale the a-value to one year, the scaling factor is 10. Note that the same can be applied for spatial comparison: If we want to compare the number of earthquakes in two different volumes, we might be interested in the number of earthquakes per cubic km. If we have a volume of 100 cubic km, the scaling factor is therefore 100.
+Second, the time intervals of two catalogs that are compared are often not the same, making it hard to compare. To standardize the comparison, researchers often scale the a-value so that $N(m)$ represents the number of earthquakes above $m$ the number of earthquakes per unit time (typically one year), which is effectively a rate of seismicity. In SeismoStats, this possibility is implemented in the form of a scaling factor. This scaling factor encompasses information about how many time-units fit within the time interval of observation. E.g., if the interval of observation is 10 years but we want to scale the a-value to one year, the scaling factor is 10. Note that the same can be applied for spatial comparison: If we want to compare the number of earthquakes in two different volumes, we might be interested in the number of earthquakes per cubic km. If we have a volume of 100 cubic km, the scaling factor is therefore 100.
 
 ### 1.3 Positive Methods
-Finally, similarly to the b-value estimation, we have implemented "positive" a-value estimation methods. These are built on the implicit assumption that the momentary completeness is given by the magnitude of the last detected earthquake (plus a buffer, called $\delta m_c$). We based our definitions on the article by Van der Elst and Page, 2023, with the difference that we homogenized the naming convention with the b-value methods:
+Finally, similarly to the b-value estimation, we have implemented "positive" a-value estimation methods. These are built on the implicit assumption that the detection threshold at each point in time is given by the magnitude of the most recent earthquake, plus a threshold value $\delta m_c$. Our implementation is based on the article by Van der Elst and Page, 2023, with the difference that we homogenized the naming convention with the b-value methods:
 
-- "positive" means that only earthquakes that are larger than the previous one are taken into account.
-- "more positive" means that for each earthquake, the next larger one in the catalog is used for the rate estimation. (this is the method is described by Van der Elst and Page, 2023, but the naming convention is taken from Lipiello and Petrillo, 2024)
+- "positive" means that only earthquakes that are larger (by $\delta m_c$) than the previous one are taken into account.
+- "more positive" means that for each earthquake, the next larger ($\delta m_c$) one in the catalog is used for the rate estimation. (this is the method is described by Van der Elst and Page, 2023, but the naming convention is taken from Lipiello and Petrillo, 2024)
 
-For both methods, the main idea is to estimate the share of the time that is covered by the used events in order to estimate the a-value. For the positive method, this is quite straight forward: for each positive difference $m_{i+1} - m_i > \delta m_c$, the time difference can be taken as $\Delta t = t_{i+1} - t_i$. Then, the a-value can be estimated as:
+For both methods, the main idea is to estimate the share of the time that is covered by the used events in order to estimate the a-value. For the positive method, this is quite straightforward: for each positive magnitude difference $m_{i+1} - m_i \ge \delta m_c$, the corresponding time difference is $\Delta t_i = t_{i+1} - t_i$. Then, the a-value can be estimated as:
 
 $$
 a^+ = \log n^+ - \log \frac{\sum_{i=1}^{n^+} \Delta t_i}{T},
@@ -46,14 +46,14 @@ $$
 
 where $n^+$ is the number of positive differences in the catalog, and $T$ is the entire interval of observation. The result of this computation can be directly compared with the classical a-value.
 
-For the more-positive method (as desccribed in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i 10^{-b(m_i + \delta m_c)}$. Here, $m_i$ is the magnitude of the first earthquake. Finally, we have to include the open intervalls, $T_j = (T-t_j)  10^{-b(m_i + \delta m_c)}$ in order to prevent the a-value estimate to be biased. Finally, the a-value estimate is as follows:
+For the more-positive method (as described in  Van der Elst and Page, 2023), we take instead the time to the next larger event, and then scale it according to the GR-law (this means that the b-value will be needed for this estimation). The scaled times can be estiamted as $\tau_i = \Delta t_i \cdot 10^{-b(m_i + \delta m_c)}$. Here, $m_i$ is the magnitude of the first earthquake of an event pair. Finally, we have to include the open intervals (when an earthquake is not followed by a larger one in the catalog), $T_j = (T-t_j) \cdot 10^{-b(m_i + \delta m_c)}$ to prevent the a-value estimate to be biased. Finally, the a-value estimate $a^{++}$ is given by
 
 $$
-a^+ = \log n^{++} - \log \frac{\sum_{i=1}^{n^{++}} \Delta 
+a^{++} = \log n^{++} - \log \frac{\sum_{i=1}^{n^{++}} \Delta 
 \tau_i + \sum_{j=1}^{m}T_j}{T},
 $$
 
-where $n^{++}$ is the number of closed intervals, and $m$ is the number of open intervals (i.e., events after which no larger magnitude occurs within the catalog), and $n^{++} + m$ is the total number of events above the completeness. Note that this equation is the same as put forward by Van der Elst and Page, 2023, with the only exeption that we included the total time $T$. This detail has the effect that the classical a-value estimator and the more-positive a-value estimator have the same expectation value and can therefore be directly compared.
+where $n^{++}$ is the number of closed intervals, and $m$ is the number of open intervals, and $n^{++} + m$ is the total number of events above the completeness magnitude. Note that this equation is the same as put forward by Van der Elst and Page (2023), with the only exeption that we included the total time $T$. This detail has the effect that the classical a-value estimator and the more-positive a-value estimator have the same expectation value and can therefore be directly compared.
 
 ## 2. Estimation of the a-value
 In SeismoStats, we provide several ways to estimate the a-value:
