@@ -547,8 +547,9 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def estimate_mc_maxc(
         self,
-        delta_m: float,
-        correction_factor: float = 0.2,
+        fmd_bin: float,
+        delta_m: float | None = None,
+        correction_factor: float | None = 0.2,
     ) -> float:
         '''
         Returns the completeness magnitude (mc) estimate using the maximum
@@ -569,6 +570,14 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes:         Array of magnitudes to test.
+            fmd_bin:            Bin size for the maximum curvature method. This can
+                        be independent ofthe descritization of the magnitudes.
+                        The original value for the maximum curvature method is
+                        0.1. However, the user can decide which value to use.
+                        The optimal value would be as small as possible while
+                        at the same time ensuring that there are enough
+                        magnitudes in each bin. If the bin size is too small,
+                        the method will not work properly.
             delta_m:            Bin size of discretized magnitudes. Catalog
                             needs to be rounded to bins beforehand. Either given
                             as parameter or taken from the object attribute.
@@ -594,7 +603,11 @@ class Catalog(pd.DataFrame):
                 1.4
         '''
 
+        if delta_m is None:
+            delta_m = self.delta_m
+
         best_mc = estimate_mc_maxc(self.magnitude,
+                                   fmd_bin=fmd_bin,
                                    delta_m=delta_m,
                                    correction_factor=correction_factor)
         self.mc = best_mc

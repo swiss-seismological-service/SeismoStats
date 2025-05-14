@@ -286,7 +286,8 @@ def estimate_mc_ks(
 
 def estimate_mc_maxc(
     magnitudes: np.ndarray,
-    delta_m: float,
+    fmd_bin: float,
+    delta_m: float | None = None,
     correction_factor: float = 0.2,
 ) -> float:
     """
@@ -305,7 +306,7 @@ def estimate_mc_maxc(
 
     Args:
         magnitudes:         Array of magnitudes to test.
-        delta_m:            Bin size for the maximum curvature method. This can
+        fmd_bin:            Bin size for the maximum curvature method. This can
                         be independent ofthe descritization of the magnitudes.
                         The original value for the maximum curvature method is
                         0.1. However, the user can decide which value to use.
@@ -313,14 +314,24 @@ def estimate_mc_maxc(
                         at the same time ensuring that there are enough
                         magnitudes in each bin. If the bin size is too small,
                         the method will not work properly.
+        delta_m:            Bin size of discretized magnitudes (precision that
+                        magnitude values are rounded to.
         correction_factor:  Correction factor for the maximum curvature
                 method (default value after Woessner & Wiemer 2005).
 
     Returns:
         mc:                 Estimated completeness magnitude.
     """
+    if delta_m is not None and delta_m != 0:
+        bin_factor = fmd_bin / delta_m
+        # check that bin_factor is an integer
+        if not bin_factor.is_integer():
+            raise ValueError(
+                f"fmd_bin {fmd_bin} is not a multiple of delta_m {delta_m}"
+            )
+    
     bins, count, _ = get_fmd(
-        magnitudes=magnitudes, delta_m=delta_m, bin_position="center"
+        magnitudes=magnitudes, delta_m=fmd_bin, bin_position="center"
     )
     mc = bins[count.argmax()] + correction_factor
     return mc
