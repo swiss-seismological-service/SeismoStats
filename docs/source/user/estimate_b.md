@@ -49,14 +49,14 @@ Based on the b-positive method, Lippiello and Petrillo (2024) developed the b-mo
 
 ## 2. Estimation of the b-value
 In SeismoStats, we provide several ways to estimate the b-value:
-- Use the {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` class
-- Use the function {func}`estimate_b <seismostats.analysis.estimate_b>` (this is the easiest way, {ref}`jump here </user/estimate_b.md#estimate-b>`)
-- Use the method {func}`estimate_b <seismostats.Catalog.estimate_b>` native to the Catalog class (most practical if the catalog format is used {ref}`jump here </user/estimate_b.md#cat-estimate-b>`)
+- Using the {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` class
+- Using the function {func}`estimate_b <seismostats.analysis.estimate_b>` (this is the easiest way, {ref}`jump here </user/estimate_b.md#estimate-b>`)
+- Using the method {func}`estimate_b <seismostats.Catalog.estimate_b>` native to the Catalog class (most practical if the catalog format is used, {ref}`jump here </user/estimate_b.md#cat-estimate-b>`)
 
 Below, we show examples for each method.
 
 ### 2.1 BValueEstimator
-The basis of all b-value estimations in SeismoStats is the {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>`. The BValueEstimator class defines how b-value estimation works in general: the input is at least the magnitudes, the magnitude of completeness, and the magnitude discretization. This class is then used to implement a specific method of b-value estimation. The three methods implemented for now are described above and are called {class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`, {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>`, {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`, and {class}`UtsuBValueEstimator <seismostats.analysis.UtsuBValueEstimator>`.
+All b-value estimations in SeismoStats are built upon the {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` class, which defines a unified interface for different estimation methods. It requires the following inputs: an array of magnitudes $m_1, \dots, m_n$, the magnitude of completeness $m_c$, and the magnitude discretization $\Delta m$. This base class is then extended to implement specific estimation techniques. Currently, four methods are available: {class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`, {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>`, {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`, and {class}`UtsuBValueEstimator <seismostats.analysis.UtsuBValueEstimator>`.
 
 The class can be used as follows:
 
@@ -65,22 +65,26 @@ The class can be used as follows:
 >>> estimator = ClassicBValueEstimator()
 >>> estimator.calculate(mags, mc, delta_m)
 1.05
->>> estimator.a_value
+>>> estimator.b_value
 1.05
 ```
 
-Note that the estimator automatically cuts off magnitudes below $m_c$ and does not count them. This is true for all b-value estimations. Therefore, it is of crucial importance to provide the correct $m_c$. Another crucial input is the binnning $\Delta m$, the binning of the magnitudes. For the positive methods, the threshold $\delta m_c$ and the times can be given additionally. The default value of $\delta m_c$ is $\Delta m$. If the times are not given, the estimator assumes that the magnitudes are ordered in time. The estimated b-value is finally stored within the instance of the class, which we called `estimator` in our example. 
+When calling `.calculate()`, the estimator automatically excludes all magnitudes below the completeness threshold $m_c$. This behavior is consistent across all b-value estimators in SeismoStats, so it is essential to provide an accurate value for $m_c$.
+
+Another crucial input is the magnitude discretization bin width $\Delta m$. For the positive methods, one can also specify a threshold $\delta m_c$ and an array of event times. By default, $\delta m_c$ is set equal to $\Delta m$. If no times are provided, the estimator assumes that the magnitudes are already ordered in time. 
+
+The computed b-value is stored in the estimator instance (in this example, `estimator`) and can be accessed directly after calling `.calculate()` 
 
 ```python
 >>> from seismostats.analysis import BPositiveBValueEstimator
 >>> estimator = BPositiveBValueEstimator()
 >>> estimator.calculate(mags, mc, delta_m, times=times, dmc=dmc)
 0.98
->>> estimator.a_value
+>>> estimator.b_value
 0.98
 ```
 
-Note that for {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>` and  {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`, the parameter `mc` still is used as in the classical case: magnitudes below will be disregarded.
+Note that for {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>` and  {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`, the parameter `mc` still is used as in the classical case: all magnitudes below $m_c$ are excluded from the analysis.
 
 ### 2.2 estimate_b
 In order to estimate the b-value with Eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
