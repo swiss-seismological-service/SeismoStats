@@ -57,14 +57,14 @@ where $n^{++}$ is the number of closed intervals, and $m$ is the number of open 
 
 ## 2. Estimation of the a-value
 In SeismoStats, we provide several ways to estimate the a-value:
-- Use the {ref}`AValueEstimator <reference/analysis/avalues:estimators>` class
-- Use the function {func}`estimate_a <seismostats.analysis.estimate_a>` (this is the easiest way, {ref}`jump here </user/estimate_a.md#estimate-a>`)
-- Use the method {func}`estimate_a <seismostats.Catalog.estimate_a>` native to the Catalog class (most practical if the catalog format is used {ref}`jump here </user/estimate_a.md#cat-estimate-a>`)
+- Using the {ref}`AValueEstimator <reference/analysis/avalues:estimators>` class
+- Using the function {func}`estimate_a <seismostats.analysis.estimate_a>` (this is the easiest way, {ref}`jump here </user/estimate_a.md#estimate-a>`)
+- Using the method {func}`estimate_a <seismostats.Catalog.estimate_a>` native to the Catalog class (most practical if the catalog format is used, {ref}`jump here </user/estimate_a.md#cat-estimate-a>`)
 
 Below, we show examples for each method.
 
 ### 2.1 AValueEstimator
-The basis of all a-value estimations in SeismoStats is the {ref}`AValueEstimator <reference/analysis/avalues:Estimators>`. The AValueEstimator class defines how a-value estimation works in general: the input is at least the magnitudes, the magnitude of completeness, and the magnitude discretization. This class is then used to implement a specific method of a-value estimation. The three methods implemented for now are described above and are called {class}`ClassicAValueEstimator <seismostats.analysis.ClassicAValueEstimator>`, {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>` and {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>`. These classes function in a very similar way to the b-value estimators described in {doc}`estimate b <estimate_b>`.
+All a-value estimations in SeismoStats are built upon thee {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` class, which defines a unified interface for different estimation methods. It requires the following inputs: an array of magnitudes $m_1, \dots, m_n$, the magnitude of completeness $m_c$, and the magnitude discretization $\Delta m$. This base class is then extended to implement specific estimation techniques. Currently, three methods are available: {class}`ClassicAValueEstimator <seismostats.analysis.ClassicAValueEstimator>`, {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>` and {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>`. These classes follow the same interface and logic as the b-value estimators described in {doc}`estimate b <estimate_b>`.
 
 The class can be used as follows:
 
@@ -77,9 +77,9 @@ The class can be used as follows:
 3
 ```
 
-In the example above, `mags` is a vector of magnitudes with 1000 values above $m_c$. Note that the estimator automatically cuts off magnitudes below $m_c$ and does not count them. This is true for all a-value estimations. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$. The estimated a-value is finally stored within the instance of the class, which we called `estimator` in our example.
+In the example above, `mags` is an array of magnitudes with 1000 values above $m_c$. Note that the estimator automatically cuts off magnitudes below $m_c$ and does not count them. This is true for all a-value estimations in SeismoStats. Therefore, it is crucial to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$. The estimated a-value is finally stored within the instance of the class, which we called `estimator` in our example.
 
- {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>` works in a similar way. However, they have the additional arguments `dmc` (see $\delta m_c$ above) and `times`. If `dmc` is not given, it is set to $\Delta m$. `times`, on the other hand, has to be provided, as it plays an important role to estimate the a-value (as described in the section above).
+ {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>` works in a similar way. However, it has the additional arguments `dmc` (see $\delta m_c$ above) and `times`. If `dmc` is not given, it is set to $\Delta m$. `times`, on the other hand, has to be provided, as it plays an important role to estimate the a-value (as described in the section above).
 
 ```python
 >>> from seismostats.analysis import APositiveAValueEstimator
@@ -90,7 +90,7 @@ In the example above, `mags` is a vector of magnitudes with 1000 values above $m
 3.001
 ```
 
-Finally, {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>` requires one more additional argument: the b-value. This is because the time differences have to be scaled using the GR-law. 
+Finally, {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>` requires another additional argument: the b-value. This is because the time differences have to be scaled using the GR-law. 
 
 ```python
 >>> from seismostats.analysis import AMorePositiveAValueEstimator
@@ -101,10 +101,10 @@ Finally, {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiv
 2.980
 ```
 
-Note that for {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>` and {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>`, the parameter `mc` still is used as in the classical case: magnitudes below will be disregarded.
+Note that for {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>` and {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>`, the parameter `mc` is still used as in the classical case: magnitudes below will be disregarded.
 
 ### 2.2 estimate_a
-In order to estimate the a-value with Eq. (1), one needs only to know the magnitude of completeness and the discretization of the magnitudes, $\Delta m$.
+An alternative way to calculate an a-value is using the function {func}`estimate_a <seismostats.analysis.estimate_a>`. To estimate the a-value with Eq. (1), it only requires an array of magnitudes $m_1, \dots, m_n$, the magnitude of completeness $m_c$ and the discretization of magnitudes $\Delta m$.
 
 ```python
 >>> from seismostats.analysis import estimate_a
@@ -113,7 +113,7 @@ In order to estimate the a-value with Eq. (1), one needs only to know the magnit
 1.0
 ```
 
-Note that the function {func}`estimate_a <seismostats.analysis.estimate_a>` automatically cuts off magnitudes below $m_c$ and does not count them. Therefore, it is of crucial importance to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$.
+Note that the function {func}`estimate_a <seismostats.analysis.estimate_a>` automatically cuts off magnitudes below $m_c$ and does not count them. Therefore, it is crucial to provide the correct $m_c$. The reason that $\Delta m$ is needed here is only to correctly cut off at $m_c$.
 
 The default method for the a-value estimation is the classical method (Eq. 1). However, it is also possible to specify which method should be used. This can be done as follows:
 ```python
@@ -124,14 +124,14 @@ The default method for the a-value estimation is the classical method (Eq. 1). H
 ```
 
 ### 2.3 cat.estimate_a()
-When you have already transformed your data into a Catalog object, you can directly use the internal method of the Catalog class, which works exactly in the same way as the function shown above.
+If you have already converted your data into a Catalog object, you can directly estimate the a-value using the internal method of the Catalog class, which functions just like the standalone `estimate_a()` function shown above.
 
 ```python
 >>> cat.estimate_a(mc=1, delta_m=0.1)
 2.345
 ```
 
-Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the method will use these values to estimate the a-value:
+If $\Delta m$ and $m_c$ are already defined for the catalog, you can omit them in the method call, and the stored values will be used:
 
 ```python
 >>> cat.mc = 1
@@ -141,7 +141,7 @@ Note that, if $\Delta m$ and $m_c$ are already defined in the catalog, the metho
 2.345
 ```
 
-This is especially practical since these attributes are set by the the binning method and the estimate_mc methods. 
+This is especially convenient because both `mc` and `delta_m` are set typically set using the the `bin_magnitudes` method and the `estimate_mc` methods. 
 ```python
 >>> # First, estimate mc
 >>>cat.estimate_mc_max()
