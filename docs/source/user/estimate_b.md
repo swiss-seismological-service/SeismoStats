@@ -29,17 +29,23 @@ where $\text{var }(m)$ is the variance of the magnitudes which can be estimated 
 
 Below we discuss shortly the effect of discretized magnitudes and two alternative methods of b-value estimation that reduce the effect of short term aftershock incompleteness.
 
-### 1.1 Binning of magnitudes
+### 1.1 Discretization of magnitudes
 In most cases, the magitudes are discretized. Utsu (1966) came up with an approximative equation for this case, effectively by shifting the magnitudes by half a bin. However, the correct (unbiased) estimate takes a slightly more complicated form (see Tinti and Mulargia, 1987), which we implemented for all available b-value estimators of the package (besides the one that uses Utsu's formula). For all esimtators, $\Delta m$ is a mandatory input. Of course, it can be also set to zero if no discretization is present. For most catalogs of natural seismicity, however, $\Delta m$ is between $0.2$ and $0.01$. We did not adjust the uncertainty estimate (Eq. 2) for the binning, but we did carry out synthetic tests to assure ourselves that the differences are insignificant.
 
-### 1.2 b-positive
+### 1.2 Weighted magnitudes
+
+### 1.3 b-value uncertainty
+
+### 1.4 Positive methods
+
+#### 1.4.1 b-positive
 In an effort to reduce the impact of short term incompleteness, Van der Elst (2021) introduced the b-positive estimate. This method effectively assumes that the completeness at each point of time is determined by the last earthquake magnitude measured plus some extra quantity ($\text{d}m_c$).
 
 The estimate can be performed as follows. First, the difference to the previous magnitudes ($m_i - m_{i-1}$) are estimated. Then, only the differences that are positive and larger than a threshold, $\text{d}m_c$, are selected (hence positive). With the obtained magnitude differences, the b-value can be estimated with the maximum likelihood method. This relies on the fact that the differences of an exponentially distributed variable are Laplace distributed (also known as double exponentially).
 
 Although the b-positive method does effectively eliminate the effect of short term aftershock incompleteness, it is still affected by normal incompleteness resulting from the capabilities of the seismic network \textcolor{red}{citation}. This effect can be reduced either by only considering the complete catalog (above $m_c$) before estimating the differences or by increasing the threshold $\text{d}m_c$. In the SeismoStats package, both the completeness ($m_c$) and threshold ($\delta m_c$) can be given as an input, with the default being $\delta m_c = \Delta m$.
 
-### 1.2 b-more-positive.
+#### 1.4.2 b-more-positive.
 Based on the b-positive method, Lippiello and Petrillo (2024) developed the b-more-positive method, which makes use of the same principles.  For this method, the differences are constructed in an alternative way. For each earthquake, the next earthquake with a magnitude that is larger by $\text{d}m_c$ is taken to estimate the differences. Therefore, the number of differences will be larger than in the b-positive method, where the amount of data is typically halved. However, the variance of this estimate does not become smaller as a result. As we use the uncertainty estimator of Eq. 2, which is based on the number of mangitudes used, we underestimate the uncertainty, typically by a factor of 2.
 
 ## 2. Estimation of the b-value
