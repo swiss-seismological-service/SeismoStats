@@ -3,6 +3,7 @@
 ```{toctree}
 :maxdepth: 1
 
+dataformats
 catalogs
 estimate_mc
 estimate_b
