@@ -144,7 +144,7 @@ If $\Delta m$ and $m_c$ are already defined for the catalog, you can omit them i
 This is especially convenient because both `mc` and `delta_m` are set typically set using the the `bin_magnitudes` method and the `estimate_mc` methods. 
 ```python
 >>> # First, estimate mc
->>>cat.estimate_mc_max()
+>>>cat.estimate_mc_maxc()
 >>> # Now, it is set as an attibute 
 >>> cat.mc
 1.0
