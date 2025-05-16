@@ -1506,7 +1506,7 @@ class ForecastCatalog(Catalog):
 
     def __init__(self, data=None, *args, n_catalogs=None, **kwargs):
         super().__init__(data, *args, **kwargs)
-        # Total number of catalogs represented, inculding empty catalogs
+        # Total number of catalogs represented, including empty catalogs
         self.n_catalogs = n_catalogs
 
     @require_cols(require=_required_cols)

@@ -206,5 +206,5 @@ class ForecastGRRateGrid(GRRateGrid):
 
     def __init__(self, data=None, *args, n_grids=None, **kwargs):
         super().__init__(data, *args, **kwargs)
-        # Total number of catalogs represented, inculding empty catalogs
+        # Total number of catalogs represented, including empty catalogs
         self.n_grids = n_grids
