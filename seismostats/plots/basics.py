@@ -136,7 +136,6 @@ def plot_cum_fmd(
 def plot_fmd(
     magnitudes: np.ndarray | pd.Series,
     fmd_bin: float,
-    delta_m: float | None = None,
     ax: plt.Axes | None = None,
     color: str = None,
     size: int = None,
@@ -151,7 +150,6 @@ def plot_fmd(
         magnitudes:     Array of magnitudes.
         fmd_bin:        Size of magnitude bins, important for the
                     correct visualization of the data.
-        delta_m:        Discretization of the magnitudes.
         ax:             The axis where figure should be plotted.
         color:          Color of the data.
         size:           Size of data points.
@@ -165,14 +163,6 @@ def plot_fmd(
     """
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
-
-    if delta_m is not None and delta_m != 0:
-        bin_factor = fmd_bin / delta_m
-        # check that bin_factor is an integer
-        if not bin_factor.is_integer():
-            raise ValueError(
-                f"fmd_bin {fmd_bin} is not a multiple of delta_m {delta_m}"
-            )
 
     bins, counts, magnitudes = get_fmd(
         magnitudes,

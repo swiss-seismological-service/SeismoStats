@@ -1283,7 +1283,6 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def plot_fmd(self,
                  fmd_bin: float,
-                 delta_m: float = None,
                  ax: plt.Axes | None = None,
                  color: str = None,
                  size: int = None,
@@ -1297,8 +1296,6 @@ class Catalog(pd.DataFrame):
         Args:
             magnitudes:     Array of magnitudes.
             fmd_bin:        Bin size of magnitudes for plotting purposes.
-            delta_m:        Discretization of the magnitudes, important for the
-                        correct visualization of the data.
             ax:             The axis where figure should be plotted.
             color:          Color of the data.
             size:           Size of data points.
@@ -1310,11 +1307,8 @@ class Catalog(pd.DataFrame):
         Returns:
             ax: The ax object that was plotted on.
         '''
-        if delta_m is None:
-            delta_m = self.delta_m
         ax = plot_fmd(self.magnitude,
                       fmd_bin=fmd_bin,
-                      delta_m=delta_m,
                       ax=ax,
                       color=color,
                       size=size,

@@ -315,23 +315,15 @@ def estimate_mc_maxc(
                         magnitudes in each bin. If the bin size is too small,
                         the method will not work properly.
         delta_m:            Bin size of discretized magnitudes (precision that
-                        magnitude values are rounded to.
+                        magnitude values are rounded to).
         correction_factor:  Correction factor for the maximum curvature
                 method (default value after Woessner & Wiemer 2005).
 
     Returns:
         mc:                 Estimated completeness magnitude.
     """
-    if delta_m is not None and delta_m != 0:
-        bin_factor = fmd_bin / delta_m
-        # check that bin_factor is an integer
-        if not bin_factor.is_integer():
-            raise ValueError(
-                f"fmd_bin {fmd_bin} is not a multiple of delta_m {delta_m}"
-            )
-    
     bins, count, _ = get_fmd(
-        magnitudes=magnitudes, delta_m=fmd_bin, bin_position="center"
+        magnitudes=magnitudes, fmd_bin=fmd_bin, bin_position="center"
     )
     mc = bins[count.argmax()] + correction_factor
     return mc
