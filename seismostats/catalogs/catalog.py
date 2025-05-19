@@ -510,23 +510,6 @@ class Catalog(pd.DataFrame):
                 0       42.35    3.34444        1.0
                 1        1.35    5.13500        2.5
                 2        2.35    2.13400        4.0
-
-            .. code-block:: python
-
-                >>> import pandas as pd
-                >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
-                ...     'longitude': [42.35, 1.35, 2.35],
-                ...     'latitude': [3.34444, 5.135, 2.134],
-                ...     'magnitude': [1.02, 2.53, 3.99]
-                ...     })
-                >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.bin_magnitudes()
-
-                    longitude   latitude  magnitude
-                0       42.35    3.34444        1.0
-                1        1.35    5.13500        2.5
-                2        2.35    2.13400        4.0
         '''
         if delta_m is None and self.delta_m is None:
             raise ValueError("binning (delta_m) needs to be set")
@@ -1533,7 +1516,7 @@ class ForecastCatalog(Catalog):
 
     def __init__(self, data=None, *args, n_catalogs=None, **kwargs):
         super().__init__(data, *args, **kwargs)
-        # Total number of catalogs represented, inculding empty catalogs
+        # Total number of catalogs represented, including empty catalogs
         self.n_catalogs = n_catalogs
 
     @require_cols(require=_required_cols)
