@@ -212,7 +212,7 @@ def compare_method_and_function(method,
     ("plot_cum_fmd", plot_cum_fmd,
      ["magnitudes"], ["delta_m", "mc", "b_value"]),
     ("plot_fmd", plot_fmd,
-     ["magnitudes"], ["delta_m"]),
+     ["magnitudes"], ["fmd_bin"]),
     ("plot_mc_vs_b", plot_mc_vs_b,
      ["magnitudes"], ["delta_m", "mcs"])
 ])

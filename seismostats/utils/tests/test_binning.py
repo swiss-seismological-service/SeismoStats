@@ -105,11 +105,11 @@ def test_get_cum_fmd(magnitudes: np.ndarray, delta_m: float,
       0.2, np.array([-0.1, 0.1, 0.3, 0.5, 0.7]), np.array([21, 14, 7, 5, 3]),
       'left')]
 )
-def test_get_fmd(magnitudes: np.ndarray, delta_m: float,
+def test_get_fmd(magnitudes: np.ndarray, fmd_bin: float,
                  bins: np.ndarray, counts: np.ndarray, bin_position):
     errors = []
     nbins, ncounts, nmags = get_fmd(
-        magnitudes, delta_m, bin_position=bin_position)
+        magnitudes, fmd_bin, bin_position=bin_position)
 
     if not np.allclose(bins, nbins, atol=1e-10):
         errors.append("Incorrect bin values.")
