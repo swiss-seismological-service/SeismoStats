@@ -531,7 +531,6 @@ class Catalog(pd.DataFrame):
     def estimate_mc_maxc(
         self,
         fmd_bin: float,
-        delta_m: float | None = None,
         correction_factor: float | None = 0.2,
     ) -> float:
         '''
@@ -553,19 +552,18 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes:         Array of magnitudes to test.
-            fmd_bin:            Bin size for the maximum curvature method. This can
-                        be independent ofthe descritization of the magnitudes.
-                        The original value for the maximum curvature method is
-                        0.1. However, the user can decide which value to use.
+            fmd_bin:            Bin size for the maximum curvature method.
+                        This can be independent ofthe descritization of the
+                        magnitudes. The original value for the maximum
+                        curvature method is 0.1. However, the user can decide
+                        which value to use.
                         The optimal value would be as small as possible while
                         at the same time ensuring that there are enough
                         magnitudes in each bin. If the bin size is too small,
                         the method will not work properly.
-            delta_m:            Bin size of discretized magnitudes. Catalog
-                            needs to be rounded to bins beforehand. Either given
-                            as parameter or taken from the object attribute.
             correction_factor:  Correction factor for the maximum curvature
-                            method (default value after Woessner & Wiemer 2005).
+                            method (default value after Woessner & Wiemer
+                            2005).
 
         Returns:
             mc:                 Estimated completeness magnitude.
@@ -580,18 +578,13 @@ class Catalog(pd.DataFrame):
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.estimate_mc_maxc(delta_m=0.1)
+                >>> simple_catalog.estimate_mc_maxc(fmd_bin=0.1)
                 >>> simple_catalog.mc
 
                 1.4
         '''
-
-        if delta_m is None:
-            delta_m = self.delta_m
-
         best_mc = estimate_mc_maxc(self.magnitude,
                                    fmd_bin=fmd_bin,
-                                   delta_m=delta_m,
                                    correction_factor=correction_factor)
         self.mc = best_mc
         return best_mc

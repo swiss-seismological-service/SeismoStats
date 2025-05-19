@@ -287,7 +287,6 @@ def estimate_mc_ks(
 def estimate_mc_maxc(
     magnitudes: np.ndarray,
     fmd_bin: float,
-    delta_m: float | None = None,
     correction_factor: float = 0.2,
 ) -> float:
     """
@@ -314,8 +313,6 @@ def estimate_mc_maxc(
                         at the same time ensuring that there are enough
                         magnitudes in each bin. If the bin size is too small,
                         the method will not work properly.
-        delta_m:            Bin size of discretized magnitudes (precision that
-                        magnitude values are rounded to).
         correction_factor:  Correction factor for the maximum curvature
                 method (default value after Woessner & Wiemer 2005).
 
