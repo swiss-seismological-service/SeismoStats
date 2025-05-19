@@ -197,7 +197,6 @@ def compare_method_and_function(method,
     function_output = function(**kwargs)
     assert isinstance(function_output, plt.Axes)
 
-    # how to do this without the linting error?
     assert type(method_output) is type(function_output)
 
 
@@ -222,6 +221,7 @@ def test_catalog_methods(catalog_example,
                          exclude_args,
                          other_args):
     mcs = [3.0, 3.5, 4.0]
+    fmd_bin = 0.1
     method_ref = getattr(catalog_example, method)
     kwargs_dict = {}
     method_kwargs = {}
@@ -241,6 +241,10 @@ def test_catalog_methods(catalog_example,
             kwargs_dict[arg] = mcs
             other_args.remove("mcs")
             method_kwargs[arg] = mcs
+        elif arg == "fmd_bin":
+            kwargs_dict[arg] = fmd_bin
+            other_args.remove("fmd_bin")
+            method_kwargs[arg] = fmd_bin
     exclude_args = ["self", *exclude_args, *other_args]
     compare_method_and_function(method_ref,
                                 function,
@@ -447,7 +451,7 @@ def test_estimate_mc_functionality():
 
 def test_estimate_mc_maxc_functionality():
     cat = Catalog({'magnitude': MAGNITUDES})
-    cat.estimate_mc_maxc(delta_m=0.1, correction_factor=0.2)
+    cat.estimate_mc_maxc(fmd_bin=0.1, correction_factor=0.2)
     assert_equal(1.3, cat.mc)
 
 
@@ -464,9 +468,9 @@ def test_estimate_mc_maxc_catalog(mc_maxc_mock: MagicMock):
     with pytest.raises(TypeError):
         cat.estimate_mc_maxc()
 
-    cat.estimate_mc_maxc(delta_m=0.123)
+    cat.estimate_mc_maxc(fmd_bin=0.123)
     _, kwargs = mc_maxc_mock.call_args
-    assert kwargs['delta_m'] == 0.123
+    assert kwargs['fmd_bin'] == 0.123
 
 
 @patch('seismostats.catalogs.catalog.estimate_mc_b_stability',
