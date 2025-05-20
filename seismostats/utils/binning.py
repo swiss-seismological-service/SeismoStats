@@ -179,7 +179,9 @@ def binning_test(
 
 
 def get_fmd(
-    magnitudes: np.ndarray, delta_m: float, bin_position: str = "center"
+    magnitudes: np.ndarray,
+    delta_m: float,
+    bin_position: str = "center"
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculates event counts per magnitude bin. Note that the returned bins
@@ -218,6 +220,9 @@ def get_fmd(
     if delta_m == 0:
         raise ValueError("delta_m cannot be 0")
 
+    if bin_position not in {"center", "left"}:
+        raise ValueError("bin_position must be 'center' or 'left'")
+
     magnitudes = bin_to_precision(magnitudes, delta_m)
     # use histogram to get the counts
     x_bins = bin_to_precision(
@@ -230,9 +235,6 @@ def get_fmd(
     x_bins -= delta_m / 2
     counts, _ = np.histogram(magnitudes, x_bins)
 
-    assert (
-        bin_position == "left" or bin_position == "center"
-    ), "bin_position needs to be 'left'  of 'center'"
     if bin_position == "left":
         bins = bins - delta_m / 2
 
