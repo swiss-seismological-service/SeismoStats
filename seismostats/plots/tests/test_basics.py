@@ -88,5 +88,5 @@ def test_reverse_dot_size():
 def test_plot_fmd_none():
     magnitudes = np.array([0.235, -0.235, 4.499, 4.5, 6, 0.1, 1.6])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         plot_fmd(magnitudes)

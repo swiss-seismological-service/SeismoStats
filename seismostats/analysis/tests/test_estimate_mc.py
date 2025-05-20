@@ -167,7 +167,7 @@ def test_estimate_mc_ks():
 
 
 def test_estimate_mc_maxc():
-    mc = estimate_mc_maxc(MAGNITUDES, delta_m=0.1, correction_factor=0.2)
+    mc = estimate_mc_maxc(MAGNITUDES, fmd_bin=0.1, correction_factor=0.2)
     assert_equal(1.3, mc)
 
 
