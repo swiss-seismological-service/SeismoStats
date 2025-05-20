@@ -225,6 +225,9 @@ def get_fmd(
     if fmd_bin <= 0:
         raise ValueError("Bin size (fmd_bin) must be a positive number.")
 
+    if bin_position not in {"center", "left"}:
+        raise ValueError("bin_position must be 'center' or 'left'")
+
     magnitudes = bin_to_precision(magnitudes, fmd_bin)
     # use histogram to get the counts
     x_bins = bin_to_precision(
@@ -237,9 +240,6 @@ def get_fmd(
     x_bins -= fmd_bin / 2
     counts, _ = np.histogram(magnitudes, x_bins)
 
-    assert (
-        bin_position == "left" or bin_position == "center"
-    ), "bin_position needs to be 'left'  of 'center'"
     if bin_position == "left":
         bins = bins - fmd_bin / 2
 

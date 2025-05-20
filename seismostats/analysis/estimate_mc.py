@@ -10,38 +10,10 @@ import statsmodels.api as sm
 
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
-from seismostats.analysis.bvalue.utils import b_value_to_beta
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision, binning_test, get_fmd
-from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 from seismostats.utils.simulate_distributions import dither_magnitudes
-
-
-def cdf_discrete_exp(
-    magnitudes: np.ndarray,
-    mc: float,
-    delta_m: float,
-    beta: float,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Calculates the cumulative distribution function (CDF) for a discrete
-    exponential distribution at the points of the magnitudes.
-
-    Args:
-        magnitudes: Array of magnitudes.
-        mc:         Completeness magnitude.
-        delta_m:    Bin size of discretized magnitudes.
-        beta:       Rate parameter of the exponential distribution.
-
-    Returns:
-        x: Unique x-values of the magnitudes.
-        y: Corresponding y-values of the CDF of the GR distribution.
-    """
-
-    x = np.sort(magnitudes)
-    x = np.unique(x)
-    y = 1 - np.exp(-beta * (x + delta_m - mc))
-    return x, y
+from seismostats.analysis.bvalue.utils import ks_test_gr
 
 
 def ks_test_gr_lilliefors(

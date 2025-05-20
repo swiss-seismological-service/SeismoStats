@@ -8,6 +8,7 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
+from seismostats.analysis.bvalue.utils import ks_test_gr
 
 
 class BValueEstimator(ABC):
@@ -18,6 +19,7 @@ class BValueEstimator(ABC):
         self._delta_m: float | None = None
         self._weights: np.ndarray | None = None
         self.idx: np.ndarray | None = None
+        self.ks_ds: np.ndarray | None = None
 
         self.__b_value: float | None = None
 
@@ -175,6 +177,21 @@ class BValueEstimator(ABC):
         '''
         self.__is_estimated()
         return len(self.magnitudes)
+
+    @property
+    def p_ks(self):
+        '''
+        p-value of the ks-test.
+        '''
+        self.__is_estimated()
+        out = ks_test_gr(self.magnitudes,
+                         self.mc,
+                         self.delta_m,
+                         b_value=self.b_value,
+                         ks_ds=self.ks_ds,
+                         weights=self.weights)
+        self.ks_ds = out[2]
+        return out[0]
 
     def __is_estimated(self) -> bool:
         '''
