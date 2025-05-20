@@ -1,7 +1,9 @@
 import numpy as np
-from scipy import stats
 
-from seismostats.utils.binning import bin_to_precision
+from seismostats.utils.binning import (
+    bin_to_precision,
+    get_fmd,
+    binning_test,)
 
 
 def simulate_magnitudes(
@@ -34,13 +36,11 @@ def simulate_magnitudes(
 
     """
     if mag_max:
-        quantile1 = stats.expon.cdf(mc, loc=0, scale=1 / beta)
-        quantile2 = stats.expon.cdf(mag_max, loc=0, scale=1 / beta)
-        mags = stats.expon.ppf(
-            np.random.uniform(quantile1, quantile2, size=n),
-            loc=0,
-            scale=1 / beta,
-        )
+        u = np.random.uniform(0, 1, size=n)
+        lower_cdf = 1 - np.exp(-beta * mc)
+        upper_cdf = 1 - np.exp(-beta * mag_max)
+        scaled_u = lower_cdf + u * (upper_cdf - lower_cdf)
+        mags = -(1 / beta) * np.log(1 - scaled_u)
     else:
         mags = np.random.exponential(1 / beta, n) + mc
 
@@ -96,3 +96,50 @@ def simulate_magnitudes_binned(
     if delta_m > 0:
         mags = bin_to_precision(mags, delta_m)
     return mags
+
+
+def dither_magnitudes(magnitudes: np.ndarray,
+                      delta_m: float,
+                      b_value: float,
+                      ) -> np.ndarray:
+    """"
+    Artificially convert binned magnitudes to continuous ones. This is done
+    by adding random numbers to the binned magnitudes, respecting the
+    exponential distribution of the magnitudes.
+
+    Args:
+        magnitudes:   Array of binned magnitudes.
+        delta_m:      Size of the bin.
+        b_value:      b-value of the distribution. If None, the b-value is
+                    estimated from the data.
+        b_method:     BValueEstimator object. Only used if b_value is None.
+
+    Returns:
+        magnitudes:   Array of continuous magnitudes.
+    """
+    magnitudes = np.asarray(magnitudes)
+
+    # test if the array is binned correctly
+    if not binning_test(magnitudes, delta_m):
+        raise ValueError(
+            "The given array is not binned correctly. Please check the binning."
+        )
+
+    # get the fmd
+    bins, counts, magnitudes_temp = get_fmd(magnitudes, delta_m)
+    bin_offset = np.min(magnitudes) - np.min(magnitudes_temp)
+    bins += bin_offset
+
+    # Dither magnitudes efficiently
+    dithered_list = [
+        simulate_magnitudes_binned(
+            count,
+            b_value,
+            mc=bin - delta_m / 2,
+            delta_m=0,
+            mag_max=bin + delta_m / 2
+        )
+        for bin, count in zip(bins, counts)
+    ]
+
+    return np.concatenate(dithered_list)
