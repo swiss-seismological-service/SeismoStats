@@ -12,7 +12,9 @@ Additionally, we demonstrate how to easily visualize your data and explore key f
 
 ---
 
-A central feature of SeismoStats is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. Beyond the basic event data (e.g., magnitude, time), the `Catalog` object also includes:
+A central feature of **SeismoStats** is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. For more information on the pandas data struture and built-in methods refer to the for more information refer to the [pandas User Guide](https://pandas.pydata.org/docs/user_guide/index.html 'pandas User Guide'). 
+
+The Catalog class allows for easy storage, organization, and analysis of event data (e.g., magnitudes, event times). It includes:
 
 - *Attributes*: These include the catalog data (such as  magnitudes and event times), as well as additional parameters used in the analysis. These parameter can be either user-defined or estimated using SeismoStats' built-in methods.
 
@@ -42,46 +44,7 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 > **Note:** Your catalog must include a `magnitude` column. For full functionality (especially plotting and analysis), it is recommended to also include `time`, `latitude`, `longitude`, and `depth`.
 
 
-### 1.1 Example: Creating a Catalog from a DataFrame
-
-```python
->>> from seismostats import Catalog
->>> import pandas as pd
-
->>> # Create a DataFrame with earthquake data
->>> df = pd.DataFrame({
-...    'longitude': [42.35, 1.35],
-...    'latitude': [7.34444, 5.13500],
-...    'depth': [5.50, 10.52],
-...    'time': ['2022-01-01 05:05:13', '2022-04-07 07:07:15'],
-...    'magnitude': [1.0, 2.5]
-... })
-
->>> # Initialize a Catalog
->>> cat = Catalog(df)
-
->>> # Preview the first entries
->>> cat.head()
-    longitude   latitude    depth   time                magnitude
- 0  42.35       7.34444     5.50    2022-01-01 05:05:13 1.0
- 1  1.35        5.13500     10.52   2022-04-07 07:07:15 2.5
-
-```
-
-
-### 1.2 Example: Creating a Catalog from QuakeML
-```python
->>> cat = Catalog.from_quakeml(quakefile)
-
->>> # Preview the first entries
->>> cat.head()
-  event_type             time                  latitude  longitude      depth evaluationmode  magnitude magnitude_type  magnitude_MLhc  magnitude_MLv
-0  earthquake  2021-12-30 07:43:14.681975   46.051445   7.388025  1181.640625        manual   2.510115           MLhc        2.510115344        2.301758471
-1  earthquake  2021-12-25 14:49:40.125942   47.371755   6.917057  3364.257812        manual   3.539687           MLhc        3.539687307               NaN
-```
-
-
-### 1.3 Example: Downloading a catalog from a FDSN-Server
+### 1.1 Example: Downloading a catalog from a FDSN-Server
 Since downloads are limited to a maximum of 20,000 events, you can use the batch download option for larger datasets. This method downloads the data in subsets of events based on the specified `batch_size`.
 ```python
 >>> from seismostats.catalogs.client import FDSNWSEventClient
@@ -113,7 +76,6 @@ Since downloads are limited to a maximum of 20,000 events, you can use the batch
 ...     batch_size=1000)
 
 >>> # Create catalog and preview entries
->>> cat = Catalog(df)
 >>> cat.head()
   event_type             time                  latitude  longitude      depth evaluationmode  magnitude magnitude_type  magnitude_MLhc  magnitude_MLh
 0  earthquake  2021-12-30 07:43:14.681975   46.051445   7.388025  1181.640625        manual   2.510115           MLhc     2.510115344            NaN
@@ -137,32 +99,32 @@ These tools allow you to:
 Use these methods to gain insights into your catalog before performing more advanced statistical analyses.
 
 ```python
->>> # import matplotlib for creating a combined plot
->>> import matplotlib.pyplot as plt
+# plot the location of the events on a map
+cat.plot_in_space(include_map=True)
 
->>> # plot basic information of the catalog
->>> fig, ax = plt.subplots(3, 1, figsize=(8, 10))
->>> ax[0].set_title('Catalog Cumulative Count')
->>> cat.plot_cum_count(ax=ax[0],mcs=[1,2])
->>> ax[1].set_title('Magnitudes in Time')
->>> cat.plot_mags_in_time(ax=ax[1])
->>> ax[2].set_title('Frequency Magnitude Distribution')
->>> cat.plot_cum_fmd(ax=ax[2])
->>> cat.plot_fmd(ax=ax[2])
->>> plt.tight_layout()
->>> plt.show()
+# plot all available magnitudes over time:
+cat.plot_mags_in_time()
 
->>> # Earthquake map:
->>> fig = plt.figure(figsize=(8, 5))
->>> cat["latitude"]= cat["latitude"]
->>> cat.plot_in_space(include_map=True)
->>> plt.show()
+# plot the cumulative frequency-magnitude distribution with bin size 0.1
+cat.plot_cum_fmd(delta_m=0.1)
 ```
+<figure>
+  <img src="../_static/catalog_map.png" alt="Alt text" width="500"/>
+  <figcaption>Figure 2: Map with Earthquake locations.</figcaption>
+</figure>
 
-![catalog_plot](../_static/catalog_plots_mc_None.png "Overview on catalog properties")
+<figure>
+  <img src="../_static/mags_in_time_single.png" alt="Alt text" width="500"/>
+  <figcaption>Figure 3: Event magnitudes over time.</figcaption>
+</figure>
 
-![catalog_map](../_static/catalog_map.png "Earthquake location")
+<figure>
+  <img src="../_static/cum_fmd_single.png" alt="Alt text" width="500"/>
+  <figcaption>Figure 4: Cumulative frequency-magnitude distribution.</figcaption>
+</figure>
 
+
+All available plotting methods are described in more detail in the {ref}`Plotting guide </user/plots.md>`.
 
 ---
 
