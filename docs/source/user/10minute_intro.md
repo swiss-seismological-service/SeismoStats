@@ -34,9 +34,9 @@ Catalogs can be created in multiple ways:
 
 - `pandas.DataFrame`  
 - Python dictionaries
-- Existing catalogs in **QuakeML** or **OpenQuake** formats
+- Existing catalogs in **QuakeML**, **OpenQuake** or **CSV** formats
 
-and the full procedure is described in the {ref}`Catalog guide </user/catalogs.md>`.
+and each possibility is described in the {ref}`Catalog guide </user/catalogs.md>`.
 
 You can also fetch earthquake data directly from FDSN servers such as **EIDA** and **USGS** using the built-in FDSN client, as shown in the example below.
 
@@ -99,14 +99,14 @@ These tools allow you to:
 Use these methods to gain insights into your catalog before performing more advanced statistical analyses.
 
 ```python
-# plot the location of the events on a map
-cat.plot_in_space(include_map=True)
+>>> # plot the location of the events on a map
+>>> cat.plot_in_space(include_map=True)
 
-# plot all available magnitudes over time:
-cat.plot_mags_in_time()
+>>> # plot all available magnitudes over time:
+>>> cat.plot_mags_in_time()
 
-# plot the cumulative frequency-magnitude distribution with bin size 0.1
-cat.plot_cum_fmd(delta_m=0.1)
+>>> # plot the cumulative frequency-magnitude distribution with bin size 0.1
+>>> cat.plot_cum_fmd(delta_m=0.1)
 ```
 <figure>
   <img src="../_static/catalog_map.png" alt="Alt text" width="500"/>
@@ -137,7 +137,7 @@ Proper binning is essential for calculating meaningful b-values, a-values, and t
 By using `inplace=True` in the `bin_magnitudes` method, the magnitudes of the catalog object will be replaced by their binned version:
 
 ```python
-# The magnitudes of the first events of the original catalog
+>>> # The magnitudes of the first events of the original catalog
 >>> print(cat.magnitude.head())
 0    2.510115
 1    1.352086
@@ -146,12 +146,12 @@ By using `inplace=True` in the `bin_magnitudes` method, the magnitudes of the ca
 4    0.897306
 Name: magnitude, dtype: float64
 
-# Now we set delta_m and bin the magnitudes accordingly
+>>> # Now we set delta_m and bin the magnitudes accordingly
 >>> cat.delta_m = 0.1
 >>> cat.bin_magnitudes(inplace=True)
 
-# Using inplace=True, the magnitudes of the catalog are overwriten by 
-# the binned version:
+>>> # Using inplace=True, the magnitudes of the catalog are overwritten by 
+>>> # the binned version:
 >>> print(cat.magnitude.head())
 0    2.5
 1    1.4
@@ -194,19 +194,19 @@ Before estimating the b-value, make sure that the properties `Catalog.mc` and `C
 
 You can also estimate the b-value independently of the Catalog object by passing a numpy array of magnitudes to {func}`estimate_b <seismostats.analysis.estimate_b>`.
 ```python
-# Estimate b with the catalog method and the internal attributes
+>>> # Estimate b with the catalog method and the internal attributes
 >>> cat.mc = 1.8
 >>> cat.delta_m = 0.1
 >>> cat.estimate_b()
 >>> print(cat.b_value)
 1.064816286818266
 
-# Estimate b with the catalog method and arguments
+>>> # Estimate b with the catalog method and additional arguments
 >>> cat.estimate_b(delta_m = 0.1, mc=1.8)
 >>> print(cat.b_value)
 1.064816286818266
 
-# Estimate b independently of the catalog class
+>>> # Estimate b independently of the catalog class
 >>> from seismostats.analysis import estimate_b
 >>> b_value = estimate_b(magnitudes = cat.magnitude, delta_m = 0.1, mc=1.8)
 >>> print(b_value)
@@ -218,10 +218,14 @@ The **a-value** of the Gutenberg-Richter law  describes the overall earthquake a
 
 Similar to the b-value estimations, the parameter `Catalog.mc`, `Catalog.delta_m` must be defined beforehand or provided directly as arguments to the a-value estimation method. 
 ```python
+>>> # Estimate a with the catalog method and the internal attributes
 >>> cat.estimate_a()
 >>> print(cat.a_value)
 2.2121876044039577
+
+>>> # Estimate a with the catalog method and additional arguments
 >>> cat.estimate_a(delta_m = 0.1, mc=1.8)
 >>> print(cat.a_value)
+2.2121876044039577
 ```
 
