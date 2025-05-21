@@ -12,24 +12,32 @@ Additionally, we demonstrate how to easily visualize your data and explore key f
 
 ---
 
-A central feature of SeismoStats is the `Catalog` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. Beyond the basic event data (e.g., magnitude, time), the `Catalog` object also includes:
+A central feature of SeismoStats is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. Beyond the basic event data (e.g., magnitude, time), the `Catalog` object also includes:
 
-- *Attributes*: User-defined properties such as `delta_m` and catalog properties, which are estimated by the methods (e.g. `b_value`, and `a_value`).
+- *Attributes*: These include the catalog data (such as  magnitudes and event times), as well as additional parameters used in the analysis. These parameter can be either user-defined or estimated using SeismoStats' built-in methods.
 
 - *Methods*: Tools for visualization, statistical analysis, and data conversion.
-Importantly, many methods both **use** and **update** the catalog's properties. This architecture is illustrated below:
+Importantly, many methods both **use** and **update** the catalog's properties and data. This architecture is illustrated below:
 
-![catalog_class](../_static/catalog_class.png "Overview on catalog class")
+<figure>
+  <img src="../_static/catalog_class.png" alt="Alt text" width="500"/>
+  <figcaption>Figure 1: Overview on catalog class.</figcaption>
+</figure>
 
+All methods available through the `Catalog` object can also be used independently, outside the catalog structure. In this case, you can pass a `numpy` array of magnitudes directly to the respective functions for analysis.
+For a brief example, see the {ref}`section below</user/10minute_intro.md#Estimating-the-b-value>` or refer to the detailed guides on estimating the {ref}`b-value</user/estimate_b.md>`, {ref}`a-value</user/estimate_a.md>` or {ref}`magnitude of completeness</user/estimate_mc.md>`. 
 ## 1 Creating a Catalog
 
-Catalogs can be created from:
+Catalogs can be created in multiple ways:
 
 - `pandas.DataFrame`  
 - Python dictionaries
-- Existing catalogs in **QuakeML** or **OpenQuake** formats  
+- Existing catalogs in **QuakeML** or **OpenQuake** formats
 
-You can also fetch earthquake data directly from FDSN servers such as **EIDA** and **USGS** using the built-in FDSN client.
+and the full procedure is described in the {ref}`Catalog guide </user/catalogs.md>`.
+
+You can also fetch earthquake data directly from FDSN servers such as **EIDA** and **USGS** using the built-in FDSN client, as shown in the example below.
+
 
 > **Note:** Your catalog must include a `magnitude` column. For full functionality (especially plotting and analysis), it is recommended to also include `time`, `latitude`, `longitude`, and `depth`.
 
