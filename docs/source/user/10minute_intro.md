@@ -114,7 +114,7 @@ cat.plot_cum_fmd(delta_m=0.1)
 </figure>
 
 <figure>
-  <img src="../_static/mags_in_time_single.png" alt="Alt text" width="500"/>
+  <img src="../_static/mag_vs_time.png" alt="Alt text" width="500"/>
   <figcaption>Figure 3: Event magnitudes over time.</figcaption>
 </figure>
 
@@ -137,6 +137,7 @@ Proper binning is essential for calculating meaningful b-values, a-values, and t
 By using `inplace=True` in the `bin_magnitudes` method, the magnitudes of the catalog object will be replaced by their binned version:
 
 ```python
+# The magnitudes of the first events of the original catalog
 >>> print(cat.magnitude.head())
 0    2.510115
 1    1.352086
@@ -145,8 +146,12 @@ By using `inplace=True` in the `bin_magnitudes` method, the magnitudes of the ca
 4    0.897306
 Name: magnitude, dtype: float64
 
+# Now we set delta_m and bin the magnitudes accordingly
 >>> cat.delta_m = 0.1
 >>> cat.bin_magnitudes(inplace=True)
+
+# Using inplace=True, the magnitudes of the catalog are overwriten by 
+# the binned version:
 >>> print(cat.magnitude.head())
 0    2.5
 1    1.4
