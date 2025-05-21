@@ -345,10 +345,13 @@ def estimate_mc_b_stability(
     for the stability test by changing the stability_range.
 
     Source:
-        Woessner, J, and Stefan W. "Assessing the quality of earthquake
-        catalogues: Estimating the magnitude of completeness and its
-        uncertainty." Bulletin of the Seismological Society of America 95.2
-        (2005): 684-698.
+        - Cao, A., & Gao, S. S. (2002). Temporal variation of seismic b-values 
+            beneath northeastern Japan island arc. Geophysical Research Letters, 
+            29(9), 1–3. https://doi.org/10.1029/2001gl013775
+        - Woessner, J, and Stefan W. "Assessing the quality of earthquake
+            catalogues: Estimating the magnitude of completeness and its
+            uncertainty." Bulletin of the Seismological Society of America 95.2
+            (2005): 684-698.
 
     Args:
         magnitudes:         Array of magnitudes.

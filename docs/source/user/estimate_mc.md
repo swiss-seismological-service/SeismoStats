@@ -15,22 +15,78 @@ Currently, `SeismoStats` supports three methods to estimate the magnitude of com
 The Maximum Curvature method (MAXC) defines the completeness threshold of a catalog as the magnitude at which the (non cumulative) FMD is maximal.
 
 $$
-m_c = \argmax_m (N(m_i < m \leq m_{i} + \Delta m)) + \delta
+m_c = max_{m} (N(m_i < m \leq m_{i} + \Delta m)) + \delta
 $$
 
-where $$N(m)$$ is the number of earthquakes within a magnitude bin of width $$\Delta m$$, and $$\delta$$ is the correction factor which is set to avoid underestimation. 
+where $N(m)$ is the number of earthquakes within a magnitude bin of width $\Delta m$, and $\delta$ is the correction factor which is set to avoid underestimation (by default set to +0.2). 
 
 This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 2005 and is implemented in the {func}`estimate_mc_maxc <seismostats.analysis.estimate_mc_maxc>` function.
 
 ```python
-from seismostats.analysis import estimate_mc_maxc
+>>> from seismostats.analysis import estimate_mc_maxc
 
-mc = estimate_mc_maxc(cat.magnitude, delta_m=0.1)
-print(f'Maximum curvature method: Mc = {mc:.1f}')
+>>> cat = Catalog.from_dict({
+    'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
+                    1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+                    1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+                    1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+                    1.3, 1.1, 1.5, 1.4]})
+>>> cat.estimate_mc_maxc(delta_m=0.1)
+>>> cat.mc
+1.4
 ```
-### References
-- Wiemer, S. and Wyss, M., 2000. Minimum magnitude of completeness in earthquake catalogs: Examples from Alaska, the western United States, and Japan. Bulletin of the Seismological Society of America, 90(4), pp.859-869.
-
-- Woessner, J. and Wiemer, S., 2005. Assessing the quality of earthquake catalogues: Estimating the magnitude of completeness and its uncertainty. Bulletin of the Seismological Society of America, 95(2), pp.684-698.
 
 ## K-S distance
+
+
+```python
+>>> from seismostats.analysis import estimate_mc_ks
+>>> cat = Catalog.from_dict({
+    'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
+                    1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+                    1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+                    1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+                   1.3, 1.1, 1.5, 1.4]})
+>>> cat.delta_m = 0.1
+>>> cat.estimate_mc_ks()
+>>> cat.mc
+ 1.0
+```
+## Mc by b-value stability
+
+The Mc by b-value stability method estimates the magnitude of completeness Mc by identifying where the b-value becomes stable as smaller magnitudes are excluded, indicating catalog completeness (assuming the magnitudes are exponentially distributed). It defines Mc as the lowest magnitude where the b-value variation across a range $L$ remains within its theoretical standard deviation ($\sigma_{b}$). 
+
+$$
+m_c = min(m_{i} | abs(\frac{L}{\Delta m} \sum_{m_{j}=m_{i}+\Delta m}^{m_{i}+L} b(m_{j}) - b(m_{i})) < \sigma_{b(m_{i})} )
+$$
+
+Users can specify the magnitude bin size $\Delta m$, with $L=0.5$ as the default stability range.
+
+
+This method is based on the work of Cao & Gao 2002, and Woessner & Wiemer 2005 and is implemented in the estimate_mc_b_stability function.
+
+```python
+>>> from seismostats.analysis import estimate_mc_b_stability
+
+>>> cat = Catalog.from_dict({
+            'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
+                         1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+                         1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+                         1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+                         1.3, 1.1, 1.5, 1.4]})
+>>> cat.delta_m = 0.1
+>>> cat.estimate_mc_b_stability()
+>>> cat.mc
+1.1
+```
+
+## References
+- Cao, A., & Gao, S. S. (2002). Temporal variation of seismic b-values beneath northeastern Japan island arc. Geophysical Research Letters, 29(9), 1–3. https://doi.org/10.1029/2001gl013775
+
+- Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. Power-law distributions in empirical data. SIAM review, 51(4), pp.661-703.
+
+- Mizrahi, L., Nandan, S. and Wiemer, S., 2021. The effect of declustering on the size distribution of mainshocks. Seismological Society of America, 92(4), pp.2333-2342.
+
+- Wiemer, S. and Wyss, M., 2000. Minimum magnitude of completeness in earthquake catalogs: Examples from Alaska, the western United States, and Japan. Bulletin of the Seismological Society of America, 90(4), pp.859-869.
+
+- Woessner, J. and Wiemer, S., 2005. Assessing the quality of earthquake catalogues: Estimating the magnitude of completeness and its uncertainty. Bulletin of the Seismological Society of America, 95(2), pp.684-698.       
