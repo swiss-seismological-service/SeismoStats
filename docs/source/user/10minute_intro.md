@@ -12,11 +12,11 @@ Additionally, we demonstrate how to easily visualize your data and explore key f
 
 ---
 
-A central feature of **SeismoStats** is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. For more information on the pandas data struture and built-in methods refer to the for more information refer to the [pandas User Guide](https://pandas.pydata.org/docs/user_guide/index.html 'pandas User Guide'). 
+A central feature of **SeismoStats** is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. For more information on the pandas data struture and built-in methods refer to the [pandas User Guide](https://pandas.pydata.org/docs/user_guide/index.html 'pandas User Guide'). 
 
 The Catalog class allows for easy storage, organization, and analysis of event data (e.g., magnitudes, event times). It includes:
 
-- *Attributes*: These include the catalog data (such as  magnitudes and event times), as well as additional parameters used in the analysis. These parameter can be either user-defined or estimated using SeismoStats' built-in methods.
+- *Attributes*: These include the catalog data (such as  magnitudes and event times), as well as additional parameters used in the analysis. These parameters can either be user-defined or estimated using SeismoStats' built-in methods.
 
 - *Methods*: Tools for visualization, statistical analysis, and data conversion.
 Importantly, many methods both **use** and **update** the catalog's properties and data. This architecture is illustrated below:
