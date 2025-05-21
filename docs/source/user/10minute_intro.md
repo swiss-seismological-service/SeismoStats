@@ -171,11 +171,6 @@ Seismostats provides three methods to estimate the **magnitude of completeness**
 
 These methods help assess the quality of your catalog by identifying the lowest magnitude above which events are reliably recorded. More information on the methods can be found in the section {doc}`Magnitude of Completeness<estimate_mc>`.
 
-For more a more theoretical background on these methods, refer to the following studies:
-
-- Woessner, J., & Wiemer, S. (2005). *Assessing the quality of earthquake catalogues: Estimating the magnitude of completeness and its uncertainty*. Bulletin of the Seismological Society of America, 95(2), 684–698.
-- Clauset, A., Shalizi, C.R. and Newman, M.E., 2009. *Power-law distributions in empirical data*. SIAM review, 51(4), 661-703.
-
 > **Note:** 
 > Calling any of the methods below will overwrite the `Catalog.mc` property with the newly estimated magnitude of completeness.
 
@@ -195,15 +190,26 @@ For more a more theoretical background on these methods, refer to the following 
 The **b-value** in the Gutenberg-Richter law quantifies the relative frequency of large versus small earthquakes in a seismic catalog. 
 The most common approach to estimate the b-value is through the **maximum likelihood method**, assuming an exponential distribution of magnitudes. Additional estimation techniques are discussed in the section on {doc}`b-value estimations <estimate_b>`.
 
-Before estimating the b-value, make sure that the properties `Catalog.mc`, `Catalog.delta_m` are set. Alternatively, these parameter can be directly provided when calling `estimate_b`:
+Before estimating the b-value, make sure that the properties `Catalog.mc` and `Catalog.delta_m` are set. Alternatively, these parameter can be directly provided when calling `estimate_b`.
+
+You can also estimate the b-value independently of the Catalog object by passing a numpy array of magnitudes to {func}`estimate_b <seismostats.analysis.estimate_b>`.
 ```python
+# Estimate b with the catalog method and the internal attributes
 >>> cat.mc = 1.8
 >>> cat.delta_m = 0.1
 >>> cat.estimate_b()
 >>> print(cat.b_value)
 1.064816286818266
+
+# Estimate b with the catalog method and arguments
 >>> cat.estimate_b(delta_m = 0.1, mc=1.8)
 >>> print(cat.b_value)
+1.064816286818266
+
+# Estimate b independently of the catalog class
+>>> from seismostats.analysis import estimate_b
+>>> b_value = estimate_b(magnitudes = cat.magnitude, delta_m = 0.1, mc=1.8)
+>>> print(b_value)
 1.064816286818266
 ```
 
