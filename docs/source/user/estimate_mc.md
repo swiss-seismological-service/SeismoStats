@@ -38,6 +38,15 @@ This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 200
 
 ## K-S distance
 
+The Kolmogorov-Smirnov (K-S) method estimates the magnitude of completeness Mc by comparing the observed and expected cumulative distribution functions (CDFs), assuming an exponential distribution of magnitudes. Mc is defined as the lowest magnitude where the simulated probability $P(D_{KS})$ of observing the KS-distance exceeds a chosen threshold $p$, with default values of $p$=0.1 and $n$=10,000 ($n$ being the number of random draws of discretized magnitudes drawn from an exponential distribution).
+
+$$
+mc = min(m_{i} | P(D_{KS}) > p)
+$$
+
+
+This method is based on the work of Clauset et al., (2009) and Mizrahi et al., (2021), and implemented in the {func}`estimate_mc_ks <seismostats.analysis.estimate_mc_ks>` function.
+
 
 ```python
 >>> from seismostats.analysis import estimate_mc_ks
@@ -63,7 +72,7 @@ $$
 Users can specify the magnitude bin size $\Delta m$, with $L=0.5$ as the default stability range.
 
 
-This method is based on the work of Cao & Gao 2002, and Woessner & Wiemer 2005 and is implemented in the estimate_mc_b_stability function.
+This method is based on the work of Cao & Gao 2002, and Woessner & Wiemer 2005 and is implemented in the {func}`estimate_mc_b_stability <seismostats.analysis.estimate_mc_b_stability>` function.
 
 ```python
 >>> from seismostats.analysis import estimate_mc_b_stability
