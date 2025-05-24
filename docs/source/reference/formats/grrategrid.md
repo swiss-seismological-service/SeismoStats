@@ -12,6 +12,7 @@ Subclass of `pandas.DataFrame`, storing the Gutenberg-Richter rate values for a 
     :nosignatures:
 
     GRRateGrid
+    GRRateGrid.concat
 ```
 
 ### Modify GRRateGrid
@@ -23,5 +24,4 @@ Subclass of `pandas.DataFrame`, storing the Gutenberg-Richter rate values for a 
 
     GRRateGrid.strip
     GRRateGrid.add_time_index
-    GRRateGrid.reindex_cell_id
 ```

@@ -1,5 +1,5 @@
 # Catalog Formats
-Basic formats to store earthquake event data. All Structures are subclassing `pandas.DataFrame`, with additional methods to estimate parameters and convert to other formats.
+Basic formats to store earthquake event data. All Structures are subclassing :class:`pandas.DataFrame`, with additional methods to estimate parameters and convert to other formats.
 
 
 ```{eval-rst}

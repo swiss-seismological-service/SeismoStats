@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -120,3 +121,84 @@ def test_rategrid_time_index():
 
     with pytest.raises(AttributeError):
         rategrid_none.add_time_index()
+
+    rategrid_none.starttime = pd.Timestamp('2023-01-01')
+    with pytest.raises(AttributeError):
+        rategrid_none.add_time_index(endtime=True)
+
+
+RAW_DATA_3 = {'longitude_min': [9, 9, 10, 10],
+              'longitude_max': [10, 10, 11, 11],
+              'latitude_min': [45, 45, 46, 46],
+              'latitude_max': [46, 46, 47, 47],
+              'depth_min': [10, 10, 20, 20],
+              'depth_max': [20, 20, 30, 30],
+              'number_events': [5, 6, 10, 12],
+              'a': [0.8, 0.9, 1.0, 1.1],
+              'b': [0.95, 1.0, 1.05, 1.1],
+              'mc': [1.2, 1.2, 1.3, 1.3],
+              'grid_id': [0, 1, 0, 1]}
+
+
+def test_rategrid_concat():
+    rategrid1 = GRRateGrid(
+        RAW_DATA_3,
+        starttime=pd.Timestamp('2023-01-01'),
+        endtime=pd.Timestamp('2023-01-02'))
+    rategrid2 = GRRateGrid(
+        RAW_DATA_3,
+        starttime=pd.Timestamp('2023-01-02'),
+        endtime=pd.Timestamp('2023-01-03'))
+    rategrid = GRRateGrid.concat([rategrid1, rategrid2])
+    assert rategrid.index.nlevels == 3
+    assert rategrid.shape == (8, 11)
+
+    rategrid3 = rategrid1.add_time_index(endtime=False)
+    rategrid4 = rategrid2.add_time_index(endtime=False)
+    rategrid = GRRateGrid.concat([rategrid3, rategrid4])
+    assert rategrid.index.nlevels == 2
+    assert rategrid.shape == (8, 11)
+
+    rategrid5 = rategrid1.add_time_index(endtime=True)
+    with pytest.raises(ValueError):
+        GRRateGrid.concat([rategrid5, rategrid4])
+
+
+def test_forecast_rategrid_statistics():
+    forecast1 = ForecastGRRateGrid(
+        RAW_DATA_3,
+        starttime=pd.Timestamp('2023-01-01'),
+        endtime=pd.Timestamp('2023-01-02'))
+
+    forecast2 = ForecastGRRateGrid(
+        RAW_DATA_3,
+        starttime=pd.Timestamp('2023-01-02'),
+        endtime=pd.Timestamp('2023-01-03'))
+
+    stats = forecast1.calculate_statistics(
+        agg_func='mean',
+        extra_stats={'std': 'std'}
+    )
+
+    np.testing.assert_allclose(stats['b_std'].to_list(),
+                               [0.035355, 0.035355],
+                               rtol=1e-5)
+    assert list(stats.index) == [0, 1]
+    assert all(n in stats.columns for n in
+               ['longitude_min', 'longitude_max', 'latitude_min',
+                'latitude_max', 'depth_min', 'depth_max',
+                'number_events', 'a', 'b', 'mc', 'number_events_std',
+                'b_std', 'mc_std', 'a_std'])
+
+    forecast = ForecastGRRateGrid.concat([forecast1, forecast2])
+    stats = forecast.calculate_statistics(
+        agg_func='mean',
+        extra_stats={'std': 'std'}
+    )
+
+    np.testing.assert_allclose(stats['b_std'].to_list(),
+                               [0.035355, 0.035355,
+                                0.035355, 0.035355],
+                               rtol=1e-5)
+    assert all(n in stats.index.names for n in
+               ['starttime', 'endtime', 'cell_id'])
