@@ -57,9 +57,10 @@ def _catalog_constructor_with_fallback(df, **kwargs):
 
 class Catalog(pd.DataFrame):
     '''
-    A subclass of pandas DataFrame that represents a catalog of earthquakes.
+    A catalog of seismic events represented in tabular form, where
+    each row corresponds to a single earthquake.
 
-    To be a valid Catalog object, the DataFrame must have at least a
+    To be a valid Catalog object, it must have at least a
     `magnitude` column. Depending on the method the following
     columns are also required: `longitude`, `latitude`, `depth`, `time`,
     and `magnitude` .
@@ -84,10 +85,11 @@ class Catalog(pd.DataFrame):
 
     Examples:
         Create a Catalog from a dictionary.
+
         .. code-block:: python
 
             >>> import pandas as pd
-            >>> from seismostats.seismicity import Catalog
+            >>> from seismostats import Catalog
             >>> data = {'longitude': [0, 1, 2],
             ...         'latitude': [0, 1, 2],
             ...         'depth': [0, 1, 2],
@@ -98,10 +100,11 @@ class Catalog(pd.DataFrame):
             >>> catalog = Catalog(data)
             >>> catalog
 
-            longitude  latitude  depth                time  magnitude
+               longitude  latitude  depth                time  magnitude
             0          0         0      0 2021-01-01 00:00:00          1
             1          1         1      1 2021-01-01 00:00:00          2
             2          2         2      2 2021-01-01 00:00:00          3
+
 
         :ivar name:         Name of the catalog.
         :ivar mc:           Completeness magnitude of the catalog.
@@ -1471,12 +1474,15 @@ class Catalog(pd.DataFrame):
 
 class ForecastCatalog(Catalog):
     '''
-    A subclass of pandas DataFrame that represents catalogs of earthquake
-    forecasts.
+    A catalog of seismic events represented in tabular form, where
+    each row corresponds to a single earthquake.
+    The ForecastCatalog extends this structure to represent multiple
+    realizations of the same catalog, distinguished by an additional
+    column `catalog_id`.
 
-    To be a valid ForecastCatalog object, the DataFrame must have the
-    following columns: longitude, latitude, depth, time, magnitude,
-    catalog_id.
+    To be a valid ForecastCatalog object, it must have the
+    following columns: `longitude`, `latitude`, `depth`, `time`,
+    `magnitude`, `catalog_id`.
 
     Args:
         data:           Data to initialize the catalog with.
