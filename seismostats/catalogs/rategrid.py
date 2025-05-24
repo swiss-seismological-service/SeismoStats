@@ -301,12 +301,8 @@ class GRRateGrid(pd.DataFrame):
         """
         self = super().__finalize__(other, method=method, **kwargs)
 
-        # merge operation: using metadata of the left object
-        if method == "merge":
-            for name in self._metadata:
-                object.__setattr__(self, name, getattr(other.left, name, None))
         # concat operation: using metadata of the first object
-        elif method == "concat":
+        if method == "concat":
             for name in self._metadata:
                 object.__setattr__(self, name, getattr(
                     other.objs[0], name, None))
@@ -477,25 +473,13 @@ class ForecastGRRateGrid(GRRateGrid):
                           'latitude_min', 'latitude_max',
                           'depth_min', 'depth_max']}
         else:  # aggregate by all levels
-            agg = {'levels': list(range(rategrid.index.nlevels))}
+            agg = {'level': list(range(rategrid.index.nlevels))}
 
         statistics = rategrid.groupby(**agg).agg(agg_dict)
 
-        # Compute mid-point index and set it
-        if all(t in statistics.columns for t in ['starttime', 'endtime']):
-            statistics.reset_index(inplace=True)
-            statistics.index = statistics.apply(
-                lambda x: x['starttime'] + (x['endtime'] - x['starttime']) / 2,
-                axis=1
-            )
-            statistics.drop(
-                columns=['starttime', 'endtime', 'cell_id'], inplace=True)
-        elif 'starttime' in statistics.columns:
-            statistics.reset_index(inplace=True)
-            statistics.index = statistics['starttime']
-            statistics.drop(columns=['starttime', 'cell_id'], inplace=True)
-        else:
+        if 'by' in agg:
             statistics.reset_index(inplace=True, drop=True)
+
         statistics.drop(columns=['grid_id'], inplace=True, errors='ignore')
 
         return statistics
