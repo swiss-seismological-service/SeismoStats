@@ -344,7 +344,8 @@ def estimate_mc_maxc(
                         magnitudes in each bin. If the bin size is too small,
                         the method will not work properly.
         correction_factor:  Correction factor for the maximum curvature
-                        method (default value +0.2 after Woessner & Wiemer 2005).
+                        method (default value +0.2 after Woessner &
+                        Wiemer 2005).
 
     Returns:
         mc:                 Estimated completeness magnitude.
@@ -391,8 +392,8 @@ def estimate_mc_b_stability(
     for the stability test by changing the stability_range.
 
     Source:
-        - Cao, A., & Gao, S. S. (2002). Temporal variation of seismic b-values 
-            beneath northeastern Japan island arc. Geophysical Research Letters, 
+        - Cao, A., & Gao, S. S. (2002). Temporal variation of seismic b-values
+            beneath northeastern Japan island arc. Geophysical Research Letters,
             29(9), 1–3. https://doi.org/10.1029/2001gl013775
         - Woessner, J, and Stefan W. "Assessing the quality of earthquake
             catalogues: Estimating the magnitude of completeness and its
@@ -454,8 +455,10 @@ def estimate_mc_b_stability(
                 ...     delta_m=delta_m)
                 >>> b_values_test, diff_bs
 
-                ([np.float64(0.9571853220063772), np.float64(1.190298769977797)],
-                [np.float64(2.2337527711215786), np.float64(0.9457747650207581)])
+                ([np.float64(0.9571853220063772),
+                np.float64(1.190298769977797)],
+                [np.float64(2.2337527711215786),
+                np.float64(0.9457747650207581)])
         '''
     """
     steps = len(np.arange(0, stability_range, delta_m))
