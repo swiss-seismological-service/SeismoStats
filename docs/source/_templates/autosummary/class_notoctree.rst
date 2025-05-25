@@ -28,6 +28,7 @@
 
       .. autosummary::
          :nosignatures:
+         :recursive:
          {% for item in members %}
             {% if (item in methods or item in ['__call__']) and item not in ['__init__'] %}
                {% if (item in inherited_members and objname not in skip_inheritance) or item not in inherited_members %}

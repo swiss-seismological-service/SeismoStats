@@ -83,7 +83,7 @@ def simulate_magnitudes_binned(
         array([1.1., 1., 1.6, 1.2, 1.3])
 
     See also:
-        {func}`~seismostats.utils.simulate_distributions.simulate_magnitudes
+        :func:`~seismostats.utils.simulate_distributions.simulate_magnitudes`
     """
     if b_parameter == "b_value":
         beta = b * np.log(10)
