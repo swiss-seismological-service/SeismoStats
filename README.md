@@ -5,8 +5,7 @@
 [![codecov](https://codecov.io/github/swiss-seismological-service/SeismoStats/graph/badge.svg?token=RVJFHYLBKA)](https://codecov.io/github/swiss-seismological-service/SeismoStats)
 [![Documentation Status](https://readthedocs.org/projects/seismostats/badge/?version=latest)](https://seismostats.readthedocs.io/en/latest/?badge=latest)
 
-
-# SeismoStats
+<img src="./docs/source/_static/seismostats-02.svg" height="80">
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
 
