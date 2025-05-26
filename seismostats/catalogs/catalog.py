@@ -320,7 +320,7 @@ class Catalog(pd.DataFrame):
                 ...     Catalogue as OQCatalog
                 >>> from seismostats import Catalog
 
-                >>> simple_oq_catalogue = OQCatalog.make_from_dict({
+                >>> oq_cat = OQCatalog.make_from_dict({
                 ...     'eventID': ["event0", "event1", "event2"],
                 ...     'longitude': np.array([42.35, 1.35, 2.35], dtype=float),
                 ...     'latitude': np.array([3.34444, 5.135, 2.134],
@@ -335,8 +335,8 @@ class Catalog(pd.DataFrame):
                 ...                        dtype=float),
                 ...     'magnitude': np.array([1.0, 2.5, 3.9], dtype=float)
                 ...     })
-                >>> catalog = Catalog.from_openquake(simple_oq_catalogue)
-                >>> catalog
+                >>> cat = Catalog.from_openquake(oq_cat)
+                >>> cat
 
                    longitude   latitude  depth                time  magnitude
                 0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
@@ -394,7 +394,7 @@ class Catalog(pd.DataFrame):
 
                 >>> import pandas as pd
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'depth': [5.5, 10.52, 50.4],
@@ -403,7 +403,7 @@ class Catalog(pd.DataFrame):
                 ...                             '2020-11-30 12:30:59']),
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
-                >>> oq_catalog = simple_catalog.to_openquake()
+                >>> oq_cat = cat.to_openquake()
                 >>> type(oq_catalog)
 
                 <class 'openquake.hmtk.seismicity.catalogue.Catalogue'>
@@ -499,12 +499,12 @@ class Catalog(pd.DataFrame):
 
                 >>> import pandas as pd
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'magnitude': [1.02, 2.53, 3.99]
                 ...     })
-                >>> simple_catalog.bin_magnitudes(delta_m=0.1)
+                >>> cat.bin_magnitudes(delta_m=0.1)
 
                     longitude   latitude  magnitude
                 0       42.35    3.34444        1.0
@@ -565,14 +565,14 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
                 ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.estimate_mc_maxc(delta_m=0.1)
-                >>> simple_catalog.mc
+                >>> cat.estimate_mc_maxc(delta_m=0.1)
+                >>> cat.mc
 
                 1.4
         '''
@@ -643,15 +643,15 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
                 ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.estimate_mc_b_stability()
-                >>> simple_catalog.mc
+                >>> cat.delta_m = 0.1
+                >>> cat.estimate_mc_b_stability()
+                >>> cat.mc
 
                 1.1
 
@@ -663,7 +663,7 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     diff_bs = simple_catalog.estimate_mc_b_stability()
+                ...     diff_bs = cat.estimate_mc_b_stability()
                 >>> mcs_test, diff_bs
 
                 (array([1. , 1.1]), [2.23375277112158, 0.9457747650207577])
@@ -753,15 +753,15 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
                 ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.estimate_mc_ks()
-                >>> simple_catalog.mc
+                >>> cat.delta_m = 0.1
+                >>> cat.estimate_mc_ks()
+                >>> cat.mc
 
                 1.0
 
@@ -773,7 +773,7 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     ks_ds, p_values = simple_catalog.estimate_mc_ks()
+                ...     ks_ds, p_values = cat.estimate_mc_ks()
                 >>> b_values_test, ks_ds
 
                 ([0.9571853220063774], [0.1700244200244202])
@@ -845,13 +845,13 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
-                >>> simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
-                >>> simple_catalog.b_value
+                >>> cat.estimate_b(mc=1.0, delta_m=0.1)
+                >>> cat.b_value
 
                 0.28645181449530005
 
@@ -863,7 +863,7 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
+                >>> estimator = cat.estimate_b(mc=1.0, delta_m=0.1)
                 >>> estimator.beta, estimator.std
 
                 (0.6595796779179737, 0.15820210898689366)
@@ -878,10 +878,10 @@ class Catalog(pd.DataFrame):
 
                 >>> from datetime import datetime
                 >>> from seismostats.analysis import BPositiveBValueEstimator
-                >>> simple_catalog['time'] = [datetime(2000, 1, 1),
+                >>> cat['time'] = [datetime(2000, 1, 1),
                 ...                           datetime(2000, 1, 2),
                 ...                           datetime(2000, 1, 3)]
-                >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1,
+                >>> estimator = cat.estimate_b(mc=1.0, delta_m=0.1,
                 ...     method=BPositiveBValueEstimator, dmc=0.3)
                 >>> type(estimator)
 
@@ -973,17 +973,17 @@ class Catalog(pd.DataFrame):
                 >>> from datetime import datetime
                 >>> from seismostats import Catalog
 
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...         'magnitude': [0, 0.9, -1, 0.2, 0.5],
                 ...         'time': [datetime(2000, 1, 1),
                 ...                  datetime(2000, 1, 2),
                 ...                  datetime(2000, 1, 3),
                 ...                  datetime(2000, 1, 4),
                 ...                  datetime(2000, 1, 5)]})
-                >>> simple_catalog.mc = -1.0
+                >>> cat.mc = -1.0
 
-                >>> simple_catalog.estimate_a(delta_m=0.1)
-                >>> simple_catalog.a_value
+                >>> cat.estimate_a(delta_m=0.1)
+                >>> cat.a_value
 
                 0.6989700043360189
 
@@ -995,7 +995,7 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> estimator = simple_catalog.estimate_a(delta_m=0.1)
+                >>> estimator = cat.estimate_a(delta_m=0.1)
                 >>> estimator.a_value, estimator.mc
 
                 (0.6989700043360189, -1.0)
@@ -1009,7 +1009,7 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats.analysis import APositiveAValueEstimator
-                >>> estimator = simple_catalog.estimate_a(delta_m=0.1,
+                >>> estimator = cat.estimate_a(delta_m=0.1,
                 ...                   method=APositiveAValueEstimator, dmc=0.1)
                 >>> type(estimator)
 
@@ -1399,7 +1399,7 @@ class Catalog(pd.DataFrame):
 
                 >>> import pandas as pd
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'depth': [5.5, 10.52, 50.4],
@@ -1409,7 +1409,7 @@ class Catalog(pd.DataFrame):
                 ...     'magnitude': [1.0, 2.5, 3.9],
                 ...     'magnitude_type': ['Ml', 'Ml', 'Ml'],
                 ...     })
-                >>> simple_catalog.to_quakeml()
+                >>> cat.to_quakeml()
                 <?xml version="1.0" encoding="UTF-8"?>
                 <q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2"
                     xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
