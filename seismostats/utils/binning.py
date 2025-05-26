@@ -147,6 +147,10 @@ def binning_test(
     # filter out NaN values
     x = x[~np.isnan(x)]
 
+    # shift the array to the smallest value (to avoid that the bin-center has
+    # an effect on the test)
+    x = x - np.min(x)
+
     if delta_x == 0 and check_larger_binning is True:
         range = np.max(x) - np.min(x)
         power = np.arange(
