@@ -218,8 +218,8 @@ def get_fmd(
         :func:`~seismostats.utils.binning.get_cum_fmd`
     """
 
-    if fmd_bin == 0:
-        raise ValueError("Bin size (fmd_bin) cannot be 0.")
+    if fmd_bin <= 0:
+        raise ValueError("Bin size (fmd_bin) must be a positive number.")
 
     magnitudes = bin_to_precision(magnitudes, fmd_bin)
     # use histogram to get the counts
