@@ -20,7 +20,7 @@ class BValueEstimator(ABC):
         self._delta_m: float | None = None
         self._weights: np.ndarray | None = None
         self.idx: np.ndarray | None = None
-        self.ks_ds: np.ndarray | None = None
+        self._ks_distances: np.ndarray | None = None
 
         self.__b_value: float | None = None
 
@@ -179,7 +179,6 @@ class BValueEstimator(ABC):
         self.__is_estimated()
         return len(self.magnitudes)
 
-    @property
     def p_ks(self):
         '''
         p-value of the ks-test.
@@ -189,19 +188,18 @@ class BValueEstimator(ABC):
                          self.mc,
                          self.delta_m,
                          b_value=self.b_value,
-                         ks_ds=self.ks_ds,
+                         ks_ds=self._ks_distances,
                          weights=self.weights)
-        self.ks_ds = out[2]
+        self._ks_distances = out[2]
         return out[0]
 
-    @property
     def p_lilliefors(self):
         '''
         p-value of the Lilliefors test. Weights are not yet implemented.
         Magnitudes are dithered to continuous ones by resampling the
         distribution of the binned magnitudes, taking into account the
         exponential distribution of the magnitudes (in contrast to
-        Herrmann et al).
+        Herrmann et al, 2020).
 
         Source:
         - Herrmann, M. and W. Marzocchi (2020). "Inconsistencies and Lurking
