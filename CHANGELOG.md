@@ -29,6 +29,7 @@ Add your changes to the relevant section below, while uncommenting the section h
 #### Changed
 - Small changes to the `plots` module api to make it more consistent.
 - Updated the example jupyter notebooks to reflect the new API.
+- estimate_mc and plot_fmd take now fmd_bin as input instead of delta_m, to reflect that this is independent from the discretization of the catalog magnitudes.
 
 ## [1.0.0rc1] - 2025-04-09
 #### Added
