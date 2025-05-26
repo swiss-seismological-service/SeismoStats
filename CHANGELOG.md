@@ -44,6 +44,7 @@ Add your changes to the relevant section below, while uncommenting the section h
 - Improve and streamline the `estimate_mc` functions and slightly change their input parameters.
 - `Catalog.estimate_b` got updated to the class-based API of the `b_value` package.
 - `Catalog.estimate_a` added to the Catalog class, including full documentation.
+- `Catalog.plot_fmd` has an input variable fmd_bin now. This is the binning that is used for the visualization of the histogram, which is conceptually not necessarily the same as the discretization of the magnitudes.
 
 #### Fixed
 - Build process for the documentation.
