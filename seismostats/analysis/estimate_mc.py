@@ -193,34 +193,34 @@ def estimate_mc_ks(
         p_values:       Corresponding p-values.
 
     Examples:
-            .. code-block:: python
+        .. code-block:: python
 
-                >>> from seismostats.analysis import estimate_mc_ks
-                >>> import numpy as np
-                >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
-                ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
-                ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
-                ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
-                ...                   1.3, 1.1, 1.5, 1.4, 1.5]
-                >>> delta_m = 0.1
-                >>> mc = estimate_mc_ks(magnitudes, delta_m=delta_m)[0]
-                >>> mc
+            >>> from seismostats.analysis import estimate_mc_ks
+            >>> import numpy as np
+            >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
+            ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+            ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+            ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+            ...                   1.3, 1.1, 1.5, 1.4, 1.5]
+            >>> delta_m = 0.1
+            >>> mc = estimate_mc_ks(magnitudes, delta_m=delta_m)[0]
+            >>> mc
 
-                1.0
+            1.0
 
-            The mc_ks method returns additional information about the
-            calculation of the best mc, like b-values tested and ks
-            distances. Those are returned by the method and can be
-            used for further analysis.
+        The mc_ks method returns additional information about the
+        calculation of the best mc, like b-values tested and ks
+        distances. Those are returned by the method and can be
+        used for further analysis.
 
-            .. code-block:: python
+        .. code-block:: python
 
-                >>> best_mc, best_b_value, mcs_test, b_values_test, ks_ds,
-                ...     p_values = estimate_mc_ks(magnitudes,delta_m=delta_m)
-                >>> b_values_test, ks_ds
+            >>> best_mc, best_b_value, mcs_test, b_values_test, ks_ds,
+            ...     p_values = estimate_mc_ks(magnitudes,delta_m=delta_m)
+            >>> b_values_test, ks_ds
 
-                ([0.9571853220063774], [0.1700244200244202])
-        '''
+            ([0.9571853220063774], [0.1700244200244202])
+
     """
 
     if mcs_test is None:
@@ -351,19 +351,19 @@ def estimate_mc_maxc(
         mc:                 Estimated completeness magnitude.
 
     Examples:
-            .. code-block:: python
+        .. code-block:: python
 
-                >>> from seismostats.analysis import estimate_mc_maxc
-                >>> import numpy as np
-                >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
-                ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
-                ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
-                ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
-                ...                   1.3, 1.1, 1.5, 1.4, 1.5]
-                >>> delta_m = 0.1
-                >>> mc = estimate_mc_maxc(magnitudes, delta_m=delta_m)
-                >>> mc
-                1.4
+            >>> from seismostats.analysis import estimate_mc_maxc
+            >>> import numpy as np
+            >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
+            ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+            ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+            ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+            ...                   1.3, 1.1, 1.5, 1.4, 1.5]
+            >>> delta_m = 0.1
+            >>> mc = estimate_mc_maxc(magnitudes, delta_m=delta_m)
+            >>> mc
+            1.4
 
     """
     bins, count, _ = get_fmd(
@@ -428,38 +428,38 @@ def estimate_mc_b_stability(
                     means that the stability criterion is met.
 
     Examples:
-            .. code-block:: python
+        .. code-block:: python
 
-                >>> from seismostats.analysis import estimate_mc_b_stability
-                >>> import numpy as np
-                >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
-                ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
-                ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
-                ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
-                ...                   1.3, 1.1, 1.5, 1.4, 1.5]
-                >>> delta_m = 0.1
-                >>> mc = estimate_mc_b_stability(magntitudes,delta_m=delta_m)[0]
-                >>> mc
+            >>> from seismostats.analysis import estimate_mc_b_stability
+            >>> import numpy as np
+            >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
+            ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+            ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+            ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+            ...                   1.3, 1.1, 1.5, 1.4, 1.5]
+            >>> delta_m = 0.1
+            >>> mc = estimate_mc_b_stability(magntitudes,delta_m=delta_m)[0]
+            >>> mc
 
-                1.1
+            1.1
 
-            The mc_b_stability method returns additional information about the
-            calculation of the best mc, like b-values tested and the array of
-            differences. Those are returned by the method and can be used for
-            further analysis.
+        The mc_b_stability method returns additional information about the
+        calculation of the best mc, like b-values tested and the array of
+        differences. Those are returned by the method and can be used for
+        further analysis.
 
-            .. code-block:: python
+        .. code-block:: python
 
-                >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     diff_bs = estimate_mc_b_stability(magnitudes,
-                ...     delta_m=delta_m)
-                >>> b_values_test, diff_bs
+            >>> best_mc, best_b_value, mcs_test, b_values_test,
+            ...     diff_bs = estimate_mc_b_stability(magnitudes,
+            ...     delta_m=delta_m)
+            >>> b_values_test, diff_bs
 
-                ([np.float64(0.9571853220063772),
-                np.float64(1.190298769977797)],
-                [np.float64(2.2337527711215786),
-                np.float64(0.9457747650207581)])
-        '''
+            ([np.float64(0.9571853220063772),
+            np.float64(1.190298769977797)],
+            [np.float64(2.2337527711215786),
+            np.float64(0.9457747650207581)])
+
     """
     steps = len(np.arange(0, stability_range, delta_m))
 
