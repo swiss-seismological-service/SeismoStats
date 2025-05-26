@@ -530,8 +530,8 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def estimate_mc_maxc(
         self,
-        delta_m: float,
-        correction_factor: float = 0.2,
+        fmd_bin: float,
+        correction_factor: float | None = 0.2,
     ) -> float:
         '''
         Returns the completeness magnitude (mc) estimate using the maximum
@@ -552,11 +552,18 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes:         Array of magnitudes to test.
-            delta_m:            Bin size of discretized magnitudes. Catalog
-                            needs to be rounded to bins beforehand. Either given
-                            as parameter or taken from the object attribute.
+            fmd_bin:            Bin size for the maximum curvature method.
+                        This can be independent ofthe descritization of the
+                        magnitudes. The original value for the maximum
+                        curvature method is 0.1. However, the user can decide
+                        which value to use.
+                        The optimal value would be as small as possible while
+                        at the same time ensuring that there are enough
+                        magnitudes in each bin. If the bin size is too small,
+                        the method will not work properly.
             correction_factor:  Correction factor for the maximum curvature
-                            method (default value after Woessner & Wiemer 2005).
+                            method (default value after Woessner & Wiemer
+                            2005).
 
         Returns:
             mc:                 Estimated completeness magnitude.
@@ -571,14 +578,12 @@ class Catalog(pd.DataFrame):
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> cat.estimate_mc_maxc(delta_m=0.1)
+                >>> cat.estimate_mc_maxc(fmd_bin=0.1)
                 >>> cat.mc
-
                 1.4
         '''
-
         best_mc = estimate_mc_maxc(self.magnitude,
-                                   delta_m=delta_m,
+                                   fmd_bin=fmd_bin,
                                    correction_factor=correction_factor)
         self.mc = best_mc
         return best_mc
@@ -1252,7 +1257,7 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['magnitude'])
     def plot_fmd(self,
-                 delta_m: float = None,
+                 fmd_bin: float,
                  ax: plt.Axes | None = None,
                  color: str = None,
                  size: int = None,
@@ -1265,8 +1270,7 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes:     Array of magnitudes.
-            delta_m:        Discretization of the magnitudes, important for the
-                        correct visualization of the data.
+            fmd_bin:        Bin size of magnitudes for plotting purposes.
             ax:             The axis where figure should be plotted.
             color:          Color of the data.
             size:           Size of data points.
@@ -1278,10 +1282,8 @@ class Catalog(pd.DataFrame):
         Returns:
             ax: The ax object that was plotted on.
         '''
-        if delta_m is None:
-            delta_m = self.delta_m
         ax = plot_fmd(self.magnitude,
-                      delta_m=delta_m,
+                      fmd_bin=fmd_bin,
                       ax=ax,
                       color=color,
                       size=size,
