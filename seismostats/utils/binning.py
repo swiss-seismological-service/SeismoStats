@@ -252,7 +252,11 @@ def get_cum_fmd(
 
     Args:
         mags:           Array of magnitudes.
-        delta_m:        Discretization of the magnitudes.
+        delta_m:        Discretization of the magnitudes. It is possible to
+                    provide a value that is larger than the actual
+                    discretization of the magnitudes. In this case, the
+                    magnitudes will be binned to the given ``delta_m``. This
+                    might be useful for visualization purposes.
         bin_position:   Position of the bin, options are  'center' and 'left'.
                     Accordingly, left edges of bins or center points are
                     returned.

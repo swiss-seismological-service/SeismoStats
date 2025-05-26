@@ -48,7 +48,10 @@ def plot_cum_fmd(
         magnitudes: Array of magnitudes.
         mc:         Completeness magnitude of the theoretical GR distribution.
         delta_m:    Discretization of the magnitudes; important for the correct
-                visualization of the data. Assumed 0 if not given.
+                visualization of the data. Assumed 0 if not given. It is
+                possible to provide a value that is larger than the actual
+                discretization of the magnitudes. In this case, the magnitudes
+                will be binned to the given ``delta_m``.
         b_value:    The b-value of the theoretical GR distribution to plot.
         ax:         Axis where figure should be plotted.
         color:      Color of the data. If one value is given, it is used for
@@ -148,8 +151,10 @@ def plot_fmd(
 
     Args:
         magnitudes:     Array of magnitudes.
-        fmd_bin:        Size of magnitude bins, important for the
-                    correct visualization of the data.
+        fmd_bin:        Bin size for the FMD. This can be independent of
+                    the descritization of the magnitudes. The optimal value
+                    would be as small as possible while at the same time
+                    ensuring that there are enough magnitudes in each bin.
         ax:             The axis where figure should be plotted.
         color:          Color of the data.
         size:           Size of data points.
