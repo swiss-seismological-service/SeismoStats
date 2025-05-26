@@ -43,6 +43,7 @@ dependencies = [
     "scipy",
     "shapely",
     "typing_extensions",
+    "statsmodels",
 ]
 
 
