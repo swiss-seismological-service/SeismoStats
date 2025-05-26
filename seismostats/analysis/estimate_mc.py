@@ -191,6 +191,36 @@ def estimate_mc_ks(
         b_values_test:  Tested b-values.
         ks_ds:          KS distances.
         p_values:       Corresponding p-values.
+
+    Examples:
+        .. code-block:: python
+
+            >>> from seismostats.analysis import estimate_mc_ks
+            >>> import numpy as np
+            >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
+            ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+            ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+            ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+            ...                   1.3, 1.1, 1.5, 1.4, 1.5]
+            >>> delta_m = 0.1
+            >>> mc = estimate_mc_ks(magnitudes, delta_m=delta_m)[0]
+            >>> mc
+
+            1.0
+
+        The mc_ks method returns additional information about the
+        calculation of the best mc, like b-values tested and ks
+        distances. Those are returned by the method and can be
+        used for further analysis.
+
+        .. code-block:: python
+
+            >>> best_mc, best_b_value, mcs_test, b_values_test, ks_ds,
+            ...     p_values = estimate_mc_ks(magnitudes,delta_m=delta_m)
+            >>> b_values_test, ks_ds
+
+            ([0.9571853220063774], [0.1700244200244202])
+
     """
 
     if mcs_test is None:
@@ -314,10 +344,27 @@ def estimate_mc_maxc(
                         magnitudes in each bin. If the bin size is too small,
                         the method will not work properly.
         correction_factor:  Correction factor for the maximum curvature
-                method (default value after Woessner & Wiemer 2005).
+                        method (default value +0.2 after Woessner &
+                        Wiemer 2005).
 
     Returns:
         mc:                 Estimated completeness magnitude.
+
+    Examples:
+        .. code-block:: python
+
+            >>> from seismostats.analysis import estimate_mc_maxc
+            >>> import numpy as np
+            >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
+            ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+            ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+            ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+            ...                   1.3, 1.1, 1.5, 1.4, 1.5]
+            >>> delta_m = 0.1
+            >>> mc = estimate_mc_maxc(magnitudes, delta_m=delta_m)
+            >>> mc
+            1.4
+
     """
     bins, count, _ = get_fmd(
         magnitudes=magnitudes, fmd_bin=fmd_bin, bin_position="center"
@@ -345,10 +392,13 @@ def estimate_mc_b_stability(
     for the stability test by changing the stability_range.
 
     Source:
-        Woessner, J, and Stefan W. "Assessing the quality of earthquake
-        catalogues: Estimating the magnitude of completeness and its
-        uncertainty." Bulletin of the Seismological Society of America 95.2
-        (2005): 684-698.
+        - Cao, A., & Gao, S. S. (2002). Temporal variation of seismic b-values
+            beneath northeastern Japan island arc. Geophysical Research Letters,
+            29(9), 1–3. https://doi.org/10.1029/2001gl013775
+        - Woessner, J, and Stefan W. "Assessing the quality of earthquake
+            catalogues: Estimating the magnitude of completeness and its
+            uncertainty." Bulletin of the Seismological Society of America 95.2
+            (2005): 684-698.
 
     Args:
         magnitudes:         Array of magnitudes.
@@ -376,6 +426,40 @@ def estimate_mc_b_stability(
         diff_bs:        Array of differences divided by std, associated
                     with tested mcs. If a value is smaller than one, this
                     means that the stability criterion is met.
+
+    Examples:
+        .. code-block:: python
+
+            >>> from seismostats.analysis import estimate_mc_b_stability
+            >>> import numpy as np
+            >>> magnitudes = np.array([2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2,
+            ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
+            ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
+            ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
+            ...                   1.3, 1.1, 1.5, 1.4, 1.5]
+            >>> delta_m = 0.1
+            >>> mc = estimate_mc_b_stability(magntitudes,delta_m=delta_m)[0]
+            >>> mc
+
+            1.1
+
+        The mc_b_stability method returns additional information about the
+        calculation of the best mc, like b-values tested and the array of
+        differences. Those are returned by the method and can be used for
+        further analysis.
+
+        .. code-block:: python
+
+            >>> best_mc, best_b_value, mcs_test, b_values_test,
+            ...     diff_bs = estimate_mc_b_stability(magnitudes,
+            ...     delta_m=delta_m)
+            >>> b_values_test, diff_bs
+
+            ([np.float64(0.9571853220063772),
+            np.float64(1.190298769977797)],
+            [np.float64(2.2337527711215786),
+            np.float64(0.9457747650207581)])
+
     """
     steps = len(np.arange(0, stability_range, delta_m))
 
