@@ -306,7 +306,7 @@ def estimate_mc_maxc(
     Args:
         magnitudes:         Array of magnitudes to test.
         fmd_bin:            Bin size for the maximum curvature method. This can
-                        be independent ofthe descritization of the magnitudes.
+                        be independent of the discretization of the magnitudes.
                         The original value for the maximum curvature method is
                         0.1. However, the user can decide which value to use.
                         The optimal value would be as small as possible while
