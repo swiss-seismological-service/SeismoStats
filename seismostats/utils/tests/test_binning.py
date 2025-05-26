@@ -118,6 +118,9 @@ def test_get_fmd(magnitudes: np.ndarray, fmd_bin: float,
 
     assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 
+    with pytest.raises(ValueError):
+        get_fmd(magnitudes, 0, bin_position=bin_position)
+
 
 def test_test_binning():
     a = [0.2, 0.4, 0.6, 0.8, 1.0]
