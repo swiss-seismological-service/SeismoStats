@@ -189,7 +189,7 @@ def get_fmd(
     Args:
         mags:           Array of magnitudes.
         fmd_bin:        Bin size for the FMD. This can be independent of
-                    the descritization of the magnitudes. The optimal value
+                    the discretization of the magnitudes. The optimal value
                     would be as small as possible while at the same time
                     ensuring that there are enough magnitudes in each bin.
         bin_position:   Position of the bin, options are  'center' and 'left'.
