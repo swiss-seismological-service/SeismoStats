@@ -48,6 +48,7 @@ def ks_test_gr(
     b_value: float,
     n: int = 10000,
     ks_ds: list | None = None,
+    weights: np.ndarray | None = None,
 ) -> tuple[float, float, list[float]]:
     """
     Performs the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
@@ -67,6 +68,7 @@ def ks_test_gr(
         ks_ds:      KS distances from synthetic data with the given
                 paramters. If None, they will be estimated here (then, n is
                 not needed).
+        weights:    Array of weights for the magnitudes.
 
     Returns:
         p_val:      p-value.
@@ -86,15 +88,18 @@ def ks_test_gr(
             return 0, 1, []
 
     beta = b_value_to_beta(b_value)
+    n_sample = len(magnitudes)
 
     if ks_ds is None:
         ks_ds = []
 
-        n_sample = len(magnitudes)
-        simulated_all = simulate_magnitudes_binned(
-            n * n_sample, b_value, mc, delta_m, b_parameter="b_value"
-        )
-        max_considered_mag = np.max([np.max(magnitudes), np.max(simulated_all)])
+        # max considered magnitude is extrapolated from a bootstrap sample
+        bootstrap_sample = simulate_magnitudes_binned(
+            1000, b_value, mc, delta_m, b_parameter="b_value")
+        max_simulated_mag = np.max(bootstrap_sample)
+        safety_margin = max(np.log10(n / 1000) + 2, 1)
+        max_considered_mag = max(
+            np.max(magnitudes), max_simulated_mag + safety_margin)
 
         x_bins = bin_to_precision(
             np.arange(mc, max_considered_mag + 3
@@ -105,13 +110,14 @@ def ks_test_gr(
         _, y_th = cdf_discrete_exp(
             x, mc=mc, delta_m=delta_m, beta=beta)
 
+        ks_ds = np.empty(n)
         for ii in range(n):
-            simulated = simulated_all[n_sample * ii: n_sample * (ii + 1)]
-            y_hist, _ = np.histogram(simulated, bins=x_bins)
+            simulated = simulate_magnitudes_binned(
+                n_sample, b_value, mc, delta_m, b_parameter="b_value"
+            )
+            y_hist, _ = np.histogram(simulated, bins=x_bins, weights=weights)
             y_emp = np.cumsum(y_hist) / np.sum(y_hist)
-
-            ks_d = np.max(np.abs(y_emp - y_th))
-            ks_ds.append(ks_d)
+            ks_ds[ii] = np.max(np.abs(y_emp - y_th))
 
     else:
         max_considered_mag = np.max(magnitudes)
@@ -123,7 +129,7 @@ def ks_test_gr(
         x_bins -= delta_m / 2
         _, y_th = cdf_discrete_exp(x, mc=mc, delta_m=delta_m, beta=beta)
 
-    y_hist, _ = np.histogram(magnitudes, bins=x_bins)
+    y_hist, _ = np.histogram(magnitudes, bins=x_bins, weights=weights)
     y_emp = np.cumsum(y_hist) / np.sum(y_hist)
 
     ks_d_obs = np.max(np.abs(y_emp - y_th))
