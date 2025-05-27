@@ -26,7 +26,8 @@ def _rategrid_constructor_with_fallback(*args, **kwargs):
 
 class GRRateGrid(pd.DataFrame):
     """
-    Represents seismicity as a grid of cells, each with its own GR parameters.
+    Represents seismicity as a grid of cells, each with its own
+    Gutenberg-Richter parameters (a-value, b-value, and mc).
 
     To be a valid RateGrid object, the it must have the following
     columns: longitude_min, longitude_max, latitude_min, latitude_max,
@@ -312,8 +313,9 @@ class GRRateGrid(pd.DataFrame):
 class ForecastGRRateGrid(GRRateGrid):
     """
     A seismicity forecast on a grid where for each grid cell, the GR parameters
-    are defined. Additionally to the GRRateGrid, this class has a grid_id column
-    to identify each possible realization of the grid.
+    (a-value, b-value, mc) are defined. Additionally to the GRRateGrid, this
+    class has a grid_id column to identify each possible realization of the 
+    grid.
 
     To be a valid RateGrid object, it must have the following
     columns: `longitude_min`, `longitude_max`, `latitude_min`, `latitude_max`,
