@@ -31,7 +31,7 @@ This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 200
                     1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                     1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                     1.3, 1.1, 1.5, 1.4]})
->>> cat.estimate_mc_maxc(delta_m=0.1)
+>>> cat.estimate_mc_maxc(fmd_bin=0.1)
 >>> cat.mc
 1.4
 ```
