@@ -314,7 +314,7 @@ class ForecastGRRateGrid(GRRateGrid):
     """
     A seismicity forecast on a grid where for each grid cell, the GR parameters
     (a-value, b-value, mc) are defined. Additionally to the GRRateGrid, this
-    class has a grid_id column to identify each possible realization of the 
+    class has a grid_id column to identify each possible realization of the
     grid.
 
     To be a valid RateGrid object, it must have the following
