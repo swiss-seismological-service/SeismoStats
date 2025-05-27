@@ -93,13 +93,9 @@ def ks_test_gr(
     if ks_ds is None:
         ks_ds = []
 
-        # max considered magnitude is extrapolated from a bootstrap sample
-        bootstrap_sample = simulate_magnitudes_binned(
-            1000, b_value, mc, delta_m, b_parameter="b_value")
-        max_simulated_mag = np.max(bootstrap_sample)
-        safety_margin = max(np.log10(n / 1000) + 2, 1)
-        max_considered_mag = max(
-            np.max(magnitudes), max_simulated_mag + safety_margin)
+        # max considered magnitude: less than 1e-3 probability of
+        # exceedance within the  samples
+        max_considered_mag = 1 / b_value * np.log10(n_sample * n * 1e3) + mc
 
         x_bins = bin_to_precision(
             np.arange(mc, max_considered_mag + 3
