@@ -1,3 +1,9 @@
+<h1 align="center">
+
+<img src="./docs/source/_static/seismostats.png" height="175">
+
+<hr \>
+
 ![pypi](https://img.shields.io/pypi/v/SeismoStats)
 [![PyPI - License](https://img.shields.io/pypi/l/seismostats.svg)](https://pypi.org/project/seismostats/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/seismostats.svg)](https://pypi.org/project/seismostats/)
@@ -5,8 +11,6 @@
 [![codecov](https://codecov.io/github/swiss-seismological-service/SeismoStats/graph/badge.svg?token=RVJFHYLBKA)](https://codecov.io/github/swiss-seismological-service/SeismoStats)
 [![Documentation Status](https://readthedocs.org/projects/seismostats/badge/?version=latest)](https://seismostats.readthedocs.io/en/latest/?badge=latest)
 
-<h1 align="center">
-<img src="./docs/source/_static/seismostats.png" height="175">
 </h1>
 
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
