@@ -535,7 +535,7 @@ class Catalog(pd.DataFrame):
         self,
         fmd_bin: float,
         correction_factor: float | None = 0.2,
-    ) -> float:
+    ) -> tuple[float, dict[str, Any]]:
         '''
         Returns the completeness magnitude (mc) estimate using the maximum
         curvature method.
@@ -570,6 +570,13 @@ class Catalog(pd.DataFrame):
 
         Returns:
             mc:                 Estimated completeness magnitude.
+            mc_info:
+                Dictionary with additional information about the calculation
+                of the best ``mc``, including:
+
+                - correction_factor:   Correction factor for the maximum
+                  curvature method (default value +0.2 after Woessner
+                  & Wiemer 2005).
 
         Examples:
             .. code-block:: python
@@ -584,12 +591,21 @@ class Catalog(pd.DataFrame):
                 >>> cat.estimate_mc_maxc(fmd_bin=0.1)
                 >>> cat.mc
                 1.4
+
+            The mc_maxc method also returns the correction factor used in the
+            calculation of the best mc value.
+
+            .. code-block:: python
+
+                >>> best_mc, mc_info = cat.estimate_mc_maxc(fmd_bin=0.1)
+                >>> mc_info['correction_factor']
+                0.2
+
         '''
-        best_mc = estimate_mc_maxc(self.magnitude,
-                                   fmd_bin=fmd_bin,
-                                   correction_factor=correction_factor)
-        self.mc = best_mc
-        return best_mc
+        self.mc, mc_info = estimate_mc_maxc(self.magnitude,
+                                            fmd_bin=fmd_bin,
+                                            correction_factor=correction_factor)
+        return self.mc, mc_info
 
     @require_cols(require=['magnitude'])
     def estimate_mc_b_stability(
@@ -601,8 +617,7 @@ class Catalog(pd.DataFrame):
         stability_range: float = 0.5,
         verbose: bool = False,
         **kwargs,
-    ) -> tuple[float | None, float | None, list[float],
-               list[float], list[float], list[float]]:
+    ) -> tuple[float | None, dict[str, Any]]:
         '''
         Estimates the completeness magnitude (mc) using b-value stability.
 
@@ -640,12 +655,16 @@ class Catalog(pd.DataFrame):
 
         Returns:
             best_mc:        Best magnitude of completeness estimate.
-            best_b_value:   b-value associated with best_mc.
-            mcs_test:       Array of tested completeness magnitudes.
-            b_values_test:  Array of b-values associated to tested mcs.
-            diff_bs:        Array of differences divided by std, associated
-                        with tested mcs. If a value is smaller than one, this
-                        means that the stability criterion is met.
+            mc_info:
+                Dictionary with additional information about the calculation
+                of the best ``mc``, including:
+
+                - best_b_value: b-value associated with ``best_mc``.
+                - mcs_tested:     Array of tested completeness magnitudes.
+                - b_values_tested: Array of b-values associated to tested mcs.
+                - diff_bs:      Array of differences divided by std, associated
+                  with tested mcs. If a value is smaller than one,
+                  this means that the stability criterion is met.
 
         Examples:
             .. code-block:: python
@@ -670,9 +689,8 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     diff_bs = cat.estimate_mc_b_stability()
-                >>> mcs_test, diff_bs
+                >>> best_mc, mc_info = cat.estimate_mc_b_stability()
+                >>> (mc_info['mcs_tested'], mc_info['diff_bs'])
 
                 (array([1. , 1.1]), [2.23375277112158, 0.9457747650207577])
         '''
@@ -681,7 +699,7 @@ class Catalog(pd.DataFrame):
         if delta_m is None:
             delta_m = self.delta_m
 
-        best_mc, best_b_value, mcs_test, b_values_test, diff_bs = \
+        self.mc, mc_info = \
             estimate_mc_b_stability(self.magnitude,
                                     delta_m=delta_m,
                                     mcs_test=mcs_test,
@@ -691,9 +709,7 @@ class Catalog(pd.DataFrame):
                                     verbose=verbose,
                                     **kwargs)
 
-        self.mc = best_mc
-
-        return best_mc, best_b_value, mcs_test, b_values_test, diff_bs
+        return (self.mc, mc_info)
 
     @require_cols(require=['magnitude'])
     def estimate_mc_ks(
@@ -708,8 +724,7 @@ class Catalog(pd.DataFrame):
         ks_ds_list: list[list] | None = None,
         verbose: bool = False,
         **kwargs,
-    ) -> tuple[float | None, float | None, list[float],
-               list[float], list[float], list[float]]:
+    ) -> tuple[float | None, dict[str, Any]]:
         '''
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
@@ -748,14 +763,17 @@ class Catalog(pd.DataFrame):
                         output.
             **kwargs:       Additional parameters to be passed to the b-value
                         estimator.
-
         Returns:
-            best_mc:        `mc` for which the p-value is lowest.
-            best_b_value:   `b_value` corresponding to the best `mc`.
-            mcs_test:       Tested completeness magnitudes.
-            b_values_test:  Tested b-values.
-            ks_ds:          KS distances.
-            p-values:       Corresponding p-values.
+            best_mc:        ``mc`` for which the p-value is lowest.
+            mc_info:
+                Dictionary with additional information about the calculation
+                of the best ``mc``, including:
+
+                - best_b_value: ``b_value`` corresponding to the best ``mc``.
+                - mcs_tested: Tested completeness magnitudes.
+                - b_values_tested: Tested b-values.
+                - ks_ds: KS distances.
+                - p_values: Corresponding p-values.
 
         Examples:
             .. code-block:: python
@@ -780,9 +798,8 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     ks_ds, p_values = cat.estimate_mc_ks()
-                >>> b_values_test, ks_ds
+                >>> best_mc, mc_info = cat.estimate_mc_ks()
+                >>> (mc_info['b_values_tested'], mc_info['ks_ds'])
 
                 ([0.9571853220063774], [0.1700244200244202])
         '''
@@ -794,7 +811,7 @@ class Catalog(pd.DataFrame):
         if b_value is None and self.b_value is not None:
             b_value = self.b_value
 
-        best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values = \
+        best_mc, mc_info = \
             estimate_mc_ks(self.magnitude,
                            delta_m=delta_m,
                            mcs_test=mcs_test,
@@ -809,7 +826,7 @@ class Catalog(pd.DataFrame):
 
         self.mc = best_mc
 
-        return best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values
+        return (best_mc, mc_info)
 
     @require_cols(require=['magnitude'])
     def estimate_b(
