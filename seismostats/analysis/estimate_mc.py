@@ -3,6 +3,7 @@ for the estimation of the completeness magnitude.
 """
 
 import warnings
+from typing import Any
 
 import numpy as np
 
@@ -144,8 +145,7 @@ def estimate_mc_ks(
     ks_ds_list: list[list] | None = None,
     verbose: bool = False,
     **kwargs,
-) -> tuple[float | None, float | None, list[float],
-           list[float], list[float], list[float]]:
+) -> tuple[float | None, dict[str, Any]]:
     """
     Returns the smallest magnitude in a given list of completeness magnitudes
     for which the KS test is passed, i.e., where the null hypothesis that the
@@ -186,11 +186,15 @@ def estimate_mc_ks(
 
     Returns:
         best_mc:        ``mc`` for which the p-value is lowest.
-        best_b_value:   ``b_value`` corresponding to the best ``mc``.
-        mcs_test:       Tested completeness magnitudes.
-        b_values_test:  Tested b-values.
-        ks_ds:          KS distances.
-        p_values:       Corresponding p-values.
+        mc_info:
+            Dictionary with additional information about the calculation
+            of the best ``mc``, including:
+
+            - best_b_value: ``b_value`` corresponding to the best ``mc``.
+            - mcs_tested: Tested completeness magnitudes.
+            - b_values_tested: Tested b-values.
+            - ks_ds: KS distances.
+            - p_values: Corresponding p-values.
 
     Examples:
         .. code-block:: python
@@ -203,7 +207,7 @@ def estimate_mc_ks(
             ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
             ...                   1.3, 1.1, 1.5, 1.4, 1.5]
             >>> delta_m = 0.1
-            >>> mc = estimate_mc_ks(magnitudes, delta_m=delta_m)[0]
+            >>> mc, _ = estimate_mc_ks(magnitudes, delta_m=delta_m)
             >>> mc
 
             1.0
@@ -215,9 +219,8 @@ def estimate_mc_ks(
 
         .. code-block:: python
 
-            >>> best_mc, best_b_value, mcs_test, b_values_test, ks_ds,
-            ...     p_values = estimate_mc_ks(magnitudes,delta_m=delta_m)
-            >>> b_values_test, ks_ds
+            >>> best_mc, mc_info = estimate_mc_ks(magnitudes,delta_m=delta_m)
+            >>> (mc_info['b_values_tested'], mc_info['ks_ds'])
 
             ([0.9571853220063774], [0.1700244200244202])
 
@@ -310,15 +313,20 @@ def estimate_mc_ks(
         if verbose:
             print("None of the mcs passed the test.")
 
-    return best_mc, best_b_value, mcs_tested, b_values_test, \
-        ks_ds, p_values.tolist()
+    return_vals = {'best_b_value': best_b_value,
+                   'mcs_tested': mcs_tested,
+                   'b_values_tested': b_values_test,
+                   'ks_ds': ks_ds,
+                   'p_values': p_values.tolist()}
+
+    return best_mc, return_vals
 
 
 def estimate_mc_maxc(
     magnitudes: np.ndarray,
     fmd_bin: float,
     correction_factor: float = 0.2,
-) -> float:
+) -> tuple[float, dict[str, Any]]:
     """
     Returns the completeness magnitude (mc) estimate using the maximum
     curvature method.
@@ -349,6 +357,13 @@ def estimate_mc_maxc(
 
     Returns:
         mc:                 Estimated completeness magnitude.
+        mc_info:
+            Dictionary with additional information about the calculation
+            of the best ``mc``, including:
+
+            - correction_factor:   Correction factor for the maximum curvature
+              method (default value +0.2 after Woessner & Wiemer 2005).
+
 
     Examples:
         .. code-block:: python
@@ -361,16 +376,25 @@ def estimate_mc_maxc(
             ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
             ...                   1.3, 1.1, 1.5, 1.4, 1.5]
             >>> delta_m = 0.1
-            >>> mc = estimate_mc_maxc(magnitudes, delta_m=delta_m)
+            >>> mc, _ = estimate_mc_maxc(magnitudes, delta_m=delta_m)
             >>> mc
             1.4
+
+        The mc_maxc method also returns the correction factor used in the
+        calculation of the best mc value.
+
+        .. code-block:: python
+
+            >>> best_mc, mc_info = cat.estimate_mc_maxc(fmd_bin=0.1)
+            >>> mc_info['correction_factor']
+            0.2
 
     """
     bins, count, _ = get_fmd(
         magnitudes=magnitudes, fmd_bin=fmd_bin, bin_position="center"
     )
     mc = bins[count.argmax()] + correction_factor
-    return mc
+    return mc, {'correction_factor': correction_factor}
 
 
 def estimate_mc_b_stability(
@@ -382,8 +406,7 @@ def estimate_mc_b_stability(
         stability_range: float = 0.5,
         verbose: bool = False,
         **kwargs,
-) -> tuple[float | None, float | None, list[float],
-           list[float], list[float], list[float]]:
+) -> tuple[float | None, dict[str, Any]]:
     """
     Estimates the completeness magnitude (mc) using b-value stability.
 
@@ -420,12 +443,16 @@ def estimate_mc_b_stability(
 
     Returns:
         best_mc:        Best magnitude of completeness estimate.
-        best_b_value:   b-value associated with ``best_mc``.
-        mcs_test:       Array of tested completeness magnitudes.
-        b_values_test:  Array of b-values associated to tested mcs.
-        diff_bs:        Array of differences divided by std, associated
-                    with tested mcs. If a value is smaller than one, this
-                    means that the stability criterion is met.
+        mc_info:
+            Dictionary with additional information about the calculation
+            of the best ``mc``, including:
+
+            - best_b_value: b-value associated with ``best_mc``.
+            - mcs_tested:     Array of tested completeness magnitudes.
+            - b_values_tested: Array of b-values associated to tested mcs.
+            - diff_bs:  Array of differences divided by std, associated
+              with tested mcs. If a value is smaller than one,
+              this means that the stability criterion is met.
 
     Examples:
         .. code-block:: python
@@ -438,7 +465,7 @@ def estimate_mc_b_stability(
             ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
             ...                   1.3, 1.1, 1.5, 1.4, 1.5]
             >>> delta_m = 0.1
-            >>> mc = estimate_mc_b_stability(magntitudes,delta_m=delta_m)[0]
+            >>> mc, _ = estimate_mc_b_stability(magntitudes,delta_m=delta_m)
             >>> mc
 
             1.1
@@ -450,10 +477,9 @@ def estimate_mc_b_stability(
 
         .. code-block:: python
 
-            >>> best_mc, best_b_value, mcs_test, b_values_test,
-            ...     diff_bs = estimate_mc_b_stability(magnitudes,
+            >>> best_mc, mc_info = estimate_mc_b_stability(magnitudes,
             ...     delta_m=delta_m)
-            >>> b_values_test, diff_bs
+            >>> (mc_info['b_values_tested'], mc_info['diff_bs'])
 
             ([np.float64(0.9571853220063772),
             np.float64(1.190298769977797)],
@@ -538,5 +564,12 @@ def estimate_mc_b_stability(
     elif not value:
         print("None of the mcs passed the stability test.")
 
-    return bin_to_precision(best_mc, delta_m) if best_mc else None, \
-        best_b_value, mcs_test.tolist(), b_values_test, diff_bs
+    return_vals = {
+        'best_b_value': best_b_value,
+        'mcs_tested': mcs_test.tolist(),
+        'b_values_tested': b_values_test,
+        'diff_bs': diff_bs
+    }
+    print(f'return_vals: {return_vals}')
+    return (bin_to_precision(best_mc, delta_m) if best_mc else None,
+            return_vals)
