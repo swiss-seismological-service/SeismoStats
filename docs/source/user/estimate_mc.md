@@ -36,6 +36,14 @@ This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 200
 1.4
 ```
 
+The mc_maxc method also returns the correction factor used in the calculation of the best mc value.
+
+```python
+>>> best_mc, mc_info = cat.estimate_mc_maxc(fmd_bin=0.1)
+>>> mc_info['correction_factor']
+0.2
+ ```
+
 ## K-S distance
 
 The Kolmogorov-Smirnov (K-S) method estimates the magnitude of completeness Mc by comparing the observed and expected cumulative distribution functions (CDFs), assuming an exponential distribution of magnitudes. Mc is defined as the lowest magnitude where the simulated probability $P(D_{KS})$ of observing the KS-distance exceeds a chosen threshold $p$, with default values of $p$=0.1 and $n$=10,000 ($n$ being the number of random draws of discretized magnitudes drawn from an exponential distribution).
@@ -61,6 +69,15 @@ This method is based on the work of Clauset et al., (2009) and Mizrahi et al., (
 >>> cat.mc
  1.0
 ```
+The mc_ks method returns additional information about the calculation of the best mc, like b-values tested and ks distances. Those are returned by the method and can be used for further analysis.
+
+```python
+>>> best_mc, mc_info = cat.estimate_mc_ks()
+>>> (mc_info['b_values_tested'], mc_info['ks_ds'])
+
+([0.9571853220063774], [0.1700244200244202])
+```
+
 ## Mc by b-value stability
 
 The Mc by b-value stability method estimates the magnitude of completeness Mc by identifying where the b-value becomes stable as smaller magnitudes are excluded, indicating catalog completeness (assuming the magnitudes are exponentially distributed). It defines Mc as the lowest magnitude where the b-value variation across a range $L$ remains within its theoretical standard deviation ($\sigma_{b}$). 
@@ -87,6 +104,13 @@ This method is based on the work of Cao & Gao 2002, and Woessner & Wiemer 2005 a
 >>> cat.estimate_mc_b_stability()
 >>> cat.mc
 1.1
+```
+The mc_b_stability method returns additional information about the calculation of the best mc, like b-values tested and the array of differences. Those are returned by the method and can be used for further analysis.
+
+```python
+ >>> best_mc, mc_info = cat.estimate_mc_b_stability()
+>>> (mc_info['mcs_tested'], mc_info['diff_bs'])
+(array([1. , 1.1]), [2.23375277112158, 0.9457747650207577])
 ```
 
 ## References
