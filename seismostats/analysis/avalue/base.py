@@ -20,6 +20,7 @@ class AValueEstimator(ABC):
         self.idx: np.ndarray | None = None
 
         self.__a_value: float | None = None
+        self.__value: float | None = None
 
     def calculate(self,
                   magnitudes: np.ndarray,
@@ -149,6 +150,15 @@ class AValueEstimator(ABC):
         if self.__a_value is None:
             raise AttributeError('Please calculate the a-value first.')
         return self.__a_value
+
+    @property
+    def std(self):
+        '''
+        Uncertainty of the a-value estimate given that the earthquake catalog
+        is poissonian.
+
+        '''
+        return None
 
     @property
     def magnitudes(self) -> np.ndarray:
