@@ -1,6 +1,34 @@
 from typing import Literal
+from typing import Callable
 
 import numpy as np
+
+
+def bootstrap_variance(sample: np.ndarray,
+                       func: Callable[[np.ndarray], float],
+                       n: int = 10000,
+                       random_state: int | None = None):
+    """
+    Estimate the bootstrap variance of a statistic computed from a sample.
+
+    Args:
+    - sample:       The original data sample
+    - func:         Callable, function that takes a sample and returns a scalar
+    - n:            Number of bootstrap resamples (default: 10000)
+    - random_state: Random seed for reproducibility (default: None)
+
+    Returns:
+    - float, the estimated bootstrap variance of the statistic
+    """
+    rng = np.random.default_rng(random_state)
+    sample = np.array(sample)
+
+    estimates = np.array([
+        func(rng.choice(sample, size=len(sample), replace=True))
+        for _ in range(n)
+    ])
+
+    return np.var(estimates, ddof=1)
 
 
 def beta_to_b_value(beta: float) -> float:

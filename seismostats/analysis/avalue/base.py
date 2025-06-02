@@ -154,9 +154,9 @@ class AValueEstimator(ABC):
     @property
     def std(self):
         '''
-        Uncertainty of the a-value estimate given that the earthquake catalog
-        is poissonian.
-
+        Uncertainty of the a-value estimate, implemented as a placeholder.
+        This method can be overridden in subclasses to provide a specific
+        uncertainty estimation.
         '''
         return None
 
