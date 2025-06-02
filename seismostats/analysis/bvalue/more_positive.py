@@ -7,6 +7,8 @@ from seismostats.analysis.bvalue.classic import _mle_estimator
 from seismostats.analysis.bvalue.utils import find_next_larger
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision
+from seismostats.analysis.bvalue.utils import (bootstrap_variance,
+                                               b_value_to_beta)
 
 
 class BMorePositiveBValueEstimator(BValueEstimator):
@@ -172,3 +174,25 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         Sets the positive magnitude differences used for the calculation.
         '''
         self._magnitudes = magnitudes
+
+    @property
+    def std(self):
+        '''
+        Shi and Bolt uncertainty of the beta estimate.
+        '''
+        self.__is_estimated()
+
+        def func(sample):
+            return _mle_estimator(
+                sample, mc=self.dmc, delta_m=self.delta_m, weights=self.weights)
+
+        return bootstrap_variance(self.magnitudes, func)
+
+    @property
+    def std_beta(self):
+        '''
+        Shi and Bolt uncertainty of the beta estimate.
+        '''
+        self.__is_estimated()
+
+        return b_value_to_beta(self.std)
