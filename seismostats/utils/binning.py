@@ -247,7 +247,7 @@ def get_fmd(
 
 
 def get_cum_fmd(
-    mags: np.ndarray, delta_m: float, bin_position: str = "center"
+    mags: np.ndarray, fmd_bin: float, bin_position: str = "center"
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculates cumulative event counts across all magnitude units
@@ -256,7 +256,7 @@ def get_cum_fmd(
 
     Args:
         mags:           Array of magnitudes.
-        delta_m:        Discretization of the magnitudes. It is possible to
+        fmd_bin:        Discretization of the magnitudes. It is possible to
                     provide a value that is larger than the actual
                     discretization of the magnitudes. In this case, the
                     magnitudes will be binned to the given ``delta_m``. This
@@ -274,9 +274,9 @@ def get_cum_fmd(
         >>> from seismostats.utils import get_cum_fmd
 
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
-        >>> delta_m = 1.0
+        >>> fmd_bin = 1.0
         >>> bin_position = "center"
-        >>> bins, counts, mags = get_cum_fmd(magnitudes, delta_m, bin_position)
+        >>> bins, counts, mags = get_cum_fmd(magnitudes, fmd_bin, bin_position)
         >>> bins
         array([1., 2.])
         >>> counts
@@ -288,13 +288,13 @@ def get_cum_fmd(
         :func:`~seismostats.utils.binning.get_fmd`
     """
 
-    if delta_m == 0:
+    if fmd_bin == 0:
         mags_unique, counts = np.unique(mags, return_counts=True)
         idx = np.argsort(mags_unique)
         bins = mags_unique
         counts = counts[idx]
     else:
-        bins, counts, mags = get_fmd(mags, delta_m, bin_position=bin_position)
+        bins, counts, mags = get_fmd(mags, fmd_bin, bin_position=bin_position)
     c_counts = np.cumsum(counts[::-1])
     c_counts = c_counts[::-1]
 
