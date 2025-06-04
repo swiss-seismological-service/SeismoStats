@@ -245,6 +245,8 @@ def test_catalog_methods(catalog_example,
             kwargs_dict[arg] = fmd_bin
             other_args.remove("fmd_bin")
             method_kwargs[arg] = fmd_bin
+            if method == "plot_cum_fmd":
+                method_kwargs[arg] = None
     exclude_args = ["self", *exclude_args, *other_args]
     compare_method_and_function(method_ref,
                                 function,
