@@ -209,7 +209,7 @@ def compare_method_and_function(method,
     ("plot_mags_in_time", plot_mags_in_time,
      ["magnitudes", "times"], []),
     ("plot_cum_fmd", plot_cum_fmd,
-     ["magnitudes"], ["delta_m", "mc", "b_value"]),
+     ["magnitudes"], ["fmd_bin", "mc", "b_value"]),
     ("plot_fmd", plot_fmd,
      ["magnitudes"], ["fmd_bin"]),
     ("plot_mc_vs_b", plot_mc_vs_b,
@@ -245,6 +245,8 @@ def test_catalog_methods(catalog_example,
             kwargs_dict[arg] = fmd_bin
             other_args.remove("fmd_bin")
             method_kwargs[arg] = fmd_bin
+            if method == "plot_cum_fmd":
+                method_kwargs[arg] = None
     exclude_args = ["self", *exclude_args, *other_args]
     compare_method_and_function(method_ref,
                                 function,

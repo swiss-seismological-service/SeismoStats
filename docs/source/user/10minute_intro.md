@@ -106,7 +106,7 @@ Use these methods to gain insights into your catalog before performing more adva
 >>> cat.plot_mags_in_time()
 
 >>> # plot the cumulative frequency-magnitude distribution with bin size 0.1
->>> cat.plot_cum_fmd(delta_m=0.1)
+>>> cat.plot_cum_fmd(fmd_bin=0.1)
 ```
 <figure>
   <img src="../_static/catalog_map.png" alt="Alt text" width="500"/>
