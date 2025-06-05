@@ -259,7 +259,7 @@ def get_cum_fmd(
         fmd_bin:        Discretization of the magnitudes. It is possible to
                     provide a value that is larger than the actual
                     discretization of the magnitudes. In this case, the
-                    magnitudes will be binned to the given ``delta_m``. This
+                    magnitudes will be binned to the given ``fmd_bin``. This
                     might be useful for visualization purposes.
         bin_position:   Position of the bin, options are  'center' and 'left'.
                     Accordingly, left edges of bins or center points are
@@ -268,7 +268,7 @@ def get_cum_fmd(
     Returns:
         bins:           Array of bin centers (left to right).
         c_counts:       Cumulative counts for each bin.
-        mags:           Array of magnitudes binned to ``delta_m``.
+        mags:           Array of magnitudes binned to ``fmd_bin``.
 
     Examples:
         >>> from seismostats.utils import get_cum_fmd
