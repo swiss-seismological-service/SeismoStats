@@ -56,7 +56,7 @@ When working with earthquake data, event catalogs can take various forms:
 - Stored locally in different file formats (e.g. CSV, JSON, QuakeML)
 - Available from remote data servers or APIs
 
-**Seismostats** accommodates all of these scenarios. With its flexible methods for reading and writing earthquake catalogs, it's easy to load external data, convert between formats, and export results in a format suitable for further analysis or sharing.
+Seismostats accommodates all of these scenarios. With its flexible methods for reading and writing earthquake catalogs, it's easy to load external data, convert between formats, and export results in a format suitable for further analysis or sharing.
 
 ### 2.1 Initializing from Python Data Structures
 Here we demonstrate, how  to create a {func}`Catalog <seismostats.Catalog>` object from scratch. This can be helpful, if you already have magnitudes in a `list` or `numpy.array`. As mentioned above, the `Catalog` object requires at least a column with magnitudes. Additional data, such as event times or hypocenter information, is beneficial for later analysis. 
@@ -115,7 +115,7 @@ Since the `Catalog` object is based on the :class`pandas.DataFrame()` structure,
 
 ### 2.2 Reading and writing with external data formats
 Earthquake event catalogs are often available in various file formats.
-The following section provides a brief overview of how you can use **Seismostats** with pandas' native I/O capabilities (e.g., CSV, Excel, JSON), as well as with additional formats commonly used in the seismological community (e.g QuakeML).
+The following section provides a brief overview of how you can use Seismostats with pandas' native I/O capabilities (e.g., CSV, Excel, JSON), as well as with additional formats commonly used in the seismological community (e.g QuakeML).
 
 #### Using pandas I/O
 Using pandas DataFrames is convenient because it provides built-in methods to read and write a wide range of formats, such as CSV, Excel, JSON, and HTML. Reading is typically done using `pandas.read_<format>()` formats, while writing is carried out with `DataFrame.to_<format>()` This makes it easy to load external data into a `Catalog` object and export it to other formats. For a full list of supported formats, refer to the [pandas I/O documentation](https://pandas.pydata.org/docs/user_guide/io.html 'pandas I/O documentation')
@@ -161,7 +161,7 @@ Reading and writing from and to data in QuakeML format can easily be done by usi
 #### OpenQuake
 In contrast to the previous methods, {func}`from_openquake <seismostats.catalogs.catalog.Catalog.from_openquake>` and {func}`to_openquake <seismostats.catalogs.catalog.Catalog.to_openquake>` don't read and write from and to external files, but converts the OpenQuake [Catalogue](https://docs.openquake.org/oq-engine/3.20/manual/api-reference/openquake.hmtk.seismicity.html#module-openquake.hmtk.seismicity.catalogue 'Catalogue') object to a Seismostats `Catalog` and vice versa. An introduction to OpenQuake with information on the installation process can be found in the [OpenQuake documentation]( https://docs.openquake.org/oq-engine/3.20/manual/getting-started/index.html 'OpenQuake documentation'). 
 
-> **Note:** For working with OpenQuake catalogs, the respective python package has to be installed in addition to **Seismostats**.
+> **Note:** For working with OpenQuake catalogs, the respective python package has to be installed in addition to Seismostats.
 
 ```python
 >>> from openquake.hmtk.seismicity.catalogue import \
@@ -254,12 +254,12 @@ For example the precision of the magnitudes `delta_m`, can be explicitly set by 
 >>> cat.delta_m = 0.1
 ```
 
-This attribute is then automatically used by methods like {func}`bin_magnitudes <seismostats.catalogs.catalog.Catalog.bin_magnitudes>` which bins the catalog magnitudes based on the given precision.
+This attribute is then automatically used by methods like {func}`bin_magnitudes <seismostats.Catalog.bin_magnitudes>` which bins the catalog magnitudes based on the given precision.
 ```python
 >>> # No additionaly argument delta_m is necessary
 >>> cat.bin_magnitude()
 ```
-Alternatively, `delta_m` gan be passed as an argument to methods like {func}`bin_magnitudes <seismostats.catalogs.catalog.Catalog.bin_magnitudes>`. In that case, the value passed will override the current value stored in the catalog's `delta_m`.
+Alternatively, `delta_m` can be passed directly as an argument to methods like {func}`bin_magnitudes <seismostats.Catalog.bin_magnitudes>`. In that case, the value passed will override the current value stored in the catalog's `delta_m`.
 ```python
 # Current delta_m of the catalog
 >>> print(cat.delta_m)
@@ -274,7 +274,7 @@ Alternatively, `delta_m` gan be passed as an argument to methods like {func}`bin
 ```
 
 ### 3.2 Visualization
-As described in the {ref}`Plotting guide </user/plots.md>`, **Seismostats** offers a variety of methods for visualising catalog data in space and time. Furthermore magnitude distributions can be plotted to get a first impression on the catalog parameters. The following methods are directly available as `Catalog` methods:
+As described in the {ref}`Plotting guide </user/plots.md>`, Seismostats offers a variety of methods for visualising catalog data in space and time. Furthermore magnitude distributions can be plotted to get a first impression on the catalog parameters. The following methods are directly available as `Catalog` methods:
 - {func}`plot_in_space <seismostats.Catalog.plot_in_space>`
 - {func}`plot_mags_in_time <seismostats.Catalog.plot_mags_in_time>`
 -  {func}`plot_cum_count <seismostats.Catalog.plot_cum_count>`
@@ -284,37 +284,140 @@ As described in the {ref}`Plotting guide </user/plots.md>`, **Seismostats** offe
 
 Here, we give a quick overview how the plotting methods can be used and more examples can be found in the {ref}`Plotting guide </user/plots.md>`. 
 
-### 3.3 Analysis 
-Seismostats primarily focuses od determining earthquake catalog parameters the catalog parameters such as magnitude of completeness, b-value and a-value. For each of these parameters, the platform offers a selection of established methods used within the seismological community. Detailed descriptions of these methods and their application can be found in the corresponding sections of the User Guide. Here we give a quick overview, how those methods can be used together with the `Catalog` class.
+### 3.3 Estimation of earthquake catalog parameter 
+Seismostats primarily focuses on determining earthquake catalog parameters such as magnitude of completeness, b-value and a-value. For each of these parameters, the platform offers a selection of established methods used within the seismological community. Detailed descriptions of these methods and their application can be found in the corresponding sections of the User Guide. Here we give a quick overview, how those methods can be used together with the `Catalog` class. 
 
-
+We will use the Switzerland catalog (downloaded via EIDA, see {ref}`above </user/catalogs.md#Downloading-from-Remote-Services>`) as the example. Magnitudes are binned before analysis:
+```python
+>>> cat.bin_magnitudes(delta_m=0.1, inplace=True)
+```
 #### 3.3.1 Magnitude of Completeness
-The following methods are available in Seismostats:
--  {func}`Maximum Curvature <seismostats.Catalog.estimate_mc_maxc>`
--  {func}`K-S distance <seismostats.Catalog.estimate_mc_ks>`
-- {func}`B-value stability <seismostats.Catalog.estimate_mc_b_stability>`
+The following methods to estimate Mc are available in Seismostats:
+- Maximum Curvature: {func}`estimate_mc_maxc() <seismostats.Catalog.estimate_mc_maxc>`
+- K-S distance: {func}`estimate_mc_ks() <seismostats.Catalog.estimate_mc_ks>`
+- B-value stability: {func}`estimate_mc_b_stability()<seismostats.Catalog.estimate_mc_b_stability>`
 
-For each method, the minimum requirements of the catalog are the magnitudes and additional parameter can be chosen for an appropriate analyisis of the specific earthquake catalog. 
+These methods require the catalog to contain magnitudes. Some methods also take additional arguments for tuning the analysis.
 
 For example the **Maximum Curvature** method requires the parameter `fmd_bin`, which is passed as an argument:
 ```python
->>> # 
 >>> cat.estimate_mc_maxc(fmd_bin=0.1)
+>>> cat.mc
+np.float64(1.0)
 ```
-For the estimation of Magnitude of Completeness via the **K-S test**, the argument `p_value_pass` can be set (the internal default is 0.1). This parameter is the threshold of the p-value for rejecting the hypothesis of an exponential distribution. The larger the threshold, the more conservative the estimation. Additionally, the argument `delta_m` is required, which is either taken from the catalog's attributes or can be passed directly
+For the estimation of Magnitude of Completeness via the **K-S test**, the argument `p_value_pass` can be set (the internal default is 0.1). This parameter is the threshold of the p-value for rejecting the hypothesis of an exponential distribution. The larger the threshold, the more conservative the estimation. Additionally, the argument `delta_m` is required, which is either taken from the catalog's attributes or can be passed directly.
+
 ```python
 >>> # Pass delta_m directly and use a threshold p_value_pass of 0.05
 >>> cat.estimate_mc_ks(delta_m =0.1, p_value_pass=0.05)
+>>> cat.mc
+np.float64(1.5)
 
->>> # If the attribute delta_m was already set by
->>> cat.delta_m = 0.1
-
->>> # No additionaly argument delta_m is necessary
+>>> # If delta_m was set before:
 >>> cat.estimate_mc_ks(p_value_pass=0.05)
+>>> cat.mc
+np.float64(1.5)
 
->>> # By using the internal argument cat.delta_m and the default 
->>> # p_value_pass, no argument is required
+>>> # Uses default threshold (0.1) and catalog delta_m (if set before)
 >>> cat.estimate_mc_ks()
+>>> cat.mc
+np.float64(2.1)
 ```
-For more information on the Methods for estimating the Magnitude of completeness, please refer to the {ref}`section </user/estimate_mc.md>` in the User Guide 
+> **Note:** This method is slower due to testing multiple distribution hypotheses.
+
+For more details, please referto the {ref}`section </user/estimate_mc.md>` in the User Guide. 
+
 #### 3.3.2 B-value
+
+In addition to the classical method of Tinti and Mulargia (1987) for b-value estimation, Seismostats includes the method of Utsu (1965) as well as so-called *positive methods*  (e.g. Van der Elst (2021)). The latter consider magnitude differences above a specific threshold to reduce the impact of short-term incompleteness. Within the code, the approach can be chosen by one of the following {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` classes:
+- {class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`
+- {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>`
+- {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`
+- {class}`UtsuBValueEstimator <seismostats.analysis.UtsuBValueEstimator>`
+
+For the catalog method {func}`cat.estimate_b() <seismostats.Catalog.estimate_b>` the classical method is chosen as a default and the analysis can be quickly carried out with:
+```python
+>>> # Pass delta_m and mc directly
+>>> cat.estimate_b(delta_m =0.1, mc=2.1)
+>>> cat.b_value
+np.float64(0.8742014183805725)
+
+>>> # If delta_m and mc are were set before:
+>>> cat.estimate_b()
+>>> cat.b_value
+np.float64(0.8742014183805725)
+
+>>> # Test different mc's 
+>>> cat.estimate_b(mc=1.5)
+>>> cat.b_value
+np.float64(1.0294257342907407)
+>>> # The catalog attribute mc is not changed!
+>>> cat.mc
+np.float64(2.1)
+```
+
+To use an alternative method for estimating the b-value, simply pass one of the estimator classes listed above as the method argument to {func}`estimate_b() <seismostats.Catalog.estimate_b>`
+> **Note:** The positive methods require additional arguments:
+>- `times`: the origin time of the earthquake (typically `cat.time`)
+>- `dmc`: the threshold of magnitude differences
+> If no arguments are not provided, it is assumed that the catalog events are already sorted by time and the value of `delta_m` is used for `dmc`.
+
+```python
+>>> # e.g. import BPositiveBValueEstimator
+>>> from seismostats.analysis import BPositiveBValueEstimator
+>>> estimator = BPositiveBValueEstimator
+
+>>> # use the estimator as an argument in cat.estimate_b()
+>>> cat.estimate_b(method=estimator, times=cat.time, dmc=0.1)
+
+>>> #b-value determined with the b-positive method:
+>>> cat.b_value
+np.float64(0.9370272129061623)
+```
+
+More information on the different methods can be found in the {ref}`b-value section </user/estimate_b.md>` of the the User Guide. 
+
+#### 3.3.3 A-value
+Similar to the B-value analysis, Seismostats contains the *positive* methods in addition to the classical approach. The estimation of the a-value can be carried out with the {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` classes:
+- {class}`ClassicAValueEstimator <seismostats.analysis.ClassicAValueEstimator>`
+- {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>`
+- {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>`
+
+Also the estimation of the a-value follows the procedure described in the {ref}`b-value paragraph </user/catalogs.md#B-value>`. As a default method for {func}`estimate_a() <seismostats.Catalog.estimate_a>` the classical approach is implemented:
+```python
+>>> # Pass delta_m and mc directly
+>>> cat.estimate_a(delta_m =0.1, mc=2.1)
+>>> cat.a_value
+np.float64(2.2121876044039577)
+
+>>> # If delta_m and mc are were set before:
+>>> cat.estimate_a()
+>>> cat.a_value
+np.float64(2.2121876044039577)
+
+>>> # Test different mc's 
+>>> cat.estimate_a(mc=1.5)
+>>> cat.a_value
+np.float64(2.90687353472207)
+>>> # The catalog attribute mc is not changed!
+>>> cat.mc
+np.float64(2.1)
+```
+
+To use a different {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` class, simply import the desired estimator and pass it as the argument `method` to {func}`estimate_a() <seismostats.Catalog.estimate_a>`:
+```python
+>>> # e.g. import APositiveAValueEstimator
+>>> from seismostats.analysis import APositiveAValueEstimator
+>>> estimator = APositiveAValueEstimator
+
+>>> # use the estimator as an argument in cat.estimate_a()
+>>> cat.estimate_a(method=estimator, times=cat.time, dmc=0.1)
+
+>>> #a-value determined with the a-positive method:
+>>> cat.a_value
+np.float64(2.2320613684203283)
+```
+
+Please refer to the {ref}`a-value section </user/estimate_a.md>` of the the User Guide for more information on the methods.
+
+## References
