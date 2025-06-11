@@ -73,7 +73,7 @@ Simple representation of an earthquake catalog, storing each single event as a r
 
 
 (convert-cat)=
-### Convert to other format
+### Convert from and to other format
 
 ```{eval-rst}
 .. autosummary::
@@ -81,4 +81,7 @@ Simple representation of an earthquake catalog, storing each single event as a r
     :nosignatures:
 
     Catalog.to_quakeml
+    Catalog.from_quakeml
+    Catalog.from_openquake
+    Catalog.to_openquake
 ```
