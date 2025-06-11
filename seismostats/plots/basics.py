@@ -30,7 +30,7 @@ def gutenberg_richter(
 def plot_cum_fmd(
     magnitudes: np.ndarray | pd.Series,
     mc: float | None = None,
-    delta_m: float = None,
+    fmd_bin: float = None,
     b_value: float | None = None,
     ax: plt.Axes | None = None,
     color: str | list = None,
@@ -47,11 +47,10 @@ def plot_cum_fmd(
     Args:
         magnitudes: Array of magnitudes.
         mc:         Completeness magnitude of the theoretical GR distribution.
-        delta_m:    Discretization of the magnitudes; important for the correct
+        fmd_bin:    Discretization of the magnitudes; important for the correct
                 visualization of the data. Assumed 0 if not given. It is
                 possible to provide a value that is larger than the actual
-                discretization of the magnitudes. In this case, the magnitudes
-                will be binned to the given ``delta_m``.
+                discretization of the magnitudes.
         b_value:    The b-value of the theoretical GR distribution to plot.
         ax:         Axis where figure should be plotted.
         color:      Color of the data. If one value is given, it is used for
@@ -69,12 +68,12 @@ def plot_cum_fmd(
         ax: The ax object that was plotted on.
     """
 
-    if delta_m is None:
-        delta_m = 0
+    if fmd_bin is None:
+        fmd_bin = 0
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
     bins, c_counts, magnitudes = get_cum_fmd(
-        magnitudes, delta_m, bin_position=bin_position
+        magnitudes, fmd_bin, bin_position=bin_position
     )
 
     if ax is None:
@@ -94,10 +93,10 @@ def plot_cum_fmd(
             labels[1] = labels[1] + ", b={x:.2f}".format(x=b_value)
         if mc is None:
             mc = min(magnitudes)
-        n_mc = len(magnitudes[magnitudes >= mc - delta_m / 2])
+        n_mc = len(magnitudes[magnitudes >= mc - fmd_bin / 2])
         if bin_position == "left":
-            mc -= delta_m / 2
-        x = bins[bins >= mc - delta_m / 2]
+            mc -= fmd_bin / 2
+        x = bins[bins >= mc - fmd_bin / 2]
         y = gutenberg_richter(x, b_value, min(x), n_mc)
 
         if type(color) is not list:

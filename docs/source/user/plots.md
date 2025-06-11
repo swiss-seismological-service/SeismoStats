@@ -26,13 +26,13 @@ The cumulative FMD shows the total number of events with magnitudes equal to or 
 
 ```python
 >>> from seismostats.plots import plot_cum_fmd
->>> plot_cum_fmd(magnitudes, delta_m=0.1, b_value=1.0, mc=2.5)
+>>> plot_cum_fmd(magnitudes, fmd_bin=0.1, b_value=1.0, mc=2.5)
 ```
 
-The function also works as a catalog class method, and assumes `delta_m`, `b_value`, `mc` if they are not given as arguments and exist as catalog attributes.
+The function also works as a catalog class method, and assumes `fmd_bin=cat.delta_m`, `b_value`, `mc` if they are not given as arguments and exist as catalog attributes.
 
 ```python
->>> cat.plot_cum_fmd(delta_m=0.1, b_value=1.0, mc=2.5)
+>>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5)
 
 # Same as:
 >>> cat.b_value = 1.0

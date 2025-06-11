@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <!-- #### Deprecated -->
 <!-- -------------------------------------------------------------------------------------- -->
 
+## [Unrealeased]
+#### Changed
+- Same as `get_cum_fmd`, `plot_cum_fmd` (both function and `Catalog` method) now take `fmd_bin` as input instead of `delta_m`, to reflect that this argument doesn't necessarily match the discretization of magnitudes, and be consistent with `get_fmd` and `plot_fmd` which already have this modification.
+
 
 ## [1.0.0rc2] - 2025-05-30
 Add your changes to the relevant section below, while uncommenting the section header.

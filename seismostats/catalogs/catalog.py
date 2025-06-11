@@ -1221,7 +1221,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def plot_cum_fmd(self,
                      mc: float | None = None,
-                     delta_m: float = None,
+                     fmd_bin: float = None,
                      b_value: float | None = None,
                      ax: plt.Axes | None = None,
                      color: str | list = None,
@@ -1239,8 +1239,9 @@ class Catalog(pd.DataFrame):
             magnitudes: Array of magnitudes.
             mc:         Completeness magnitude of the theoretical GR
                     distribution.
-            delta_m:    Discretization of the magnitudes; important for the
-                    correct visualization of the data.
+            fmd_bin:    Discretization of the magnitudes; important for the
+                    correct visualization of the data. If not given, set to
+                    catalog attribute ``delta_m`` (if defined).
             b_value:    The b-value of the theoretical GR distribution to plot.
             ax:         Axis where figure should be plotted.
             color:      Color of the data. If one value is given, it is used
@@ -1257,8 +1258,8 @@ class Catalog(pd.DataFrame):
         Returns:
             ax: The ax object that was plotted on.
         '''
-        if delta_m is None:
-            delta_m = self.delta_m
+        if fmd_bin is None:
+            fmd_bin = self.delta_m
         if mc is None:
             mc = self.mc
         if b_value is None:
@@ -1266,7 +1267,7 @@ class Catalog(pd.DataFrame):
         ax = plot_cum_fmd(self.magnitude,
                           b_value=b_value,
                           mc=mc,
-                          delta_m=delta_m,
+                          fmd_bin=fmd_bin,
                           ax=ax,
                           color=color,
                           size=size,
