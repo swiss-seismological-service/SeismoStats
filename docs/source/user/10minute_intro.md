@@ -6,7 +6,7 @@ This overview introduces the core features of SeismoStats, with a focus on three
 
 - **Magnitude of completeness** estimations
 - **b-value** calculation  
-- **a-value** estimation   
+- **a-value** estimation  
 
 Additionally, we demonstrate how to easily visualize your data and explore key features of your catalog.
 
@@ -19,6 +19,7 @@ The Catalog class allows for easy storage, organization, and analysis of event d
 - *Attributes*: These include the catalog data (such as magnitudes and event times), as well as additional parameters used in the analysis. These parameters can either be user-defined or estimated using SeismoStats' built-in methods.
 
 - *Methods*: Tools for visualization, statistical analysis, and data conversion.
+
 Importantly, many methods both **use** and **update** the catalog's properties and data. This architecture is illustrated below:
 
 <figure>
@@ -45,7 +46,8 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 
 
 ### 1.1 Example: Downloading a catalog from a FDSN-Server
-Since for some server, downloads are limited to a maximum number of events per request, you can use the batch download option for larger datasets. This method downloads the data in subsets of events based on the specified `batch_size`.
+Data servers often impose limits on the number of events returned per request. If too much data is requested at once, you may encounter a `TimeOut` Error. To avoid this, use the `batch_size` argument,  to limit the number of events retrieved per request. 
+
 ```python
 >>> from seismostats.catalogs.client import FDSNWSEventClient
 >>> from seismostats import Catalog
