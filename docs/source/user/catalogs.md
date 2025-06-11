@@ -1,54 +1,28 @@
 # Catalogs
+The {func}`Catalog <seismostats.Catalog>` object is a core part of SeismoStats. It is based on a `pandas.DataFrame`, allowing to use both SeismoStats methods and native pandas tools to filter, change, and analyze earthquake data. In this chapter we give a short overview on
+- the structure of the `Catalog` (Section 1)
+- how to create a `Catalog` object (Section 2)
+- visualizing earthquake catalogs with SeismoStats (Section 3.2)
+- estimating earthquake catalog parameters such as the magnitude of completeness, the b-value and the a-value (Section 3.3)
 
->[!IMPORTANT]  
->This file is still under construction. The catalog method has some functionalities that are not yet described fully. This will be added soon
-
-The catalog class is a pandas dataframe with some extra functionalities that are usefull if you are working with earthquake catalog data.
-The easiest way to create one is directly from a dataframe:
-
-```python
->>> from seismostats import Catalog
-    cat = Catalog(df)
-```
-
-Apart from all the classical dataframe operations, the object `cat` has now some extra functionalities.
-You can:
-1. Plot the seismicity in time, space and its magnitude distribution
-2. Estimate the completeness magnitude
-3. Estimate the b-value
-4. Estimate the a-value
-5. transform the coordinate system to a local cartesian system
-6. filter the catalog for data within a polygon
+For a quick workflow using the `Catalog` class, see {ref}`10 minutes to Seismostats</user/10minute_intro.md>`.
 
 ## 1 Structure
-The Catalog object has to have at least a magnitude collumn. Apart from that, it can have as many collumns as the user would like. Certain methods require however other coloumns, e.g.,
-- time
-- Latitude, Longitude 
-{ref}`Data Formats</user/dataformats.md>`
-Further, the catalog object can have attributes, `delta_m` and `mc`. These can either be set manually:
-```python
->>> cat.delta_m = 0.1
->>> cat.mc = 1
-```
+The `Catalog` class consists of a tabular structure of earthquake data, additional attributes with metadata and methods for visualization and statistical analysis. This combination allows for easy storage, organization, and analysis of event data. 
 
-Or, one can set them by using a method:
-```python
->>> cat.bin_magnitude(delta_m=0.1)
->>> cat.delta_m
-0.1
-```
+Event data is stored in `pandas.DataFrame`, where each row represents a single event. The columns typically contain information such as origin time, magnitude, and event location.
+At a minimum, a `Catalog` object must include a magnitude column. Common additional data columns include, but are not limited to:
+- `time`
+- `latitude`
+- `longitude` 
+- `depth` 
 
-These attributes then will be used for the methods. For example, the b-value estimation normally needs delta_m and mc as an input. However, if this is already set in the catalog, we don't have to specify again.
+Beyond the tabular event data, the `Catalog` object also stores catalog metadata as attributes. These attributes can be both manually defined or autmatically set and updated by methods within the `Catalog` class. For a complete list of available attributes and their usage, see the {ref}`Data Formats</user/dataformats.md>` section.
 
-Or, one can set them by using a method:
-```python
->>> estimator = cat.estimate_b(delta_m = 0.1)
-ValueError: Completeness magnitude (mc) needs to be set.
->>> cat.mc = 1
->>> estimator = cat.estimate_b(delta_m = 0.1)
->>> cat.b_value
-0.98
-```
+<figure>
+  <img src="../_static/catalog_class.png" alt="Alt text" width="500"/>
+  <figcaption>Architecture of the catalog class.</figcaption>
+</figure>
 
 ## 2 Import and Export
 When working with earthquake data, event catalogs can take various forms:
@@ -56,7 +30,7 @@ When working with earthquake data, event catalogs can take various forms:
 - Stored locally in different file formats (e.g. CSV, JSON, QuakeML)
 - Available from remote data servers or APIs
 
-Seismostats accommodates all of these scenarios. With its flexible methods for reading and writing earthquake catalogs, it's easy to load external data, convert between formats, and export results in a format suitable for further analysis or sharing.
+SeismoStats accommodates all of these scenarios. With its flexible methods for reading and writing earthquake catalogs, it's easy to load external data, convert between formats, and export results in a format suitable for further analysis or sharing.
 
 ### 2.1 Initializing from Python Data Structures
 Here we demonstrate, how  to create a {func}`Catalog <seismostats.Catalog>` object from scratch. This can be helpful, if you already have magnitudes in a `list` or `numpy.array`. As mentioned above, the `Catalog` object requires at least a column with magnitudes. Additional data, such as event times or hypocenter information, is beneficial for later analysis. 
@@ -87,7 +61,7 @@ The most direct method to create a `Catalog` object is done via a Python Diction
 
 ```
 #### From a pandas DataFrame
-Since the `Catalog` object is based on the :class`pandas.DataFrame()` structure, it can be used for the creation of a new catalog. 
+Since the `Catalog` object is based on the `pandas.DataFrame()` structure, it can be used for the creation of a new catalog. 
 
 ```python
 >>> from seismostats import Catalog
@@ -115,7 +89,7 @@ Since the `Catalog` object is based on the :class`pandas.DataFrame()` structure,
 
 ### 2.2 Reading and writing with external data formats
 Earthquake event catalogs are often available in various file formats.
-The following section provides a brief overview of how you can use Seismostats with pandas' native I/O capabilities (e.g., CSV, Excel, JSON), as well as with additional formats commonly used in the seismological community (e.g QuakeML).
+The following section provides a brief overview of how you can use SeismoStats with pandas' native I/O capabilities (e.g., CSV, Excel, JSON), as well as with additional formats commonly used in the seismological community (e.g QuakeML).
 
 #### Using pandas I/O
 Using pandas DataFrames is convenient because it provides built-in methods to read and write a wide range of formats, such as CSV, Excel, JSON, and HTML. Reading is typically done using `pandas.read_<format>()` formats, while writing is carried out with `DataFrame.to_<format>()` This makes it easy to load external data into a `Catalog` object and export it to other formats. For a full list of supported formats, refer to the [pandas I/O documentation](https://pandas.pydata.org/docs/user_guide/io.html 'pandas I/O documentation')
@@ -136,10 +110,10 @@ The following example shows how a catalog can be imported from a CSV file and wr
 
 ```
 #### QuakeML
-Reading and writing from and to data in QuakeML format can easily be done by using {func}`from_quakeml <seismostats.catalogs.catalog.Catalog.to_openquake>` and {func}`to_quakeml <seismostats.catalogs.catalog.Catalog.to_openquake>`. For more information on the QuakeML data structure refer to the 
+Reading and writing from and to data in QuakeML format can easily be done by using {func}`from_quakeml <seismostats.Catalog.to_openquake>` and {func}`to_quakeml <seismostats.Catalog.to_openquake>`. For more information on the QuakeML data structure refer to the 
 [QuakeML documentation](https://quake.ethz.ch/quakeml/ 'QuakeML documentation'). 
 
-> **Warning:** Be aware that the output of {func}`to_quakeml <seismostats.catalogs.catalog.Catalog.to_openquake>` is a formatted string. For creating a new file, the string has to be saved as shown in the example below.
+> **Warning:** Be aware that the output of {func}`to_quakeml <seismostats.Catalog.to_openquake>` is a formatted string. For creating a new file, the string has to be saved as shown in the example below.
 
 ```python
 
@@ -159,9 +133,9 @@ Reading and writing from and to data in QuakeML format can easily be done by usi
 ```
 
 #### OpenQuake
-In contrast to the previous methods, {func}`from_openquake <seismostats.catalogs.catalog.Catalog.from_openquake>` and {func}`to_openquake <seismostats.catalogs.catalog.Catalog.to_openquake>` don't read and write from and to external files, but converts the OpenQuake [Catalogue](https://docs.openquake.org/oq-engine/3.20/manual/api-reference/openquake.hmtk.seismicity.html#module-openquake.hmtk.seismicity.catalogue 'Catalogue') object to a Seismostats `Catalog` and vice versa. An introduction to OpenQuake with information on the installation process can be found in the [OpenQuake documentation]( https://docs.openquake.org/oq-engine/3.20/manual/getting-started/index.html 'OpenQuake documentation'). 
+In contrast to the previous methods, {func}`from_openquake <seismostats.Catalog.from_openquake>` and {func}`to_openquake <seismostats.Catalog.to_openquake>` don't read and write from and to external files, but convert the OpenQuake [Catalogue](https://docs.openquake.org/oq-engine/3.20/manual/api-reference/openquake.hmtk.seismicity.html#module-openquake.hmtk.seismicity.catalogue 'Catalogue') object to a Seismostats `Catalog` and vice versa. An introduction to OpenQuake with information on the installation process can be found in the [OpenQuake documentation]( https://docs.openquake.org/oq-engine/3.20/manual/getting-started/index.html 'OpenQuake documentation'). 
 
-> **Note:** For working with OpenQuake catalogs, the respective python package has to be installed in addition to Seismostats.
+> **Note:** For working with OpenQuake catalogs, the respective python package has to be installed in addition to SeismoStats.
 
 ```python
 >>> from openquake.hmtk.seismicity.catalogue import \
@@ -185,7 +159,7 @@ In contrast to the previous methods, {func}`from_openquake <seismostats.catalogs
 ...     'magnitude': np.array([1.0, 2.5, 3.9], dtype=float)
 ...     })
 
->>> # Convert OpenQuake Catalogue to Seismostats Catalog:
+>>> # Convert OpenQuake Catalogue to SeismoStats Catalog:
 >>> cat = Catalog.from_openquake(oq_cat)
 >>> cat.head()
 longitude   latitude  depth                time  magnitude
@@ -193,7 +167,7 @@ longitude   latitude  depth                time  magnitude
                 1       1.35    5.13500  10.52 1982-04-07 07:07:15        2.5
                 2       2.35    2.13400  50.40 2020-11-30 12:30:59        3.9
 
->>> # Convert Seismostats Catalog to OpenQuake Catalogue: 
+>>> # Convert SeismoStats Catalog to OpenQuake Catalogue: 
 >>> oq_cat_converted = cat.to_openquake()     
 ```
 
@@ -243,11 +217,10 @@ The following example shows how to download an earthquake catalog of Switzerland
 ```
 
 ## 3 Working with a catalog
-
-One advantage of using analysis and plotting functions as methods of the Catalog object is that relevant parameters can be used directly from the catalog’s attributes. This reduces the need for repetitive or manual argument specification.
+By using analysis and plotting functions as methods of the `Catalog` object, relevant parameters stored as attributes (such as mc or b_value) are automatically accessed. This simplifies the workflow by reducing the need to repeatedly specify arguments manually.
 
 ### 3.1 Setting additional attributes
-These attributes can both be set manually by the user after the creation of a `Catalog` object, or they are estimated by catalog methods.
+These attributes can both be set manually by the user or they are estimated by catalog methods.
 For example the precision of the magnitudes `delta_m`, can be explicitly set by the user:
 ```python
 >>> # Define the catalog attribute delta_m
@@ -274,7 +247,7 @@ Alternatively, `delta_m` can be passed directly as an argument to methods like {
 ```
 
 ### 3.2 Visualization
-As described in the {ref}`Plotting guide </user/plots.md>`, Seismostats offers a variety of methods for visualising catalog data in space and time. Furthermore magnitude distributions can be plotted to get a first impression on the catalog parameters. The following methods are directly available as `Catalog` methods:
+As described in the {ref}`Plotting guide </user/plots.md>`, SeismoStats offers a variety of methods for visualising catalog data in space and time. Furthermore magnitude distributions can be plotted to get a first impression on the catalog parameters. The following methods are directly available as `Catalog` methods:
 - {func}`plot_in_space <seismostats.Catalog.plot_in_space>`
 - {func}`plot_mags_in_time <seismostats.Catalog.plot_mags_in_time>`
 -  {func}`plot_cum_count <seismostats.Catalog.plot_cum_count>`
@@ -285,14 +258,14 @@ As described in the {ref}`Plotting guide </user/plots.md>`, Seismostats offers a
 Here, we give a quick overview how the plotting methods can be used and more examples can be found in the {ref}`Plotting guide </user/plots.md>`. 
 
 ### 3.3 Estimation of earthquake catalog parameter 
-Seismostats primarily focuses on determining earthquake catalog parameters such as magnitude of completeness, b-value and a-value. For each of these parameters, the platform offers a selection of established methods used within the seismological community. Detailed descriptions of these methods and their application can be found in the corresponding sections of the User Guide. Here we give a quick overview, how those methods can be used together with the `Catalog` class. 
+SeismoStats primarily focuses on determining earthquake catalog parameters such as magnitude of completeness, b-value and a-value. For each of these parameters, the platform offers a selection of established methods used within the seismological community. Detailed descriptions of these methods and their application can be found in the corresponding sections of the User Guide. Here we give a quick overview, how those methods can be used together with the `Catalog` class. 
 
 We will use the Switzerland catalog (downloaded via EIDA, see {ref}`above </user/catalogs.md#Downloading-from-Remote-Services>`) as the example. Magnitudes are binned before analysis:
 ```python
 >>> cat.bin_magnitudes(delta_m=0.1, inplace=True)
 ```
-#### 3.3.1 Magnitude of Completeness
-The following methods to estimate Mc are available in Seismostats:
+#### Magnitude of Completeness
+The following methods to estimate Mc are available in SeismoStats:
 - Maximum Curvature: {func}`estimate_mc_maxc() <seismostats.Catalog.estimate_mc_maxc>`
 - K-S distance: {func}`estimate_mc_ks() <seismostats.Catalog.estimate_mc_ks>`
 - B-value stability: {func}`estimate_mc_b_stability()<seismostats.Catalog.estimate_mc_b_stability>`
@@ -327,9 +300,9 @@ np.float64(2.1)
 
 For more details, please referto the {ref}`section </user/estimate_mc.md>` in the User Guide. 
 
-#### 3.3.2 B-value
+#### B-value
 
-In addition to the classical method of Tinti and Mulargia (1987) for b-value estimation, Seismostats includes the method of Utsu (1965) as well as so-called *positive methods*  (e.g. Van der Elst (2021)). The latter consider magnitude differences above a specific threshold to reduce the impact of short-term incompleteness. Within the code, the approach can be chosen by one of the following {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` classes:
+In addition to the classical method of Tinti and Mulargia (1987) for b-value estimation, SeismoStats includes the method of Utsu (1965) as well as so-called *positive methods*  (e.g. Van der Elst (2021)). The latter consider magnitude differences above a specific threshold to reduce the impact of short-term incompleteness. Within the code, the approach can be chosen by one of the following {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` classes:
 - {class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`
 - {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>`
 - {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`
@@ -377,7 +350,7 @@ np.float64(0.9370272129061623)
 
 More information on the different methods can be found in the {ref}`b-value section </user/estimate_b.md>` of the the User Guide. 
 
-#### 3.3.3 A-value
+#### A-value
 Similar to the B-value analysis, Seismostats contains the *positive* methods in addition to the classical approach. The estimation of the a-value can be carried out with the {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` classes:
 - {class}`ClassicAValueEstimator <seismostats.analysis.ClassicAValueEstimator>`
 - {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>`
