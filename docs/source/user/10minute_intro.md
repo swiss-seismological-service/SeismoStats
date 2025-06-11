@@ -4,10 +4,9 @@ Welcome to a quick overview of **SeismoStats** — a Python package which is des
 
 This overview introduces the core features of SeismoStats, with a focus on three primary analysis goals:
 
-- **Magnitude of completeness** estimations 
+- **Magnitude of completeness** estimations
 - **b-value** calculation  
 - **a-value** estimation  
- 
 
 Additionally, we demonstrate how to easily visualize your data and explore key features of your catalog.
 
@@ -48,6 +47,7 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 
 ### 1.1 Example: Downloading a catalog from a FDSN-Server
 Data servers often impose limits on the number of events returned per request. If too much data is requested at once, you may encounter a `TimeOut` Error. To avoid this, use the `batch_size` argument,  to limit the number of events retrieved per request. 
+
 ```python
 >>> from seismostats.catalogs.client import FDSNWSEventClient
 >>> from seismostats import Catalog
