@@ -8,7 +8,7 @@ The {func}`Catalog <seismostats.Catalog>` object is a core part of SeismoStats. 
 For a quick workflow using the `Catalog` class, see {ref}`10 minutes to Seismostats</user/10minute_intro.md>`.
 
 ## 1 Structure
-The `Catalog` class consists of a tabular structure of earthquake data, additional attributes with metadata and methods for visualization and statistical analysis. This combination allows for easy storage, organization, and analysis of event data. 
+The `Catalog` class consists of a tabular structure with earthquake data, additional attributes for metadata and methods for visualization and statistical analysis. This combination allows for easy storage, organization, and analysis of event data. 
 
 Event data is stored in `pandas.DataFrame`, where each row represents a single event. The columns typically contain information such as origin time, magnitude, and event location.
 At a minimum, a `Catalog` object must include a magnitude column. Common additional data columns include, but are not limited to:
@@ -255,12 +255,44 @@ As described in the {ref}`Plotting guide </user/plots.md>`, SeismoStats offers a
 - {func}`plot_cum_fmd <seismostats.Catalog.plot_cum_fmd>`
 - {func}`plot_mc_vs_b <seismostats.Catalog.plot_mc_vs_b>`
 
-Here, we give a quick overview how the plotting methods can be used and more examples can be found in the {ref}`Plotting guide </user/plots.md>`. 
+Here, we show some examples how the plotting methods can be used. The methods access the data and attributes of the `Catalog` class and additional parameter can be passed as arguments.
+
+#### Seismicity Map
+If the catalog contains information on the event location (`latitude`, `longitude`) in addition to the `magnitude` column, the seismicity can be plotted spatially:
+
+``` python
+>>> cat.plot_in_space()
+```
+
+<figure>
+  <img src="../_static/catalog_map.png" alt="Alt text" width="1000"/>
+  <figcaption>Seismicity map created with Catalog.plot_in_space().</figcaption>
+</figure>
+
+For a modification of the map layout (e.g. color of marker, background, labels) refer to the method description in the {func}`API <seismostats.Catalog.plot_in_space>`
+
+#### Cumulative frequency-magnitude distribution
+For showing the cumulative frequency-magnitude distribution with {func}`plot_cum_fmd() <seismostats.Catalog.plot_cum_fmd>` the bin size `fmd_bin` has to be chosen. If additionally, the `b_value` and `mc` are passed as arguments (or are available as catalog attributes), the Gutenberg-Richter fit is shown.
+```python
+>>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5, color=["cornflowerblue", "black"])
+
+# Same as:
+>>> cat.b_value = 1.0
+>>> cat.mc = 2.5
+>>> cat.plot_cum_fmd(fmd_bin=0.1,color=["cornflowerblue", "black"])
+```
+
+<figure>
+  <img src="../_static/cum_fmd_b.png" alt="Alt text" width="400"/>
+  <figcaption>Cumulative frequency-magnitude distribution with Gutenberg-Richter fit created with Catalog.plot_cum_fmd().</figcaption>
+</figure>
+
+More examples for visualization can be found in the {ref}`Plotting guide </user/plots.md>`. 
 
 ### 3.3 Estimation of earthquake catalog parameter 
 SeismoStats primarily focuses on determining earthquake catalog parameters such as magnitude of completeness, b-value and a-value. For each of these parameters, the platform offers a selection of established methods used within the seismological community. Detailed descriptions of these methods and their application can be found in the corresponding sections of the User Guide. Here we give a quick overview, how those methods can be used together with the `Catalog` class. 
 
-We will use the Switzerland catalog (downloaded via EIDA, see {ref}`above </user/catalogs.md#Downloading-from-Remote-Services>`) as the example. Magnitudes are binned before analysis:
+We will use the Switzerland catalog (downloaded via EIDA, see {ref}`above </user/catalogs.md#Downloading-from-Remote-Services>`) for the code examples. Magnitudes are binned before the analysis:
 ```python
 >>> cat.bin_magnitudes(delta_m=0.1, inplace=True)
 ```
@@ -300,9 +332,9 @@ np.float64(2.1)
 
 For more details, please referto the {ref}`section </user/estimate_mc.md>` in the User Guide. 
 
-#### B-value
+#### b-value
 
-In addition to the classical method of Tinti and Mulargia (1987) for b-value estimation, SeismoStats includes the method of Utsu (1965) as well as so-called *positive methods*  (e.g. Van der Elst (2021)). The latter consider magnitude differences above a specific threshold to reduce the impact of short-term incompleteness. Within the code, the approach can be chosen by one of the following {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` classes:
+In addition to the classical method of Tinti and Mulargia (1987) for b-value estimation, SeismoStats includes the method of Utsu (1965) as well as so-called *positive methods*  (e.g. Van der Elst (2021)). The latter consider magnitude differences above a specific threshold for the b-value analysis to account for the impact of short-term incompleteness. Within the code, the approach can be chosen by one of the following {ref}`BValueEstimator <reference/analysis/bvalues:Estimators>` classes:
 - {class}`ClassicBValueEstimator <seismostats.analysis.ClassicBValueEstimator>`
 - {class}`BPositiveBValueEstimator <seismostats.analysis.BPositiveBValueEstimator>`
 - {class}`BMorePositiveBValueEstimator <seismostats.analysis.BMorePositiveBValueEstimator>`
@@ -333,6 +365,7 @@ To use an alternative method for estimating the b-value, simply pass one of the 
 > **Note:** The positive methods require additional arguments:
 >- `times`: the origin time of the earthquake (typically `cat.time`)
 >- `dmc`: the threshold of magnitude differences
+>
 > If no arguments are not provided, it is assumed that the catalog events are already sorted by time and the value of `delta_m` is used for `dmc`.
 
 ```python
@@ -350,13 +383,13 @@ np.float64(0.9370272129061623)
 
 More information on the different methods can be found in the {ref}`b-value section </user/estimate_b.md>` of the the User Guide. 
 
-#### A-value
-Similar to the B-value analysis, Seismostats contains the *positive* methods in addition to the classical approach. The estimation of the a-value can be carried out with the {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` classes:
+#### a-value
+Similar to the b-value analysis, SeismoStats contains the *positive* methods in addition to the classical approach. The estimation of the a-value can be carried out with the {ref}`AValueEstimator <reference/analysis/avalues:Estimators>` classes:
 - {class}`ClassicAValueEstimator <seismostats.analysis.ClassicAValueEstimator>`
 - {class}`APositiveAValueEstimator <seismostats.analysis.APositiveAValueEstimator>`
 - {class}`AMorePositiveAValueEstimator <seismostats.analysis.AMorePositiveAValueEstimator>`
 
-Also the estimation of the a-value follows the procedure described in the {ref}`b-value paragraph </user/catalogs.md#B-value>`. As a default method for {func}`estimate_a() <seismostats.Catalog.estimate_a>` the classical approach is implemented:
+Also the estimation of the a-value follows the procedure described in the {ref}`b-value paragraph </user/catalogs.md#b-value>`. As a default method for {func}`estimate_a() <seismostats.Catalog.estimate_a>` the classical approach is implemented:
 ```python
 >>> # Pass delta_m and mc directly
 >>> cat.estimate_a(delta_m =0.1, mc=2.1)
@@ -393,4 +426,3 @@ np.float64(2.2320613684203283)
 
 Please refer to the {ref}`a-value section </user/estimate_a.md>` of the the User Guide for more information on the methods.
 
-## References
