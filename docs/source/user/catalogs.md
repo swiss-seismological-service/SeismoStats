@@ -59,7 +59,7 @@ When working with earthquake data, event catalogs can take various forms:
 **Seismostats** accommodates all of these scenarios. With its flexible methods for reading and writing earthquake catalogs, it's easy to load external data, convert between formats, and export results in a format suitable for further analysis or sharing.
 
 ### 2.1 Initializing from Python Data Structures
-Here we demonstrate, how  to create a `Catalog` object from scratch. This can be helpful, if you already have magnitudes in a `list` or `numpy.array`. As mentioned above, the `Catalog` object requires at least a column with magnitudes. Additional data, such as event times or hypocenter information, is beneficial for later analysis. 
+Here we demonstrate, how  to create a {func}`Catalog <seismostats.Catalog>` object from scratch. This can be helpful, if you already have magnitudes in a `list` or `numpy.array`. As mentioned above, the `Catalog` object requires at least a column with magnitudes. Additional data, such as event times or hypocenter information, is beneficial for later analysis. 
 
 #### From a Dictionary
 The most direct method to create a `Catalog` object is done via a Python Dictionary:
@@ -275,18 +275,24 @@ Alternatively, `delta_m` gan be passed as an argument to methods like {func}`bin
 
 ### 3.2 Visualization
 As described in the {ref}`Plotting guide </user/plots.md>`, **Seismostats** offers a variety of methods for visualising catalog data in space and time. Furthermore magnitude distributions can be plotted to get a first impression on the catalog parameters. The following methods are directly available as `Catalog` methods:
--  {func}`plot_in_space <seismostats.catalogs.catalog.Catalog.plot_in_space>`
--  {func}`plot_mags_in_time <seismostats.catalogs.catalog.Catalog.plot_mags_in_time>`
--  {func}`plot_cum_count <seismostats.catalogs.catalog.Catalog.plot_cum_count>`
-- {func}`plot_fmd <seismostats.catalogs.catalog.Catalog.plot_fmd>`
-- {func}`plot_cum_fmd <seismostats.catalogs.catalog.Catalog.plot_cum_fmd>`
-- {func}`plot_mc_vs_b <seismostats.catalogs.catalog.Catalog.plot_mc_vs_b>`
+{func}`plot_in_space <seismostats.Catalog.plot_in_space>`
+- {func}`plot_mags_in_time <seismostats.Catalog.plot_mags_in_time>`
+-  {func}`plot_cum_count <seismostats.Catalog.plot_cum_count>`
+- {func}`plot_fmd <seismostats.Catalog.plot_fmd>`
+- {func}`plot_cum_fmd <seismostats.Catalog.plot_cum_fmd>`
+- {func}`plot_mc_vs_b <seismostats.Catalog.plot_mc_vs_b>`
 
-The advantage of using the 
+{func}`estimate_a <seismostats.Catalog.estimate_a>`
+Here, we give a quick overview how the plotting methods can be used and more examples can be found in the {ref}`Plotting guide </user/plots.md>`. 
+
 ### 3.3 Analysis 
-refer to 
-- b
-- a
-- mc
+Seismostats primarily focuses od determining earthquake catalog parameters the catalog parameters such as magnitude of completeness, b-value and a-value. For each of these parameters, the platform offers a selection of established methods used within the seismological community. Detailed descriptions of these methods and their application can be found in the corresponding sections of the User Guide. Here we give a quick overview, how those methods can be used together with the `Catalog` class.
 
-### 3.4 Spatial filtering
+
+#### 3.3.1 Magnitude of Completeness
+As already mentioned, the methods of the `Catalog` class use the internal attributes of the class
+
+```python
+>>> # No additionaly argument delta_m is necessary
+>>> cat.()
+```
