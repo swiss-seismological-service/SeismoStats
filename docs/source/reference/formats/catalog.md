@@ -42,6 +42,22 @@ Simple representation of an earthquake catalog, storing each single event as a r
     Catalog.estimate_mc_maxc
 ```
 
+### Estimate from Catalog
+
+```{eval-rst}
+.. autosummary::
+    :toctree: ../api/
+    :nosignatures:
+
+    Catalog.plot_in_space
+    Catalog.plot_mags_in_time
+    Catalog.plot_cum_count
+    Catalog.plot_fmd
+    Catalog.plot_cum_fmd
+    Catalog.plot_mc_vs_b
+```
+
+
 ### Modify Catalog
 
 ```{eval-rst}
