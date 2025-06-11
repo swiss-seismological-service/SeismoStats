@@ -57,9 +57,10 @@ def _catalog_constructor_with_fallback(df, **kwargs):
 
 class Catalog(pd.DataFrame):
     '''
-    A subclass of pandas DataFrame that represents a catalog of earthquakes.
+    A catalog of seismic events represented in tabular form, where
+    each row corresponds to a single earthquake.
 
-    To be a valid Catalog object, the DataFrame must have at least a
+    To be a valid Catalog object, it must have at least a
     `magnitude` column. Depending on the method the following
     columns are also required: `longitude`, `latitude`, `depth`, `time`,
     and `magnitude` .
@@ -84,10 +85,11 @@ class Catalog(pd.DataFrame):
 
     Examples:
         Create a Catalog from a dictionary.
+
         .. code-block:: python
 
             >>> import pandas as pd
-            >>> from seismostats.seismicity import Catalog
+            >>> from seismostats import Catalog
             >>> data = {'longitude': [0, 1, 2],
             ...         'latitude': [0, 1, 2],
             ...         'depth': [0, 1, 2],
@@ -98,10 +100,11 @@ class Catalog(pd.DataFrame):
             >>> catalog = Catalog(data)
             >>> catalog
 
-            longitude  latitude  depth                time  magnitude
+               longitude  latitude  depth                time  magnitude
             0          0         0      0 2021-01-01 00:00:00          1
             1          1         1      1 2021-01-01 00:00:00          2
             2          2         2      2 2021-01-01 00:00:00          3
+
 
         :ivar name:         Name of the catalog.
         :ivar mc:           Completeness magnitude of the catalog.
@@ -320,7 +323,7 @@ class Catalog(pd.DataFrame):
                 ...     Catalogue as OQCatalog
                 >>> from seismostats import Catalog
 
-                >>> simple_oq_catalogue = OQCatalog.make_from_dict({
+                >>> oq_cat = OQCatalog.make_from_dict({
                 ...     'eventID': ["event0", "event1", "event2"],
                 ...     'longitude': np.array([42.35, 1.35, 2.35], dtype=float),
                 ...     'latitude': np.array([3.34444, 5.135, 2.134],
@@ -335,8 +338,8 @@ class Catalog(pd.DataFrame):
                 ...                        dtype=float),
                 ...     'magnitude': np.array([1.0, 2.5, 3.9], dtype=float)
                 ...     })
-                >>> catalog = Catalog.from_openquake(simple_oq_catalogue)
-                >>> catalog
+                >>> cat = Catalog.from_openquake(oq_cat)
+                >>> cat
 
                    longitude   latitude  depth                time  magnitude
                 0      42.35    3.34444   5.50 1900-01-01 05:05:13        1.0
@@ -394,7 +397,7 @@ class Catalog(pd.DataFrame):
 
                 >>> import pandas as pd
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'depth': [5.5, 10.52, 50.4],
@@ -403,7 +406,7 @@ class Catalog(pd.DataFrame):
                 ...                             '2020-11-30 12:30:59']),
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
-                >>> oq_catalog = simple_catalog.to_openquake()
+                >>> oq_cat = cat.to_openquake()
                 >>> type(oq_catalog)
 
                 <class 'openquake.hmtk.seismicity.catalogue.Catalogue'>
@@ -499,12 +502,12 @@ class Catalog(pd.DataFrame):
 
                 >>> import pandas as pd
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'magnitude': [1.02, 2.53, 3.99]
                 ...     })
-                >>> simple_catalog.bin_magnitudes(delta_m=0.1)
+                >>> cat.bin_magnitudes(delta_m=0.1)
 
                     longitude   latitude  magnitude
                 0       42.35    3.34444        1.0
@@ -530,9 +533,9 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def estimate_mc_maxc(
         self,
-        delta_m: float,
-        correction_factor: float = 0.2,
-    ) -> float:
+        fmd_bin: float,
+        correction_factor: float | None = 0.2,
+    ) -> tuple[float, dict[str, Any]]:
         '''
         Returns the completeness magnitude (mc) estimate using the maximum
         curvature method.
@@ -552,36 +555,57 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes:         Array of magnitudes to test.
-            delta_m:            Bin size of discretized magnitudes. Catalog
-                            needs to be rounded to bins beforehand. Either given
-                            as parameter or taken from the object attribute.
+            fmd_bin:            Bin size for the maximum curvature method.
+                        This can be independent ofthe descritization of the
+                        magnitudes. The original value for the maximum
+                        curvature method is 0.1. However, the user can decide
+                        which value to use.
+                        The optimal value would be as small as possible while
+                        at the same time ensuring that there are enough
+                        magnitudes in each bin. If the bin size is too small,
+                        the method will not work properly.
             correction_factor:  Correction factor for the maximum curvature
-                            method (default value after Woessner & Wiemer 2005).
+                            method (default value after Woessner & Wiemer
+                            2005).
 
         Returns:
             mc:                 Estimated completeness magnitude.
+            mc_info:
+                Dictionary with additional information about the calculation
+                of the best ``mc``, including:
+
+                - correction_factor:   Correction factor for the maximum
+                  curvature method (default value +0.2 after Woessner
+                  & Wiemer 2005).
 
         Examples:
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
                 ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.estimate_mc_maxc(delta_m=0.1)
-                >>> simple_catalog.mc
-
+                >>> cat.estimate_mc_maxc(fmd_bin=0.1)
+                >>> cat.mc
                 1.4
-        '''
 
-        best_mc = estimate_mc_maxc(self.magnitude,
-                                   delta_m=delta_m,
-                                   correction_factor=correction_factor)
-        self.mc = best_mc
-        return best_mc
+            The mc_maxc method also returns the correction factor used in the
+            calculation of the best mc value.
+
+            .. code-block:: python
+
+                >>> best_mc, mc_info = cat.estimate_mc_maxc(fmd_bin=0.1)
+                >>> mc_info['correction_factor']
+                0.2
+
+        '''
+        self.mc, mc_info = estimate_mc_maxc(self.magnitude,
+                                            fmd_bin=fmd_bin,
+                                            correction_factor=correction_factor)
+        return self.mc, mc_info
 
     @require_cols(require=['magnitude'])
     def estimate_mc_b_stability(
@@ -593,8 +617,7 @@ class Catalog(pd.DataFrame):
         stability_range: float = 0.5,
         verbose: bool = False,
         **kwargs,
-    ) -> tuple[float | None, float | None, list[float],
-               list[float], list[float], list[float]]:
+    ) -> tuple[float | None, dict[str, Any]]:
         '''
         Estimates the completeness magnitude (mc) using b-value stability.
 
@@ -632,26 +655,30 @@ class Catalog(pd.DataFrame):
 
         Returns:
             best_mc:        Best magnitude of completeness estimate.
-            best_b_value:   b-value associated with best_mc.
-            mcs_test:       Array of tested completeness magnitudes.
-            b_values_test:  Array of b-values associated to tested mcs.
-            diff_bs:        Array of differences divided by std, associated
-                        with tested mcs. If a value is smaller than one, this
-                        means that the stability criterion is met.
+            mc_info:
+                Dictionary with additional information about the calculation
+                of the best ``mc``, including:
+
+                - best_b_value: b-value associated with ``best_mc``.
+                - mcs_tested:     Array of tested completeness magnitudes.
+                - b_values_tested: Array of b-values associated to tested mcs.
+                - diff_bs:      Array of differences divided by std, associated
+                  with tested mcs. If a value is smaller than one,
+                  this means that the stability criterion is met.
 
         Examples:
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
                 ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.estimate_mc_b_stability()
-                >>> simple_catalog.mc
+                >>> cat.delta_m = 0.1
+                >>> cat.estimate_mc_b_stability()
+                >>> cat.mc
 
                 1.1
 
@@ -662,9 +689,8 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     diff_bs = simple_catalog.estimate_mc_b_stability()
-                >>> mcs_test, diff_bs
+                >>> best_mc, mc_info = cat.estimate_mc_b_stability()
+                >>> (mc_info['mcs_tested'], mc_info['diff_bs'])
 
                 (array([1. , 1.1]), [2.23375277112158, 0.9457747650207577])
         '''
@@ -673,7 +699,7 @@ class Catalog(pd.DataFrame):
         if delta_m is None:
             delta_m = self.delta_m
 
-        best_mc, best_b_value, mcs_test, b_values_test, diff_bs = \
+        self.mc, mc_info = \
             estimate_mc_b_stability(self.magnitude,
                                     delta_m=delta_m,
                                     mcs_test=mcs_test,
@@ -683,9 +709,7 @@ class Catalog(pd.DataFrame):
                                     verbose=verbose,
                                     **kwargs)
 
-        self.mc = best_mc
-
-        return best_mc, best_b_value, mcs_test, b_values_test, diff_bs
+        return (self.mc, mc_info)
 
     @require_cols(require=['magnitude'])
     def estimate_mc_ks(
@@ -700,8 +724,7 @@ class Catalog(pd.DataFrame):
         ks_ds_list: list[list] | None = None,
         verbose: bool = False,
         **kwargs,
-    ) -> tuple[float | None, float | None, list[float],
-               list[float], list[float], list[float]]:
+    ) -> tuple[float | None, dict[str, Any]]:
         '''
         Returns the smallest magnitude in a given list of completeness
         magnitudes for which the KS test is passed, i.e., where the null
@@ -740,28 +763,31 @@ class Catalog(pd.DataFrame):
                         output.
             **kwargs:       Additional parameters to be passed to the b-value
                         estimator.
-
         Returns:
-            best_mc:        `mc` for which the p-value is lowest.
-            best_b_value:   `b_value` corresponding to the best `mc`.
-            mcs_test:       Tested completeness magnitudes.
-            b_values_test:  Tested b-values.
-            ks_ds:          KS distances.
-            p-values:       Corresponding p-values.
+            best_mc:        ``mc`` for which the p-value is lowest.
+            mc_info:
+                Dictionary with additional information about the calculation
+                of the best ``mc``, including:
+
+                - best_b_value: ``b_value`` corresponding to the best ``mc``.
+                - mcs_tested: Tested completeness magnitudes.
+                - b_values_tested: Tested b-values.
+                - ks_ds: KS distances.
+                - p_values: Corresponding p-values.
 
         Examples:
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'magnitude': [2.3, 1.2, 1.5, 1.2, 1.7, 1.1, 1.2, 1.5,
                 ...                   1.8, 1.6, 1.2, 1.5, 1.2, 1.7, 1.6, 1.1,
                 ...                   1.1, 1.2, 2.0, 1.1, 1.2, 1.1, 1.2, 1.6,
                 ...                   1.9, 1.3, 1.7, 1.3, 1.0, 1.2, 1.7, 1.3,
                 ...                   1.3, 1.1, 1.5, 1.4]})
-                >>> simple_catalog.delta_m = 0.1
-                >>> simple_catalog.estimate_mc_ks()
-                >>> simple_catalog.mc
+                >>> cat.delta_m = 0.1
+                >>> cat.estimate_mc_ks()
+                >>> cat.mc
 
                 1.0
 
@@ -772,9 +798,8 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> best_mc, best_b_value, mcs_test, b_values_test,
-                ...     ks_ds, p_values = simple_catalog.estimate_mc_ks()
-                >>> b_values_test, ks_ds
+                >>> best_mc, mc_info = cat.estimate_mc_ks()
+                >>> (mc_info['b_values_tested'], mc_info['ks_ds'])
 
                 ([0.9571853220063774], [0.1700244200244202])
         '''
@@ -786,7 +811,7 @@ class Catalog(pd.DataFrame):
         if b_value is None and self.b_value is not None:
             b_value = self.b_value
 
-        best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values = \
+        best_mc, mc_info = \
             estimate_mc_ks(self.magnitude,
                            delta_m=delta_m,
                            mcs_test=mcs_test,
@@ -801,7 +826,7 @@ class Catalog(pd.DataFrame):
 
         self.mc = best_mc
 
-        return best_mc, best_b_value, mcs_test, b_values_test, ks_ds, p_values
+        return (best_mc, mc_info)
 
     @require_cols(require=['magnitude'])
     def estimate_b(
@@ -845,13 +870,13 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'magnitude': [1.0, 2.5, 3.9]
                 ...     })
-                >>> simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
-                >>> simple_catalog.b_value
+                >>> cat.estimate_b(mc=1.0, delta_m=0.1)
+                >>> cat.b_value
 
                 0.28645181449530005
 
@@ -863,7 +888,7 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1)
+                >>> estimator = cat.estimate_b(mc=1.0, delta_m=0.1)
                 >>> estimator.beta, estimator.std
 
                 (0.6595796779179737, 0.15820210898689366)
@@ -878,10 +903,10 @@ class Catalog(pd.DataFrame):
 
                 >>> from datetime import datetime
                 >>> from seismostats.analysis import BPositiveBValueEstimator
-                >>> simple_catalog['time'] = [datetime(2000, 1, 1),
+                >>> cat['time'] = [datetime(2000, 1, 1),
                 ...                           datetime(2000, 1, 2),
                 ...                           datetime(2000, 1, 3)]
-                >>> estimator = simple_catalog.estimate_b(mc=1.0, delta_m=0.1,
+                >>> estimator = cat.estimate_b(mc=1.0, delta_m=0.1,
                 ...     method=BPositiveBValueEstimator, dmc=0.3)
                 >>> type(estimator)
 
@@ -973,17 +998,17 @@ class Catalog(pd.DataFrame):
                 >>> from datetime import datetime
                 >>> from seismostats import Catalog
 
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...         'magnitude': [0, 0.9, -1, 0.2, 0.5],
                 ...         'time': [datetime(2000, 1, 1),
                 ...                  datetime(2000, 1, 2),
                 ...                  datetime(2000, 1, 3),
                 ...                  datetime(2000, 1, 4),
                 ...                  datetime(2000, 1, 5)]})
-                >>> simple_catalog.mc = -1.0
+                >>> cat.mc = -1.0
 
-                >>> simple_catalog.estimate_a(delta_m=0.1)
-                >>> simple_catalog.a_value
+                >>> cat.estimate_a(delta_m=0.1)
+                >>> cat.a_value
 
                 0.6989700043360189
 
@@ -995,7 +1020,7 @@ class Catalog(pd.DataFrame):
 
             .. code-block:: python
 
-                >>> estimator = simple_catalog.estimate_a(delta_m=0.1)
+                >>> estimator = cat.estimate_a(delta_m=0.1)
                 >>> estimator.a_value, estimator.mc
 
                 (0.6989700043360189, -1.0)
@@ -1009,7 +1034,7 @@ class Catalog(pd.DataFrame):
             .. code-block:: python
 
                 >>> from seismostats.analysis import APositiveAValueEstimator
-                >>> estimator = simple_catalog.estimate_a(delta_m=0.1,
+                >>> estimator = cat.estimate_a(delta_m=0.1,
                 ...                   method=APositiveAValueEstimator, dmc=0.1)
                 >>> type(estimator)
 
@@ -1196,7 +1221,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def plot_cum_fmd(self,
                      mc: float | None = None,
-                     delta_m: float = None,
+                     fmd_bin: float = None,
                      b_value: float | None = None,
                      ax: plt.Axes | None = None,
                      color: str | list = None,
@@ -1214,8 +1239,9 @@ class Catalog(pd.DataFrame):
             magnitudes: Array of magnitudes.
             mc:         Completeness magnitude of the theoretical GR
                     distribution.
-            delta_m:    Discretization of the magnitudes; important for the
-                    correct visualization of the data.
+            fmd_bin:    Discretization of the magnitudes; important for the
+                    correct visualization of the data. If not given, set to
+                    catalog attribute ``delta_m`` (if defined).
             b_value:    The b-value of the theoretical GR distribution to plot.
             ax:         Axis where figure should be plotted.
             color:      Color of the data. If one value is given, it is used
@@ -1232,8 +1258,8 @@ class Catalog(pd.DataFrame):
         Returns:
             ax: The ax object that was plotted on.
         '''
-        if delta_m is None:
-            delta_m = self.delta_m
+        if fmd_bin is None:
+            fmd_bin = self.delta_m
         if mc is None:
             mc = self.mc
         if b_value is None:
@@ -1241,7 +1267,7 @@ class Catalog(pd.DataFrame):
         ax = plot_cum_fmd(self.magnitude,
                           b_value=b_value,
                           mc=mc,
-                          delta_m=delta_m,
+                          fmd_bin=fmd_bin,
                           ax=ax,
                           color=color,
                           size=size,
@@ -1252,7 +1278,7 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['magnitude'])
     def plot_fmd(self,
-                 delta_m: float = None,
+                 fmd_bin: float,
                  ax: plt.Axes | None = None,
                  color: str = None,
                  size: int = None,
@@ -1265,8 +1291,7 @@ class Catalog(pd.DataFrame):
 
         Args:
             magnitudes:     Array of magnitudes.
-            delta_m:        Discretization of the magnitudes, important for the
-                        correct visualization of the data.
+            fmd_bin:        Bin size of magnitudes for plotting purposes.
             ax:             The axis where figure should be plotted.
             color:          Color of the data.
             size:           Size of data points.
@@ -1278,10 +1303,8 @@ class Catalog(pd.DataFrame):
         Returns:
             ax: The ax object that was plotted on.
         '''
-        if delta_m is None:
-            delta_m = self.delta_m
         ax = plot_fmd(self.magnitude,
-                      delta_m=delta_m,
+                      fmd_bin=fmd_bin,
                       ax=ax,
                       color=color,
                       size=size,
@@ -1399,7 +1422,7 @@ class Catalog(pd.DataFrame):
 
                 >>> import pandas as pd
                 >>> from seismostats import Catalog
-                >>> simple_catalog = Catalog.from_dict({
+                >>> cat = Catalog.from_dict({
                 ...     'longitude': [42.35, 1.35, 2.35],
                 ...     'latitude': [3.34444, 5.135, 2.134],
                 ...     'depth': [5.5, 10.52, 50.4],
@@ -1409,7 +1432,7 @@ class Catalog(pd.DataFrame):
                 ...     'magnitude': [1.0, 2.5, 3.9],
                 ...     'magnitude_type': ['Ml', 'Ml', 'Ml'],
                 ...     })
-                >>> simple_catalog.to_quakeml()
+                >>> cat.to_quakeml()
                 <?xml version="1.0" encoding="UTF-8"?>
                 <q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2"
                     xmlns:q="http://quakeml.org/xmlns/quakeml/1.2">
@@ -1471,12 +1494,15 @@ class Catalog(pd.DataFrame):
 
 class ForecastCatalog(Catalog):
     '''
-    A subclass of pandas DataFrame that represents catalogs of earthquake
-    forecasts.
+    A catalog of seismic events represented in tabular form, where
+    each row corresponds to a single earthquake.
+    The ForecastCatalog extends this structure to represent multiple
+    realizations of the same catalog, distinguished by an additional
+    column `catalog_id`.
 
-    To be a valid ForecastCatalog object, the DataFrame must have the
-    following columns: longitude, latitude, depth, time, magnitude,
-    catalog_id.
+    To be a valid ForecastCatalog object, it must have the
+    following columns: `longitude`, `latitude`, `depth`, `time`,
+    `magnitude`, `catalog_id`.
 
     Args:
         data:           Data to initialize the catalog with.

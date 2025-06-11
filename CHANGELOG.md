@@ -18,17 +18,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <!-- #### Deprecated -->
 <!-- -------------------------------------------------------------------------------------- -->
 
+## [Unrealeased]
+#### Changed
+- Same as `get_cum_fmd`, `plot_cum_fmd` (both function and `Catalog` method) now take `fmd_bin` as input instead of `delta_m`, to reflect that this argument doesn't necessarily match the discretization of magnitudes, and be consistent with `get_fmd` and `plot_fmd` which already have this modification.
 
-## [Unreleased]
+
+## [1.0.0rc2] - 2025-05-30
 Add your changes to the relevant section below, while uncommenting the section header.
 #### Added
-- User documentation for `estimate_a`, `estimate_b`, and `estimate_mc` modules.
-- User documentation for the `Catalog` class.
-- User Documentation `10 Minutes to Seismostats`.
+- API and User Documentation has been extensively updated and improved.
+- Added methods to calculate statistics on the `RateGrid` class and concatenate multiple `RateGrid` objects.
 
 #### Changed
 - Small changes to the `plots` module api to make it more consistent.
 - Updated the example jupyter notebooks to reflect the new API.
+- `estimate_mc` and `plot_fmd` take now `fmd_bin` as input instead of `delta_m`, to reflect that this is independent from the discretization of the catalog magnitudes.
+- Functions and methods to estimate the `mc` value now return a consistent format. Instead of a tuple with a variable amount of values, they now return a tuple with first the `best_mc` value and then a dictionary with the additional values.
+
+#### Fixed
+- In the `binning_test`, shift the array to the smallest value, to avoid that the bin-center has an effect on the test.
 
 ## [1.0.0rc1] - 2025-04-09
 #### Added

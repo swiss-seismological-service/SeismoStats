@@ -175,7 +175,7 @@ These methods help assess the quality of your catalog by identifying the lowest 
 > Calling any of the methods below will overwrite the `Catalog.mc` property with the newly estimated magnitude of completeness.
 
 ```python
->>> cat.estimate_mc_maxc(delta_m=0.1)
+>>> cat.estimate_mc_maxc(fmd_bin=0.1)
 >>> print(cat.mc)
 1.0
 >>> cat.estimate_mc_b_stability()

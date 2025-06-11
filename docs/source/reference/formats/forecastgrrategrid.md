@@ -13,3 +13,15 @@ Subclass of {ref}`/reference/formats/grrategrid.md#grrategrid`, storing the Gute
 
     ForecastGRRateGrid
 ```
+
+### Modify ForecastGRRateGrid
+
+```{eval-rst}
+.. autosummary::
+    :toctree: ../api/
+    :nosignatures:
+
+    ForecastGRRateGrid.strip
+    ForecastGRRateGrid.add_time_index
+    ForecastGRRateGrid.calculate_statistics
+```

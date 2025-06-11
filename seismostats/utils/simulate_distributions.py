@@ -1,5 +1,4 @@
 import numpy as np
-from scipy import stats
 
 from seismostats.utils.binning import bin_to_precision
 
@@ -34,13 +33,11 @@ def simulate_magnitudes(
 
     """
     if mag_max:
-        quantile1 = stats.expon.cdf(mc, loc=0, scale=1 / beta)
-        quantile2 = stats.expon.cdf(mag_max, loc=0, scale=1 / beta)
-        mags = stats.expon.ppf(
-            np.random.uniform(quantile1, quantile2, size=n),
-            loc=0,
-            scale=1 / beta,
-        )
+        u = np.random.uniform(0, 1, size=n)
+        lower_cdf = 1 - np.exp(-beta * mc)
+        upper_cdf = 1 - np.exp(-beta * mag_max)
+        scaled_u = lower_cdf + u * (upper_cdf - lower_cdf)
+        mags = -(1 / beta) * np.log(1 - scaled_u)
     else:
         mags = np.random.exponential(1 / beta, n) + mc
 
@@ -83,7 +80,7 @@ def simulate_magnitudes_binned(
         array([1.1., 1., 1.6, 1.2, 1.3])
 
     See also:
-        {func}`~seismostats.utils.simulate_distributions.simulate_magnitudes
+        :func:`~seismostats.utils.simulate_distributions.simulate_magnitudes`
     """
     if b_parameter == "b_value":
         beta = b * np.log(10)
