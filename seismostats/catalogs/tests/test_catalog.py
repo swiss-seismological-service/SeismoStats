@@ -209,7 +209,7 @@ def compare_method_and_function(method,
     ("plot_mags_in_time", plot_mags_in_time,
      ["magnitudes", "times"], []),
     ("plot_cum_fmd", plot_cum_fmd,
-     ["magnitudes"], ["delta_m", "mc", "b_value"]),
+     ["magnitudes"], ["fmd_bin", "mc", "b_value"]),
     ("plot_fmd", plot_fmd,
      ["magnitudes"], ["fmd_bin"]),
     ("plot_mc_vs_b", plot_mc_vs_b,
@@ -245,6 +245,8 @@ def test_catalog_methods(catalog_example,
             kwargs_dict[arg] = fmd_bin
             other_args.remove("fmd_bin")
             method_kwargs[arg] = fmd_bin
+            if method == "plot_cum_fmd":
+                method_kwargs[arg] = None
     exclude_args = ["self", *exclude_args, *other_args]
     compare_method_and_function(method_ref,
                                 function,
@@ -424,7 +426,7 @@ def test_estimate_mc_functionality():
     cat = Catalog({'magnitude': MAGNITUDES})
     mcs = [0.8, 0.9, 1.0, 1.1]
 
-    best_mc, best_b_value, mcs_tested, b_values, ks_ds, ps = \
+    best_mc, mc_info = \
         cat.estimate_mc_ks(0.1,
                            mcs,
                            0.1,
@@ -435,17 +437,17 @@ def test_estimate_mc_functionality():
     assert_equal(1.1, best_mc)
     assert_equal(cat.mc, 1.1)
 
-    assert_equal(beta_to_b_value(2.24), best_b_value)
+    assert_equal(beta_to_b_value(2.24), mc_info['best_b_value'])
 
     assert_allclose(
         [beta_to_b_value(2.24), beta_to_b_value(
             2.24), beta_to_b_value(2.24), beta_to_b_value(2.24)],
-        b_values,
+        mc_info['b_values_tested'],
         rtol=1e-7,
     )
-    assert_allclose([0.0, 0.0, 0.0128, 0.4405], ps, atol=0.03)
-    assert_equal(mcs_tested, mcs)
-    assert_allclose(ks_ds, [0.42931381663381224, 0.30109531596808387,
+    assert_allclose([0.0, 0.0, 0.0128, 0.4405], mc_info['p_values'], atol=0.03)
+    assert_equal(mc_info['mcs_tested'], mcs)
+    assert_allclose(mc_info['ks_ds'], [0.42931381663381224, 0.30109531596808387,
                     0.14068486563063504, 0.07052420897739642], rtol=1e-7)
 
 
@@ -461,7 +463,8 @@ def test_estimate_mc_b_stability():
     assert_almost_equal(1.1, cat.mc)
 
 
-@patch('seismostats.catalogs.catalog.estimate_mc_maxc')
+@patch('seismostats.catalogs.catalog.estimate_mc_maxc',
+       return_value=np.arange(0, 2))
 def test_estimate_mc_maxc_catalog(mc_maxc_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
 
@@ -474,7 +477,7 @@ def test_estimate_mc_maxc_catalog(mc_maxc_mock: MagicMock):
 
 
 @patch('seismostats.catalogs.catalog.estimate_mc_b_stability',
-       return_value=np.arange(0, 5))
+       return_value=np.arange(0, 2))
 def test_estimate_mc_b_stability_catalog(mc_bvalue_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
 
@@ -492,7 +495,7 @@ def test_estimate_mc_b_stability_catalog(mc_bvalue_mock: MagicMock):
 
 
 @patch('seismostats.catalogs.catalog.estimate_mc_ks',
-       return_value=np.arange(0, 6))
+       return_value=np.arange(0, 2))
 def test_estimate_mc_catalog(mc_ks_mock: MagicMock):
     cat = Catalog({'magnitude': MAGNITUDES})
 

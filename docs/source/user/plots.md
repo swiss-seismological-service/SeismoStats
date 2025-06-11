@@ -13,26 +13,26 @@ FMD is a histogram-style plot that shows the number of earthquakes per magnitude
 
 ```python
 >>> from seismostats.plots import plot_fmd
->>> plot_fmd(magnitudes, delta_m=0.1)
+>>> plot_fmd(magnitudes, fmd_bin=0.1)
 
 # Also works as a catalog class method:
->>> cat.plot_fmd(delta_m=0.1)
+>>> cat.plot_fmd(fmd_bin=0.1)
 ```
 
-Key arguments are the list of magnitudes and width of magnitude bins. The width of the magnitude bins best for visualisation purposes is not necessarily the one corresponding to the catalog binning. If used as a catalog method, the function will assume the catalog binning as the default `delta_m`, but you may still want to specify a different one! Optional arguments include plotting options such as `bin_position`, `color`, `size`, `legend`.
+Key arguments are the list of magnitudes and width of magnitude bins. The width of the magnitude bins best for visualisation purposes is not necessarily the one corresponding to the catalog binning. If used as a catalog method, the function will not assume the catalog binning `delta_m` as the default `fmd_bin`. Optional arguments include plotting options such as `bin_position`, `color`, `size`, `legend`.
 
 ### 1.2 Cumulative frequency-magnitude distribution
 The cumulative FMD shows the total number of events with magnitudes equal to or greater than a given value. This representation is log-linear and fits naturally with the Gutenberg-Richter law.
 
 ```python
 >>> from seismostats.plots import plot_cum_fmd
->>> plot_cum_fmd(magnitudes, delta_m=0.1, b_value=1.0, mc=2.5)
+>>> plot_cum_fmd(magnitudes, fmd_bin=0.1, b_value=1.0, mc=2.5)
 ```
 
-The function also works as a catalog class method, and assumes `delta_m`, `b_value`, `mc` if they are not given as arguments and exist as catalog attributes.
+The function also works as a catalog class method, and assumes `fmd_bin=cat.delta_m`, `b_value`, `mc` if they are not given as arguments and exist as catalog attributes.
 
 ```python
->>> cat.plot_cum_fmd(delta_m=0.1, b_value=1.0, mc=2.5)
+>>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5)
 
 # Same as:
 >>> cat.b_value = 1.0
@@ -78,7 +78,7 @@ Function {func}`plot_mags_in_time <seismostats.plots.plot_mags_in_time>` visuali
 
 ```python
 >>> from seismostats.plots import plot_mags_in_time
->>> plot_mags_in_time(times,magnitudes)
+>>> plot_mags_in_time(times, magnitudes)
 ```
 
 Also works as a catalog class method:
