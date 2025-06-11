@@ -275,14 +275,13 @@ Alternatively, `delta_m` gan be passed as an argument to methods like {func}`bin
 
 ### 3.2 Visualization
 As described in the {ref}`Plotting guide </user/plots.md>`, **Seismostats** offers a variety of methods for visualising catalog data in space and time. Furthermore magnitude distributions can be plotted to get a first impression on the catalog parameters. The following methods are directly available as `Catalog` methods:
-{func}`plot_in_space <seismostats.Catalog.plot_in_space>`
+- {func}`plot_in_space <seismostats.Catalog.plot_in_space>`
 - {func}`plot_mags_in_time <seismostats.Catalog.plot_mags_in_time>`
 -  {func}`plot_cum_count <seismostats.Catalog.plot_cum_count>`
 - {func}`plot_fmd <seismostats.Catalog.plot_fmd>`
 - {func}`plot_cum_fmd <seismostats.Catalog.plot_cum_fmd>`
 - {func}`plot_mc_vs_b <seismostats.Catalog.plot_mc_vs_b>`
 
-{func}`estimate_a <seismostats.Catalog.estimate_a>`
 Here, we give a quick overview how the plotting methods can be used and more examples can be found in the {ref}`Plotting guide </user/plots.md>`. 
 
 ### 3.3 Analysis 
@@ -290,9 +289,32 @@ Seismostats primarily focuses od determining earthquake catalog parameters the c
 
 
 #### 3.3.1 Magnitude of Completeness
-As already mentioned, the methods of the `Catalog` class use the internal attributes of the class
+The following methods are available in Seismostats:
+-  {func}`Maximum Curvature <seismostats.Catalog.estimate_mc_maxc>`
+-  {func}`K-S distance <seismostats.Catalog.estimate_mc_ks>`
+- {func}`B-value stability <seismostats.Catalog.estimate_mc_b_stability>`
 
+For each method, the minimum requirements of the catalog are the magnitudes and additional parameter can be chosen for an appropriate analyisis of the specific earthquake catalog. 
+
+For example the **Maximum Curvature** method requires the parameter `fmd_bin`, which is passed as an argument:
 ```python
->>> # No additionaly argument delta_m is necessary
->>> cat.()
+>>> # 
+>>> cat.estimate_mc_maxc(fmd_bin=0.1)
 ```
+For the estimation of Magnitude of Completeness via the **K-S test**, the argument `p_value_pass` can be set (the internal default is 0.1). This parameter is the threshold of the p-value for rejecting the hypothesis of an exponential distribution. The larger the threshold, the more conservative the estimation. Additionally, the argument `delta_m` is required, which is either taken from the catalog's attributes or can be passed directly
+```python
+>>> # Pass delta_m directly and use a threshold p_value_pass of 0.05
+>>> cat.estimate_mc_ks(delta_m =0.1, p_value_pass=0.05)
+
+>>> # If the attribute delta_m was already set by
+>>> cat.delta_m = 0.1
+
+>>> # No additionaly argument delta_m is necessary
+>>> cat.estimate_mc_ks(p_value_pass=0.05)
+
+>>> # By using the internal argument cat.delta_m and the default 
+>>> # p_value_pass, no argument is required
+>>> cat.estimate_mc_ks()
+```
+For more information on the Methods for estimating the Magnitude of completeness, please refer to the {ref}`section </user/estimate_mc.md>` in the User Guide 
+#### 3.3.2 B-value
