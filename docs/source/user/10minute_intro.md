@@ -4,21 +4,23 @@ Welcome to a quick overview of **SeismoStats** — a Python package which is des
 
 This overview introduces the core features of SeismoStats, with a focus on three primary analysis goals:
 
+- **Magnitude of completeness** estimations 
 - **b-value** calculation  
 - **a-value** estimation  
-- **Magnitude of completeness** estimations  
+ 
 
 Additionally, we demonstrate how to easily visualize your data and explore key features of your catalog.
 
 ---
 
-A central feature of **SeismoStats** is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. For more information on the pandas data struture and built-in methods refer to the [pandas User Guide](https://pandas.pydata.org/docs/user_guide/index.html 'pandas User Guide'). 
+A central feature of **SeismoStats** is the {ref}`Catalog <reference/formats/catalog:Catalog>` object, which offers a quick and flexible way to get started. It is built on top of a `pandas.DataFrame`, meaning all standard pandas methods are available and fully supported. For more information on the pandas data structure and built-in methods refer to the [pandas User Guide](https://pandas.pydata.org/docs/user_guide/index.html 'pandas User Guide'). 
 
 The Catalog class allows for easy storage, organization, and analysis of event data (e.g., magnitudes, event times). It includes:
 
-- *Attributes*: These include the catalog data (such as  magnitudes and event times), as well as additional parameters used in the analysis. These parameters can either be user-defined or estimated using SeismoStats' built-in methods.
+- *Attributes*: These include the catalog data (such as magnitudes and event times), as well as additional parameters used in the analysis. These parameters can either be user-defined or estimated using SeismoStats' built-in methods.
 
 - *Methods*: Tools for visualization, statistical analysis, and data conversion.
+
 Importantly, many methods both **use** and **update** the catalog's properties and data. This architecture is illustrated below:
 
 <figure>
@@ -45,7 +47,7 @@ You can also fetch earthquake data directly from FDSN servers such as **EIDA** a
 
 
 ### 1.1 Example: Downloading a catalog from a FDSN-Server
-Since downloads are limited to a maximum of 20,000 events, you can use the batch download option for larger datasets. This method downloads the data in subsets of events based on the specified `batch_size`.
+Data servers often impose limits on the number of events returned per request. If too much data is requested at once, you may encounter a `TimeOut` Error. To avoid this, use the `batch_size` argument,  to limit the number of events retrieved per request. 
 ```python
 >>> from seismostats.catalogs.client import FDSNWSEventClient
 >>> from seismostats import Catalog
@@ -190,7 +192,7 @@ These methods help assess the quality of your catalog by identifying the lowest 
 The **b-value** in the Gutenberg-Richter law quantifies the relative frequency of large versus small earthquakes in a seismic catalog. 
 The most common approach to estimate the b-value is through the **maximum likelihood method**, assuming an exponential distribution of magnitudes. Additional estimation techniques are discussed in the section on {doc}`b-value estimations <estimate_b>`.
 
-Before estimating the b-value, make sure that the properties `Catalog.mc` and `Catalog.delta_m` are set. Alternatively, these parameter can be directly provided when calling `estimate_b`.
+Before estimating the b-value, make sure that the properties `Catalog.mc` and `Catalog.delta_m` are set. Alternatively, these parameters can be directly provided when calling `estimate_b`.
 
 You can also estimate the b-value independently of the Catalog object by passing a numpy array of magnitudes to {func}`estimate_b <seismostats.analysis.estimate_b>`.
 ```python
@@ -214,7 +216,7 @@ You can also estimate the b-value independently of the Catalog object by passing
 ```
 
 ### 3.3 Estimating the a-value
-The **a-value** of the Gutenberg-Richter law  describes the overall earthquake activity in a specific area and time span. It reflects how many events are expected, regardless of their magnitude. Further discussions on the a-value can be found in the section {doc}`a-value estimations <estimate_a>`.
+The **a-value** of the Gutenberg-Richter law describes the overall earthquake activity in a specific area and time span. It reflects how many events are expected, regardless of their magnitude. Further discussions on the a-value can be found in the section {doc}`a-value estimations <estimate_a>`.
 
 Similar to the b-value estimations, the parameter `Catalog.mc`, `Catalog.delta_m` must be defined beforehand or provided directly as arguments to the a-value estimation method. 
 ```python
