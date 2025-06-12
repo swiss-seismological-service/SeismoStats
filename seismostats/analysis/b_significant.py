@@ -228,6 +228,12 @@ def values_from_partitioning(
         mags_loop = mags_loop[idx_sorted]
         times_loop = times_loop[idx_sorted]
 
+        if len(mags_loop) == 0:
+            values[ii] = np.nan
+            stds[ii] = np.nan
+            n_ms[ii] = 0
+            continue
+
         if isinstance(estimator, AValueEstimator):
             try:
                 estimator.calculate(
@@ -244,11 +250,10 @@ def values_from_partitioning(
                     scaling_factor=list_scaling[ii],
                     times=times_loop,
                     ** kwargs)
-            values[ii] = estimator.a_value
         elif isinstance(estimator, BValueEstimator):
             estimator.calculate(
                 mags_loop, mc=list_mc[ii], delta_m=delta_m, **kwargs)
-            values[ii] = estimator.b_value
+        values[ii] = estimator.value
         stds[ii] = estimator.std
         n_ms[ii] = estimator.n
 
