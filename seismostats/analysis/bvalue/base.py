@@ -137,6 +137,15 @@ class BValueEstimator(ABC):
         return self.__b_value
 
     @property
+    def value(self) -> float:
+        '''
+        The b-value of the Gutenberg-Richter law.
+        '''
+        if self.__b_value is None:
+            raise AttributeError('Please calculate the a-value first.')
+        return self.__b_value
+
+    @property
     def beta(self) -> float:
         '''
         The beta value of the Gutenberg-Richter law.

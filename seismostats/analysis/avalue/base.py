@@ -151,6 +151,24 @@ class AValueEstimator(ABC):
         return self.__a_value
 
     @property
+    def value(self) -> float:
+        '''
+        The a value of the Gutenberg-Richter law.
+        '''
+        if self.__a_value is None:
+            raise AttributeError('Please calculate the a-value first.')
+        return self.__a_value
+
+    @property
+    def std(self):
+        '''
+        Uncertainty of the a-value estimate, implemented as a placeholder.
+        This method can be overridden in subclasses to provide a specific
+        uncertainty estimation.
+        '''
+        return None
+
+    @property
     def magnitudes(self) -> np.ndarray:
         '''
         The magnitudes used to estimate the a-value.

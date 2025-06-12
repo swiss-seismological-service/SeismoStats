@@ -54,3 +54,10 @@ def test_reference_scaling():
         estimator.calculate(mags, mc=0, delta_m=0.1, m_ref=0)
 
     # TODO: test that the scaling is correct
+
+
+def test_value():
+    mags = np.array([0.1, 0.3, -0., 0.5, 0.4, 0.1, 0.3, -0., 0.2, 1.])
+    estimator = ClassicAValueEstimator()
+    estimator.calculate(mags, mc=0, delta_m=0.1)
+    np.testing.assert_almost_equal(estimator.value, estimator.a_value)
