@@ -8,6 +8,8 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
+from seismostats.analysis.bvalue.utils import ks_test_gr, ks_test_gr_lilliefors
+from seismostats.utils.simulate_distributions import dither_magnitudes
 
 
 class BValueEstimator(ABC):
@@ -18,6 +20,7 @@ class BValueEstimator(ABC):
         self._delta_m: float | None = None
         self._weights: np.ndarray | None = None
         self.idx: np.ndarray | None = None
+        self._ks_distances: np.ndarray | None = None
 
         self.__b_value: float | None = None
 
@@ -175,6 +178,49 @@ class BValueEstimator(ABC):
         '''
         self.__is_estimated()
         return len(self.magnitudes)
+
+    def p_ks(self):
+        '''
+        p-value of the ks-test.
+        '''
+        self.__is_estimated()
+        out = ks_test_gr(self.magnitudes,
+                         self.mc,
+                         self.delta_m,
+                         b_value=self.b_value,
+                         ks_ds=self._ks_distances,
+                         weights=self.weights)
+        self._ks_distances = out[2]
+        return out[0]
+
+    def p_lilliefors(self):
+        '''
+        p-value of the Lilliefors test. Weights are not yet implemented.
+        Magnitudes are dithered to continuous ones by resampling the
+        distribution of the binned magnitudes, taking into account the
+        exponential distribution of the magnitudes (in contrast to
+        Herrmann et al, 2020).
+
+        Source:
+        - Herrmann, M. and W. Marzocchi (2020). "Inconsistencies and Lurking
+        Pitfalls in the Magnitude-Frequency Distribution of High-Resolution
+        Earthquake Catalogs".
+        Seismological Research Letters 92(2A). doi: 10.1785/0220200337
+        - Lilliefors, Hubert W. "On the Kolmogorov-Smirnov test for the
+        exponential distribution with mean unknown." Journal of the American
+        Statistical Association 64.325 (1969): 387-389.
+        '''
+        self.__is_estimated()
+
+        # dither magnitudes to continuous ones
+        n = 100
+        p_vals = np.zeros(n)
+        for ii in range(n):
+            dithered_mags = dither_magnitudes(
+                self.magnitudes, self.delta_m, self.b_value)
+            p_vals[ii] = ks_test_gr_lilliefors(dithered_mags,
+                                               self.mc - self.delta_m / 2)
+        return np.mean(p_vals)
 
     def __is_estimated(self) -> bool:
         '''
