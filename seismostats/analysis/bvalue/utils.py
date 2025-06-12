@@ -4,12 +4,13 @@ from typing import Callable
 import numpy as np
 
 
-def bootstrap_variance(sample: np.ndarray,
-                       func: Callable[[np.ndarray], float],
-                       n: int = 500,
-                       random_state: int | None = None):
+def bootstrap_std(sample: np.ndarray,
+                  func: Callable[[np.ndarray], float],
+                  n: int = 500,
+                  random_state: int | None = None):
     """
-    Estimate the bootstrap variance of a statistic computed from a sample.
+    Estimate the bootstrap standard deviation of a statistic computed from a
+    sample.
 
     Args:
     - sample:       The original data sample

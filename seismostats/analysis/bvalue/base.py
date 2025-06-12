@@ -8,7 +8,7 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
-from seismostats.analysis.bvalue.utils import bootstrap_variance
+from seismostats.analysis.bvalue.utils import bootstrap_std
 
 
 class BValueEstimator(ABC):
@@ -205,7 +205,7 @@ class BValueEstimator(ABC):
             self.idx = self.__original_idx.copy()
             self.magnitudes = sample
             return self._estimate()
-        std = bootstrap_variance(self.__original_mags, func, n=n)
+        std = bootstrap_std(self.__original_mags, func, n=n)
 
         # restore original magnitudes
         self.magnitudes = temp_magnitudes

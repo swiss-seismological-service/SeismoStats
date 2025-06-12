@@ -8,7 +8,7 @@ from seismostats.analysis.bvalue.tests.test_bvalues import magnitudes
 from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                make_more_incomplete,
                                                shi_bolt_confidence,
-                                               bootstrap_variance)
+                                               bootstrap_std)
 
 
 def test_make_more_incomplete():
@@ -69,25 +69,25 @@ def test_shi_bolt_confidence(
     assert (conf_half_weighted > conf)
 
 
-def test_bootstrap_variance():
+def test_bootstrap_std():
     sample = np.array([1, 2, 3, 4, 5])
 
-    var1 = bootstrap_variance(sample, np.mean, n=1000, random_state=123)
+    std1 = bootstrap_std(sample, np.mean, n=1000, random_state=123)
 
     # Check type
-    assert isinstance(var1, float)
+    assert isinstance(std1, float)
 
     # Use numpy.testing.assert_almost_equal for float comparison
-    assert_almost_equal(var1, 0.4110292692692693)
+    assert_almost_equal(std1, 0.6411156442244015)
 
     # Reproducibility
-    var2 = bootstrap_variance(sample, np.mean, n=1000, random_state=123)
-    assert_almost_equal(var1, var2)
+    std2 = bootstrap_std(sample, np.mean, n=1000, random_state=123)
+    assert_almost_equal(std1, std2)
 
     # Variance positive
-    assert var1 > 0.0
+    assert std1 > 0.0
 
     # Zero variance case
-    zero_var = bootstrap_variance(
+    zero_var = bootstrap_std(
         np.array([1, 1, 1, 1, 1]), np.mean, n=1000, random_state=42)
     assert_almost_equal(zero_var, 0.0)
