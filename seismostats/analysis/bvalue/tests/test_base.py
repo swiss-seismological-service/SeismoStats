@@ -5,6 +5,7 @@ from seismostats.analysis.bvalue import ClassicBValueEstimator
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import shi_bolt_confidence
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
+from seismostats.analysis.bvalue.utils import bootstrap_std
 
 
 def test_estimate_b_warnings():
@@ -102,3 +103,24 @@ def test_std():
     std_shi_beta = shi_bolt_confidence(estimator.magnitudes, b=estimator.beta,
                                        b_parameter='beta')
     np.testing.assert_almost_equal(estimator.std_beta, std_shi_beta)
+
+
+def test_std_bootstrap():
+    # Simulate magnitude data
+    mags = np.array([0.1, 0.3, -0., 0.5, 0.4, 0.1, 0.3, -0., 0.2, 1.])
+
+    # Initialize and calculate estimator
+    estimator = ClassicBValueEstimator()
+    estimator.calculate(mags, mc=-0, delta_m=0.1)
+
+    # Get the result from the method under test
+    std_boot_1 = estimator.std_bootstrap(n=10, random_state=42)
+    # get the  result from the function
+
+    def func(sample):
+        return estimator.calculate(sample, mc=0, delta_m=0.1)
+    std_boot_2 = bootstrap_std(mags, func, n=10, random_state=42)
+
+    # Assert the results are close
+    np.testing.assert_allclose(std_boot_1, 0.38054372161344463)
+    np.testing.assert_allclose(std_boot_2, std_boot_1)
