@@ -142,7 +142,7 @@ class BValueEstimator(ABC):
         The b-value of the Gutenberg-Richter law.
         '''
         if self.__b_value is None:
-            raise AttributeError('Please calculate the a-value first.')
+            raise AttributeError('Please calculate the b-value first.')
         return self.__b_value
 
     @property
