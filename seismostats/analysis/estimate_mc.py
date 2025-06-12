@@ -6,6 +6,7 @@ import warnings
 from typing import Any
 
 import numpy as np
+import statsmodels.api as sm
 
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
@@ -13,6 +14,7 @@ from seismostats.analysis.bvalue.utils import b_value_to_beta
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision, binning_test, get_fmd
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
+from seismostats.utils.simulate_distributions import dither_magnitudes
 
 
 def cdf_discrete_exp(
@@ -40,6 +42,64 @@ def cdf_discrete_exp(
     x = np.unique(x)
     y = 1 - np.exp(-beta * (x + delta_m - mc))
     return x, y
+
+
+def ks_test_gr_lilliefors(
+    magnitudes: np.ndarray,
+    mc: float,
+    delta_m: float,
+    n: int = 100,
+) -> float:
+    """
+    Performs the Kolmogorov-Smirnov (KS) test for the Gutenberg-Richter
+    distribution for a given magnitude sample and mc and b-value, based on
+    the Lilliefors test. The magnitudes are first dithered, as the Lilliefors
+    test is not valid for discrete data.
+    Note that the b-value is estimated from the continuous data and cannot
+    be passed as an argument.
+
+    Source:
+        - Lilliefors, Hubert W. "On the Kolmogorov-Smirnov test for the
+        exponential distribution with mean unknown." Journal of the American
+        Statistical Association 64.325 (1969): 387-389.
+        - Herrmann, Marcus, and Warner Marzocchi. "Inconsistencies and lurking
+        pitfalls in the magnitude-frequency distribution of high-resolution
+        earthquake catalogs." Seismological Society of America 92.2A (2021):
+        909-922.
+
+
+    Args:
+        magnitudes: Array of magnitudes.
+        mc:         Completeness magnitude.
+        delta_m:    Bin size of discretized magnitudes.
+
+    Returns:
+        p_val:      p-value.
+    """
+    # dither the magnitudes and shift
+    if delta_m == 0:
+        mags_dithered = magnitudes
+        mags_shifted = magnitudes - mc
+        out = sm.stats.diagnostic.lilliefors(
+            mags_shifted, dist='exp', pvalmethod='table')
+        p_val = out[1]
+    else:
+        p_val = np.zeros(n)
+        for ii in range(n):
+            # estimate b-value from binned data
+            estimator = ClassicBValueEstimator()
+            estimator.calculate(magnitudes, mc=mc, delta_m=delta_m)
+            mags_dithered = dither_magnitudes(
+                magnitudes, delta_m=delta_m, b_value=estimator.b_value)
+            mags_dithered -= mc - delta_m / 2
+
+            # estimate p-value using the Lilliefors test
+            out = sm.stats.diagnostic.lilliefors(
+                mags_dithered, dist='exp', pvalmethod='table')
+            p_val[ii] = out[1]
+        p_val = np.mean(p_val)
+
+    return p_val
 
 
 def ks_test_gr(
