@@ -6,16 +6,15 @@ import warnings
 from typing import Any
 
 import numpy as np
-import statsmodels.api as sm
 
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision, binning_test, get_fmd
-from seismostats.utils.simulate_distributions import dither_magnitudes
 from seismostats.analysis.bvalue.utils import ks_test_gr
 
 
+<<<<<<< HEAD
 def ks_test_gr_lilliefors(
     magnitudes: np.ndarray,
     mc: float,
@@ -167,6 +166,8 @@ def ks_test_gr(
     return p_val, ks_d_obs, ks_ds
 
 
+=======
+>>>>>>> 9448ea0 (add p_lilliefors to the b-value estimators)
 def estimate_mc_ks(
     magnitudes: np.ndarray,
     delta_m: float,
