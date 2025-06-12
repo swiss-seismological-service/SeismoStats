@@ -169,6 +169,21 @@ class AValueEstimator(ABC):
         return None
 
     @property
+    def n(self):
+        '''
+        Number of magnitudes used to estimate the b-value.
+        '''
+        self.__is_estimated()
+        return len(self.magnitudes)
+
+    def __is_estimated(self) -> bool:
+        '''
+        Checks if the b-value has been estimated.
+        '''
+        if self.__a_value is None:
+            raise AttributeError('Please calculate the b value first.')
+
+    @property
     def magnitudes(self) -> np.ndarray:
         '''
         The magnitudes used to estimate the a-value.
