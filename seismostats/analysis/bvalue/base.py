@@ -184,11 +184,17 @@ class BValueEstimator(ABC):
                                    weights=self.weights,
                                    b_parameter='beta')
 
-    def std_bootstrap(self):
+    def std_bootstrap(self, n: int = 500) -> float:
         '''
         Shi and Bolt uncertainty of the beta estimate.
+
+        Args:
+            n:      Number of bootstrap resamples (default is 500).
+        Returns:
+            std:    Bootstrap standard deviation of the b-value estimate
+                estimated by resampling the magnitudes.
         '''
-        self._is_estimated()
+        self.__is_estimated()
 
         # copy self.magnitudes to avoid changing the original magnitudes
         temp_magnitudes = self.magnitudes.copy()
@@ -199,7 +205,7 @@ class BValueEstimator(ABC):
             self.idx = self.__original_idx.copy()
             self.magnitudes = sample
             return self._estimate()
-        std = bootstrap_variance(self.__orignial_mags, func)
+        std = bootstrap_variance(self.__original_mags, func, n=n)
 
         # restore original magnitudes
         self.magnitudes = temp_magnitudes
