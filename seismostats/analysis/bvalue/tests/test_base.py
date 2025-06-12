@@ -58,6 +58,13 @@ def test_beta():
     np.testing.assert_almost_equal(estimator.beta, 2.9626581614317242)
 
 
+def test_value():
+    mags = np.array([0.1, 0.3, -0., 0.5, 0.4, 0.1, 0.3, -0., 0.2, 1.])
+    estimator = ClassicBValueEstimator()
+    estimator.calculate(mags, mc=0, delta_m=0.1)
+    np.testing.assert_almost_equal(estimator.value, estimator.b_value)
+
+
 def test_getters():
     mags = simulate_magnitudes_binned(n=100, b=1, mc=0, delta_m=0.1)
     weights = np.ones_like(mags)
