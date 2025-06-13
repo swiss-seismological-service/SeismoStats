@@ -171,17 +171,17 @@ class AValueEstimator(ABC):
     @property
     def n(self):
         '''
-        Number of magnitudes used to estimate the b-value.
+        Number of magnitudes used to estimate the a-value.
         '''
         self.__is_estimated()
         return len(self.magnitudes)
 
     def __is_estimated(self) -> bool:
         '''
-        Checks if the b-value has been estimated.
+        Checks if the a-value has been estimated.
         '''
         if self.__a_value is None:
-            raise AttributeError('Please calculate the b value first.')
+            raise AttributeError('Please calculate the a-value first.')
 
     @property
     def magnitudes(self) -> np.ndarray:

@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 from scipy.stats import norm
+import inspect
 
 from seismostats.analysis.avalue.base import AValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
@@ -235,20 +236,21 @@ def values_from_partitioning(
             continue
 
         if isinstance(estimator, AValueEstimator):
-            try:
-                estimator.calculate(
-                    mags_loop,
-                    mc=list_mc[ii],
-                    delta_m=delta_m,
-                    scaling_factor=list_scaling[ii],
-                    **kwargs)
-            except TypeError:
+            sig = inspect.signature(estimator.calculate)
+            if 'times' in sig.parameters:
                 estimator.calculate(
                     mags_loop,
                     mc=list_mc[ii],
                     delta_m=delta_m,
                     scaling_factor=list_scaling[ii],
                     times=times_loop,
+                    **kwargs)
+            else:
+                estimator.calculate(
+                    mags_loop,
+                    mc=list_mc[ii],
+                    delta_m=delta_m,
+                    scaling_factor=list_scaling[ii],
                     ** kwargs)
         elif isinstance(estimator, BValueEstimator):
             estimator.calculate(
