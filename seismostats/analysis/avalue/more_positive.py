@@ -138,10 +138,15 @@ class AMorePositiveAValueEstimator(AValueEstimator):
 
         # check if there are enough events
         if sum(idx_no_next) == len(idx_next_larger):
+            self.magnitudes = np.array([])
+            self.times = np.array([])
+            self.idx = np.array([])
             if get_option('warnings') is True:
                 warnings.warn('Not enough events to estimate a-value.')
             return np.nan
 
+        # estimate the time differences of the events that do not have a next
+        # event
         time_diffs[idx_no_next] = self.times[-1] - self.times[idx_no_next]
 
         # estimate the number of events within the time interval

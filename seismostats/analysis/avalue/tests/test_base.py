@@ -61,3 +61,18 @@ def test_value():
     estimator = ClassicAValueEstimator()
     estimator.calculate(mags, mc=0, delta_m=0.1)
     np.testing.assert_almost_equal(estimator.value, estimator.a_value)
+
+
+def test_properties():
+    # n
+    estimator = ClassicAValueEstimator()
+
+    with pytest.raises(AttributeError,
+                       match="Please calculate the a-value first."):
+        _ = estimator.n
+
+    magnitudes = [1.0, 2.0, 3.0]
+    mc = 1
+    delta_m = 1
+    estimator.calculate(magnitudes=magnitudes, mc=mc, delta_m=delta_m)
+    assert estimator.n == 3
