@@ -112,6 +112,14 @@ def test_estimate_a_positive():
     assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
     assert (mags[estimator.idx] == estimator.magnitudes).all()
 
+    # test that warning is raised when not enough differences
+    mags = np.array([5, 4, 3, 2, 1])
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 6), timedelta(days=1)).astype(datetime)
+    with pytest.warns(UserWarning):
+        estimator.calculate(mags, mc=1, delta_m=1, times=times)
+        assert estimator.n == 0
+
 
 @pytest.mark.filterwarnings("ignore")
 def test_estimate_a_more_positive():
@@ -168,3 +176,12 @@ def test_estimate_a_more_positive():
     assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
     assert (mags[estimator.idx] == estimator.magnitudes).all()
     assert (estimator.times == times[estimator.idx]).all()
+
+    # test that warning is raised when not enough differences
+    mags = np.array([5, 4, 3, 2, 1])
+    times = np.arange(datetime(2000, 1, 1), datetime(
+        2000, 1, 6), timedelta(days=1)).astype(datetime)
+
+    with pytest.warns(UserWarning):
+        estimator.calculate(mags, mc=1, delta_m=1, times=times, b_value=1)
+        assert estimator.n == 0

@@ -218,6 +218,7 @@ def values_from_partitioning(
 
     # start estimation
     estimator = method()
+    sig = inspect.signature(estimator.calculate)
 
     values = np.zeros(n_subsets)
     stds = np.zeros(n_subsets)
@@ -236,7 +237,6 @@ def values_from_partitioning(
             continue
 
         if isinstance(estimator, AValueEstimator):
-            sig = inspect.signature(estimator.calculate)
             if 'times' in sig.parameters:
                 estimator.calculate(
                     mags_loop,
