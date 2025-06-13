@@ -132,6 +132,12 @@ class APositiveAValueEstimator(AValueEstimator):
         self.magnitudes = self.magnitudes[1:][is_larger]
         self.idx = self.idx[1:][is_larger]
 
+        # check if there are enough events
+        if len(time_diffs) == 0:
+            if get_option('warnings') is True:
+                warnings.warn('Not enough events to estimate a-value.')
+            return np.nan
+
         # estimate the number of events within the time interval
         total_time = self.times[-1] - self.times[0]
         self.times = self.times[1:][is_larger]
