@@ -6,9 +6,10 @@ import warnings
 
 import numpy as np
 from scipy.stats import norm
+import inspect
 
-from seismostats.analysis.avalue import AValueEstimator
-from seismostats.analysis.bvalue import ClassicBValueEstimator
+from seismostats.analysis.avalue.base import AValueEstimator
+from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.utils._config import get_option
 
@@ -217,11 +218,18 @@ def values_from_partitioning(
 
     # start estimation
     estimator = method()
+    sig = inspect.signature(estimator.calculate)
 
     values = np.zeros(n_subsets)
     stds = np.zeros(n_subsets)
     n_ms = np.zeros(n_subsets)
     for ii, mags_loop in enumerate(list_magnitudes):
+        # check if there are enough magnitudes in the subset
+        if len(mags_loop) == 0:
+            values[ii] = np.nan
+            stds[ii] = np.nan
+            n_ms[ii] = 0
+            continue
         # Sort the magnitudes of the subsets by time.
         times_loop = list_times[ii]
         idx_sorted = np.argsort(times_loop)
@@ -229,17 +237,25 @@ def values_from_partitioning(
         times_loop = times_loop[idx_sorted]
 
         if isinstance(estimator, AValueEstimator):
-            estimator.calculate(
-                mags_loop,
-                mc=list_mc[ii],
-                delta_m=delta_m,
-                scaling_factor=list_scaling[ii],
-                **kwargs)
-            values[ii] = estimator.a_value
+            if 'times' in sig.parameters:
+                estimator.calculate(
+                    mags_loop,
+                    mc=list_mc[ii],
+                    delta_m=delta_m,
+                    scaling_factor=list_scaling[ii],
+                    times=times_loop,
+                    **kwargs)
+            else:
+                estimator.calculate(
+                    mags_loop,
+                    mc=list_mc[ii],
+                    delta_m=delta_m,
+                    scaling_factor=list_scaling[ii],
+                    ** kwargs)
         elif isinstance(estimator, BValueEstimator):
             estimator.calculate(
                 mags_loop, mc=list_mc[ii], delta_m=delta_m, **kwargs)
-            values[ii] = estimator.b_value
+        values[ii] = estimator.value
         stds[ii] = estimator.std
         n_ms[ii] = estimator.n
 
