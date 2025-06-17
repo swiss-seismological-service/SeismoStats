@@ -222,7 +222,7 @@ class BValueEstimator(ABC):
         self.__is_estimated()
         return len(self.magnitudes)
 
-    def __is_estimated(self) -> bool:
+    def __is_estimated(self):
         '''
         Checks if the b-value has been estimated.
         '''

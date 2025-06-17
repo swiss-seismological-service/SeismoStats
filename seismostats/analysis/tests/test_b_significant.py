@@ -11,6 +11,10 @@ from seismostats.analysis.b_significant import (
     transform_n,
     b_significant_1D,
 )
+from seismostats.analysis.avalue import (
+    APositiveAValueEstimator,
+    AMorePositiveAValueEstimator,
+    ClassicAValueEstimator)
 
 
 def test_est_morans_i():
@@ -101,6 +105,22 @@ def test_transform_n():
 
 
 def test_values_from_partitioning():
+    delta_m = 1
+    mc = 1
+
+    # test sanity check
+    with pytest.raises(IndexError):
+        # length of list_magnitudes and list_times not equal
+        list_magnitudes = [np.array([1, 2, 3, 4, 5]),
+                           np.array([1, 2, 3, 4, 5])]
+        list_times = [np.array([datetime(2021, 1, 1), datetime(2021, 1, 2),
+                                datetime(2021, 1, 3), datetime(2021, 1, 4),
+                                datetime(2021, 1, 5)])]
+        mc = 1
+        delta_m = 1
+        values_from_partitioning(list_magnitudes, list_times, mc, delta_m)
+
+    # test normal functionality
     list_magnitudes = [np.array([1, 2, 3, 4, 5]),
                        np.array([1, 2, 3, 4, 5]),
                        np.array([1, 2, 3, 4, 5])]
@@ -113,18 +133,43 @@ def test_values_from_partitioning():
                   np.array([datetime(2021, 1, 11), datetime(2021, 1, 12),
                             datetime(2021, 1, 13), datetime(2021, 1, 14),
                             datetime(2021, 1, 15)])]
-    delta_m = 1
-    mc = 1
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        b_values, std_b, n_ms = values_from_partitioning(
-            list_magnitudes, list_times, mc, delta_m)
+
+    b_values, std_b, n_ms = values_from_partitioning(
+        list_magnitudes, list_times, mc, delta_m)
 
     assert_almost_equal(b_values, np.array(
         [0.17609125905568124, 0.17609125905568124, 0.17609125905568124]))
     assert_almost_equal(std_b, np.array([0.05048661905780697,
                         0.05048661905780697, 0.05048661905780697]))
     assert_almost_equal(n_ms, np.array([5, 5, 5]))
+
+    # test that the a-positive estimator correctly works
+    b_values, std_b, n_ms = values_from_partitioning(
+        list_magnitudes, list_times, mc, delta_m,
+        method=APositiveAValueEstimator)
+    assert_almost_equal(b_values, np.array([0.60206, 0.60206, 0.60206]))
+
+    b_values, std_b, n_ms = values_from_partitioning(
+        list_magnitudes, list_times, mc, delta_m,
+        method=AMorePositiveAValueEstimator, b_value=1)
+    assert_almost_equal(b_values, np.array([2.1584059, 2.1584059, 2.1584059]))
+
+    b_values, std_b, n_ms = values_from_partitioning(
+        list_magnitudes, list_times, mc, delta_m,
+        method=ClassicAValueEstimator)
+    assert_almost_equal(b_values, np.array([0.69897, 0.69897, 0.69897]))
+
+    # test that nan is returned if no values are present
+    list_magnitudes = [[], [], [], []]
+    list_times = [np.array([datetime(2021, 1, 1)]),
+                  np.array([datetime(2021, 1, 2)]),
+                  np.array([datetime(2021, 1, 3)]),
+                  np.array([datetime(2021, 1, 4)])]
+    b_values, std_b, n_ms = values_from_partitioning(
+        list_magnitudes, list_times, mc, delta_m)
+    assert np.isnan(b_values).all()
+    assert np.isnan(std_b).all()
+    assert n_ms.all() == 0
 
 
 def test_cut_constant_idx():

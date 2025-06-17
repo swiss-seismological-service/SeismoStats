@@ -224,17 +224,17 @@ def values_from_partitioning(
     stds = np.zeros(n_subsets)
     n_ms = np.zeros(n_subsets)
     for ii, mags_loop in enumerate(list_magnitudes):
-        # Sort the magnitudes of the subsets by time.
-        times_loop = list_times[ii]
-        idx_sorted = np.argsort(times_loop)
-        mags_loop = mags_loop[idx_sorted]
-        times_loop = times_loop[idx_sorted]
-
+        # check if there are enough magnitudes in the subset
         if len(mags_loop) == 0:
             values[ii] = np.nan
             stds[ii] = np.nan
             n_ms[ii] = 0
             continue
+        # Sort the magnitudes of the subsets by time.
+        times_loop = list_times[ii]
+        idx_sorted = np.argsort(times_loop)
+        mags_loop = mags_loop[idx_sorted]
+        times_loop = times_loop[idx_sorted]
 
         if isinstance(estimator, AValueEstimator):
             if 'times' in sig.parameters:
