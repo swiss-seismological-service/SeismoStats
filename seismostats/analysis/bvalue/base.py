@@ -8,6 +8,7 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
+from seismostats.analysis.bvalue.utils import bootstrap_std
 
 
 class BValueEstimator(ABC):
@@ -20,6 +21,8 @@ class BValueEstimator(ABC):
         self.idx: np.ndarray | None = None
 
         self.__b_value: float | None = None
+        self.__original_mags: np.ndarray | None = None
+        self.__original_idx: np.ndarray | None = None
 
     def calculate(self,
                   magnitudes: np.ndarray | list,
@@ -65,6 +68,10 @@ class BValueEstimator(ABC):
 
         self._sanity_checks()
         self._filter_magnitudes()
+
+        # retain original magnitudes (above mc and without NaNs)
+        self.__original_mags = self.magnitudes.copy()
+        self.__original_idx = self.idx.copy()
 
         if len(self.magnitudes) == 0:
             self.__b_value = np.nan
@@ -176,6 +183,36 @@ class BValueEstimator(ABC):
                                    self.beta,
                                    weights=self.weights,
                                    b_parameter='beta')
+
+    def std_bootstrap(self, n: int = 500, random_state: int = None) -> float:
+        '''
+        Shi and Bolt uncertainty of the beta estimate.
+
+        Args:
+            n:      Number of bootstrap resamples (default is 500).
+            random_state: Random seed for reproducibility (default is None).
+        Returns:
+            std:    Bootstrap standard deviation of the b-value estimate
+                estimated by resampling the magnitudes.
+        '''
+        self.__is_estimated()
+
+        # copy self.magnitudes to avoid changing the original magnitudes
+        temp_magnitudes = self.magnitudes.copy()
+        temp_idx = self.idx.copy()
+
+        # calculate bootstrap variance
+        def func(sample):
+            self.idx = self.__original_idx.copy()
+            self.magnitudes = sample
+            return self._estimate()
+        std = bootstrap_std(self.__original_mags, func,
+                            n=n, random_state=random_state)
+
+        # restore original magnitudes
+        self.magnitudes = temp_magnitudes
+        self.idx = temp_idx
+        return std
 
     @property
     def n(self):
