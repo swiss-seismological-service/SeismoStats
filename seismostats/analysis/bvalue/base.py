@@ -9,6 +9,7 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
 from seismostats.analysis.bvalue.utils import bootstrap_std
+from seismostats.analysis.ks_test import ks_test_gr
 
 
 class BValueEstimator(ABC):
@@ -213,6 +214,26 @@ class BValueEstimator(ABC):
         self.magnitudes = temp_magnitudes
         self.idx = temp_idx
         return std
+
+    def p_ks(self,
+             n: int = 10000,
+             ks_ds: float | None = None) -> float:
+        '''
+        p-value of the ks-test for the null-hypothesis that the magnitudes
+        follow the Gutenberg-Richter law with the estimated b-value.
+
+        Args:
+            n:  Number of samples to use for the ks-test (default is 10000).
+        '''
+        self.__is_estimated()
+        out = ks_test_gr(self.magnitudes,
+                         self.mc,
+                         self.delta_m,
+                         b_value=self.b_value,
+                         n=n,
+                         ks_ds=ks_ds,
+                         weights=self.weights)
+        return out[0]
 
     @property
     def n(self):

@@ -6,6 +6,7 @@ from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import shi_bolt_confidence
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 from seismostats.analysis.bvalue.utils import bootstrap_std
+from seismostats.analysis.estimate_mc import ks_test_gr
 
 
 def test_estimate_b_warnings():
@@ -106,7 +107,6 @@ def test_std():
 
 
 def test_std_bootstrap():
-    # Simulate magnitude data
     mags = np.array([0.1, 0.3, -0., 0.5, 0.4, 0.1, 0.3, -0., 0.2, 1.])
 
     # Initialize and calculate estimator
@@ -124,3 +124,18 @@ def test_std_bootstrap():
     # Assert the results are close
     np.testing.assert_allclose(std_boot_1, 0.38054372161344463)
     np.testing.assert_allclose(std_boot_2, std_boot_1)
+
+
+def test_p_ks():
+    b = 1
+    mc = 0
+    delta_m = 0.1
+
+    mags = simulate_magnitudes_binned(n=500, b=b, mc=mc, delta_m=delta_m)
+    estimator = ClassicBValueEstimator()
+    estimator.calculate(mags, mc=mc, delta_m=delta_m)
+
+    p_ks, _, ks_ds = ks_test_gr(
+        mags, mc=mc, delta_m=delta_m, b_value=estimator.b_value)
+
+    np.testing.assert_almost_equal(estimator.p_ks(ks_ds=ks_ds), p_ks)
