@@ -8,7 +8,10 @@ from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import beta_to_b_value
 from seismostats.analysis.estimate_mc import (estimate_mc_b_stability,
-                                              estimate_mc_ks, estimate_mc_maxc)
+                                              estimate_mc_ks,
+                                              estimate_mc_maxc,
+                                              ks_test_gr,
+                                              cdf_discrete_exp)
 from seismostats.utils.binning import bin_to_precision
 
 MAGNITUDES = np.array(
@@ -223,3 +226,21 @@ def test_estimate_mc_b_stability_fail(capfd):
         estimate_mc_b_stability(
             MAGNITUDES * 1.01234, delta_m=0.1, mcs_test=[1.1],
             stability_range=0.5, b_value=1.2)
+
+
+def test_ks_test_gr():
+    mc = 1.0
+    delta_m = 0.1
+    out = ks_test_gr(MAGNITUDES, mc, delta_m, b_value=1, ks_ds=KS_DISTS[0])
+    assert_almost_equal(out[0], 0.0104)
+
+
+def test_cdf_discrete_exp():
+    mc = 1.0
+    delta_m = 0.1
+    _, y = cdf_discrete_exp(MAGNITUDES, mc, delta_m, beta=2)
+    assert_almost_equal(y,
+                        [0.18126925, 0.32967995, 0.45118836, 0.55067104,
+                         0.63212056, 0.69880579, 0.75340304, 0.79810348,
+                         0.83470111, 0.86466472, 0.88919684, 0.90928205,
+                         0.92572642, 0.93918994, 0.97762923, 0.99630214])
