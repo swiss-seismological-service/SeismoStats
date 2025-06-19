@@ -9,6 +9,8 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
 from seismostats.analysis.bvalue.utils import bootstrap_std
+from seismostats.analysis.lilliefors import ks_test_gr_lilliefors
+from seismostats.utils.simulate_distributions import dither_magnitudes
 
 
 class BValueEstimator(ABC):
@@ -213,6 +215,36 @@ class BValueEstimator(ABC):
         self.magnitudes = temp_magnitudes
         self.idx = temp_idx
         return std
+
+    def p_lilliefors(self, n=100):
+        '''
+        p-value of the Lilliefors test. Weights are not yet implemented.
+        Magnitudes are dithered to continuous ones by resampling the
+        distribution of the binned magnitudes, taking into account the
+        exponential distribution of the magnitudes (in contrast to
+        Herrmann et al, 2020).
+        Source:
+        - Herrmann, M. and W. Marzocchi (2020). "Inconsistencies and Lurking
+        Pitfalls in the Magnitude-Frequency Distribution of High-Resolution
+        Earthquake Catalogs".
+        Seismological Research Letters 92(2A). doi: 10.1785/0220200337
+        - Lilliefors, Hubert W. "On the Kolmogorov-Smirnov test for the
+        exponential distribution with mean unknown." Journal of the American
+        Statistical Association 64.325 (1969): 387-389.
+        '''
+        self.__is_estimated()
+
+        # dither magnitudes to continuous ones
+        if self.delta_m > 0:
+            p_vals = np.zeros(n)
+            for ii in range(n):
+                dithered_mags = dither_magnitudes(
+                    self.magnitudes, self.delta_m, self.b_value)
+                p_vals[ii] = ks_test_gr_lilliefors(dithered_mags,
+                                                   self.mc - self.delta_m / 2)
+        else:
+            p_vals = ks_test_gr_lilliefors(self.magnitudes, self.mc)
+        return np.mean(p_vals)
 
     @property
     def n(self):
