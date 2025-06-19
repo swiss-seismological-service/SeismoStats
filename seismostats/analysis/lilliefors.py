@@ -17,7 +17,7 @@ def ks_test_gr_lilliefors(
         exponential distribution with mean unknown." Journal of the American
         Statistical Association 64.325 (1969): 387-389.
     Args:
-        magnitudes: Array of magnitudes.
+        magnitudes: Array of magnitudes, should be continuous.
         mc:         Completeness magnitude. Make sure that no magnitudes below
                     mc are present in the array.
     Returns:
