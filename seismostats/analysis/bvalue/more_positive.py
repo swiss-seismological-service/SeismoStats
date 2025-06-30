@@ -4,9 +4,10 @@ import numpy as np
 
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import _mle_estimator
-from seismostats.analysis.bvalue.utils import find_next_larger
+from seismostats.analysis.bvalue.utils import find_next_larger, b_value_to_beta
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import bin_to_precision
+from seismostats.analysis.bvalue.utils import bootstrap_std
 
 
 class BMorePositiveBValueEstimator(BValueEstimator):
@@ -144,6 +145,52 @@ class BMorePositiveBValueEstimator(BValueEstimator):
                               mc=self.dmc,
                               delta_m=self.delta_m,
                               weights=self.weights)
+
+    def _std_bootstrap(self, n: int = 500, random_state: int = None) -> float:
+        '''
+        Bootstrap uncertainty of the b-value estimate. Depending on the number
+        of the magnitudes, this can take a while to compute.
+        '''
+        self._is_estimated()
+        estimator = self.__class__()
+
+        # Define the function for the bootstrap.
+        def func(idx):
+            idx = np.sort(idx)
+            magnitudes = self._original_mags[idx]
+            if self.weights is not None:
+                weights = self._original_weights[idx]
+            else:
+                weights = None
+            estimator.calculate(magnitudes, self.mc, self.delta_m,
+                                weights=weights, dmc=self.dmc)
+            return estimator.b_value
+
+        # This takes bootstrap samples of the index and then calculates
+        # the variance of the output of func (above)
+        std = bootstrap_std(np.arange(len(self._original_mags)),
+                            func, n=n, random_state=random_state)
+        return std
+
+    @property
+    def std(self) -> float:
+        '''
+        Bootstrap uncertainty of the b-value estimate. Depending on the number
+        of the magnitudes, this can take a while to compute.
+        '''
+        self._is_estimated()
+
+        return self._std_bootstrap()
+
+    @property
+    def std_beta(self) -> float:
+        '''
+        Shi and Bolt uncertainty of the beta estimate.
+        '''
+        self._is_estimated()
+
+        std = self._std_bootstrap()
+        return b_value_to_beta(std)
 
     @property
     def dmc(self) -> float:

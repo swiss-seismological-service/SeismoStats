@@ -10,7 +10,9 @@ from seismostats.analysis.bvalue import (BMorePositiveBValueEstimator,
                                          BPositiveBValueEstimator,
                                          ClassicBValueEstimator,
                                          UtsuBValueEstimator)
-from seismostats.utils.simulate_distributions import bin_to_precision
+from seismostats.utils.simulate_distributions import (
+    bin_to_precision)
+
 
 PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'data')
@@ -234,3 +236,11 @@ def test_estimate_b_more_positive(
     estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
     assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
     assert (estimator.times == times[estimator.idx]).all()
+
+    # test that std (with bootstrap) works correctly
+    mags = np.array([0.1, 0.3, -0., 0.5, 0.4, 0.1, 0.3, -0., 0.2, 1.])
+    estimator = BMorePositiveBValueEstimator()
+    estimator.calculate(mags, mc=-0, delta_m=0.1)
+    # Get the result from the method under test
+    std_boot = estimator._std_bootstrap(n=10, random_state=42)
+    np.testing.assert_allclose(std_boot, 0.6385609266380351)
