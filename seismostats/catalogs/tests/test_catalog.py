@@ -189,6 +189,9 @@ def compare_method_and_function(method,
                                                      exclude_args)
     function_params = extract_names_and_default_values(function_args,
                                                        exclude_args)
+
+    print(f"Method params: {method_params}")
+    print(f"Function params: {function_params}")
     assert method_params == function_params
 
     method_output = method(**method_kwargs)
@@ -209,9 +212,9 @@ def compare_method_and_function(method,
     ("plot_mags_in_time", plot_mags_in_time,
      ["magnitudes", "times"], []),
     ("plot_cum_fmd", plot_cum_fmd,
-     ["magnitudes"], ["fmd_bin", "mc", "b_value"]),
+     ["magnitudes"], ["fmd_bin", "mc", "b_value", "weights"]),
     ("plot_fmd", plot_fmd,
-     ["magnitudes"], ["fmd_bin"]),
+     ["magnitudes"], ["fmd_bin", "weights"]),
     ("plot_mc_vs_b", plot_mc_vs_b,
      ["magnitudes"], ["delta_m", "mcs"])
 ])
