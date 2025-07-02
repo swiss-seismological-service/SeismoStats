@@ -52,6 +52,7 @@ def plot_cum_fmd(
                 visualization of the data. Assumed 0 if not given. It is
                 possible to provide a value that is larger than the actual
                 discretization of the magnitudes.
+        weights:    Weights for the magnitudes, defaults to None
         b_value:    The b-value of the theoretical GR distribution to plot.
         ax:         Axis where figure should be plotted.
         color:      Color of the data. If one value is given, it is used for
@@ -156,6 +157,7 @@ def plot_fmd(
                     the descritization of the magnitudes. The optimal value
                     would be as small as possible while at the same time
                     ensuring that there are enough magnitudes in each bin.
+        weights:        Weights for the magnitudes, defaults to None
         ax:             The axis where figure should be plotted.
         color:          Color of the data.
         size:           Size of data points.
@@ -224,6 +226,9 @@ def plot_cum_count(
                 lines on the plot.
         delta_m:    Binning precision of the magnitudes, assumed 0 if not
                 given.
+        weights:    Weights for the magnitudes, defaults to None
+        normalize:  If True (default), the cumulative count is normalized to
+                one. Otherwise, the absolute cumulative count is plotted.
         ax:         Axis where figure should be plotted.
 
     Returns:
