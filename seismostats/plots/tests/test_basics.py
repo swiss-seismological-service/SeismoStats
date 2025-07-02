@@ -118,10 +118,7 @@ def test_plot_fmd():
     assert legend is not None
     labels = [t.get_text() for t in legend.get_texts()]
     assert "Test" in labels
-
     plt.close(ax.figure)  # Avoid leaving open figures
-
-    plot_fmd
 
 
 def test_plot_cum_count_basic():

@@ -159,8 +159,6 @@ def test_get_fmd(magnitudes: np.ndarray, fmd_bin: float,
     weights[idx] = 0
     nbins2, ncounts2, _ = get_fmd(
         magnitudes, fmd_bin, weights=weights)
-    print(nbins2)
-    print(ncounts2)
     idx_bin = nbins2 < 0.5
     assert np.all(ncounts2[idx_bin] == 0)
 
