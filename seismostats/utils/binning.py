@@ -244,7 +244,7 @@ def get_fmd(
 
     assert (
         bin_position == "left" or bin_position == "center"
-    ), "bin_position needs to be 'left'  or 'center'"
+    ), "bin_position needs to be 'left' or 'center'"
     if bin_position == "left":
         bins = bins - fmd_bin / 2
 
