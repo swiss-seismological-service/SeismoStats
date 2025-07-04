@@ -210,9 +210,9 @@ def compare_method_and_function(method,
     ("plot_mags_in_time", plot_mags_in_time,
      ["magnitudes", "times"], []),
     ("plot_cum_fmd", plot_cum_fmd,
-     ["magnitudes"], ["fmd_bin", "mc", "b_value", "weights"]),
+     ["magnitudes"], ["fmd_bin", "mc", "b_value"]),
     ("plot_fmd", plot_fmd,
-     ["magnitudes"], ["fmd_bin", "weights"]),
+     ["magnitudes"], ["fmd_bin"]),
     ("plot_mc_vs_b", plot_mc_vs_b,
      ["magnitudes"], ["delta_m", "mcs"])
 ])

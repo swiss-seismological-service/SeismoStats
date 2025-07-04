@@ -199,6 +199,7 @@ def get_fmd(
                     the discretization of the magnitudes. The optimal value
                     would be as small as possible while at the same time
                     ensuring that there are enough magnitudes in each bin.
+        weights:        Array of weights for each magnitude.
         bin_position:   Position of the bin, options are  'center' and 'left'.
                     Accordingly, left edges of bins or center points are
                     returned.
@@ -269,6 +270,7 @@ def get_cum_fmd(
                     discretization of the magnitudes. In this case, the
                     magnitudes will be binned to the given ``fmd_bin``. This
                     might be useful for visualization purposes.
+        weights:        Array of weights for each magnitude.
         bin_position:   Position of the bin, options are  'center' and 'left'.
                     Accordingly, left edges of bins or center points are
                     returned.
