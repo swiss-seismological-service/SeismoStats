@@ -132,14 +132,15 @@ def test_p_lilliefors():
 
     # case 1: continuous magnitudes, b-positive estimator
     b = 1
-    mc = 0
+    mc = 1
     delta_m = 0
+    dmc = 0.1
 
     mags = simulate_magnitudes_binned(n=200, b=b, mc=mc, delta_m=delta_m)
     estimator = BPositiveBValueEstimator()
-    estimator.calculate(mags, mc=min(mags), delta_m=delta_m, dmc=0.1)
+    estimator.calculate(mags, mc=min(mags), delta_m=delta_m, dmc=dmc)
     p_lilliefors = ks_test_gr_lilliefors(
-        estimator.magnitudes, mc=min(mags))
+        estimator.magnitudes, mc=dmc)
     np.testing.assert_almost_equal(estimator.p_lilliefors(), p_lilliefors)
 
     # case 2: binned magnitudes, classic estimator
