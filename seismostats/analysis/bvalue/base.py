@@ -240,7 +240,7 @@ class BValueEstimator(ABC):
         '''
         self.__is_estimated()
 
-        #  If the estiamtor has a dmc attritbue, set it as the mc for the test
+        #  If the estimator has a dmc attribute, set it as the mc for the test
         if hasattr(self, 'dmc'):
             mc_temp = self.dmc
         else:
