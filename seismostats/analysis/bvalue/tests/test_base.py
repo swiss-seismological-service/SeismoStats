@@ -6,6 +6,8 @@ from seismostats.analysis.bvalue.positive import BPositiveBValueEstimator
 from seismostats.analysis.bvalue.utils import shi_bolt_confidence
 from seismostats.utils.simulate_distributions import simulate_magnitudes_binned
 from seismostats.analysis.bvalue.utils import bootstrap_std
+from seismostats.analysis.lilliefors import ks_test_gr_lilliefors
+from seismostats.utils.simulate_distributions import dither_magnitudes
 
 
 def test_estimate_b_warnings():
@@ -124,3 +126,42 @@ def test_std_bootstrap():
     # Assert the results are close
     np.testing.assert_allclose(std_boot_1, 0.38054372161344463)
     np.testing.assert_allclose(std_boot_2, std_boot_1)
+
+
+def test_p_lilliefors():
+
+    # case 1: continuous magnitudes, b-positive estimator
+    b = 1
+    mc = 1
+    delta_m = 0
+    dmc = 0.1
+
+    mags = simulate_magnitudes_binned(n=200, b=b, mc=mc, delta_m=delta_m)
+    estimator = BPositiveBValueEstimator()
+    estimator.calculate(mags, mc=min(mags), delta_m=delta_m, dmc=dmc)
+    p_lilliefors = ks_test_gr_lilliefors(
+        estimator.magnitudes, mc=dmc)
+    np.testing.assert_almost_equal(estimator.p_lilliefors(), p_lilliefors)
+
+    # case 2: binned magnitudes, classic estimator
+    mags = simulate_magnitudes_binned(n=300, b=b, mc=mc, delta_m=delta_m)
+    estimator = ClassicBValueEstimator()
+    estimator.calculate(mags, mc=mc + 1, delta_m=delta_m)
+    p_lilliefors = ks_test_gr_lilliefors(estimator.magnitudes, mc=mc + 1)
+    np.testing.assert_almost_equal(estimator.p_lilliefors(), p_lilliefors)
+
+    # case 3: binned magnitudes
+    delta_m = 0.1
+    mags = simulate_magnitudes_binned(n=30, b=b, mc=mc, delta_m=delta_m)
+    estimator.calculate(mags, mc=mc, delta_m=delta_m)
+
+    p_vals = np.zeros(1000)
+    for ii in range(1000):
+        # dither magnitudes
+        mags_dith = dither_magnitudes(
+            estimator.magnitudes, delta_m=delta_m, b_value=estimator.b_value)
+        p_vals[ii] = ks_test_gr_lilliefors(mags_dith, mc=mc - delta_m / 2)
+    p_lilliefors = np.mean(p_vals)
+
+    np.testing.assert_almost_equal(
+        estimator.p_lilliefors(n=1000), p_lilliefors, decimal=2)
