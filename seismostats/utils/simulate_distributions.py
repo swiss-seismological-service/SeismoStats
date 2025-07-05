@@ -109,8 +109,7 @@ def dither_magnitudes(magnitudes: np.ndarray,
     Args:
         magnitudes:   Array of binned magnitudes.
         delta_m:      Size of the bin.
-        b_value:      b-value of the distribution. If None, the b-value is
-                    estimated from the data.
+        b_value:      b-value of the distribution.
     Returns:
         magnitudes:   Array of continuous magnitudes.
     """

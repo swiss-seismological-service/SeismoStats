@@ -118,9 +118,11 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         if self.times is not None:
             srt = np.argsort(self.times)
             self.magnitudes = self.magnitudes[srt]
+            self._original_mags = self._original_mags[srt]
             self.times = self.times[srt]
             if self.weights is not None:
                 self.weights = self.weights[srt]
+                self._original_weights = self._original_weights[srt]
             self.idx = self.idx[srt]
 
         # calculate mg diffs to next larger magnitude

@@ -10,7 +10,7 @@ def bootstrap_std(sample: np.ndarray,
                   random_state: int | None = None):
     """
     Estimate the bootstrap standard deviation of a statistic computed from a
-    sample.
+    sample. Values that are `NaN` or `Inf` are disregarded in the estimation.
 
     Args:
     - sample:       The original data sample
@@ -29,6 +29,11 @@ def bootstrap_std(sample: np.ndarray,
         for _ in range(n)
     ])
 
+    # disregard nan and inf
+    estimates = estimates[~np.isinf(estimates) & ~np.isnan(estimates)]
+    if len(estimates) == 0:
+        raise ValueError(
+            "No valid estimates after filtering NaN and Inf values.")
     return np.std(estimates, ddof=1)
 
 

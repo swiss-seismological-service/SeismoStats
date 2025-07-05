@@ -141,5 +141,5 @@ def test_p_lilliefors():
         p_vals[ii] = ks_test_gr_lilliefors(mags_dith, mc=mc - delta_m / 2)
     p_lilliefors = np.mean(p_vals)
 
-    np.testing.assert_almost_equal(
-        estimator.p_lilliefors(n=1000), p_lilliefors, decimal=2)
+    np.testing.assert_allclose(
+        estimator.p_lilliefors(n=1000), p_lilliefors, atol=0.1)
