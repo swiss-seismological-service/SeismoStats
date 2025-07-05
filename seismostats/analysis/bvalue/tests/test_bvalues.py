@@ -10,8 +10,7 @@ from seismostats.analysis.bvalue import (BMorePositiveBValueEstimator,
                                          BPositiveBValueEstimator,
                                          ClassicBValueEstimator,
                                          UtsuBValueEstimator)
-from seismostats.utils.simulate_distributions import (
-    bin_to_precision)
+from seismostats.utils.simulate_distributions import bin_to_precision
 from seismostats.analysis.bvalue.utils import bootstrap_std
 
 
@@ -252,12 +251,11 @@ def test_estimate_b_more_positive(
                      1.1, 1.9, 1.2])
 
     estimator = BMorePositiveBValueEstimator()
-    estimator2 = BMorePositiveBValueEstimator()
-
     estimator.calculate(mags, mc=mc, delta_m=delta_m)
     std_boot1 = estimator._std_bootstrap(n=100, random_state=213)
 
     def func(idx):
+        estimator2 = BMorePositiveBValueEstimator()
         idx = np.sort(idx)
         return estimator2.calculate(mags[idx], mc=mc, delta_m=delta_m)
     std_boot_2 = bootstrap_std(
