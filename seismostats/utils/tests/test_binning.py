@@ -85,6 +85,23 @@ def test_get_cum_fmd(magnitudes: np.ndarray, fmd_bin: float,
 
     assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 
+    # test weights
+    weights = np.ones_like(magnitudes)
+    nbins1, nc_counts1, nmags1 = get_cum_fmd(
+        magnitudes, fmd_bin)
+    nbins2, nc_counts2, nmags2 = get_cum_fmd(
+        magnitudes, fmd_bin, weights=weights)
+    assert np.allclose(nbins1, nbins2, atol=1e-10)
+    assert np.allclose(nc_counts1, nc_counts2, atol=1e-10)
+    assert np.allclose(nmags1, nmags2, atol=1e-10)
+
+    weights *= 0.5
+    nbins2, nc_counts2, nmags2 = get_cum_fmd(
+        magnitudes, fmd_bin, weights=weights)
+    assert np.allclose(nbins1, nbins2, atol=1e-10)
+    assert np.allclose(nc_counts1 / 2, nc_counts2, atol=1e-10)
+    assert np.allclose(nmags1, nmags2, atol=1e-10)
+
 
 @pytest.mark.parametrize(
     "magnitudes, fmd_bin, bins, counts, bin_position",
@@ -108,7 +125,7 @@ def test_get_cum_fmd(magnitudes: np.ndarray, fmd_bin: float,
 def test_get_fmd(magnitudes: np.ndarray, fmd_bin: float,
                  bins: np.ndarray, counts: np.ndarray, bin_position):
     errors = []
-    nbins, ncounts, nmags = get_fmd(
+    nbins, ncounts, _ = get_fmd(
         magnitudes, fmd_bin, bin_position=bin_position)
 
     if not np.allclose(bins, nbins, atol=1e-10):
@@ -120,6 +137,30 @@ def test_get_fmd(magnitudes: np.ndarray, fmd_bin: float,
 
     with pytest.raises(ValueError):
         get_fmd(magnitudes, 0, bin_position=bin_position)
+
+    # test weights
+    weights = np.ones_like(magnitudes)
+    nbins1, ncounts1, mags_binned1 = get_fmd(
+        magnitudes, fmd_bin)
+    nbins2, ncounts2, mags_binned2 = get_fmd(
+        magnitudes, fmd_bin, weights=weights)
+    assert np.allclose(nbins1, nbins2, atol=1e-10)
+    assert np.allclose(ncounts1, ncounts2, atol=1e-10)
+    assert np.allclose(mags_binned1, mags_binned2, atol=1e-10)
+
+    weights *= 0.5
+    nbins2, ncounts2, mags_binned2 = get_fmd(
+        magnitudes, fmd_bin, weights=weights)
+    assert np.allclose(nbins1, nbins2, atol=1e-10)
+    assert np.allclose(ncounts1 / 2, ncounts2, atol=1e-10)
+    assert np.allclose(mags_binned1, mags_binned2, atol=1e-10)
+
+    idx = magnitudes < 0.5
+    weights[idx] = 0
+    nbins2, ncounts2, _ = get_fmd(
+        magnitudes, fmd_bin, weights=weights)
+    idx_bin = nbins2 < 0.5
+    assert np.all(ncounts2[idx_bin] == 0)
 
 
 def test_test_binning():

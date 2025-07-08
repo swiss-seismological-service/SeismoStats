@@ -31,6 +31,7 @@ def plot_cum_fmd(
     magnitudes: np.ndarray | pd.Series,
     mc: float | None = None,
     fmd_bin: float = None,
+    weights: np.ndarray | None = None,
     b_value: float | None = None,
     ax: plt.Axes | None = None,
     color: str | list = None,
@@ -51,6 +52,7 @@ def plot_cum_fmd(
                 visualization of the data. Assumed 0 if not given. It is
                 possible to provide a value that is larger than the actual
                 discretization of the magnitudes.
+        weights:    Weights for the magnitudes, defaults to None
         b_value:    The b-value of the theoretical GR distribution to plot.
         ax:         Axis where figure should be plotted.
         color:      Color of the data. If one value is given, it is used for
@@ -73,7 +75,7 @@ def plot_cum_fmd(
 
     magnitudes = magnitudes[~np.isnan(magnitudes)]
     bins, c_counts, magnitudes = get_cum_fmd(
-        magnitudes, fmd_bin, bin_position=bin_position
+        magnitudes, fmd_bin, weights=weights, bin_position=bin_position
     )
 
     if ax is None:
@@ -138,6 +140,7 @@ def plot_cum_fmd(
 def plot_fmd(
     magnitudes: np.ndarray | pd.Series,
     fmd_bin: float,
+    weights: np.ndarray | None = None,
     ax: plt.Axes | None = None,
     color: str = None,
     size: int = None,
@@ -151,9 +154,10 @@ def plot_fmd(
     Args:
         magnitudes:     Array of magnitudes.
         fmd_bin:        Bin size for the FMD. This can be independent of
-                    the descritization of the magnitudes. The optimal value
+                    the discretization of the magnitudes. The optimal value
                     would be as small as possible while at the same time
                     ensuring that there are enough magnitudes in each bin.
+        weights:        Weights for the magnitudes, defaults to None
         ax:             The axis where figure should be plotted.
         color:          Color of the data.
         size:           Size of data points.
@@ -171,6 +175,7 @@ def plot_fmd(
     bins, counts, magnitudes = get_fmd(
         magnitudes,
         fmd_bin,
+        weights=weights,
         bin_position=bin_position
     )
 
@@ -202,8 +207,10 @@ def plot_fmd(
 def plot_cum_count(
     times: list | np.ndarray | pd.Series,
     magnitudes: np.ndarray | pd.Series,
-    mcs: np.ndarray = np.array([0]),
+    mcs: np.ndarray | None = None,
     delta_m: float | None = None,
+    weights: np.ndarray | None = None,
+    normalize: bool = True,
     ax: plt.Axes | None = None,
 ) -> plt.Axes:
     """
@@ -219,29 +226,54 @@ def plot_cum_count(
                 lines on the plot.
         delta_m:    Binning precision of the magnitudes, assumed 0 if not
                 given.
+        weights:    Weights for the magnitudes, defaults to None
+        normalize:  If True (default), the cumulative count is normalized to
+                one. Otherwise, the absolute cumulative count is plotted.
         ax:         Axis where figure should be plotted.
 
     Returns:
         ax: Ax that was plotted on.
     """
+    times = np.asarray(times)
+    magnitudes = np.asarray(magnitudes)
+    n_events = len(times)
     first_time, last_time = min(times), max(times)
+
+    if delta_m is None:
+        delta_m = 0
+    if mcs is None:
+        mcs = np.array([min(magnitudes)])
+    if weights is None:
+        weights = np.ones(n_events)
+    else:
+        weights = np.asarray(weights)
 
     if ax is None:
         ax = plt.subplots()[1]
 
-    if delta_m is None:
-        delta_m = 0
-
     for mc in mcs:
-        filtered_index = magnitudes >= mc - delta_m / 2
-        times_sorted = sorted(times[filtered_index])
-        times_adjusted = [first_time, *times_sorted, last_time]
+        # filter events below mc
+        mask = magnitudes >= mc - delta_m / 2
+        times_selected = times[mask]
+        weights_selected = weights[mask]
 
-        ax.plot(
-            times_adjusted,
-            np.arange(len(times_adjusted)) / (len(times_adjusted) - 1),
-            label=f"Mc={np.round(mc, 2)}",
+        # sort by time
+        order = np.argsort(times_selected)
+        times_selected = times_selected[order]
+        weights_selected = weights_selected[order]
+
+        # estimate cumulative count
+        cumulative = np.concatenate(
+            ([0], np.cumsum(weights_selected), [weights_selected.sum()])
         )
+        timeline = np.concatenate(
+            ([first_time], times_selected, [last_time])
+        )
+
+        if normalize:
+            cumulative = cumulative / cumulative[-1]
+
+        ax.step(timeline, cumulative, where="post", label=f"Mc={mc:.2f}")
 
     ax.set_xlabel("Time")
     ax.set_ylabel("Cumulative number of events")

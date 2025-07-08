@@ -189,6 +189,7 @@ def compare_method_and_function(method,
                                                      exclude_args)
     function_params = extract_names_and_default_values(function_args,
                                                        exclude_args)
+
     assert method_params == function_params
 
     method_output = method(**method_kwargs)

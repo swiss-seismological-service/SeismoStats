@@ -1135,8 +1135,10 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['time', 'magnitude'])
     def plot_cum_count(self,
-                       mcs: np.ndarray = np.array([0]),
+                       mcs: np.ndarray | None = None,
                        delta_m: float | None = None,
+                       weights: np.ndarray | None = None,
+                       normalize: bool = True,
                        ax: plt.Axes | None = None,
                        ) -> plt.Axes:
         '''
@@ -1164,6 +1166,8 @@ class Catalog(pd.DataFrame):
                             self.magnitude,
                             mcs=mcs,
                             delta_m=delta_m,
+                            weights=weights,
+                            normalize=normalize,
                             ax=ax)
         return ax
 
@@ -1222,6 +1226,7 @@ class Catalog(pd.DataFrame):
     def plot_cum_fmd(self,
                      mc: float | None = None,
                      fmd_bin: float = None,
+                     weights: np.ndarray | None = None,
                      b_value: float | None = None,
                      ax: plt.Axes | None = None,
                      color: str | list = None,
@@ -1265,9 +1270,10 @@ class Catalog(pd.DataFrame):
         if b_value is None:
             b_value = self.b_value
         ax = plot_cum_fmd(self.magnitude,
-                          b_value=b_value,
                           mc=mc,
                           fmd_bin=fmd_bin,
+                          weights=weights,
+                          b_value=b_value,
                           ax=ax,
                           color=color,
                           size=size,
@@ -1279,6 +1285,7 @@ class Catalog(pd.DataFrame):
     @require_cols(require=['magnitude'])
     def plot_fmd(self,
                  fmd_bin: float,
+                 weights: np.ndarray | None = None,
                  ax: plt.Axes | None = None,
                  color: str = None,
                  size: int = None,
@@ -1305,6 +1312,7 @@ class Catalog(pd.DataFrame):
         '''
         ax = plot_fmd(self.magnitude,
                       fmd_bin=fmd_bin,
+                      weights=weights,
                       ax=ax,
                       color=color,
                       size=size,
