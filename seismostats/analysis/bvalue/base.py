@@ -8,7 +8,6 @@ from seismostats.analysis.bvalue.utils import (b_value_to_beta,
                                                shi_bolt_confidence)
 from seismostats.utils._config import get_option
 from seismostats.utils.binning import binning_test
-from seismostats.analysis.bvalue.utils import bootstrap_std
 from seismostats.analysis.lilliefors import ks_test_gr_lilliefors
 from seismostats.utils.simulate_distributions import dither_magnitudes
 
@@ -23,8 +22,8 @@ class BValueEstimator(ABC):
         self.idx: np.ndarray | None = None
 
         self.__b_value: float | None = None
-        self.__original_mags: np.ndarray | None = None
-        self.__original_idx: np.ndarray | None = None
+        self._original_mags: np.ndarray | None = None
+        self._original_weights: np.ndarray | None = None
 
     def calculate(self,
                   magnitudes: np.ndarray | list,
@@ -72,8 +71,9 @@ class BValueEstimator(ABC):
         self._filter_magnitudes()
 
         # retain original magnitudes (above mc and without NaNs)
-        self.__original_mags = self.magnitudes.copy()
-        self.__original_idx = self.idx.copy()
+        self._original_mags = self.magnitudes.copy()
+        if self.weights is not None:
+            self._original_weights = self.weights.copy()
 
         if len(self.magnitudes) == 0:
             self.__b_value = np.nan
@@ -142,7 +142,7 @@ class BValueEstimator(ABC):
         '''
         The b-value of the Gutenberg-Richter law.
         '''
-        self.__is_estimated()
+        self._is_estimated()
         return self.__b_value
 
     @property
@@ -159,7 +159,7 @@ class BValueEstimator(ABC):
         '''
         The beta value of the Gutenberg-Richter law.
         '''
-        self.__is_estimated()
+        self._is_estimated()
         return b_value_to_beta(self.__b_value)
 
     @property
@@ -167,7 +167,7 @@ class BValueEstimator(ABC):
         '''
         Shi and Bolt uncertainty of the b-value estimate.
         '''
-        self.__is_estimated()
+        self._is_estimated()
 
         return shi_bolt_confidence(self.magnitudes,
                                    self.__b_value,
@@ -179,42 +179,12 @@ class BValueEstimator(ABC):
         '''
         Shi and Bolt uncertainty of the beta estimate.
         '''
-        self.__is_estimated()
+        self._is_estimated()
 
         return shi_bolt_confidence(self.magnitudes,
                                    self.beta,
                                    weights=self.weights,
                                    b_parameter='beta')
-
-    def std_bootstrap(self, n: int = 500, random_state: int = None) -> float:
-        '''
-        Shi and Bolt uncertainty of the beta estimate.
-
-        Args:
-            n:      Number of bootstrap resamples (default is 500).
-            random_state: Random seed for reproducibility (default is None).
-        Returns:
-            std:    Bootstrap standard deviation of the b-value estimate
-                estimated by resampling the magnitudes.
-        '''
-        self.__is_estimated()
-
-        # copy self.magnitudes to avoid changing the original magnitudes
-        temp_magnitudes = self.magnitudes.copy()
-        temp_idx = self.idx.copy()
-
-        # calculate bootstrap variance
-        def func(sample):
-            self.idx = self.__original_idx.copy()
-            self.magnitudes = sample
-            return self._estimate()
-        std = bootstrap_std(self.__original_mags, func,
-                            n=n, random_state=random_state)
-
-        # restore original magnitudes
-        self.magnitudes = temp_magnitudes
-        self.idx = temp_idx
-        return std
 
     def p_lilliefors(self, n=100):
         '''
@@ -238,7 +208,7 @@ class BValueEstimator(ABC):
         exponential distribution with mean unknown." Journal of the American
         Statistical Association 64.325 (1969): 387-389.
         '''
-        self.__is_estimated()
+        self._is_estimated()
 
         #  If the estimator has a dmc attribute, set it as the mc for the test
         if hasattr(self, 'dmc'):
@@ -263,10 +233,10 @@ class BValueEstimator(ABC):
         '''
         Number of magnitudes used to estimate the b-value.
         '''
-        self.__is_estimated()
+        self._is_estimated()
         return len(self.magnitudes)
 
-    def __is_estimated(self):
+    def _is_estimated(self):
         '''
         Checks if the b-value has been estimated.
         '''

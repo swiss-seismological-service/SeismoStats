@@ -11,6 +11,8 @@ from seismostats.analysis.bvalue import (BMorePositiveBValueEstimator,
                                          ClassicBValueEstimator,
                                          UtsuBValueEstimator)
 from seismostats.utils.simulate_distributions import bin_to_precision
+from seismostats.analysis.bvalue.utils import bootstrap_std
+
 
 PATH_RESOURCES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'data')
@@ -234,3 +236,31 @@ def test_estimate_b_more_positive(
     estimator.calculate(mags, mc=-1, delta_m=0.1, times=times)
     assert (mags[estimator.idx] == np.array([0.9, 0.2, 0.5])).all()
     assert (estimator.times == times[estimator.idx]).all()
+
+    # test that std (with bootstrap) works correctly
+    mc = 1
+    delta_m = 0.1
+    mags = np.array([1., 1.4, 2., 1., 1.1, 1.4, 1.5, 1.1, 1.1, 2.1, 1., 1.3,
+                     1.3, 1.8, 1.1, 3.9, 1., 2.3, 1.2, 1., 1., 1.2, 1.6, 2.,
+                     1.8, 1.2, 2.1, 1.6, 2.1, 2.1, 2.1, 1.1, 2.2, 1., 1.2, 1.1,
+                     1.3, 2.3, 1.4, 1.2, 1.1, 1.3, 1.1, 1.4, 1.6, 1.1, 1.2, 1.2,
+                     1.1, 1.8, 1.6, 1.5, 1.2, 1.3, 1.2, 1.6, 1.5, 2.2, 1., 1.1,
+                     1., 1.1, 1.2, 1.3, 1.1, 1., 1.2, 1.4, 1.1, 1.1, 1.4, 1.6,
+                     1.9, 1.1, 1., 1.3, 1.3, 1., 1.3, 1.6, 1., 1.5, 3.2, 1.5,
+                     1., 1.9, 1.9, 1.1, 2.6, 1.2, 1., 1., 1.2, 1., 1., 1.2, 1.3,
+                     1.1, 1.9, 1.2])
+
+    estimator = BMorePositiveBValueEstimator()
+    estimator.calculate(mags, mc=mc, delta_m=delta_m)
+    std_boot1 = estimator._std_bootstrap(n=100, random_state=213)
+
+    def func(idx):
+        estimator2 = BMorePositiveBValueEstimator()
+        idx = np.sort(idx)
+        return estimator2.calculate(mags[idx], mc=mc, delta_m=delta_m)
+    std_boot_2 = bootstrap_std(
+        np.arange(len(mags)), func, n=100, random_state=213)
+
+    np.testing.assert_allclose(std_boot1, 0.21440113919807524)
+    np.testing.assert_allclose(std_boot_2, std_boot1)
+    np.testing.assert_allclose(estimator.std, std_boot1, atol=0.1)
