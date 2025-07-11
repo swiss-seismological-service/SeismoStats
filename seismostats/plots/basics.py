@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import datetime as dt
 
 # Own functions
@@ -28,17 +27,19 @@ def gutenberg_richter(
 
 
 def plot_cum_fmd(
-    magnitudes: np.ndarray | pd.Series,
+    magnitudes: np.ndarray,
     mc: float | None = None,
     fmd_bin: float = None,
     weights: np.ndarray | None = None,
     b_value: float | None = None,
     ax: plt.Axes | None = None,
-    color: str | list = None,
+    color: str | None = None,
+    color_line: str | None = None,
     size: int = None,
     grid: bool = False,
     bin_position: str = "center",
-    legend: bool | str | list = True,
+    label: bool | str = True,
+    label_line: bool | str = True,
 ) -> plt.Axes:
     """
     Plots cumulative frequency magnitude distribution, optionally with a
@@ -55,16 +56,21 @@ def plot_cum_fmd(
         weights:    Weights for the magnitudes, defaults to None
         b_value:    The b-value of the theoretical GR distribution to plot.
         ax:         Axis where figure should be plotted.
-        color:      Color of the data. If one value is given, it is used for
-                points, and the line of the theoretical GR distribution if it
-                is plotted. If a list of colors is given, the first entry is
-                the color of the points, and the second of the line
-                representing the GR distribution.
+        color:      Color of the data points. If None is chosen, it will be set
+                to the default matplotlib color cycle.
+        color_line: Color of the GR line, if None is chosen, it will be the
+                same as the data points.
         size:       Size of the data points.
         grid:       Indicates whether or not to include grid lines.
         bin_position: Position of the bin, options are  'center' and 'left'
                 accordingly, left edges of bins or center points are
                 returned.
+        label:     Label of the data points. If True, it will be set to
+                "cumulative". If a string is provided, it will be used as the
+                label for the data points. If False, no label is shown.
+        label_line: If True, the GR line will be labeled as "GR fit", together
+                with the provided b-value. If a string is provided, it will be
+                used as the label for the GR line. If False, no label is shown.
 
     Returns:
         ax: The ax object that was plotted on.
@@ -81,47 +87,37 @@ def plot_cum_fmd(
     if ax is None:
         ax = plt.subplots()[1]
 
-    if type(legend) is list:
-        labels = legend
-    elif type(legend) is str:
-        labels = [legend, "GR fit"]
-    else:
-        labels = ["cumulative", "GR fit"]
+    if label is True:
+        label = ["cumulative"]
+    elif label is False:
+        label = ''
+
+    scatter1 = ax.scatter(
+        bins,
+        c_counts,
+        s=size,
+        color=color,
+        marker="s",
+        label=label,
+    )
 
     if b_value is not None:
-        if type(legend) is not list:
-            labels[1] = "GR fit, b={x:.2f}".format(x=b_value)
-        else:
-            labels[1] = labels[1] + ", b={x:.2f}".format(x=b_value)
+        if label_line is True:
+            label_line = "GR fit, b={x:.2f}".format(x=b_value)
+        elif label_line is False:
+            label_line = ''
         if mc is None:
             mc = min(magnitudes)
+        if color_line is None:
+            color_line = scatter1.get_facecolor()[0]
+
         n_mc = len(magnitudes[magnitudes >= mc - fmd_bin / 2])
         if bin_position == "left":
             mc -= fmd_bin / 2
         x = bins[bins >= mc - fmd_bin / 2]
         y = gutenberg_richter(x, b_value, min(x), n_mc)
 
-        if type(color) is not list:
-            color = [color, color]
-
-        ax.scatter(
-            bins,
-            c_counts,
-            s=size,
-            color=color[0],
-            marker="s",
-            label=labels[0],
-        )
-        ax.plot(x, y, color=color[1], label=labels[1])
-    else:
-        ax.scatter(
-            bins,
-            c_counts,
-            s=size,
-            color=color,
-            marker="s",
-            label=labels[0],
-        )
+        ax.plot(x, y, color=color_line, label=label_line)
 
     ax.set_yscale("log")
     ax.set_xlabel("Magnitude")
@@ -131,14 +127,14 @@ def plot_cum_fmd(
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
-    if legend:
+    if label is not False or label_line is not False:
         ax.legend()
 
     return ax
 
 
 def plot_fmd(
-    magnitudes: np.ndarray | pd.Series,
+    magnitudes: np.ndarray,
     fmd_bin: float,
     weights: np.ndarray | None = None,
     ax: plt.Axes | None = None,
@@ -146,7 +142,7 @@ def plot_fmd(
     size: int = None,
     grid: bool = False,
     bin_position: str = "center",
-    legend: bool | str | list = True,
+    label: bool | str = True,
 ) -> plt.Axes:
     """
     Plots frequency magnitude distribution.
@@ -165,6 +161,10 @@ def plot_fmd(
         bin_position:   Position of the bin, options are  "center" and "left"
                     accordingly, left edges of bins or center points are
                     returned.
+        label:          Label of the data points. If True, it will be set to
+                    "non cumulative". If a string is provided, it will be used
+                    as the label for the data points. If False, no label is
+                    shown.
 
     Returns:
         ax: The ax object that was plotted on.
@@ -182,14 +182,10 @@ def plot_fmd(
     if ax is None:
         ax = plt.subplots()[1]
 
-    if type(legend) is list:
-        labels = legend
-    elif type(legend) is str:
-        labels = [legend]
-    else:
-        labels = ["non cumulative"]
+    if label is True:
+        label = ["non cumulative"]
 
-    ax.scatter(bins, counts, s=size, color=color, marker="^", label=labels[0])
+    ax.scatter(bins, counts, s=size, color=color, marker="^", label=label)
     ax.set_yscale("log")
     ax.set_xlabel("Magnitude")
     ax.set_ylabel("N")
@@ -198,17 +194,18 @@ def plot_fmd(
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
-    if legend:
+    if label is not False:
         ax.legend()
 
     return ax
 
 
 def plot_cum_count(
-    times: list | np.ndarray | pd.Series,
-    magnitudes: np.ndarray | pd.Series,
+    times: np.ndarray,
+    magnitudes: np.ndarray,
     mcs: np.ndarray | None = None,
-    delta_m: float | None = None,
+    color: str | list | None = None,
+    delta_m: float = None,
     weights: np.ndarray | None = None,
     normalize: bool = True,
     ax: plt.Axes | None = None,
@@ -224,6 +221,12 @@ def plot_cum_count(
                 ``times``.
         mcs:        The list of completeness magnitudes for which we show
                 lines on the plot.
+        color:     Color of the lines, corresponding to the different
+                completeness magnitudes (if no completeness is given, the
+                lowest magnitude of the catalog will be chosen as completeness).
+                It should have the same length as ``mcs``. If there is only one
+                completeness magnitude, it can be a single string. If None is
+                chosen, it will be set to the default matplotlib color cycle.
         delta_m:    Binning precision of the magnitudes, assumed 0 if not
                 given.
         weights:    Weights for the magnitudes, defaults to None
@@ -247,11 +250,17 @@ def plot_cum_count(
         weights = np.ones(n_events)
     else:
         weights = np.asarray(weights)
-
+    if isinstance(color, str) or color is None:
+        color = [color]
+    else:
+        if len(color) != len(mcs):
+            raise ValueError(
+                "Length of color list must match length of mcs list."
+            )
     if ax is None:
         ax = plt.subplots()[1]
 
-    for mc in mcs:
+    for ii, mc in enumerate(mcs):
         # filter events below mc
         mask = magnitudes >= mc - delta_m / 2
         times_selected = times[mask]
@@ -273,7 +282,8 @@ def plot_cum_count(
         if normalize:
             cumulative = cumulative / cumulative[-1]
 
-        ax.step(timeline, cumulative, where="post", label=f"Mc={mc:.2f}")
+        ax.step(timeline, cumulative, where="post",
+                label=f"Mc={mc:.2f}", color=color[ii])
 
     ax.set_xlabel("Time")
     ax.set_ylabel("Cumulative number of events")
@@ -282,15 +292,16 @@ def plot_cum_count(
 
 
 def plot_mags_in_time(
-    times: list | np.ndarray | pd.Series,
-    magnitudes: np.ndarray | pd.Series,
+    times: np.ndarray,
+    magnitudes: np.ndarray,
     mc_change_times: list | None = None,
     mcs: list | None = None,
     ax: plt.Axes | None = None,
     dot_smallest: int = 10,
     dot_largest: int = 200,
     dot_interpolation_power: int = 2,
-    color_dots: str = "blue",
+    color_dots: str | np.ndarray = "blue",
+    cmap: str = "viridis",
     color_line: str = "#eb4034",
 ) -> plt.Axes:
     """
@@ -314,6 +325,8 @@ def plot_mags_in_time(
         dot_largest: Largest dot size for magnitude scaling.
         dot_interpolation_power: Interpolation power for scaling.
         color_dots: Color of the dots representing the events.
+        cmap:       Colormap for the dots, in case color_dots is an array.
+                Default is "viridis".
         color_line: Color of the line representing the Mc changes.
 
     Returns:
@@ -332,6 +345,7 @@ def plot_mags_in_time(
             interpolation_power=dot_interpolation_power,
         ),
         c=color_dots,
+        cmap=cmap,
         linewidth=0.5,
         alpha=0.8,
         edgecolor="k",
