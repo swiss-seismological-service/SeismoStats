@@ -93,8 +93,6 @@ def plot_in_space(
 
     if ax is None:
         ax = plt.subplot(projection=tile_proj)
-    else:
-        ax.set_projection(tile_proj)
 
     if include_map is True and country is not None:
         # create box around country
