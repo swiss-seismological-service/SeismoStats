@@ -93,6 +93,9 @@ def plot_in_space(
 
     if ax is None:
         ax = plt.subplot(projection=tile_proj)
+        ax_temp = None
+    else:
+        ax_temp = ax
 
     if include_map is True and country is not None:
         # create box around country
@@ -123,7 +126,18 @@ def plot_in_space(
             max(latitudes) + pad_lat,
         ]
 
-    ax.set_extent(exts, crs=ll_proj)
+    if ax_temp is not None:
+        # Get current extent and union with new extent
+        current_extent = ax.get_extent(crs=ll_proj)
+        new_extent = [
+            min(current_extent[0], exts[0]),
+            max(current_extent[1], exts[1]),
+            min(current_extent[2], exts[2]),
+            max(current_extent[3], exts[3]),
+        ]
+        ax.set_extent(new_extent, crs=ll_proj)
+    else:
+        ax.set_extent(exts, crs=ll_proj)
 
     if include_map is True:
         ax.add_image(tiles, 8, alpha=0.6)
