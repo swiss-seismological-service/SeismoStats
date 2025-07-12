@@ -5,7 +5,6 @@ import cartopy.io.img_tiles as cimgt
 import geopandas
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 # for map plotting
@@ -16,9 +15,10 @@ from seismostats.plots.basics import dot_size, reverse_dot_size
 
 
 def plot_in_space(
-    longitudes: np.ndarray | pd.Series,
-    latitudes: np.ndarray | pd.Series,
-    magnitudes: np.ndarray | pd.Series,
+    longitudes: np.ndarray,
+    latitudes: np.ndarray,
+    magnitudes: np.ndarray,
+    ax: cartopy.mpl.geoaxes.GeoAxes | None = None,
     resolution: str = "10m",
     include_map: bool | None = False,
     country: str | None = None,
@@ -30,7 +30,6 @@ def plot_in_space(
     color_dots: str | np.ndarray = "blue",
     cmap: str = "viridis",
     color_map: str | None = None,
-    ax: cartopy.mpl.geoaxes.GeoAxes | None = None,
 ) -> cartopy.mpl.geoaxes.GeoAxes:
     """
     This function plots seismicity on a surface. If ``include_map`` is
@@ -42,6 +41,8 @@ def plot_in_space(
         longitudes:     Array of longitudes.
         latitudes:      Array of latitudes.
         magnitudes:     Array of magnitudes, used for scaling of dot sizes.
+        ax:             GeoAxis object, if None is chosen, a new one will be
+                    created.
         resolution:     Resolution of the map, "10m", "50m" and "110m"
                     available.
         include_map:    If True, seismicity will be plotted on natural earth

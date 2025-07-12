@@ -1072,15 +1072,18 @@ class Catalog(pd.DataFrame):
 
     @require_cols(require=['latitude', 'longitude', 'magnitude'])
     def plot_in_space(self,
+                      ax: cartopy.mpl.geoaxes.GeoAxes | None = None,
                       resolution: str = "10m",
                       include_map: bool | None = False,
                       country: str | None = None,
-                      colors: str | None = None,
                       style: str = "satellite",
                       dot_smallest: int = 10,
                       dot_largest: int = 200,
                       dot_interpolation_power: int = 2,
-                      dot_labels: str = "auto"
+                      dot_labels: str = "auto",
+                      color_dots: str | np.ndarray = "blue",
+                      cmap: str = "viridis",
+                      color_map: str | None = None,
                       ) -> cartopy.mpl.geoaxes.GeoAxes:
         '''
         This function plots seismicity on a surface. If ``include_map`` is
@@ -1089,6 +1092,8 @@ class Catalog(pd.DataFrame):
         the grid is stretched according to the midpoint latitude.
 
         Args:
+            ax:             GeoAxis object, if None is chosen, a new one will be
+                        created.
             resolution:     Resolution of the map, "10m", "50m" and "110m"
                         available.
             include_map:    If True, seismicity will be plotted on natural
@@ -1116,6 +1121,12 @@ class Catalog(pd.DataFrame):
                         a predefined ``matplotlib.ticker`` (e.g.
                         ``FixedLocator``, which results in the same legend as
                         providing a list of values).
+            color_dots:     Color of the dots representing the events.
+                        If None is chosen, it will be set to "blue".
+            cmap:           Colormap for the dots, in case the color of the
+                        dots is an array. Default is "viridis".
+            color_map:      Color of background. If None is chosen, it will be
+                        either white or standard natural earth colors.
         Returns:
             ax: GeoAxis object
         '''
@@ -1125,12 +1136,15 @@ class Catalog(pd.DataFrame):
                            resolution=resolution,
                            include_map=include_map,
                            country=country,
-                           colors=colors,
                            style=style,
                            dot_smallest=dot_smallest,
                            dot_largest=dot_largest,
                            dot_interpolation_power=dot_interpolation_power,
-                           dot_labels=dot_labels)
+                           dot_labels=dot_labels,
+                           color_dots=color_dots,
+                           cmap=cmap,
+                           color_map=color_map,
+                           ax=ax)
         return ax
 
     @require_cols(require=['time', 'magnitude'])
@@ -1140,6 +1154,7 @@ class Catalog(pd.DataFrame):
                        weights: np.ndarray | None = None,
                        normalize: bool = True,
                        ax: plt.Axes | None = None,
+                       color: str | list | None = None,
                        ) -> plt.Axes:
         '''
         Plots cumulative count of earthquakes in given catalog above given Mc
@@ -1154,6 +1169,13 @@ class Catalog(pd.DataFrame):
                     lines on the plot.
             delta_m:    Binning precision of the magnitudes.
             ax:         Axis where figure should be plotted.
+            color:     Color of the lines, corresponding to the different
+                    completeness magnitudes (if no completeness is given, the
+                    lowest magnitude of the catalog will be chosen as
+                    completeness). It should have the same length as ``mcs``.
+                    If a single string is given, all lines will be plotted in
+                    that color. If None is chosen, it will be set to the
+                    default matplotlib color cycle.
 
         Returns:
             ax: Ax that was plotted on.
@@ -1168,7 +1190,8 @@ class Catalog(pd.DataFrame):
                             delta_m=delta_m,
                             weights=weights,
                             normalize=normalize,
-                            ax=ax)
+                            ax=ax,
+                            color=color)
         return ax
 
     @require_cols(require=['time', 'magnitude'])
@@ -1180,6 +1203,7 @@ class Catalog(pd.DataFrame):
                           dot_largest: int = 200,
                           dot_interpolation_power: int = 2,
                           color_dots: str = "blue",
+                          cmap: str = "viridis",
                           color_line: str = "#eb4034",
                           ) -> plt.Axes:
         '''
@@ -1205,6 +1229,8 @@ class Catalog(pd.DataFrame):
             dot_largest: Largest dot size for magnitude scaling.
             dot_interpolation_power: Interpolation power for scaling.
             color_dots: Color of the dots representing the events.
+            cmap:       Colormap for the dots, in case color_dots is an array.
+                    Default is "viridis".
             color_line: Color of the line representing the Mc changes.
 
         Returns:
@@ -1219,6 +1245,7 @@ class Catalog(pd.DataFrame):
                                dot_largest=dot_largest,
                                dot_interpolation_power=dot_interpolation_power,
                                color_dots=color_dots,
+                               cmap=cmap,
                                color_line=color_line)
         return ax
 
@@ -1229,11 +1256,13 @@ class Catalog(pd.DataFrame):
                      weights: np.ndarray | None = None,
                      b_value: float | None = None,
                      ax: plt.Axes | None = None,
-                     color: str | list = None,
-                     size: int = None,
+                     color: str | None = None,
+                     color_line: str | None = None,
+                     size: int | None = None,
                      grid: bool = False,
                      bin_position: str = "center",
-                     legend: bool | str | list = True
+                     label: bool | str | list = True,
+                     label_line: bool | str = True,
                      ) -> plt.Axes:
         '''
         Plots cumulative frequency magnitude distribution, optionally with a
@@ -1249,16 +1278,22 @@ class Catalog(pd.DataFrame):
                     catalog attribute ``delta_m`` (if defined).
             b_value:    The b-value of the theoretical GR distribution to plot.
             ax:         Axis where figure should be plotted.
-            color:      Color of the data. If one value is given, it is used
-                    for points, and the line of the theoretical GR distribution
-                    if it is plotted. If a list of colors is given, the first
-                    entry is the color of the points, and the second of the
-                    line representing the GR distribution.
+            color:      Color of the data points. If None is chosen, it will be
+                    set to the default matplotlib color cycle.
+            color_line: Color of the GR line, if None is chosen, it will be the
+                    same as the data points.
             size:       Size of the data points.
             grid:       Indicates whether or not to include grid lines.
             bin_position: Position of the bin, options are  'center' and 'left'
                     accordingly, left edges of bins or center points are
                     returned.
+            label:      Label of the data points. If True, it will be set to
+                    "cumulative". If a string is provided, it will be used as
+                    the label for the data points. If False, no label is shown.
+            label_line: If True, the GR line will be labeled as "GR fit",
+                    together with the provided b-value. If a string is provided,
+                    it will be used as the label for the GR line. If False, no
+                    label is shown.
 
         Returns:
             ax: The ax object that was plotted on.
@@ -1276,10 +1311,12 @@ class Catalog(pd.DataFrame):
                           b_value=b_value,
                           ax=ax,
                           color=color,
+                          color_line=color_line,
                           size=size,
                           grid=grid,
                           bin_position=bin_position,
-                          legend=legend)
+                          label=label,
+                          label_line=label_line)
         return ax
 
     @require_cols(require=['magnitude'])
@@ -1287,11 +1324,11 @@ class Catalog(pd.DataFrame):
                  fmd_bin: float,
                  weights: np.ndarray | None = None,
                  ax: plt.Axes | None = None,
-                 color: str = None,
+                 color: str | None = None,
                  size: int = None,
                  grid: bool = False,
                  bin_position: str = "center",
-                 legend: bool | str | list = True
+                 label: bool | str = True
                  ) -> plt.Axes:
         '''
         Plots frequency magnitude distribution.
@@ -1306,6 +1343,10 @@ class Catalog(pd.DataFrame):
             bin_position:   Position of the bin, options are  "center" and
                         "left" accordingly, left edges of bins or center points
                         are returned.
+            label:          Label of the data points. If True, it will be set to
+                        "non cumulative". If a string is provided, it will be
+                        used as the label for the data points. If False, no
+                        label is shown.
 
         Returns:
             ax: The ax object that was plotted on.
@@ -1318,7 +1359,7 @@ class Catalog(pd.DataFrame):
                       size=size,
                       grid=grid,
                       bin_position=bin_position,
-                      legend=legend)
+                      label=label)
 
         return ax
 

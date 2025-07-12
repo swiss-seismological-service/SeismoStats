@@ -35,7 +35,7 @@ def plot_cum_fmd(
     ax: plt.Axes | None = None,
     color: str | None = None,
     color_line: str | None = None,
-    size: int = None,
+    size: int | None = None,
     grid: bool = False,
     bin_position: str = "center",
     label: bool | str = True,
@@ -88,7 +88,7 @@ def plot_cum_fmd(
         ax = plt.subplots()[1]
 
     if label is True:
-        label = ["cumulative"]
+        label = "cumulative"
     elif label is False:
         label = ''
 
@@ -138,7 +138,7 @@ def plot_fmd(
     fmd_bin: float,
     weights: np.ndarray | None = None,
     ax: plt.Axes | None = None,
-    color: str = None,
+    color: str | None = None,
     size: int = None,
     grid: bool = False,
     bin_position: str = "center",
@@ -183,7 +183,7 @@ def plot_fmd(
         ax = plt.subplots()[1]
 
     if label is True:
-        label = ["non cumulative"]
+        label = "non cumulative"
 
     ax.scatter(bins, counts, s=size, color=color, marker="^", label=label)
     ax.set_yscale("log")
@@ -204,11 +204,11 @@ def plot_cum_count(
     times: np.ndarray,
     magnitudes: np.ndarray,
     mcs: np.ndarray | None = None,
-    color: str | list | None = None,
     delta_m: float = None,
     weights: np.ndarray | None = None,
     normalize: bool = True,
     ax: plt.Axes | None = None,
+    color: str | list | None = None,
 ) -> plt.Axes:
     """
     Plots cumulative count of earthquakes in given catalog above given Mc
@@ -221,18 +221,18 @@ def plot_cum_count(
                 ``times``.
         mcs:        The list of completeness magnitudes for which we show
                 lines on the plot.
-        color:     Color of the lines, corresponding to the different
-                completeness magnitudes (if no completeness is given, the
-                lowest magnitude of the catalog will be chosen as completeness).
-                It should have the same length as ``mcs``. If there is only one
-                completeness magnitude, it can be a single string. If None is
-                chosen, it will be set to the default matplotlib color cycle.
         delta_m:    Binning precision of the magnitudes, assumed 0 if not
                 given.
         weights:    Weights for the magnitudes, defaults to None
         normalize:  If True (default), the cumulative count is normalized to
                 one. Otherwise, the absolute cumulative count is plotted.
         ax:         Axis where figure should be plotted.
+        color:     Color of the lines, corresponding to the different
+                completeness magnitudes (if no completeness is given, the
+                lowest magnitude of the catalog will be chosen as completeness).
+                It should have the same length as ``mcs``. If a single string
+                is given, all lines will be plotted in that color. If None is
+                chosen, it will be set to the default matplotlib color cycle.
 
     Returns:
         ax: Ax that was plotted on.
@@ -251,7 +251,7 @@ def plot_cum_count(
     else:
         weights = np.asarray(weights)
     if isinstance(color, str) or color is None:
-        color = [color]
+        color = [color] * len(mcs)
     else:
         if len(color) != len(mcs):
             raise ValueError(
