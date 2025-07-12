@@ -97,7 +97,7 @@ def test_plot_fmd():
 
     # Call plot function
     ax = plot_fmd(magnitudes, fmd_bin, color='blue',
-                  size=20, grid=True, legend="Test")
+                  size=20, grid=True, label="Test")
 
     # Check labels
     assert ax.get_xlabel() == "Magnitude"
