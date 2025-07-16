@@ -153,7 +153,6 @@ class BMorePositiveBValueEstimator(BValueEstimator):
         Bootstrap uncertainty of the b-value estimate. Depending on the number
         of the magnitudes, this can take a while to compute.
         '''
-        self._is_estimated()
         estimator = self.__class__()
 
         # Define the function for the bootstrap.
@@ -187,7 +186,8 @@ class BMorePositiveBValueEstimator(BValueEstimator):
     @property
     def std_beta(self) -> float:
         '''
-        Shi and Bolt uncertainty of the beta estimate.
+        Bootstrap uncertainty of the beta estimate. Depending on the number
+        of the magnitudes, this can take a while to compute.
         '''
         self._is_estimated()
 
