@@ -90,7 +90,7 @@ def plot_cum_fmd(
     if label is True:
         label = "cumulative"
     elif label is False:
-        label = ''
+        label = '_nolegend_'
 
     scatter1 = ax.scatter(
         bins,
@@ -105,7 +105,7 @@ def plot_cum_fmd(
         if label_line is True:
             label_line = "GR fit, b={x:.2f}".format(x=b_value)
         elif label_line is False:
-            label_line = ''
+            label_line = '_nolegend_'
         if mc is None:
             mc = min(magnitudes)
         if color_line is None:
@@ -127,8 +127,9 @@ def plot_cum_fmd(
         ax.grid(True)
         ax.grid(which="minor", alpha=0.3)
 
-    if label is not False or label_line is not False:
+    if label != '_nolegend_' or label_line != '_nolegend_':
         ax.legend()
+        print("Legend added to the plot.")
 
     return ax
 
@@ -279,11 +280,11 @@ def plot_cum_count(
             ([first_time], times_selected, [last_time])
         )
 
-        if normalize:
-            cumulative = cumulative / cumulative[-1]
-
-        ax.step(timeline, cumulative, where="post",
-                label=f"Mc={mc:.2f}", color=color[ii])
+        if sum(cumulative) > 0:
+            if normalize:
+                cumulative = cumulative / cumulative[-1]
+            ax.step(timeline, cumulative, where="post",
+                    label=f"Mc={mc:.2f}", color=color[ii])
 
     ax.set_xlabel("Time")
     ax.set_ylabel("Cumulative number of events")
