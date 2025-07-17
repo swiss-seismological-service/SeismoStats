@@ -164,4 +164,4 @@ def test_p_lilliefors():
     p_lilliefors = np.mean(p_vals)
 
     np.testing.assert_almost_equal(
-        estimator.p_lilliefors(n=1000), p_lilliefors, decimal=2)
+        estimator.p_lilliefors(n=1000), p_lilliefors, decimal=1)

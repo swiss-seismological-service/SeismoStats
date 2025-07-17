@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 from seismostats.plots.basics import dot_size, reverse_dot_size
-from seismostats.plots.basics import plot_fmd, plot_cum_count
+from seismostats.plots.basics import plot_fmd, plot_cum_count, plot_cum_fmd
 
 
 def test_dot_size():
@@ -97,7 +97,7 @@ def test_plot_fmd():
 
     # Call plot function
     ax = plot_fmd(magnitudes, fmd_bin, color='blue',
-                  size=20, grid=True, legend="Test")
+                  size=20, grid=True, label="Test")
 
     # Check labels
     assert ax.get_xlabel() == "Magnitude"
@@ -121,7 +121,33 @@ def test_plot_fmd():
     plt.close(ax.figure)  # Avoid leaving open figures
 
 
-def test_plot_cum_count_basic():
+def test_plot_cum_fmd():
+    magnitudes = np.array([2.5, 3.0, 3.2, 2.8, 3.5])
+    ax = plot_cum_fmd(magnitudes, b_value=1.0)
+
+    # default labels
+    legend = ax.get_legend()
+    assert legend is not None, "Expected a legend but none was found."
+    legend_labels = [text.get_text() for text in legend.get_texts()]
+    expected_labels = ['cumulative', 'GR fit, b=1.00']
+    assert legend_labels == expected_labels
+
+    # no labels
+    ax = plot_cum_fmd(magnitudes, b_value=1.0, label=False, label_line=False)
+    legend = ax.get_legend()
+    assert legend is None, "Expected no legend but one was found."
+
+    # given labels
+    ax = plot_cum_fmd(magnitudes, b_value=1.0,
+                      label='Test1', label_line='Test2')
+    legend = ax.get_legend()
+    assert legend is not None, "Expected a legend but none was found."
+    legend_labels = [text.get_text() for text in legend.get_texts()]
+    expected_labels = ['Test1', 'Test2']
+    assert legend_labels == expected_labels
+
+
+def test_plot_cum_count():
     # Example data
     times = np.array([1, 2, 3, 4, 5])
     magnitudes = np.array([2.5, 3.0, 3.2, 2.8, 3.5])
@@ -154,3 +180,10 @@ def test_plot_cum_count_basic():
     assert any("Mc=" in label for label in labels)
 
     plt.close(ax.figure)  # Cleanup
+
+    # check that fails when color is array of wrong length
+    mcs = np.array([2, 3, 4, 5])
+    colors = np.array(['red', 'green', 'blue', 'k'])
+    plot_cum_count(times, magnitudes, mcs=mcs, color=colors)
+    with pytest.raises(ValueError):
+        plot_cum_count(times, magnitudes, mcs=mcs, color=colors[1:])
