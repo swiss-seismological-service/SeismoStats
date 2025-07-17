@@ -49,18 +49,18 @@ Both the FMD and the cumulative FMD can be plotted together with:
 >>> import matplotlib.pyplot as plt
 >>> fig, ax = plt.subplots(figsize=(10,8))
 >>> cat.plot_cum_fmd(
-      ax=ax,
-      grid = True,
-      b_value=1.0,
-      mc=2.5,
-      color = "cornflowerblue",
-      color_line="k")
+... ax=ax,
+... grid=True,
+... b_value=1.0,
+... mc=2.5,
+... color="cornflowerblue",
+... color_line="k")
 >>> cat.plot_fmd(
-      ax=ax,
-      fmd_bin=0.1,
-      grid=True,
-      label="binned with fmd_bin=0.1",
-      color="orange")
+... ax=ax,
+... fmd_bin=0.1,
+... grid=True,
+... label="binned with fmd_bin=0.1",
+... color="orange")
 ```
 
 <figure>

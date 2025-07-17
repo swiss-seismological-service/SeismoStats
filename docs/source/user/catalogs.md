@@ -281,12 +281,12 @@ For a modification of the map layout (e.g. color of marker, background, labels) 
 #### Cumulative frequency-magnitude distribution
 For showing the cumulative frequency-magnitude distribution with {func}`plot_cum_fmd() <seismostats.Catalog.plot_cum_fmd>` the bin size `fmd_bin` has to be chosen. If additionally, the `b_value` and `mc` are passed as arguments (or are available as catalog attributes), the Gutenberg-Richter fit is shown.
 ```python
->>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5, color="cornflowerblue", color_line= "black")
+>>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5, color="cornflowerblue", color_line="black")
 
 >>> # Same as:
 >>> cat.b_value = 1.0
 >>> cat.mc = 2.5
->>> cat.plot_cum_fmd(fmd_bin=0.1, color="cornflowerblue", color_line= "black")
+>>> cat.plot_cum_fmd(fmd_bin=0.1, color="cornflowerblue", color_line="black")
 ```
 
 <figure>
