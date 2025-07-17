@@ -197,7 +197,7 @@ The following example shows how to download an earthquake catalog of Switzerland
 >>> client = FDSNWSEventClient(url)
 
 >>> # Download events
->>> df = client.get_events(
+>>> cat = client.get_events(
 ...     start_time=start_time,
 ...     end_time=end_time,
 ...     min_magnitude=min_magnitude,
@@ -230,7 +230,7 @@ For example the precision of the magnitudes `delta_m`, can be explicitly set by 
 This attribute is then automatically used by methods like {func}`bin_magnitudes <seismostats.Catalog.bin_magnitudes>` which bins the catalog magnitudes based on the given precision.
 ```python
 >>> # No additionaly argument delta_m is necessary
->>> cat.bin_magnitude()
+>>> cat.bin_magnitudes()
 ```
 Alternatively, `delta_m` can be passed directly as an argument to methods like {func}`bin_magnitudes <seismostats.Catalog.bin_magnitudes>`. In that case, the value passed will override the current value stored in the catalog's `delta_m`.
 ```python
@@ -239,7 +239,7 @@ Alternatively, `delta_m` can be passed directly as an argument to methods like {
 0.1
 
 # Bin the catalog with a new delta_m
->>> cat.bin_magnitude(delta_m=0.2)
+>>> cat.bin_magnitudes(delta_m=0.2)
 
 # The catalog attribute delta_m changed
 >>> print(cat.delta_m)
@@ -261,11 +261,18 @@ Here, we show some examples how the plotting methods can be used. The methods ac
 If the catalog contains information on the event location (`latitude`, `longitude`) in addition to the `magnitude` column, the seismicity can be plotted spatially:
 
 ``` python
->>> cat.plot_in_space()
+>>> cat.plot_in_space(
+      resolution='10m',
+      include_map=True,
+      country='Switzerland',
+      color_dots="blue",
+      color_map='Greys_r',
+      dot_labels=[1, 2, 3, 4],
+      )
 ```
 
 <figure>
-  <img src="../_static/catalog_map.png" alt="Alt text" width="1000"/>
+  <img src="../_static/catalog_map_switzerland.png" alt="Alt text" width="800"/>
   <figcaption>Seismicity map created with Catalog.plot_in_space().</figcaption>
 </figure>
 
@@ -274,12 +281,12 @@ For a modification of the map layout (e.g. color of marker, background, labels) 
 #### Cumulative frequency-magnitude distribution
 For showing the cumulative frequency-magnitude distribution with {func}`plot_cum_fmd() <seismostats.Catalog.plot_cum_fmd>` the bin size `fmd_bin` has to be chosen. If additionally, the `b_value` and `mc` are passed as arguments (or are available as catalog attributes), the Gutenberg-Richter fit is shown.
 ```python
->>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5, color=["cornflowerblue", "black"])
+>>> cat.plot_cum_fmd(fmd_bin=0.1, b_value=1.0, mc=2.5, color="cornflowerblue", color_line="black")
 
-# Same as:
+>>> # Same as:
 >>> cat.b_value = 1.0
 >>> cat.mc = 2.5
->>> cat.plot_cum_fmd(fmd_bin=0.1,color=["cornflowerblue", "black"])
+>>> cat.plot_cum_fmd(fmd_bin=0.1, color="cornflowerblue", color_line="black")
 ```
 
 <figure>

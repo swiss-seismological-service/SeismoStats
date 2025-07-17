@@ -19,7 +19,7 @@ FMD is a histogram-style plot that shows the number of earthquakes per magnitude
 >>> cat.plot_fmd(fmd_bin=0.1)
 ```
 
-Key arguments are the list of magnitudes and width of magnitude bins. The width of the magnitude bins best for visualisation purposes is not necessarily the one corresponding to the catalog binning. If used as a catalog method, the function will not assume the catalog binning `delta_m` as the default `fmd_bin`. Optional arguments include plotting options such as `bin_position`, `color`, `size`, `legend`.
+Key arguments are the list of magnitudes and width of magnitude bins. The width of the magnitude bins best for visualisation purposes is not necessarily the one corresponding to the catalog binning. If used as a catalog method, the function will not assume the catalog binning `delta_m` as the default `fmd_bin`. Optional arguments include plotting options such as `bin_position`, `color`, `size`, `label`.
 
 ### 1.2 Cumulative frequency-magnitude distribution
 The cumulative FMD shows the total number of events with magnitudes equal to or greater than a given value. This representation is log-linear and fits naturally with the Gutenberg-Richter law.
@@ -43,6 +43,25 @@ The function also works as a catalog class method, and assumes `fmd_bin=cat.delt
 
 If `b_value` and `mc` are provided, the function overlays the theoretical Gutenberg-Richter line. Different colors can be used for data vs. fit. Output is log-scaled on the y-axis.
 
+Both the FMD and the cumulative FMD can be plotted together with:
+
+```python
+>>> import matplotlib.pyplot as plt
+>>> fig, ax = plt.subplots(figsize=(10,8))
+>>> cat.plot_cum_fmd(
+... ax=ax,
+... grid=True,
+... b_value=1.0,
+... mc=2.5,
+... color="cornflowerblue",
+... color_line="k")
+>>> cat.plot_fmd(
+... ax=ax,
+... fmd_bin=0.1,
+... grid=True,
+... label="binned with fmd_bin=0.1",
+... color="orange")
+```
 
 <figure>
   <img src="../_static/fmd.png" alt="Alt text" width="600"/>
@@ -108,14 +127,17 @@ The {func}`plot_in_space <seismostats.plots.plot_in_space>` function allows you 
 Also works as a catalog class method, and with some additional arguments:
 ``` python
 >>> cat.plot_in_space(
-... resolution='10m', include_map=True,
+... resolution='10m',
+... include_map=True,
 ... country='Switzerland',
-... colors='Greys_r',
-... dot_labels=[1,2,3])
+... color_dots="blue",
+... color_map='Greys_r',
+... dot_labels=[1, 2, 3, 4],
+... )
 ```
 
 <figure>
-  <img src="../_static/catalog_map.png" alt="Alt text" width="1000"/>
+  <img src="../_static/catalog_map_switzerland.png" alt="Alt text" width="1000"/>
   <figcaption>Figure 4: plot_in_space.</figcaption>
 </figure>
 
