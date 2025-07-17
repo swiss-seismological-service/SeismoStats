@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+
 # for map plotting
 from shapely.geometry import Polygon
 
@@ -183,7 +184,7 @@ def plot_in_space(
         handles, labels = points.legend_elements(
             prop="sizes",
             num=dot_labels,
-            c="blue",
+            c="k",
             alpha=0.5,
             func=lambda x: reverse_dot_size(
                 x,
