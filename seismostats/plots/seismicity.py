@@ -5,9 +5,9 @@ import cartopy.io.img_tiles as cimgt
 import geopandas
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+
 # for map plotting
 from shapely.geometry import Polygon
 
@@ -16,18 +16,21 @@ from seismostats.plots.basics import dot_size, reverse_dot_size
 
 
 def plot_in_space(
-    longitudes: np.ndarray | pd.Series,
-    latitudes: np.ndarray | pd.Series,
-    magnitudes: np.ndarray | pd.Series,
+    longitudes: np.ndarray,
+    latitudes: np.ndarray,
+    magnitudes: np.ndarray,
+    ax: cartopy.mpl.geoaxes.GeoAxes | None = None,
     resolution: str = "10m",
     include_map: bool | None = False,
     country: str | None = None,
-    colors: str | None = None,
     style: str = "satellite",
     dot_smallest: int = 10,
     dot_largest: int = 200,
     dot_interpolation_power: int = 2,
     dot_labels: str = "auto",
+    color_dots: str | np.ndarray = "blue",
+    cmap: str = "viridis",
+    color_map: str | None = None,
 ) -> cartopy.mpl.geoaxes.GeoAxes:
     """
     This function plots seismicity on a surface. If ``include_map`` is
@@ -39,13 +42,13 @@ def plot_in_space(
         longitudes:     Array of longitudes.
         latitudes:      Array of latitudes.
         magnitudes:     Array of magnitudes, used for scaling of dot sizes.
+        ax:             GeoAxis object, if None is chosen, a new one will be
+                    created.
         resolution:     Resolution of the map, "10m", "50m" and "110m"
                     available.
         include_map:    If True, seismicity will be plotted on natural earth
                     map, otherwise it will be plotted on a blank grid.
         country:        Name of country, if None map will fit to data points.
-        colors:         Color of background. If None is chosen, it will be
-                    either white or standard natural earth colors.
         style:          Style of map, "satellite" or "street" are available.
         dot_smallest:   Smallest dot size for magnitude scaling.
         dot_largest:    Largest dot size for magnitude scaling.
@@ -63,6 +66,12 @@ def plot_in_space(
                     a predefined ``matplotlib.ticker`` (e.g.
                     ``FixedLocator``, which results in the same legend as
                     providing a list of values).
+        color_dots:     Color of the dots representing the events.
+                        If None is chosen, it will be set to "blue".
+        cmap:           Colormap for the dots, in case the color of the dots is
+                    an array. As default it will be set to "viridis".
+        color_map:      Color of background. If None is chosen, it will be
+                    either white or standard natural earth colors.
     Returns:
         ax: GeoAxis object
     """
@@ -73,9 +82,9 @@ def plot_in_space(
         shpfilename = shapereader.natural_earth(resolution, category, name)
         df = geopandas.read_file(shpfilename)
 
-    if colors is not None:
+    if color_map is not None:
         tiles = cimgt.GoogleTiles(style=style, desired_tile_form="L")
-        plt.set_cmap(colors)
+        plt.set_cmap(color_map)
     else:
         tiles = cimgt.GoogleTiles(style=style)
 
@@ -83,7 +92,11 @@ def plot_in_space(
     tile_proj = tiles.crs  # projection used by tiles
     ll_proj = ccrs.PlateCarree()  # CRS for raw long/lat
 
-    ax = plt.subplot(projection=tile_proj)
+    if ax is None:
+        ax = plt.subplot(projection=tile_proj)
+        ax_temp = None
+    else:
+        ax_temp = ax
 
     if include_map is True and country is not None:
         # create box around country
@@ -114,7 +127,18 @@ def plot_in_space(
             max(latitudes) + pad_lat,
         ]
 
-    ax.set_extent(exts, crs=ll_proj)
+    if ax_temp is not None:
+        # Get current extent and union with new extent
+        current_extent = ax.get_extent(crs=ll_proj)
+        new_extent = [
+            min(current_extent[0], exts[0]),
+            max(current_extent[1], exts[1]),
+            min(current_extent[2], exts[2]),
+            max(current_extent[3], exts[3]),
+        ]
+        ax.set_extent(new_extent, crs=ll_proj)
+    else:
+        ax.set_extent(exts, crs=ll_proj)
 
     if include_map is True:
         ax.add_image(tiles, 8, alpha=0.6)
@@ -136,7 +160,8 @@ def plot_in_space(
     points = ax.scatter(
         longitudes,
         latitudes,
-        c="blue",
+        c=color_dots,
+        cmap=cmap,
         edgecolor="k",
         s=dot_size(
             magnitudes,
@@ -159,7 +184,7 @@ def plot_in_space(
         handles, labels = points.legend_elements(
             prop="sizes",
             num=dot_labels,
-            c="blue",
+            c="k",
             alpha=0.5,
             func=lambda x: reverse_dot_size(
                 x,

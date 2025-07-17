@@ -183,7 +183,10 @@ def binning_test(
 
 
 def get_fmd(
-    magnitudes: np.ndarray, fmd_bin: float, bin_position: str = "center"
+    magnitudes: np.ndarray,
+    fmd_bin: float,
+    weights: np.ndarray | None = None,
+    bin_position: str = "center"
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculates event counts per magnitude bin. Note that the returned bins
@@ -191,63 +194,69 @@ def get_fmd(
     ``bin_position = 'left'``.
 
     Args:
-        mags:           Array of magnitudes.
+        magnitudes:     Array of magnitudes.
         fmd_bin:        Bin size for the FMD. This can be independent of
                     the discretization of the magnitudes. The optimal value
                     would be as small as possible while at the same time
                     ensuring that there are enough magnitudes in each bin.
+        weights:        Array of weights for each magnitude.
         bin_position:   Position of the bin, options are  'center' and 'left'.
                     Accordingly, left edges of bins or center points are
                     returned.
     Returns:
         bins:           Array of bin centers (left to right).
         counts:         Counts for each bin.
-        mags:           Array of magnitudes binned to ``fmd_bin``.
+        mags_binned:     Array of magnitudes binned to ``fmd_bin``.
 
     Examples:
         >>> from seismostats.utils import get_fmd
 
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
         >>> fmd_bin = 1.0
-        >>> bin_position = "center"
-        >>> bins, counts, mags = get_fmd(magnitudes, fmd_bin, bin_position)
+        >>> bins, counts, mags_binned = get_fmd(magnitudes, fmd_bin)
         >>> bins
         array([1., 2.])
         >>> counts
         array([4, 3])
-        >>> mags
+        >>> mags_binned
         array([1., 1., 1., 1., 2., 2., 2.])
 
     See also:
         :func:`~seismostats.utils.binning.get_cum_fmd`
     """
-
+    magnitudes = np.asarray(magnitudes)
+    if weights is not None:
+        weights = np.asarray(weights)
     if fmd_bin <= 0:
         raise ValueError("Bin size (fmd_bin) must be a positive number.")
 
-    magnitudes = bin_to_precision(magnitudes, fmd_bin)
+    mags_binned = bin_to_precision(magnitudes, fmd_bin)
+
     # use histogram to get the counts
     x_bins = bin_to_precision(
         np.arange(
-            np.min(magnitudes), np.max(magnitudes) + 3 / 2 * fmd_bin, fmd_bin
+            np.min(mags_binned), np.max(mags_binned) + 3 / 2 * fmd_bin, fmd_bin
         ),
         fmd_bin,
     )
     bins = x_bins[:-1].copy()
     x_bins -= fmd_bin / 2
-    counts, _ = np.histogram(magnitudes, x_bins)
+    counts, _ = np.histogram(mags_binned, x_bins, weights=weights)
 
     assert (
         bin_position == "left" or bin_position == "center"
-    ), "bin_position needs to be 'left'  of 'center'"
+    ), "bin_position needs to be 'left' or 'center'"
     if bin_position == "left":
         bins = bins - fmd_bin / 2
 
-    return bins, counts, magnitudes
+    return bins, counts, mags_binned
 
 
 def get_cum_fmd(
-    mags: np.ndarray, fmd_bin: float, bin_position: str = "center"
+    magnitudes: np.ndarray,
+    fmd_bin: float,
+    weights: np.ndarray | None = None,
+    bin_position: str = "center",
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Calculates cumulative event counts across all magnitude units
@@ -255,12 +264,13 @@ def get_cum_fmd(
     the center point of each bin unless ``bin_position = 'left'`` is used.
 
     Args:
-        mags:           Array of magnitudes.
+        magnitudes:           Array of magnitudes.
         fmd_bin:        Discretization of the magnitudes. It is possible to
                     provide a value that is larger than the actual
                     discretization of the magnitudes. In this case, the
                     magnitudes will be binned to the given ``fmd_bin``. This
                     might be useful for visualization purposes.
+        weights:        Array of weights for each magnitude.
         bin_position:   Position of the bin, options are  'center' and 'left'.
                     Accordingly, left edges of bins or center points are
                     returned.
@@ -268,34 +278,45 @@ def get_cum_fmd(
     Returns:
         bins:           Array of bin centers (left to right).
         c_counts:       Cumulative counts for each bin.
-        mags:           Array of magnitudes binned to ``fmd_bin``.
+        mags_binned:           Array of magnitudes binned to ``fmd_bin``.
 
     Examples:
         >>> from seismostats.utils import get_cum_fmd
 
         >>> magnitudes = [0.9, 1.1, 1.2, 1.3, 2.1, 2.2, 2.3]
         >>> fmd_bin = 1.0
-        >>> bin_position = "center"
-        >>> bins, counts, mags = get_cum_fmd(magnitudes, fmd_bin, bin_position)
+        >>> bins, counts, mags_binned = get_cum_fmd(magnitudes, fmd_bin)
         >>> bins
         array([1., 2.])
         >>> counts
         array([7, 3])
-        >>> mags
+        >>> mags_binned
         array([1., 1., 1., 2., 2., 2., 2.])
 
     See also:
         :func:`~seismostats.utils.binning.get_fmd`
     """
+    magnitudes = np.asarray(magnitudes)
+    if weights is not None:
+        weights = np.asarray(weights)
 
     if fmd_bin == 0:
-        mags_unique, counts = np.unique(mags, return_counts=True)
-        idx = np.argsort(mags_unique)
+        mags_unique, bin_idx = np.unique(magnitudes, return_inverse=True)
+        if weights is None:
+            counts = np.bincount(bin_idx)
+        else:
+            counts = np.bincount(bin_idx, weights=weights)
+
         bins = mags_unique
-        counts = counts[idx]
+        mags_binned = mags_unique[bin_idx]
+
     else:
-        bins, counts, mags = get_fmd(mags, fmd_bin, bin_position=bin_position)
+        bins, counts, mags_binned = get_fmd(
+            magnitudes,
+            fmd_bin,
+            weights=weights,
+            bin_position=bin_position)
     c_counts = np.cumsum(counts[::-1])
     c_counts = c_counts[::-1]
 
-    return bins, c_counts, mags
+    return bins, c_counts, mags_binned
