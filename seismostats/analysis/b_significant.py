@@ -301,7 +301,7 @@ def b_significant_1D(
         delta_m: float,
         times: np.ndarray,
         n_m: int,
-        min_num: int = 10,
+        min_num: int = 20,
         method: BValueEstimator | AValueEstimator = ClassicBValueEstimator,
         x_variable: np.ndarray | None = None,
         conservative: bool = True,
@@ -331,7 +331,8 @@ def b_significant_1D(
         times:          Array of times of the events. Only necessary if the
                     a positive method (e.g. `BPositiveBValueEstimator`) is
                     applied.
-        min_num:        Minimum number of events in a partition.
+        min_num:        Minimum number of events from which a b-value is
+                    estimated.
         method:         AValueEstimator or BValueEstimator class to use for
                     calculation.
         x_variable:     Values of the dimension of interest. If given, this
@@ -398,17 +399,16 @@ def b_significant_1D(
                 "n_m is too large - less than three subsamples are created,"
                 "returning NaNs.")
         return np.nan, np.nan, np.nan, np.nan
-    elif len(magnitudes) / n_m < 25:
+    elif len(magnitudes) / n_m < 15:
         if get_option("warnings") is True:
             warnings.warn(
-                "The number of subsamples is less than 25. The normality "
+                "The number of subsamples is less than 15. The normality "
                 "assumption of the autocorrelation might not be valid.")
 
     # Estimate a and b values for n_m realizations.
     ac_1D = np.zeros(n_m)
     n = np.zeros(n_m)
     n_p = np.zeros(n_m)
-    n_ms = np.zeros(n_m)
     for ii in range(n_m):
         # partition data
         idx, list_magnitudes = cut_constant_idx(
@@ -435,18 +435,23 @@ def b_significant_1D(
             delta_m, method=method, **kwargs)
         vec[n_m_loop < min_num] = np.nan
 
-        # Estimate average events per b-value estimate.
-        n_ms[ii] = np.mean(n_m_loop[n_m_loop >= min_num])
-        # estimate autocorrelation (1D)
-        ac_1D[ii], n[ii], n_p[ii], = est_morans_i(vec)
+        # Estimate autocorrelation (1D)
+        if sum(n_m_loop >= min_num) < 3:
+            ac_1D[ii], n[ii], n_p[ii], = np.nan, np.nan, np.nan
+        else:
+            ac_1D[ii], n[ii], n_p[ii], = est_morans_i(vec)
 
     # Estimate mean and (conservative) standard deviation of the
     # autocorrelation under H0.
-    mac = np.nanmean(ac_1D)
-    mean_n = np.nanmean(n)
     mean_np = np.nanmean(n_p)
-    mu_mac = -1 / mean_n
-    std_mac = (mean_np - 2) / (mean_np * np.sqrt(mean_np))
+
+    if mean_np > 2:
+        mac = np.nanmean(ac_1D)
+        mean_n = np.nanmean(n)
+        std_mac = (mean_np - 2) / (mean_np * np.sqrt(mean_np))
+        mu_mac = -1 / mean_n
+    else:
+        mac, mu_mac, std_mac = np.nan, np.nan, np.nan
 
     if not conservative:
         std_mac *= 0.81

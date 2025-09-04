@@ -1,16 +1,19 @@
 # standard
+import warnings
 from typing import Literal
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+
 # statistical
 from scipy.stats import norm
 
-from seismostats.analysis.b_significant import b_significant_1D
 # Own functions
+from seismostats.analysis.b_significant import b_significant_1D
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
+from seismostats.utils._config import get_option
 
 
 def plot_mc_vs_b(
@@ -84,7 +87,7 @@ def plot_b_series_constant_nm(
     mc: float | np.ndarray,
     times: np.ndarray,
     n_m: int,
-    min_num: float = 2,
+    min_num: float = 20,
     method: BValueEstimator = ClassicBValueEstimator,
     x_variable: np.ndarray | None = None,
     plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
@@ -233,7 +236,7 @@ def plot_b_significant_1D(
         delta_m: float,
         times: np.ndarray,
         n_ms: np.ndarray | None = None,
-        min_num: float = 2,
+        min_num: float = 20,
         x_variable: np.ndarray | None = None,
         conservative: bool = True,
         method: BValueEstimator = ClassicBValueEstimator,
@@ -245,7 +248,7 @@ def plot_b_significant_1D(
 ):
     """
     Plots the mean autocorrelation (MAC) vs the number of magnitudes uased per
-    sample, together with the chosen tresold. If the MAC is outside of the
+    sample, together with the chosen treshold. If the MAC is outside of the
     confidence interval, the null hypothesis of a constant b-value can be
     rejected.
 
@@ -310,7 +313,11 @@ def plot_b_significant_1D(
     mc = mc[idx]
 
     if n_ms is None:
-        n_ms = np.arange(20, len(magnitudes) / 25, 10).astype(int)
+        if len(magnitudes) / 15 > min_num:
+            n_ms = np.unique(np.linspace(
+                min_num, len(magnitudes) / 15, 10).astype(int))
+        else:
+            raise ValueError("Not enough events to estimate significance.")
 
     # estimate the MAC for each n_m
     p = np.zeros(len(n_ms))
@@ -318,9 +325,15 @@ def plot_b_significant_1D(
     mu_mac = np.zeros(len(n_ms))
     std_mac = np.zeros(len(n_ms))
     for ii, n_m in enumerate(n_ms):
-        p[ii], mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
-            magnitudes, mc, delta_m, times, n_m, min_num=min_num,
-            method=method, conservative=conservative, **kwargs)
+        if len(magnitudes) / n_m < 15:
+            if get_option('warnings') is True:
+                warnings.warn("Not enough events to estimate significance.")
+            p[ii], mac[ii], mu_mac[ii], std_mac[ii] = (
+                np.nan, np.nan, np.nan, np.nan)
+        else:
+            p[ii], mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
+                magnitudes, mc, delta_m, times, n_m, min_num=min_num,
+                method=method, conservative=conservative, **kwargs)
 
     # plot the results
     ax.plot(n_ms, mac, color=color, marker='o', label=label)
