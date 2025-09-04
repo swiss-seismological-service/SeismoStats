@@ -235,6 +235,7 @@ def plot_b_significant_1D(
         n_ms: np.ndarray | None = None,
         min_num: float = 2,
         x_variable: np.ndarray | None = None,
+        conservative: bool = True,
         method: BValueEstimator = ClassicBValueEstimator,
         p_threshold: float = 0.05,
         ax: plt.Axes | None = None,
@@ -319,7 +320,7 @@ def plot_b_significant_1D(
     for ii, n_m in enumerate(n_ms):
         p[ii], mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
             magnitudes, mc, delta_m, times, n_m, min_num=min_num,
-            method=method, **kwargs)
+            method=method, conservative=conservative, **kwargs)
 
     # plot the results
     ax.plot(n_ms, mac, color=color, marker='o', label=label)
