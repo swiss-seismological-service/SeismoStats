@@ -303,6 +303,7 @@ def b_significant_1D(
         n_m: int,
         min_num: int = 10,
         method: BValueEstimator | AValueEstimator = ClassicBValueEstimator,
+        x_variable: np.ndarray | None = None,
         conservative: bool = True,
         ** kwargs,
 ) -> tuple[float, float, float, float]:
@@ -326,11 +327,15 @@ def b_significant_1D(
                     completeness of each magnitude can be provided. This will
                     be used to filter the magnitudes.
         delta_m:        Bin size of discretized magnitudes.
-        times:          Array of times of the events.
         n_m:            Number of magnitudes in each partition.
+        times:          Array of times of the events. Only necessary if the
+                    a positive method (e.g. `BPositiveBValueEstimator`) is
+                    applied.
         min_num:        Minimum number of events in a partition.
         method:         AValueEstimator or BValueEstimator class to use for
                     calculation.
+        x_variable:     Values of the dimension of interest. If given, this
+                    will be used to sort the magnitudes.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
@@ -357,7 +362,10 @@ def b_significant_1D(
     """
     # sanity checks and preparation
     magnitudes = np.array(magnitudes)
-    times = np.array(times)
+    if times is None:
+        times = np.arange(len(magnitudes))
+    else:
+        times = np.array(times)
     if len(magnitudes) != len(times):
         raise IndexError("Magnitudes and times must have the same length.")
     if isinstance(mc, (float, int)):
@@ -366,6 +374,18 @@ def b_significant_1D(
         mc = np.array(mc)
     if n_m < min_num:
         raise ValueError("n_m cannot be smaller than min_num.")
+    if x_variable is None:
+        x_variable = np.arange(len(magnitudes))
+    else:
+        x_variable = np.array(x_variable)
+        if len(x_variable) != len(magnitudes):
+            raise ValueError(
+                "x_variable must have the same length as magnitudes.")
+        # sort in the dimension of interest (x-variable)
+        srt = np.argsort(x_variable)
+        magnitudes = magnitudes[srt]
+        times = times[srt]
+        x_variable = x_variable[srt]
 
     idx = magnitudes >= mc - delta_m / 2
     magnitudes = magnitudes[idx]
