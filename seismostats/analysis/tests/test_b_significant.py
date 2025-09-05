@@ -249,3 +249,51 @@ def test_b_significant_1D():
             mc=0,
             times=times[:-1],
             n_m=20)
+
+    # check with x-variable (it should be the same if x-variable is ordered)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        p_0, mac_0, mu_mac_0, std_mac_0 = b_significant_1D(
+            mags,
+            mc=0,
+            delta_m=1,
+            times=times,
+            n_m=20)
+
+        p_x, mac_x, mu_mac_x, std_mac_x = b_significant_1D(
+            mags,
+            mc=0,
+            delta_m=1,
+            times=times,
+            n_m=20,
+            x_variable=np.arange(len(mags)))
+
+    assert_almost_equal(p_x, p_0)
+    assert_almost_equal(mac_x, mac_0)
+    assert_almost_equal(mu_mac_x, mu_mac_0)
+    assert_almost_equal(std_mac_x, std_mac_0)
+
+    with pytest.raises(ValueError):
+        # min_num larger than n_m
+        b_significant_1D(
+            mags,
+            mc=0,
+            delta_m=1,
+            times=times,
+            n_m=20,
+            x_variable=[1, 2, 3])
+
+    # check with x-variable (it should be the same if x-variable is ordered)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        p, mac, mu_mac, std_mac = b_significant_1D(
+            mags,
+            mc=0,
+            delta_m=1,
+            times=times,
+            n_m=len(mags) / 2)
+
+    assert np.isnan(p)
+    assert np.isnan(mac)
+    assert np.isnan(mu_mac)
+    assert np.isnan(std_mac)

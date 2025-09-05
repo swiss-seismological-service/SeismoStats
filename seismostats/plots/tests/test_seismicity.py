@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -15,13 +16,15 @@ def test_plot_in_space_legend():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
     # Call your plotting function
-    ax = plot_in_space(
-        longitudes=lons,
-        latitudes=lats,
-        magnitudes=mags,
-        ax=ax,
-        include_map=False,
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ax = plot_in_space(
+            longitudes=lons,
+            latitudes=lats,
+            magnitudes=mags,
+            ax=ax,
+            include_map=False,
+        )
 
     # Check legend
     legend = ax.get_legend()
