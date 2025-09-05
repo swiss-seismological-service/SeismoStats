@@ -327,10 +327,10 @@ def b_significant_1D(
                     completeness of each magnitude can be provided. This will
                     be used to filter the magnitudes.
         delta_m:        Bin size of discretized magnitudes.
-        n_m:            Number of magnitudes in each partition.
         times:          Array of times of the events. Only necessary if the
                     a positive method (e.g. `BPositiveBValueEstimator`) is
                     applied.
+        n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events from which a b-value is
                     estimated.
         method:         AValueEstimator or BValueEstimator class to use for
@@ -363,10 +363,7 @@ def b_significant_1D(
     """
     # sanity checks and preparation
     magnitudes = np.array(magnitudes)
-    if times is None:
-        times = np.arange(len(magnitudes))
-    else:
-        times = np.array(times)
+    times = np.array(times)
     if len(magnitudes) != len(times):
         raise IndexError("Magnitudes and times must have the same length.")
     if isinstance(mc, (float, int)):
@@ -402,8 +399,9 @@ def b_significant_1D(
     elif len(magnitudes) / n_m < 15:
         if get_option("warnings") is True:
             warnings.warn(
-                "The number of subsamples is less than 15. The normality "
-                "assumption of the autocorrelation might not be valid.")
+                "The number of non overlapping b-value estimates is less than"
+                "15. The normality assumption of the autocorrelation might not "
+                "be valid.")
 
     # Estimate a and b values for n_m realizations.
     ac_1D = np.zeros(n_m)
