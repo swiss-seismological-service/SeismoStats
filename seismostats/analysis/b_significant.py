@@ -301,7 +301,7 @@ def b_significant_1D(
         delta_m: float,
         times: np.ndarray,
         n_m: int,
-        min_num: int = 20,
+        min_num: int = 2,
         method: BValueEstimator | AValueEstimator = ClassicBValueEstimator,
         x_variable: np.ndarray | None = None,
         conservative: bool = True,

@@ -87,7 +87,7 @@ def plot_b_series_constant_nm(
     mc: float | np.ndarray,
     times: np.ndarray,
     n_m: int,
-    min_num: float = 20,
+    min_num: float = 2,
     method: BValueEstimator = ClassicBValueEstimator,
     x_variable: np.ndarray | None = None,
     plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
@@ -236,7 +236,7 @@ def plot_b_significant_1D(
         delta_m: float,
         times: np.ndarray,
         n_ms: np.ndarray | None = None,
-        min_num: float = 20,
+        min_num: float = 2,
         x_variable: np.ndarray | None = None,
         conservative: bool = True,
         method: BValueEstimator = ClassicBValueEstimator,
@@ -315,7 +315,7 @@ def plot_b_significant_1D(
     if n_ms is None:
         if len(magnitudes) / 15 > min_num:
             n_ms = np.unique(np.linspace(
-                min_num, len(magnitudes) / 15, 10).astype(int))
+                15, len(magnitudes) / 15, 10).astype(int))
         else:
             raise ValueError("Not enough events to estimate significance.")
 
