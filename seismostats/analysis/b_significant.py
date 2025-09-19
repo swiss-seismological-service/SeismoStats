@@ -301,8 +301,9 @@ def b_significant_1D(
         delta_m: float,
         times: np.ndarray,
         n_m: int,
-        min_num: int = 10,
+        min_num: int = 2,
         method: BValueEstimator | AValueEstimator = ClassicBValueEstimator,
+        x_variable: np.ndarray | None = None,
         conservative: bool = True,
         ** kwargs,
 ) -> tuple[float, float, float, float]:
@@ -326,11 +327,16 @@ def b_significant_1D(
                     completeness of each magnitude can be provided. This will
                     be used to filter the magnitudes.
         delta_m:        Bin size of discretized magnitudes.
-        times:          Array of times of the events.
+        times:          Array of times of the events. Only necessary if the
+                    a positive method (e.g. `BPositiveBValueEstimator`) is
+                    applied.
         n_m:            Number of magnitudes in each partition.
-        min_num:        Minimum number of events in a partition.
+        min_num:        Minimum number of events from which a b-value is
+                    estimated.
         method:         AValueEstimator or BValueEstimator class to use for
                     calculation.
+        x_variable:     Values of the dimension of interest. If given, this
+                    will be used to sort the magnitudes.
         conservative:   If True, the conservative estimate of the standard
                     deviation of the autocorrelation is used, i.e., gamma = 1.
                     If False (default), the non-conservative estimate is used,
@@ -366,6 +372,18 @@ def b_significant_1D(
         mc = np.array(mc)
     if n_m < min_num:
         raise ValueError("n_m cannot be smaller than min_num.")
+    if x_variable is None:
+        x_variable = np.arange(len(magnitudes))
+    else:
+        x_variable = np.array(x_variable)
+        if len(x_variable) != len(magnitudes):
+            raise ValueError(
+                "x_variable must have the same length as magnitudes.")
+        # sort in the dimension of interest (x-variable)
+        srt = np.argsort(x_variable)
+        magnitudes = magnitudes[srt]
+        times = times[srt]
+        x_variable = x_variable[srt]
 
     idx = magnitudes >= mc - delta_m / 2
     magnitudes = magnitudes[idx]
@@ -378,17 +396,17 @@ def b_significant_1D(
                 "n_m is too large - less than three subsamples are created,"
                 "returning NaNs.")
         return np.nan, np.nan, np.nan, np.nan
-    elif len(magnitudes) / n_m < 25:
+    elif len(magnitudes) / n_m < 15:
         if get_option("warnings") is True:
             warnings.warn(
-                "The number of subsamples is less than 25. The normality "
-                "assumption of the autocorrelation might not be valid.")
+                "The number of non overlapping b-value estimates is less than"
+                "15. The normality assumption of the autocorrelation might not "
+                "be valid.")
 
     # Estimate a and b values for n_m realizations.
     ac_1D = np.zeros(n_m)
     n = np.zeros(n_m)
     n_p = np.zeros(n_m)
-    n_ms = np.zeros(n_m)
     for ii in range(n_m):
         # partition data
         idx, list_magnitudes = cut_constant_idx(
@@ -415,18 +433,23 @@ def b_significant_1D(
             delta_m, method=method, **kwargs)
         vec[n_m_loop < min_num] = np.nan
 
-        # Estimate average events per b-value estimate.
-        n_ms[ii] = np.mean(n_m_loop[n_m_loop >= min_num])
-        # estimate autocorrelation (1D)
-        ac_1D[ii], n[ii], n_p[ii], = est_morans_i(vec)
+        # Estimate autocorrelation (1D)
+        if sum(n_m_loop >= min_num) < 3:
+            ac_1D[ii], n[ii], n_p[ii], = np.nan, np.nan, np.nan
+        else:
+            ac_1D[ii], n[ii], n_p[ii], = est_morans_i(vec)
 
     # Estimate mean and (conservative) standard deviation of the
     # autocorrelation under H0.
-    mac = np.nanmean(ac_1D)
-    mean_n = np.nanmean(n)
     mean_np = np.nanmean(n_p)
-    mu_mac = -1 / mean_n
-    std_mac = (mean_np - 2) / (mean_np * np.sqrt(mean_np))
+
+    if mean_np > 2:
+        mac = np.nanmean(ac_1D)
+        mean_n = np.nanmean(n)
+        std_mac = (mean_np - 2) / (mean_np * np.sqrt(mean_np))
+        mu_mac = -1 / mean_n
+    else:
+        mac, mu_mac, std_mac = np.nan, np.nan, np.nan
 
     if not conservative:
         std_mac *= 0.81

@@ -1,4 +1,4 @@
-# Plotting
+# Plots
 
 Earthquake catalogs normally contain information about location, time, and magnitude of events. Here, we demonstrate the functions available in SeismoStats for visualising these properties. We group the visualisation tools into three categories: **magnitude distributions**, **temporal visualisations**, and **spatial visualisations**. All the functions take the magnitudes, locations, and times as arguments, but are also available as methods of the `Catalog` object, in which case these are not specified, but taken from the catalog directly.
 

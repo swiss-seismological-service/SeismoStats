@@ -1,16 +1,19 @@
 # standard
+import warnings
 from typing import Literal
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+
 # statistical
 from scipy.stats import norm
 
-from seismostats.analysis.b_significant import b_significant_1D
 # Own functions
+from seismostats.analysis.b_significant import b_significant_1D
 from seismostats.analysis.bvalue.base import BValueEstimator
 from seismostats.analysis.bvalue.classic import ClassicBValueEstimator
+from seismostats.utils._config import get_option
 
 
 def plot_mc_vs_b(
@@ -85,9 +88,9 @@ def plot_b_series_constant_nm(
     times: np.ndarray,
     n_m: int,
     min_num: float = 2,
-    b_method: BValueEstimator = ClassicBValueEstimator,
-    plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
+    method: BValueEstimator = ClassicBValueEstimator,
     x_variable: np.ndarray | None = None,
+    plot_technique: Literal['left', 'midpoint', 'right'] = 'right',
     confidence_level: float = 0.95,
     ax: plt.Axes | None = None,
     color: str = "blue",
@@ -98,19 +101,27 @@ def plot_b_series_constant_nm(
     Plots the b-values estimated from a running window of n_m magnitudes.
 
     Args:
-        magnitudes:     Magnitudes of the events. If x_variable is None,
+        magnitudes:     Magnitudes of the events. If `x_variable` is None,
                     the magnitudes are assumed to be sorted in the dimension
-                    of interest.
+                    of interest. Otherwise, the magnitudes will be sorted
+                    according to `x_variable`.
         delta_m:        Magnitude bin width.
         mc:             Completeness magnitude. If a single value is provided,
                     it is used for all magnitudes. Otherwise, the individual
                     completeness of each magnitude can be provided.
-        times:          Times of the events.
+        times:         Times of the events. Only has an impact if a
+                    positive method (e.g. `BPositiveBValueEstimator`) is
+                    applied.
         n_m:            Number of magnitudes in each partition.
         min_num:        Minimum number of events from which a b-value is
                     estimated. If the number of events is smaller, the b-value
                     is set to np.nan.
-        b_method:       Method used to estimate the b-values.
+        method:       Method used to estimate the b-values.
+        x_variable:     Values of the dimension of interest, along which the
+                    b-values should be plotted. It should be a 1D array with
+                    the same length as the magnitudes, e.g., the time of the
+                    events. If None, the b-values are plotted against the
+                    event index.
         plot_technique: Technique where to plot the b-values with respect to
                     the x-variable. Options are 'left', 'midpoint', 'right'.
                     If set to 'right' (default), the b-value is plotted at the
@@ -177,7 +188,7 @@ def plot_b_series_constant_nm(
     x_variable = x_variable[idx]
 
     # estimation
-    estimator = b_method()
+    estimator = method()
     b_values = np.ones(len(magnitudes)) * np.nan
     std_bs = np.ones(len(magnitudes)) * np.nan
     for ii in range(len(magnitudes) - n_m + 1):
@@ -221,13 +232,14 @@ def plot_b_series_constant_nm(
 
 def plot_b_significant_1D(
         magnitudes: np.ndarray,
-        times: np.ndarray,
-        mc: np.ndarray,
+        mc: float | np.ndarray,
         delta_m: float,
+        times: np.ndarray,
         n_ms: np.ndarray | None = None,
         min_num: float = 2,
-        b_method: BValueEstimator = ClassicBValueEstimator,
         x_variable: np.ndarray | None = None,
+        conservative: bool = True,
+        method: BValueEstimator = ClassicBValueEstimator,
         p_threshold: float = 0.05,
         ax: plt.Axes | None = None,
         color: str = "blue",
@@ -236,36 +248,42 @@ def plot_b_significant_1D(
 ):
     """
     Plots the mean autocorrelation (MAC) vs the number of magnitudes uased per
-    sample, together with the chosen tresold. If the MAC is outside of the
+    sample, together with the chosen threshold. If the MAC is outside of the
     confidence interval, the null hypothesis of a constant b-value can be
     rejected.
 
     Source:
-        Mirwald et. al. 2024, SRL, How to b-signicant when analysing b-value
+        Mirwald et. al. 2024, SRL, How to b-significant when analysing b-value
         variations
 
     Args:
-        magnitudes: Magnitudes of the events.
-        times:      Times of the events.
-        mc:         Completeness magnitude. If a single value is provided, it
-            is used for all magnitudes. Otherwise, the individual completeness
-            of each magnitude can be provided.
-        delta_m:    Magnitude descretization.
-        n_ms:       List of number of magnitudes used per sample. If None,
-            the function will use an array of values that are increasing by
-            10 within a range of reasonable values.
-        min_num:    Minimum number of events from which a b-value is estimated.
-        b_method:   Method to estimate the b-values.
-        x_variable: Values of the dimension of interest, along which the
-            b-values should be plotted. It should be a 1D array with the same
-            length as the magnitudes, e.g., the time of the events. If None,
-            the b-values are plotted against the event index.
-        p_threshold: Threshold above which the null hypothesis of a constant
-            b-value can be rejected.
-        ax:         Axis where the plot should be plotted.
-        color:      Color of the data.
-        label:      Label of the data that will be put in the legend.
-        **kwargs:   Additional keyword arguments for the b-value estimator.
+        magnitudes:     Array of magnitudes of the events. They are assumed to
+                    be ordered along the dimension of interest (e.g. time or
+                    depth, etc).
+        mc:             Completeness magnitude. If a float is provided,
+                    it is used for all magnitudes. Otherwise, the individual
+                    completeness of each magnitude can be provided.
+        delta_m:        Magnitude descretization.
+        times:          Times of the events. Only has an impact if a positive
+                    method (e.g. `BPositiveBValueEstimator`) is applied.
+        n_ms:           List of number of magnitudes used per sample. If None,
+                    the function will choose ten values within the range of
+                    reasonable values.
+        min_num:        Minimum number of events from which a b-value is
+                    estimated.
+        method:         Method to estimate the b-values.
+        x_variable:     Values of the dimension of interest. If given, this
+                    will be used to sort the magnitudes.
+        conservative:   If True, the conservative estimate of the standard
+                    deviation of the autocorrelation is used, i.e., gamma = 1.
+                    If False (default), the non-conservative estimate is used,
+                    i.e., gamma = 0.81 (see Mirwald et al., SRL (2024)).
+        p_threshold:   Threshold above which the null hypothesis of a constant
+                    b-value can be rejected.
+        ax:             Axis where the plot should be plotted.
+        color:          Color of the data.
+        label:          Label of the data that will be put in the legend.
+        **kwargs:       Additional keyword arguments for the b-value estimator.
 
     """
     # sanity checks and preparation
@@ -295,7 +313,11 @@ def plot_b_significant_1D(
     mc = mc[idx]
 
     if n_ms is None:
-        n_ms = np.arange(20, len(magnitudes) / 25, 10).astype(int)
+        if len(magnitudes) / 15 > min_num:
+            n_ms = np.unique(np.linspace(
+                15, len(magnitudes) / 15, 10).astype(int))
+        else:
+            raise ValueError("Not enough events to estimate significance.")
 
     # estimate the MAC for each n_m
     p = np.zeros(len(n_ms))
@@ -303,9 +325,15 @@ def plot_b_significant_1D(
     mu_mac = np.zeros(len(n_ms))
     std_mac = np.zeros(len(n_ms))
     for ii, n_m in enumerate(n_ms):
-        p[ii], mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
-            magnitudes, mc, delta_m, times, n_m, min_num=min_num,
-            method=b_method, **kwargs)
+        if len(magnitudes) / n_m < 15:
+            if get_option('warnings') is True:
+                warnings.warn("Not enough events to estimate significance.")
+            p[ii], mac[ii], mu_mac[ii], std_mac[ii] = (
+                np.nan, np.nan, np.nan, np.nan)
+        else:
+            p[ii], mac[ii], mu_mac[ii], std_mac[ii] = b_significant_1D(
+                magnitudes, mc, delta_m, times, n_m, min_num=min_num,
+                method=method, conservative=conservative, **kwargs)
 
     # plot the results
     ax.plot(n_ms, mac, color=color, marker='o', label=label)

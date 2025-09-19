@@ -4,5 +4,4 @@
 :maxdepth: 1
 
 ../notebooks/manual.nblink
-../notebooks/catalog_examples.nblink
 ```
