@@ -1,13 +1,13 @@
 # b-significant
 
-Here, we show how to apply the one-dimanesional case of the b-significant method, as described in Mirwald et al. (2024). The idea is to test if the variation of the b-value is significant or not.
+Here, we show how to apply the one-dimensional case of the b-significant method, as described in Mirwald et al. (2024). The idea is to test if the variation of the b-value is significant or not.
 
 ## 1. How to use b_significant_1D
 
-Here are the steps that have to be carried out in order to estimate the significancwe of b-value variation:
+Here are the steps that have to be carried out in order to estimate the significance of b-value variation:
 1. Order the magnitudes with respect to some other parameter. Alternatively, provide the values of the dimension of interest (`x_variable`)
 2. Evaluate the magnitude of completeness.  `mc` can be either given as a constant or as a vector of the same length as the magnitudes. 
-3. Decide the number of magitudes used for each b-value estimation (`n_m`). The equal $n_m$ technique is appleid, that is, the b-valiue is estimated from a sliding window of `n_m` magnitudes. In order for the b-significant method to work (expecially the normality assumption), it should be at least 15 and at most $n/15$, where  $n$ is the number of earthquakes. Note that  $n_m = 15$ is too small to estimate a stable b-value, however it is large enough to ensure that the method works.
+3. Decide the number of magitudes used for each b-value estimation (`n_m`). The equal $n_m$ technique is applied, that is, the b-valiue is estimated from a sliding window of `n_m` magnitudes. In order for the b-significant method to work (expecially the normality assumption), it should be at least 15 and at most $n/15$, where  $n$ is the number of earthquakes. Note that  $n_m = 15$ is too small to estimate a stable b-value, however it is large enough to ensure that the method works.
 4. Choose a b-value estimation method, e.g, `BPositiveBValueEstimator`
 
 ```python

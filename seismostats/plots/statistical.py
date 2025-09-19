@@ -248,12 +248,12 @@ def plot_b_significant_1D(
 ):
     """
     Plots the mean autocorrelation (MAC) vs the number of magnitudes uased per
-    sample, together with the chosen treshold. If the MAC is outside of the
+    sample, together with the chosen threshold. If the MAC is outside of the
     confidence interval, the null hypothesis of a constant b-value can be
     rejected.
 
     Source:
-        Mirwald et. al. 2024, SRL, How to b-signicant when analysing b-value
+        Mirwald et. al. 2024, SRL, How to b-significant when analysing b-value
         variations
 
     Args:
