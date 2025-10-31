@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cartopy.io import shapereader
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+from matplotlib.colors import is_color_like
 
 # for map plotting
 from shapely.geometry import Polygon
@@ -75,6 +76,10 @@ def plot_in_space(
     Returns:
         ax: GeoAxis object
     """
+    # discard cmap if color_dots is a string
+    if is_color_like(color_dots):
+        cmap = None
+
     # request data for use by geopandas
     if include_map is True:
         category: str = "cultural"
