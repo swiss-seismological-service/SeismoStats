@@ -76,7 +76,7 @@ def plot_in_space(
     Returns:
         ax: GeoAxis object
     """
-    # discard cmap if color_dots is a string
+    # discard cmap if color_dots is a single color (not an array)
     if is_color_like(color_dots):
         cmap = None
 
