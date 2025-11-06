@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.colors import is_color_like
 import numpy as np
 import datetime as dt
 
@@ -333,6 +334,10 @@ def plot_mags_in_time(
     Returns:
         ax: ax that was plotted on
     """
+    # discard cmap if color_dots is a single color (not an array)
+    if is_color_like(color_dots):
+        cmap = None
+
     if ax is None:
         ax = plt.subplots()[1]
 
