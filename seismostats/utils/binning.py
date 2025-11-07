@@ -22,7 +22,7 @@ def _normal_round_to_int(x: float) -> int:
 
     sign = np.sign(x)
     y = abs(x)
-    y = np.floor(y + 0.5)
+    y = np.floor(y + 0.5 + 1e-13)
 
     return sign * y
 
