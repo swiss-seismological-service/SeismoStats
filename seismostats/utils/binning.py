@@ -83,7 +83,8 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
-    return np.round(_normal_round_to_int(x / delta_x) * delta_x, decimal_places)
+    return normal_round(_normal_round_to_int(x / delta_x) * delta_x,
+                        decimal_places)
 
 
 def binning_test(
