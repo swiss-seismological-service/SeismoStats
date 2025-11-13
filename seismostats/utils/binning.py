@@ -74,7 +74,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
     if x is None:
         raise ValueError("x cannot be None")
     if delta_x < EPSILON:
-        raise ValueError("delta_x cannot be 0")
+        raise ValueError(f"delta_x cannot be 0 or lower than {EPSILON}")
 
     if isinstance(x, list):
         x = np.array(x)

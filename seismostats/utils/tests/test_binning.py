@@ -74,6 +74,8 @@ def test_bin_to_precision_none():
         bin_to_precision(None, 0.1)
     with pytest.raises(ValueError):
         bin_to_precision([1, 2, 3], 0)
+    with pytest.raises(ValueError):
+        bin_to_precision([1, 2, 3], 1e-14)
     with pytest.raises(TypeError):
         bin_to_precision([0.23, 0.56, 0.78])
 
