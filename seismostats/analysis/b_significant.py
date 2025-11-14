@@ -69,6 +69,7 @@ def est_morans_i(values: np.ndarray,
         n_values = len(values)
         w = np.eye(n_values, k=1)
     else:
+        w = w.copy()
         if w.shape[0] != w.shape[1]:
             raise ValueError("Neighbor matrix must be square.")
         if sum(w.diagonal()) != 0:
