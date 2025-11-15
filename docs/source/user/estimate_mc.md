@@ -88,7 +88,7 @@ $$
 m_c = \text{min}\left\{ m_i \mid \text{abs} \left(\frac{1}{K} \sum_{k=1}^{K} b(m_i + k\cdot \Delta m^*) - b(m_i)\right) < \sigma_{b(m_i)} \right\},
 $$
 
-where $b(m)$ is the b-value estimate of all magnitudes above $m$, $\sigma_b$ is its uncertainty $\Delta m^*$ is the magnitude bin size considered for $m_c$ precision and $K$ is the number of $m_c$ bins that is considered for stability. $L=K\cdot \Delta m^*$ is then the length of the magnitude range considered for stability. Note that in SeismoStats, the input required for b-value estimation is $L$, not $K$.
+where $b(m)$ is the b-value estimate of all magnitudes above $m$, $\sigma_b$ is its uncertainty, $\Delta m^*$ is the magnitude bin size considered for $m_c$ precision and $K$ is the number of $m_c$ bins that is considered for stability. $L=K\cdot \Delta m^*$ is then the length of the magnitude range considered for stability. Note that in SeismoStats, the input required for b-value estimation is $L$, not $K$.
 
 Users can specify the magnitude bin size $\Delta m$, with $L=0.5$ as the default stability range.
 
