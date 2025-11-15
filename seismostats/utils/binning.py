@@ -1,6 +1,8 @@
 import decimal
 import numpy as np
 
+EPSILON = 1e-12
+
 
 def _normal_round_to_int(x: float) -> int:
     """
@@ -20,11 +22,7 @@ def _normal_round_to_int(x: float) -> int:
         2
     """
 
-    sign = np.sign(x)
-    y = abs(x)
-    y = np.floor(y + 0.5)
-
-    return sign * y
+    return np.floor(x + 0.5 + EPSILON)
 
 
 def normal_round(x: float, n: int = 0) -> float:
@@ -75,15 +73,16 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
     """
     if x is None:
         raise ValueError("x cannot be None")
-    if delta_x == 0:
-        raise ValueError("delta_x cannot be 0")
+    if delta_x < EPSILON:
+        raise ValueError(f"delta_x cannot be 0 or lower than {EPSILON}")
 
     if isinstance(x, list):
         x = np.array(x)
 
     d = decimal.Decimal(str(delta_x))
     decimal_places = abs(d.as_tuple().exponent)
-    return np.round(_normal_round_to_int(x / delta_x) * delta_x, decimal_places)
+    return normal_round(_normal_round_to_int(x / delta_x) * delta_x,
+                        decimal_places)
 
 
 def binning_test(
