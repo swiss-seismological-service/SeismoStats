@@ -11,5 +11,5 @@ estimate_a
 plots
 synthetic
 b_significant
-examples
+../notebooks/manual.nblink
 ```

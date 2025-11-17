@@ -23,8 +23,8 @@ The Catalog class allows for easy storage, organization, and analysis of event d
 Importantly, many methods both **use** and **update** the catalog's properties and data. This architecture is illustrated below:
 
 <figure>
-  <img src="../_static/catalog_class.png" alt="Alt text" width="500"/>
-  <figcaption>Figure 1: Overview on catalog class.</figcaption>
+  <img src="../_static/overview_figure.png" alt="Alt text" width="500"/>
+  <figcaption>Figure 1: Overview on the structure of SeismoStats (a) and its catalog class (b).</figcaption>
 </figure>
 
 All methods available through the `Catalog` object can also be used independently, outside the catalog structure. In this case, you can pass a `numpy` array of magnitudes directly to the respective functions for analysis.

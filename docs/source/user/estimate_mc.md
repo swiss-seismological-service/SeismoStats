@@ -12,13 +12,13 @@ Currently, `SeismoStats` supports three methods to estimate the magnitude of com
 
 ## Maximum Curvature
 
-The Maximum Curvature method (MAXC) defines the completeness threshold of a catalog as the magnitude at which the (non cumulative) FMD is maximal.
+The Maximum Curvature method (MAXC) defines the completeness threshold of a catalog as the magnitude at which the (non cumulative) FMD is maximal, given a binning of `fmd_bin`.
 
 $$
 m_c = \text{argmax}_{m_i} \left(N(m_i)\right) + \delta,
 $$
 
-where $N(m)$ is the number of earthquakes within a magnitude bin of width $\Delta m$, and $\delta$ is the correction term which is set to avoid underestimation (by default set to +0.2). 
+where $N(m)$ is the number of earthquakes within a magnitude bin of width `fmd_bin` (not necessarily equal to the discretization of the catalog, $\Delta m$) and $\delta$ is the correction term which is set to avoid underestimation (by default set to +0.2). 
 
 This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 2005 and is implemented in the {func}`estimate_mc_maxc <seismostats.analysis.estimate_mc_maxc>` function.
 
