@@ -48,7 +48,7 @@ tox
 ## Citing
 We are actively working on a publication to submit with the first stable version of `SeismoStats`. If you use the code for scientific work, and until a pre-print is available, please cite `SeismoStats` as:
 
-Mirwald, A., Schmid, N., Mizrahim L., Han, M., Rohnacher, A., Ritz, V. A., & Wiemer, S. (2025). SeismoStats: A Python Package for Statistical Seismology. https://github.com/swiss-seismological-service/SeismoStats
+Mirwald, A., Schmid, N., Mizrahi L., Han, M., Rohnacher, A., Ritz, V. A., & Wiemer, S. (2025). SeismoStats: A Python Package for Statistical Seismology. https://github.com/swiss-seismological-service/SeismoStats
 
 ```
 @misc{Mirwald2025,
