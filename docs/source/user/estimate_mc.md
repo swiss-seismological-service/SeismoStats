@@ -85,13 +85,10 @@ The mc_ks method returns additional information about the calculation of the bes
 The Mc by b-value stability method estimates the magnitude of completeness Mc by identifying where the b-value becomes stable as smaller magnitudes are excluded, indicating catalog completeness (assuming the magnitudes are exponentially distributed). It defines Mc as the lowest magnitude where the b-value variation across a range $L$ remains within its theoretical standard deviation ($\sigma_{b}$). 
 
 $$
-m_c = \text{min}\left\{ m_i \mid \text{abs} \left(\frac{1}{K} \sum_{k=0}^{K-1} b(m_i + k\cdot \Delta m^*) - b(m_i)\right) < \sigma_{b(m_i)} \right\},
+m_c = \text{min}\left\{ m_i \mid \text{abs} \left(\frac{1}{K} \sum_{k=0}^{K-1} b(m_i + k\cdot \Delta m) - b(m_i)\right) < \sigma_{b(m_i)} \right\},
 $$
 
-where $b(m)$ is the b-value estimate of all magnitudes above $m$, $\sigma_b$ is its uncertainty, $\Delta m^*$ is the magnitude bin size considered for $m_c$ precision and $K$ is the number of $m_c$ bins that is considered for stability. $L=K\cdot \Delta m^*$ is then the length of the magnitude range considered for stability. Note that in SeismoStats, the input required for b-value estimation is $L$, not $K$.
-
-Users can specify the magnitude bin size $\Delta m$, with $L=0.5$ as the default stability range.
-
+where $b(m)$ is the b-value estimate of all magnitudes above $m$, $\sigma_b$ is its uncertainty, $\Delta m$ is the bin size of the discretized magnitudes and $K$ is the number of $m_c$ bins that is considered for stability. $L=K\cdot \Delta m$ is the length of the magnitude range considered for stability. Note that in SeismoStats, the input required for b-value estimation is $L$, not $K$.
 
 This method is based on the work of Cao & Gao 2002, and Woessner & Wiemer 2005 and is implemented in the {func}`estimate_mc_b_stability <seismostats.analysis.estimate_mc_b_stability>` function.
 
