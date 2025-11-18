@@ -1,6 +1,6 @@
 # b-significant
 
-The b-significant, introduced by  Mirwald et al. (2024), is a method to quantify if the variation of the b-value is larger than expected at random. Specifically, it serves to reject the null-hypothesis that the underlying b-value is constant. Although the method does not result in knowledge of the shape of the variation, it can be used to justify closer examinatoin of the variation of the b-value.
+The b-significant, introduced by  Mirwald et al. (2024), is a method to quantify if the variation of the b-value is larger than expected at random. Specifically, it serves to reject the null-hypothesis that the underlying b-value is constant. Although the method does not result in knowledge of the shape of the variation, it can be used to justify closer examination of the variation of the b-value.
 
 In SeismoStats, this b-significant is implemented for the one dimensional case.
 
