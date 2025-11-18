@@ -1,6 +1,6 @@
 # Installation
 
-`Seismostats` is a Python library but doesn't require extensive knowledge of Python. The statistical analysis of a catalog can be achieved easily without any coding expertise by following the step by step guide ({doc}`examples`).
+`Seismostats` is a Python library but doesn't require extensive knowledge of Python. The statistical analysis of a catalog can be achieved easily without any coding expertise by following the step by step guide ({doc}`10minute_intro`).
 
 ## Required packages and libraries
 

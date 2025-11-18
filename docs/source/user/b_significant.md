@@ -45,11 +45,13 @@ The output of this function is the p-value connected to the null-hypothesis of a
 In case that it is aleady clear that the b0-value is varying, but you need to find out the length (or time) scale at which the variation is strongest, you can simply apply the b-positive method with different values of `n_m`. If you want to do this visually, we also have implemented a function for this.
 
 ```python
->>> from seismostats.plots import plot_b_series_constant_nm
+>>> from seismostats.plots import plot_b_significant_1D
 >>> mc = 1
 >>> delta_m = 0.1
 >>> n_m = 100
+>>> ax = plot_b_series_constant_nm(mags, delta_m, mc, times, n_m=n_m, x_variable=times, color='#1f77b4', plot_technique='right', label='classical b-value')
 >>> ax = plot_b_series_constant_nm(mags, delta_m, mc, times, n_m=n_m, x_variable=times, color='red', plot_technique='right', label='b-positive', ax=ax, method=BPositiveBValueEstimator)
+
 ```
 
 <figure>
