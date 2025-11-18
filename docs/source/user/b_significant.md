@@ -1,6 +1,8 @@
 # b-significant
 
-Here, we show how to apply the one-dimensional case of the b-significant method, as described in Mirwald et al. (2024). The idea is to test if the variation of the b-value is significant or not.
+The b-significant, introduced by  Mirwald et al. (2024), is a method to quantify if the variation of the b-value is larger than expected at random. Specifically, it serves to reject the null-hypothesis that the underlying b-value is constant. Although the method does not result in knowledge of the shape of the variation, it can be used to justify closer examination of the variation of the b-value.
+
+In SeismoStats, this b-significant is implemented for the one dimensional case.
 
 ## 1. How to use b_significant_1D
 
@@ -43,11 +45,13 @@ The output of this function is the p-value connected to the null-hypothesis of a
 In case that it is aleady clear that the b0-value is varying, but you need to find out the length (or time) scale at which the variation is strongest, you can simply apply the b-positive method with different values of `n_m`. If you want to do this visually, we also have implemented a function for this.
 
 ```python
->>> from seismostats.plots import plot_b_series_constant_nm
+>>> from seismostats.plots import plot_b_significant_1D
 >>> mc = 1
 >>> delta_m = 0.1
 >>> n_m = 100
+>>> ax = plot_b_series_constant_nm(mags, delta_m, mc, times, n_m=n_m, x_variable=times, color='#1f77b4', plot_technique='right', label='classical b-value')
 >>> ax = plot_b_series_constant_nm(mags, delta_m, mc, times, n_m=n_m, x_variable=times, color='red', plot_technique='right', label='b-positive', ax=ax, method=BPositiveBValueEstimator)
+
 ```
 
 <figure>
@@ -56,7 +60,7 @@ In case that it is aleady clear that the b0-value is varying, but you need to fi
   . If the value is outside of the shaded area, the b-value variation can be jugded to be significant. </figcaption>
 </figure>
 
-Note that this plot follows the convention that $n_m$ is the total number of earthquakes above the completeness that is used as input for the b-value estimation. This is done so that different b-value estimation methods can be easily compared. However, it is important to understand that for the b-positive method, the effective number of used magntides is around half the number of original events. This is also the reason for the larger error-band in Figure 1.
+Note that this plot follows the convention that $n_m$ is the total number of earthquakes above the completeness that is used as input for the b-value estimation. This is done so that different b-value estimation methods can be easily compared. However, it is important to understand that for the b-positive method, the effective number of used magnitudes is around half the number of original events. This is also the reason for the larger error-band in Figure 1.
 
 ## References
 - Mirwald, Aron, Leila Mizrahi, and Stefan Wiemer. "How to b‐significant when analyzing b‐value variations." Seismological Research Letters 95.6 (2024)
