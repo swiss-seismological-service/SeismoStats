@@ -16,7 +16,7 @@
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis.
 
 >[!IMPORTANT]  
->We are actively working on a first stable version of `SeismoStats`. The API is not final yet and will still change until the first release coming in the next months. We are happy to receive feedback and suggestions for improvement.
+> We are happy to receive feedback and suggestions for improvement. Just open an issue here: https://github.com/swiss-seismological-service/SeismoStats/issues, and we will work on this as soon as possible.
 
 ## Start using `SeismoStats`:
 
@@ -48,11 +48,11 @@ tox
 ## Citing
 We are actively working on a publication to submit with the first stable version of `SeismoStats`. If you use the code for scientific work, and until a pre-print is available, please cite `SeismoStats` as:
 
-Mirwald, A., Schmid, N., Han, M., Rohnacher, A., Mizrahi, L., Ritz, V. A., & Wiemer, S. (2025). SeismoStats: A Python Package for Statistical Seismology. https://github.com/swiss-seismological-service/SeismoStats
+Mirwald, A., Schmid, N., Mizrahi L., Han, M., Rohnacher, A., Ritz, V. A., & Wiemer, S. (2025). SeismoStats: A Python Package for Statistical Seismology. https://github.com/swiss-seismological-service/SeismoStats
 
 ```
 @misc{Mirwald2025,
-   author = {Aron Mirwald and Nicolas Schmid and Marta Han and Alicia Rohnacher and Leila Mizrahi and Vanille A. Ritz and Stefan Wiemer},
+   author = {Aron Mirwald and Nicolas Schmid and Leila Mizrahi and Marta Han and Alicia Rohnacher and Vanille A. Ritz and Stefan Wiemer},
    title = {SeismoStats: A Python Package for Statistical Seismology},
    url = {https://github.com/swiss-seismological-service/SeismoStats},
    year = {2025}

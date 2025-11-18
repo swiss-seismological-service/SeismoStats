@@ -12,13 +12,13 @@ Currently, `SeismoStats` supports three methods to estimate the magnitude of com
 
 ## Maximum Curvature
 
-The Maximum Curvature method (MAXC) defines the completeness threshold of a catalog as the magnitude at which the (non cumulative) FMD is maximal.
+The Maximum Curvature method (MAXC) defines the completeness threshold of a catalog as the magnitude at which the (non cumulative) FMD is maximal, given a binning of `fmd_bin`.
 
 $$
-m_c = max_{m} (N(m_i < m \leq m_{i} + \Delta m)) + \delta
+m_c = \text{argmax}_{m_i} \left(N(m_i)\right) + \delta,
 $$
 
-where $N(m)$ is the number of earthquakes within a magnitude bin of width $\Delta m$, and $\delta$ is the correction factor which is set to avoid underestimation (by default set to +0.2). 
+where $N(m)$ is the number of earthquakes within a magnitude bin of width `fmd_bin` (not necessarily equal to the discretization of the catalog, $\Delta m$) and $\delta$ is the correction term which is set to avoid underestimation (by default set to +0.2). 
 
 This method is based on the work of Wiemer & Wyss 2000 and Woessner & Wiemer 2005 and is implemented in the {func}`estimate_mc_maxc <seismostats.analysis.estimate_mc_maxc>` function.
 
@@ -49,8 +49,10 @@ The mc_maxc method also returns the correction factor used in the calculation of
 The Kolmogorov-Smirnov (K-S) method estimates the magnitude of completeness Mc by comparing the observed and expected cumulative distribution functions (CDFs), assuming an exponential distribution of magnitudes. Mc is defined as the lowest magnitude where the simulated probability $P(D_{KS})$ of observing the KS-distance exceeds a chosen threshold $p$, with default values of $p$=0.1 and $n$=10,000 ($n$ being the number of random draws of discretized magnitudes drawn from an exponential distribution).
 
 $$
-mc = min(m_{i} | P(D_{KS}) > p)
+m_c = \text{min}\left\{ m_i \mid p(D^i_{KS}) \geq p_{th} \right\},
 $$
+
+where $D^i_{KS}$ is the KS-distance of the observed CDF from the theoretical expected distribution when using $m_i$ as a lower cutoff, $p_{th}$ is the threshold that can be chosen freely, and $p(D_{KS})$ is the probability of a KS-distance equal or larger than the observed one under the assumption that the magnitudes follow the theoretical expected distribution.
 
 
 This method is based on the work of Clauset et al., (2009) and Mizrahi et al., (2021), and implemented in the {func}`estimate_mc_ks <seismostats.analysis.estimate_mc_ks>` function.
@@ -83,8 +85,10 @@ The mc_ks method returns additional information about the calculation of the bes
 The Mc by b-value stability method estimates the magnitude of completeness Mc by identifying where the b-value becomes stable as smaller magnitudes are excluded, indicating catalog completeness (assuming the magnitudes are exponentially distributed). It defines Mc as the lowest magnitude where the b-value variation across a range $L$ remains within its theoretical standard deviation ($\sigma_{b}$). 
 
 $$
-m_c = min(m_{i} | abs(\frac{L}{\Delta m} \sum_{m_{j}=m_{i}+\Delta m}^{m_{i}+L} b(m_{j}) - b(m_{i})) < \sigma_{b(m_{i})} )
+m_c = \text{min}\left\{ m_i \mid \text{abs} \left(\frac{1}{K} \sum_{k=0}^{K-1} b(m_i + k\cdot \Delta m^*) - b(m_i)\right) < \sigma_{b(m_i)} \right\},
 $$
+
+where $b(m)$ is the b-value estimate of all magnitudes above $m$, $\sigma_b$ is its uncertainty, $\Delta m^*$ is the magnitude bin size considered for $m_c$ precision and $K$ is the number of $m_c$ bins that is considered for stability. $L=K\cdot \Delta m^*$ is then the length of the magnitude range considered for stability. Note that in SeismoStats, the input required for b-value estimation is $L$, not $K$.
 
 Users can specify the magnitude bin size $\Delta m$, with $L=0.5$ as the default stability range.
 

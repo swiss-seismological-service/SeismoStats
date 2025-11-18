@@ -1,9 +1,5 @@
 # Contributing
-
 We welcome contributions to the project. Please read the following guidelines before submitting a pull request.
-
->[!IMPORTANT]  
->While we are still working on the first stable version, the contribution guidelines will still continue to change. We will update this documentation, as more and more parts of the project are finalized and ready for outside contributions.
 
 ## General
 In General, please refer to existing implementations and adhere to the structure and style of the existing code.
