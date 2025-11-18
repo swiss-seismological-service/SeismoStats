@@ -60,7 +60,7 @@ In case that it is aleady clear that the b0-value is varying, but you need to fi
   . If the value is outside of the shaded area, the b-value variation can be jugded to be significant. </figcaption>
 </figure>
 
-Note that this plot follows the convention that $n_m$ is the total number of earthquakes above the completeness that is used as input for the b-value estimation. This is done so that different b-value estimation methods can be easily compared. However, it is important to understand that for the b-positive method, the effective number of used magntides is around half the number of original events. This is also the reason for the larger error-band in Figure 1.
+Note that this plot follows the convention that $n_m$ is the total number of earthquakes above the completeness that is used as input for the b-value estimation. This is done so that different b-value estimation methods can be easily compared. However, it is important to understand that for the b-positive method, the effective number of used magnitudes is around half the number of original events. This is also the reason for the larger error-band in Figure 1.
 
 ## References
 - Mirwald, Aron, Leila Mizrahi, and Stefan Wiemer. "How to b‐significant when analyzing b‐value variations." Seismological Research Letters 95.6 (2024)
