@@ -344,7 +344,8 @@ def estimate_mc_maxc(
           Bulletin of the Seismological Society of America, 95(2), pp.684-698.
 
     Args:
-        magnitudes:         Array of magnitudes to test.
+        magnitudes:         Array of magnitudes to test. NaN values will be
+                        ignored.
         fmd_bin:            Bin size for the maximum curvature method. This can
                         be independent of the discretization of the magnitudes.
                         The original value for the maximum curvature method is
