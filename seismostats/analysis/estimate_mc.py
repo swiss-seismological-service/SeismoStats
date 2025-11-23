@@ -392,6 +392,9 @@ def estimate_mc_maxc(
             0.2
 
     """
+
+    magnitudes = magnitudes[~np.isnan(magnitudes)]
+
     bins, count, _ = get_fmd(
         magnitudes=magnitudes, fmd_bin=fmd_bin, bin_position="center"
     )
