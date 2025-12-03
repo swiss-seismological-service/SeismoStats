@@ -40,7 +40,7 @@ dependencies = [
     "numpy",
     "pandas",
     "requests",
-    "scipy<=1.15.1",
+    "scipy",
     "shapely",
     "typing_extensions",
     "statsmodels"
