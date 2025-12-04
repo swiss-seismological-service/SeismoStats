@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 <!-- #### Deprecated -->
 <!-- -------------------------------------------------------------------------------------- -->
+ ## [Unreleased] - 2025-12-03
+ #### Fixed
+- scipy is not restricted to <=1.15.1 aymore
+
 
 ## [v1.0.0] - 2025-11-20
 
