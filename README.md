@@ -60,6 +60,6 @@ Mirwald, A., Schmid, N., Mizrahi L., Han, M., Rohnacher, A., Ritz, V. A., & Wiem
    year = {2025}
 }
 
+```
 
 Citation metadata is also available via the [CITATION.cff](CITATION.cff) file in this repository.
-```
