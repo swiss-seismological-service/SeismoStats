@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "SeismoStats: A Python Package for Statistical Seismology"
+message: "If you use SeismoStats in your scientific work, please cite it as follows."
+type: software
+authors:
+  - family-names: Mirwald
+    given-names: Aron
+  - family-names: Schmid
+    given-names: Nicolas
+  - family-names: Mizrahi
+    given-names: Leila
+  - family-names: Han
+    given-names: Marta
+  - family-names: Rohnacher
+    given-names: Alicia
+  - family-names: Ritz
+    given-names: Vanille A.
+  - family-names: Wiemer
+    given-names: Stefan
+year: 2025
+doi: 10.48550/arXiv.2511.04521
+url: https://github.com/swiss-seismological-service/SeismoStats
+repository-code: https://github.com/swiss-seismological-service/SeismoStats
