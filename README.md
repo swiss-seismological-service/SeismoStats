@@ -16,9 +16,9 @@
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis. The full documentation of the package is available here: https://seismostats.readthedocs.io/v1.0.1/.
 
 >[!IMPORTANT]  
-> We welcome contributions from the community! If you have ideas, find a bug, or want to improve the package, please open an issue or submit a pull request: 
-> https://github.com/swiss-seismological-service/SeismoStats/issues
-> Please refer to the [Contributing Guidelines](CONTRIBUTING.md) before getting started.  
+> We welcome contributions from the community! If you have ideas, find a bug, or want to improve the package, please open an issue or submit a pull request: <br>
+> https://github.com/swiss-seismological-service/SeismoStats/issues <br>
+> Please refer to the [Contributing Guidelines](CONTRIBUTING.md) before getting started. <br>
 > Everyone is encouraged to participate and help improve SeismoStats!
 
 ## Start using `SeismoStats`:
