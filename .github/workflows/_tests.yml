@@ -27,7 +27,7 @@ jobs:
               run: |
                   tox -e flake8,${{ matrix.python-version }},${{ matrix.python-version }}-extra
             - name: Store the codecov report
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: coverage-report
                   path: coverage.xml
