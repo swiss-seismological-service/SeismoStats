@@ -67,7 +67,7 @@ dev = [
     "tox",
     "twine",
 ]
-openquake = ["openquake-engine", "numpy < 2", "fiona"]
+openquake = ["openquake-engine", "numpy < 3", "fiona"]
 jupyter = ["notebook"]
 
 
