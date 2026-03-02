@@ -155,7 +155,7 @@ class GRRateGrid(pd.DataFrame):
 
         """
         if all((g.index.nlevels == 1 for g in grids)):
-            endtime = all((g.endtime for g in grids))
+            endtime = all(not pd.isna(g.endtime) for g in grids)
             return cls(pd.concat([g.add_time_index(endtime) for g in grids]))
         elif all((g.index.nlevels == 2 for g in grids)) or \
                 all((g.index.nlevels == 3 for g in grids)):
@@ -241,10 +241,11 @@ class GRRateGrid(pd.DataFrame):
                                       2                 11.0  ...  2  2   2
 
         """
-        if not getattr(self, 'starttime', None):
+        if getattr(self, 'starttime', None) is None or pd.isna(self.starttime):
             raise AttributeError(
                 'Starttime must be set to use this method.')
-        if not getattr(self, 'endtime', None) and endtime:
+        if (getattr(self, 'endtime', None) is None
+                or pd.isna(self.endtime)) and endtime:
             raise AttributeError(
                 'Endtime must be set to use this method.')
 

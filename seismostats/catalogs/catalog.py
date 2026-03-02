@@ -417,7 +417,7 @@ class Catalog(pd.DataFrame):
             return OQCatalogue()
         data = dict()
         for col, dtype in zip(self.columns, self.dtypes):
-            if np.issubdtype(dtype, np.number):
+            if pd.api.types.is_numeric_dtype(dtype):
                 data[col] = self[col].to_numpy(dtype=dtype, copy=True)
             else:
                 data[col] = self[col].to_list()
