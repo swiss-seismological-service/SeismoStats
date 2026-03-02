@@ -6,7 +6,8 @@ We welcome contributions of all kinds — bug fixes, new features, documentation
 ## How to Contribute
 
 1. **Check existing issues**  
-   Search the issue tracker to see if your topic has already been discussed.
+   Search the issue tracker to see if your topic has already been discussed. <br>
+   https://github.com/swiss-seismological-service/SeismoStats/issues
 
 2. **Open an issue**  
    For bugs, feature requests, or larger changes, please open an issue first to discuss your idea.
@@ -16,7 +17,7 @@ We welcome contributions of all kinds — bug fixes, new features, documentation
 
 4. **Create a descriptive branch name**  
    Example:  
-   - `fix-magnitude-threshold-bug`  
+   - `fix-estimate_mc_ks-bug`  
    - `add-bvalue-estimator`
 
 5. **Follow the existing code style**  
