@@ -9,11 +9,11 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/seismostats.svg)](https://pypi.org/project/seismostats/)
 [![test](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml/badge.svg)](https://github.com/swiss-seismological-service/SeismoStats/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/github/swiss-seismological-service/SeismoStats/graph/badge.svg?token=RVJFHYLBKA)](https://codecov.io/github/swiss-seismological-service/SeismoStats)
-[![Documentation Status](https://readthedocs.org/projects/seismostats/badge/?version=latest)](https://seismostats.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/seismostats/badge/?version=latest)](https://seismostats.readthedocs.io/latest/)
 
 </h1>
 
-Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis. The full documentation of the package is available here: https://seismostats.readthedocs.io/v1.0.1/.
+Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis. The full documentation of the package is available here: https://seismostats.readthedocs.io/latest/.
 
 >[!IMPORTANT]  
 > We welcome contributions from the community! If you have ideas, find a bug, or want to improve the package, please open an issue or submit a pull request: <br>
