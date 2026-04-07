@@ -576,6 +576,7 @@ def estimate_mc_b_stability(
         'b_values_tested': b_values_test,
         'diff_bs': diff_bs
     }
-    print(f'return_vals: {return_vals}')
+    if verbose:
+        print(f'return_vals: {return_vals}')
     return (bin_to_precision(best_mc, delta_m) if best_mc else None,
             return_vals)
