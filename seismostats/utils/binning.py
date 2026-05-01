@@ -97,9 +97,7 @@ def infer_binning(
     finite values of ``x`` lie on a grid with spacing ``delta_x`` centered
     around zero, within the given tolerance.
 
-    The function requires at least two distinct finite values. If all finite
-    values are zero after quantization to the given tolerance, no finite bin
-    width can be inferred.
+    The function requires at least one values larger than the tolerance.
 
     Args:
         x:          List of decimal numbers whose binning should be inferred.
@@ -117,8 +115,6 @@ def infer_binning(
     if np.isnan(x).all():
         raise ValueError("The given array contains only NaN values")
     x = np.unique(x[~np.isnan(x)])
-    if x.size == 1:
-        raise ValueError("Binning cannot be inferred from a single value.")
 
     decimal_places = abs(decimal.Decimal(str(tolerance)).as_tuple().exponent)
     quantum = decimal.Decimal(1).scaleb(-decimal_places)
@@ -154,19 +150,13 @@ def binning_test(
     """
     Tests whether the given array is compatible with a bin width ``delta_x``.
 
-    If ``check_larger_binning`` is True (default), the function tests whether
-    ``delta_x`` is the coarsest compatible bin width that explains the observed
-    values within the given tolerance.
+    The function first checks whether the finite values of ``x`` lie on a grid
+    with spacing ``delta_x`` centered around zero. Note that this is allways
+    true if ``delta_x`` is zero or smaller than the given tolerance.
 
-    If ``check_larger_binning`` is False, the function only tests whether the
-    array lies on a grid with spacing ``delta_x``. In that mode, values binned
-    with a coarser spacing are also considered compatible with ``delta_x``.
-
-    If ``delta_x`` is 0 and ``check_larger_binning`` is False, the function
-    accepts any data. In exact mode, it returns True only if no positive bin
-    width larger than the tolerance can be inferred from the data.
-
-    The compatibility test assumes that valid bins are centered around zero.
+    If ``check_larger_binning`` is False, that compatibility check is the final
+    result. If it is True (default), the function additionally tests whether
+    ``delta_x`` is the coarsest compatible bin width implied by the data.
 
     Args:
         x:                      List of decimal numbers that are supposeddly
@@ -193,7 +183,7 @@ def binning_test(
         False
         >>> binning_test([0.2,0.4,0.6], 0.05)
         False
-        >>> binning_test([0.2,0.4,0.6], 0.05, check_larger_binning=False)
+        >>> binning_test([0.2,0.4,0.6], 0.1, check_larger_binning=False)
         True
 
     See also:
@@ -203,41 +193,35 @@ def binning_test(
         raise ValueError("delta_x must be a non-negative number.")
     if tolerance <= 0:
         raise ValueError("tolerance must be a positive number.")
-
     x = np.asarray(x, dtype=float)
     if x.size == 0:
         raise ValueError("The given array has no entry")
     if np.isnan(x).all():
         raise ValueError("The given array contains only NaN values")
     x = np.unique(x[~np.isnan(x)])
-
-    if delta_x == 0:
-        if check_larger_binning is False:
-            return True
-        return bool(np.allclose(x, 0, atol=tolerance, rtol=1e-16))
-
-    if check_larger_binning is False:
-        multiples = np.rint(x / delta_x)
-        return bool(np.allclose(
+    all_zeros = np.all(np.abs(x) <= tolerance)
+    if all_zeros:
+        return True
+    if delta_x > 0:
+        binned_x = bin_to_precision(x, delta_x)
+        is_compatible = bool(np.allclose(
             x,
-            multiples * delta_x,
+            binned_x,
             atol=tolerance,
             rtol=1e-16,
         ))
-
-    if x.size == 1:
-        inferred_binning = abs(x[0])
-        if np.isclose(inferred_binning, 0, atol=tolerance, rtol=1e-16):
-            return True
+        if not is_compatible:
+            return False
+    if check_larger_binning is False:
+        return True
     else:
         inferred_binning = infer_binning(x, tolerance=tolerance)
-
-    return bool(np.isclose(
-        inferred_binning,
-        delta_x,
-        atol=tolerance,
-        rtol=1e-16,
-    ))
+        return bool(np.isclose(
+            inferred_binning,
+            delta_x,
+            atol=tolerance,
+            rtol=1e-16,
+        ))
 
 
 def get_fmd(

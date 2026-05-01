@@ -17,10 +17,15 @@ def test_estimate_b_warnings():
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=0, delta_m=0.2)
 
-    # test that warning is raised if smallest magnitude is much larger than mc
+    # test that warning is raised if smallest magnitude is larger than mc
     with pytest.warns(UserWarning):
         estimator = ClassicBValueEstimator()
         estimator.calculate(mags, mc=-1, delta_m=0.1)
+
+    # Magnitudes contain only NaN values
+    mags = np.array([np.nan, np.nan, np.nan])
+    with pytest.raises(ValueError):
+        estimator.calculate(mags, mc=1, delta_m=0.1)
 
     # Magnitudes contain NaN values
     mags1 = np.array([np.nan, 1, 2, 3, 4])
@@ -28,11 +33,6 @@ def test_estimate_b_warnings():
     mags2 = np.array([1, 2, 3, 4])
     b2 = estimator.calculate(mags2, mc=1, delta_m=1)
     assert (b1 == b2)
-
-    # Magnitudes contain only NaN values
-    mags = np.array([np.nan, np.nan, np.nan])
-    with pytest.warns(UserWarning):
-        estimator.calculate(mags, mc=1, delta_m=0.1)
 
     # No magnitudes above completeness magnitude
     mags = np.array([0, 0.9, 0.1, 0.2, 0.5])

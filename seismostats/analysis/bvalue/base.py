@@ -109,11 +109,9 @@ class BValueEstimator(ABC):
         '''
         # test magnitude binnning
         if len(self.magnitudes) > 0:
-            if np.isnan(self.magnitudes).all():
-                warnings.warn(
-                    'The given array only contains NaN values')
-            elif not binning_test(self.magnitudes, self.delta_m,
-                                  check_larger_binning=False):
+            print(self.magnitudes)
+            if not binning_test(self.magnitudes, self.delta_m,
+                                check_larger_binning=False):
                 raise ValueError('Magnitudes are not binned correctly.')
 
             # give warnings

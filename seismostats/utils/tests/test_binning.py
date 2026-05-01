@@ -5,6 +5,8 @@ from seismostats.utils.binning import (bin_to_precision, get_cum_fmd, get_fmd,
                                        infer_binning, normal_round,
                                        _normal_round_to_int, binning_test)
 
+EPSILON = 1e-12
+
 
 @pytest.mark.parametrize(
     "x, rounded_value",
@@ -203,13 +205,8 @@ def test_infer_binning(x: list[float], inferred_binning: float):
 
 def test_infer_binning_edge_cases():
     assert infer_binning([0.2, np.nan, 0.4]) == pytest.approx(0.2)
+    assert infer_binning([1e-10, 1 + 2e-10], tolerance=1e-10) == 0.0
 
-    with pytest.raises(ValueError):
-        infer_binning([1.0, 1.0, 1.0])
-    with pytest.raises(ValueError):
-        infer_binning([1.23])
-    with pytest.raises(ValueError):
-        infer_binning([np.nan, 1.23])
     with pytest.raises(ValueError):
         infer_binning([0.0, 0.0])
     with pytest.raises(ValueError):
@@ -245,6 +242,12 @@ def test_test_binning():
     assert not binning_test(a, 0.1)
     assert binning_test(a, 0.01, check_larger_binning=False)
     assert not binning_test([np.nan, 1.23], 0.2)
+
+    a = [EPSILON, 1 + 2 * EPSILON]
+    assert binning_test(a, 0, tolerance=EPSILON)
+    assert binning_test(a, EPSILON, tolerance=EPSILON,
+                        check_larger_binning=False)
+    assert binning_test(a, EPSILON, tolerance=EPSILON)
 
     with pytest.raises(ValueError):
         binning_test(a, -0.1)
