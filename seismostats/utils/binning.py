@@ -159,7 +159,7 @@ def binning_test(
     ``delta_x`` is the coarsest compatible bin width implied by the data.
 
     Args:
-        x:                      List of decimal numbers that are supposeddly
+        x:                      List of decimal numbers that are supposedly
             binned (with bin-sizes ``delta_x``).
         delta_x:                Size of the bin.
         tolerance:              Tolerance for the comparison. Default is 1e-15.
