@@ -120,7 +120,7 @@ def infer_binning(
         decimal.Decimal(str(atol)).as_tuple().exponent)
     quantum = decimal.Decimal(1).scaleb(-decimal_places)
     scale = 10 ** decimal_places
-    shifted_values = [
+    quantized_values = [
         decimal.Decimal(str(value)).quantize(
             quantum,
             rounding=decimal.ROUND_HALF_UP,
@@ -129,7 +129,7 @@ def infer_binning(
     ]
 
     gcd_scaled = 0
-    for value in shifted_values:
+    for value in quantized_values:
         scaled_value = int(value * scale)
         gcd_scaled = math.gcd(gcd_scaled, abs(scaled_value))
 
@@ -151,8 +151,9 @@ def binning_test(
     Tests whether the given array is compatible with a bin width ``delta_x``.
 
     The function first checks whether the finite values of ``x`` lie on a grid
-    with spacing ``delta_x`` centered around zero. Note that this is always
-    true if ``delta_x`` is zero or smaller than the given tolerance.
+    with spacing ``delta_x`` centered around zero. If ``delta_x`` is zero or
+    smaller than the given tolerance this compatibility check results allways
+    in True.
 
     If ``check_larger_binning`` is False, that compatibility check is the final
     result. If it is True (default), the function additionally tests whether
