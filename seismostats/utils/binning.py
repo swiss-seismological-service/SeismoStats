@@ -151,7 +151,7 @@ def binning_test(
     Tests whether the given array is compatible with a bin width ``delta_x``.
 
     The function first checks whether the finite values of ``x`` lie on a grid
-    with spacing ``delta_x`` centered around zero. Note that this is allways
+    with spacing ``delta_x`` centered around zero. Note that this is always
     true if ``delta_x`` is zero or smaller than the given tolerance.
 
     If ``check_larger_binning`` is False, that compatibility check is the final
