@@ -88,7 +88,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 
 def infer_binning(
     x: np.ndarray | list,
-    atol: float = EPSILON,
+    atol: float = 1e-12,
 ) -> float:
     """
     Infers the coarsest bin width that is compatible with the given array.
@@ -144,7 +144,7 @@ def infer_binning(
 def binning_test(
     x: np.ndarray | list,
     delta_x: float,
-    atol: float = EPSILON,
+    atol: float = 1e-12,
     check_larger_binning: bool = True,
 ) -> bool:
     """
@@ -163,7 +163,7 @@ def binning_test(
             binned (with bin-sizes ``delta_x``).
         delta_x:                Bin-size.
         atol:                   Absolute tolerance for the comparison. Default
-            is 1e-15.
+            is 1e-12.
         check_larger_binning:   If True (default), the function not only checks
             that the binning of the array is compatible, but also makes sure
             that no larger compatible binning exists. In case of
