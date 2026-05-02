@@ -194,8 +194,7 @@ def binning_test(
     if delta_x < 0:
         raise ValueError("delta_x must be a non-negative number.")
     if atol < EPSILON:
-        raise ValueError(
-            f"atol must be a positive and equal or larger than {EPSILON}")
+        raise ValueError(f"atol must be >= {EPSILON}.")
     x = np.asarray(x, dtype=float)
     if x.size == 0:
         raise ValueError("The given array has no entry")
