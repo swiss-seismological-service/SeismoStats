@@ -97,7 +97,7 @@ def infer_binning(
     finite values of ``x`` lie on a grid with spacing ``delta_x`` centered
     around zero, within the given tolerance.
 
-    The function requires at least one values larger than the tolerance.
+    The function requires at least one value larger than the tolerance.
 
     Args:
         x:      List of decimal numbers whose binning should be inferred.
