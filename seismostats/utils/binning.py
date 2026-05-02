@@ -88,7 +88,7 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
 
 def infer_binning(
     x: np.ndarray | list,
-    tolerance: float = EPSILON,
+    atol: float = EPSILON,
 ) -> float:
     """
     Infers the coarsest bin width that is compatible with the given array.
@@ -100,14 +100,14 @@ def infer_binning(
     The function requires at least one values larger than the tolerance.
 
     Args:
-        x:          List of decimal numbers whose binning should be inferred.
-        tolerance:  Absolute tolerance used to suppress floating-point noise.
+        x:      List of decimal numbers whose binning should be inferred.
+        atol:   Absolute tolerance used to suppress floating-point noise.
 
     Returns:
         delta_x:    Inferred coarsest compatible bin width.
     """
-    if tolerance <= 0:
-        raise ValueError("tolerance must be a positive number.")
+    if atol <= 0:
+        raise ValueError("atol must be a positive number.")
 
     x = np.asarray(x, dtype=float)
     if x.size == 0:
@@ -117,7 +117,7 @@ def infer_binning(
     x = np.unique(x[~np.isnan(x)])
 
     decimal_places = abs(
-        decimal.Decimal(str(tolerance)).as_tuple().exponent) - 1
+        decimal.Decimal(str(atol)).as_tuple().exponent)
     quantum = decimal.Decimal(1).scaleb(-decimal_places)
     scale = 10 ** decimal_places
     shifted_values = [
@@ -144,7 +144,7 @@ def infer_binning(
 def binning_test(
     x: np.ndarray | list,
     delta_x: float,
-    tolerance: float = EPSILON,
+    atol: float = EPSILON,
     check_larger_binning: bool = True,
 ) -> bool:
     """
@@ -161,8 +161,9 @@ def binning_test(
     Args:
         x:                      List of decimal numbers that are supposedly
             binned (with bin-sizes ``delta_x``).
-        delta_x:                Size of the bin.
-        tolerance:              Tolerance for the comparison. Default is 1e-15.
+        delta_x:                Bin-size.
+        atol:                   Absolute tolerance for the comparison. Default
+            is 1e-15.
         check_larger_binning:   If True (default), the function not only checks
             that the binning of the array is compatible, but also makes sure
             that no larger compatible binning exists. In case of
@@ -191,24 +192,24 @@ def binning_test(
     """
     if delta_x < 0:
         raise ValueError("delta_x must be a non-negative number.")
-    if tolerance < EPSILON:
+    if atol < EPSILON:
         raise ValueError(
-            f"tolerance must be a positive and equal or larger than {EPSILON}")
+            f"atol must be a positive and equal or larger than {EPSILON}")
     x = np.asarray(x, dtype=float)
     if x.size == 0:
         raise ValueError("The given array has no entry")
     if np.isnan(x).all():
         raise ValueError("The given array contains only NaN values")
     x = np.unique(x[~np.isnan(x)])
-    all_zeros = np.all(np.abs(x) <= tolerance)
+    all_zeros = np.all(np.abs(x) <= atol)
     if all_zeros:
         return True
-    if delta_x > tolerance:
+    if delta_x >= atol:
         binned_x = bin_to_precision(x, delta_x)
         is_compatible = bool(np.allclose(
             x,
             binned_x,
-            atol=tolerance,
+            atol=atol,
             rtol=1e-16,
         ))
         if not is_compatible:
@@ -216,11 +217,11 @@ def binning_test(
     if check_larger_binning is False:
         return True
     else:
-        inferred_binning = infer_binning(x, tolerance=tolerance)
+        inferred_binning = infer_binning(x, atol=atol)
         return bool(np.isclose(
             inferred_binning,
-            delta_x,
-            atol=tolerance,
+            max(delta_x, atol),
+            atol=atol,
             rtol=1e-16,
         ))
 

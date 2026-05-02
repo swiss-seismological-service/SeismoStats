@@ -203,8 +203,8 @@ def test_infer_binning(x: list[float], inferred_binning: float):
 
 def test_infer_binning_edge_cases():
     assert infer_binning([0.2, np.nan, 0.4]) == pytest.approx(0.2)
-    assert infer_binning([1e-10, 1], tolerance=1e-11) == 1e-10
-    assert infer_binning([1e-10, 1], tolerance=1e-10) == 1
+    assert infer_binning([1e-10, 1], atol=1e-10) == 1e-10
+    assert infer_binning([1e-10, 1], atol=1e-9) == 1
 
     with pytest.raises(ValueError):
         infer_binning([0.0, 0.0])
@@ -213,7 +213,7 @@ def test_infer_binning_edge_cases():
     with pytest.raises(ValueError):
         infer_binning([np.nan, np.nan])
     with pytest.raises(ValueError):
-        infer_binning([0.2, 0.4], tolerance=0)
+        infer_binning([0.2, 0.4], atol=0)
 
 
 def test_test_binning():
@@ -243,10 +243,11 @@ def test_test_binning():
     assert not binning_test([np.nan, 1.23], 0.2)
 
     a = [1e-10, 1]
-    assert binning_test(a, 1, tolerance=1e-10)
-    assert binning_test(a, 1e-10, tolerance=1e-11)
+    assert binning_test(a, 1, atol=1e-9)
+    assert binning_test(a, 1e-10, atol=1e-10)
+    assert binning_test(a, 0, atol=1e-10)
 
     with pytest.raises(ValueError):
         binning_test(a, -0.1)
     with pytest.raises(ValueError):
-        binning_test(a, 0.1, tolerance=0)
+        binning_test(a, 0.1, atol=0)
