@@ -50,7 +50,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "build",
-    "docutils==0.19",
+    "docutils==0.22.4",
     "flake8",
     "isort",
     "myst-parser",
