@@ -1,4 +1,5 @@
 import decimal
+import math
 import numpy as np
 
 EPSILON = 1e-12
@@ -85,40 +86,90 @@ def bin_to_precision(x: np.ndarray | list, delta_x: float) -> np.ndarray:
                         decimal_places)
 
 
+def infer_binning(
+    x: np.ndarray | list,
+    atol: float = 1e-12,
+) -> float:
+    """
+    Infers the coarsest bin width that is compatible with the given array.
+
+    The returned value is the largest positive ``delta_x`` for which the
+    finite values of ``x`` lie on a grid with spacing ``delta_x`` centered
+    around zero, within the given tolerance.
+
+    The function requires at least one value larger than the tolerance.
+
+    Args:
+        x:      List of decimal numbers whose binning should be inferred.
+        atol:   Absolute tolerance used to suppress floating-point noise.
+
+    Returns:
+        delta_x:    Inferred coarsest compatible bin width.
+    """
+    if atol <= 0:
+        raise ValueError("atol must be a positive number.")
+
+    x = np.asarray(x, dtype=float)
+    if x.size == 0:
+        raise ValueError("The given array has no entry")
+    if np.isnan(x).all():
+        raise ValueError("The given array contains only NaN values")
+    x = np.unique(x[~np.isnan(x)])
+
+    decimal_places = abs(
+        decimal.Decimal(str(atol)).as_tuple().exponent)
+    quantum = decimal.Decimal(1).scaleb(-decimal_places)
+    scale = 10 ** decimal_places
+    quantized_values = [
+        decimal.Decimal(str(value)).quantize(
+            quantum,
+            rounding=decimal.ROUND_HALF_UP,
+        )
+        for value in x
+    ]
+
+    gcd_scaled = 0
+    for value in quantized_values:
+        scaled_value = int(value * scale)
+        gcd_scaled = math.gcd(gcd_scaled, abs(scaled_value))
+
+    if gcd_scaled == 0:
+        raise ValueError("Binning cannot be inferred from zero-only values.")
+
+    delta_x = gcd_scaled / scale
+
+    return float(delta_x)
+
+
 def binning_test(
     x: np.ndarray | list,
     delta_x: float,
-    tolerance: float = 1e-15,
+    atol: float = 1e-12,
     check_larger_binning: bool = True,
-) -> float:
+) -> bool:
     """
-    Finds out to which precision the given array is binned with ``delta_x``,
-    within the given absolute tolerance.
+    Tests whether the given array is compatible with a bin width ``delta_x``.
 
-    The function does have the implicit assumption of ``delta_x`` being a power
-    of ten. As an example, what this means: the function will return True for
-    ``x = [0, 0.2, 0.4]``, for ``delta_x = 0.2`` but also ``for delta_x = 0.1``.
-    This is because the algorithm will check the next larger power of ten in
-    order to determine if the array is binned to a larger ``delta_x``.
+    The function first checks whether the finite values of ``x`` lie on a grid
+    with spacing ``delta_x`` centered around zero. If ``delta_x`` is zero or
+    smaller than the given tolerance this compatibility check results allways
+    in True.
 
-    If ``delta_x`` = 0, the function will test if the array is binned to a power
-    of ten larger than the tolerance.
+    If ``check_larger_binning`` is False, that compatibility check is the final
+    result. If it is True (default), the function additionally tests whether
+    ``delta_x`` is the coarsest compatible bin width implied by the data.
 
     Args:
-        x:          List of decimal numbers that are supposeddly binned
-                (with bin-sizes ``delta_x``).
-        delta_x:    Size of the bin.
-        tolerance:  Tolerance for the comparison. Default is 1e-15.
-        check_larger_binning: If True (default), the function not only checks
-                that the binning of the array is correct, but also makes sure
-                that there is no other binning that is correct. For example,
-                take the array [1.0, 3.0, 4.0]. If ``delta_x = 0.1``, the
-                function will return False because a larger binning (1.0) is
-                also correct. Here, it is important to note that only the next
-                larger power of ten is checked. In case of
-                ``check_larger_binning = False``, the function will return
-                True for the example above, as the binning of 0.1 is correct,
-                and the larger binning is not checked.
+        x:                      List of decimal numbers that are supposedly
+            binned (with bin-sizes ``delta_x``).
+        delta_x:                Bin-size.
+        atol:                   Absolute tolerance for the comparison. Default
+            is 1e-12.
+        check_larger_binning:   If True (default), the function not only checks
+            that the binning of the array is compatible, but also makes sure
+            that no larger compatible binning exists. In case of
+            ``check_larger_binning = False``, the function only checks
+            compatibility with the given ``delta_x``.
 
     Returns:
         result:     True if the array is binned to the given precision, False
@@ -129,56 +180,50 @@ def binning_test(
         >>> binning_test([0.2,0.4,0.6], 0.2)
         True
         >>> binning_test([0.2,0.4,0.6], 0.1)
-        True
+        False
+        >>> binning_test([0.3,0.7,1.1], 0.4)
+        False
         >>> binning_test([0.2,0.4,0.6], 0.05)
         False
-        >>> binning_test([0.2,0.4,0.6], 0.05, check_larger_binning=False)
+        >>> binning_test([0.2,0.4,0.6], 0.1, check_larger_binning=False)
         True
 
     See also:
         :func:`~seismostats.utils.binning.bin_to_precision`
     """
-    if len(x) == 0:
-        # error if the array is empty
+    if delta_x < 0:
+        raise ValueError("delta_x must be a non-negative number.")
+    if atol < EPSILON:
+        raise ValueError(f"atol must be >= {EPSILON}.")
+    x = np.asarray(x, dtype=float)
+    if x.size == 0:
         raise ValueError("The given array has no entry")
-    x = np.array(x)
-
-    # filter out NaN values
-    x = x[~np.isnan(x)]
-
-    # shift the array to the smallest value (to avoid that the bin-center has
-    # an effect on the test)
-    x = x - np.min(x)
-
-    if delta_x == 0 and check_larger_binning is True:
-        range = np.max(x) - np.min(x)
-        power = np.arange(
-            np.floor(np.log10(tolerance)) + 1, np.ceil(np.log10(range)), 1
-        )
-        delta_x_test = 10**power
-        test = True
-        tolerance = 10 ** (np.floor(np.log10(tolerance)) - 1)
-        for delta_x_loop in delta_x_test:
-            if binning_test(x, delta_x_loop, tolerance):
-                return False
-
+    if np.isnan(x).all():
+        raise ValueError("The given array contains only NaN values")
+    x = np.unique(x[~np.isnan(x)])
+    all_zeros = np.all(np.abs(x) <= atol)
+    if all_zeros:
+        return True
+    if delta_x >= atol:
+        binned_x = bin_to_precision(x, delta_x)
+        is_compatible = bool(np.allclose(
+            x,
+            binned_x,
+            atol=atol,
+            rtol=1e-16,
+        ))
+        if not is_compatible:
+            return False
+    if check_larger_binning is False:
+        return True
     else:
-        if delta_x < tolerance:
-            return True
-        x_binned = bin_to_precision(x, delta_x)
-
-        # This test checks if the bins are equal or larger than delta_x.
-        test_1 = np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
-
-        # If the test_1 is True, we check if a larger binning is correct.
-        if test_1 and check_larger_binning is True:
-            power = np.floor(np.log10(delta_x)) + 1
-            x_binned = bin_to_precision(x, 10**power)
-            test_2 = not np.allclose(x_binned, x, atol=tolerance, rtol=1e-16)
-            test = test_1 and test_2
-        else:
-            test = test_1
-    return test
+        inferred_binning = infer_binning(x, atol=atol)
+        return bool(np.isclose(
+            inferred_binning,
+            max(delta_x, atol),
+            atol=atol,
+            rtol=1e-16,
+        ))
 
 
 def get_fmd(

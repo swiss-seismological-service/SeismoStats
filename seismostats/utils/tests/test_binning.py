@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 
 from seismostats.utils.binning import (bin_to_precision, get_cum_fmd, get_fmd,
-                                       normal_round, _normal_round_to_int,
-                                       binning_test)
+                                       infer_binning, normal_round,
+                                       _normal_round_to_int, binning_test)
 
 
 @pytest.mark.parametrize(
@@ -189,11 +189,65 @@ def test_get_fmd(magnitudes: np.ndarray, fmd_bin: float,
     assert np.all(ncounts2[idx_bin] == 0)
 
 
+@pytest.mark.parametrize(
+    "x, inferred_binning",
+    [
+        ([0.2, 0.4, 0.6], 0.2),
+        ([0.4, 0.8, 1.2], 0.4),
+        ([1, 4, 7, 10, 1.3], 0.1),
+    ]
+)
+def test_infer_binning(x: list[float], inferred_binning: float):
+    assert infer_binning(x) == pytest.approx(inferred_binning)
+
+
+def test_infer_binning_edge_cases():
+    assert infer_binning([0.2, np.nan, 0.4]) == pytest.approx(0.2)
+    assert infer_binning([1e-10, 1], atol=1e-10) == 1e-10
+    assert infer_binning([1e-10, 1], atol=1e-9) == 1
+
+    with pytest.raises(ValueError):
+        infer_binning([0.0, 0.0])
+    with pytest.raises(ValueError):
+        infer_binning([])
+    with pytest.raises(ValueError):
+        infer_binning([np.nan, np.nan])
+    with pytest.raises(ValueError):
+        infer_binning([0.2, 0.4], atol=0)
+
+
 def test_test_binning():
     a = [0.2, 0.4, 0.6, 0.8, 1.0]
-    assert binning_test(a, 0.1)
     assert binning_test(a, 0.2)
+    assert not binning_test(a, 0.1)
     assert not binning_test(a, 0.02)
+    assert binning_test(a, 0.1, check_larger_binning=False)
+    assert binning_test(a, 0, check_larger_binning=False)
+    assert not binning_test(a, 0)
 
     a = [1, 4, 7, 10, 1.3]
     assert binning_test(a, 0.1)
+    assert not binning_test(a, 0.3)
+    assert not binning_test(a, 0.3, check_larger_binning=False)
+
+    a = [0.0, 0.0]
+    assert binning_test(a, 0)
+    assert binning_test(a, 0.1)
+    assert binning_test(a, 0.1, check_larger_binning=False)
+
+    a = [1.23]
+    assert not binning_test(a, 0)
+    assert binning_test(a, 1.23)
+    assert not binning_test(a, 0.1)
+    assert binning_test(a, 0.01, check_larger_binning=False)
+    assert not binning_test([np.nan, 1.23], 0.2)
+
+    a = [1e-10, 1]
+    assert binning_test(a, 1, atol=1e-9)
+    assert binning_test(a, 1e-10, atol=1e-10)
+    assert binning_test(a, 0, atol=1e-10)
+
+    with pytest.raises(ValueError):
+        binning_test(a, -0.1)
+    with pytest.raises(ValueError):
+        binning_test(a, 0.1, atol=0)
