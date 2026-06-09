@@ -122,7 +122,8 @@ def infer_binning(
     decimal_places = max(0, -math.floor(math.log10(atol)))
     scale = 10 ** decimal_places
     quantum = 1 / scale
-    scaled_integers = (bin_to_precision(unique_x, quantum) * scale).astype(int)
+    quantized_x = bin_to_precision(unique_x, quantum)
+    scaled_integers = (np.round(quantized_x * scale)).astype(int)
 
     # Compute the greatest common divisor of the scaled integers
     gcd_scaled = math.gcd(*scaled_integers)
