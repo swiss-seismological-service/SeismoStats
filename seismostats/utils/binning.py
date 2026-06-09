@@ -148,8 +148,8 @@ def binning_test(
 
     The function first checks whether the finite values of ``x`` lie on a grid
     with spacing ``delta_x`` centered around zero. If ``delta_x`` is zero or
-    smaller than the given tolerance this compatibility check results allways
-    in True.
+    smaller than the given tolerance, this compatibility check always returns
+    True.
 
     If ``check_larger_binning`` is False, that compatibility check is the final
     result. If it is True (default), the function additionally tests whether
