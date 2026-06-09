@@ -106,36 +106,31 @@ def infer_binning(
     Returns:
         delta_x:    Inferred coarsest compatible bin width.
     """
+    # Clean up the input array and drop NaNs
     if atol <= 0:
         raise ValueError("atol must be a positive number.")
 
     x = np.asarray(x, dtype=float)
     if x.size == 0:
         raise ValueError("The given array has no entry")
-    if np.isnan(x).all():
+
+    unique_x = np.unique(x[~np.isnan(x)])
+    if unique_x.size == 0:
         raise ValueError("The given array contains only NaN values")
-    x = np.unique(x[~np.isnan(x)])
 
-    decimal_places = abs(
-        decimal.Decimal(str(atol)).as_tuple().exponent)
-    quantum = decimal.Decimal(1).scaleb(-decimal_places)
+    # Quantize values and convert them to scaled integers
+    decimal_places = max(0, -math.floor(math.log10(atol)))
     scale = 10 ** decimal_places
-    quantized_values = [
-        decimal.Decimal(str(value)).quantize(
-            quantum,
-            rounding=decimal.ROUND_HALF_UP,
-        )
-        for value in x
-    ]
+    quantum = 1 / scale
+    scaled_integers = (bin_to_precision(unique_x, quantum) * scale).astype(int)
 
-    gcd_scaled = 0
-    for value in quantized_values:
-        scaled_value = int(value * scale)
-        gcd_scaled = math.gcd(gcd_scaled, abs(scaled_value))
+    # Compute the greatest common divisor of the scaled integers
+    gcd_scaled = math.gcd(*scaled_integers)
 
     if gcd_scaled == 0:
         raise ValueError("Binning cannot be inferred from zero-only values.")
 
+    # Scale back down to get the final bin width
     delta_x = gcd_scaled / scale
 
     return float(delta_x)
