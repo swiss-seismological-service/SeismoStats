@@ -205,6 +205,8 @@ def test_infer_binning_edge_cases():
     assert infer_binning([0.2, np.nan, 0.4]) == pytest.approx(0.2)
     assert infer_binning([1e-10, 1], atol=1e-10) == 1e-10
     assert infer_binning([1e-10, 1], atol=1e-9) == 1
+    assert infer_binning([0.1, 0.2, 0.501], atol=0.001) == 0.001
+    assert infer_binning([0.1, 0.2, 0.501], atol=0.01) == 0.1
 
     with pytest.raises(ValueError):
         infer_binning([0.0, 0.0])
