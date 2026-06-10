@@ -109,7 +109,8 @@ def infer_binning(
     # Clean up the input array and drop NaNs
     if atol <= 0:
         raise ValueError("atol must be a positive number.")
-
+    if atol < EPSILON:
+        raise ValueError(f"atol must be >= {EPSILON}.")
     x = np.asarray(x, dtype=float)
     if x.size == 0:
         raise ValueError("The given array has no entry")
