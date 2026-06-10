@@ -11,6 +11,8 @@
     :toctree: api/
 
     utils.bin_to_precision
+    utils.infer_binning
+    utils.binning_test
     utils.get_fmd
     utils.get_cum_fmd
 
