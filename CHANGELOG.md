@@ -17,6 +17,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 <!-- #### Deprecated -->
 <!-- -------------------------------------------------------------------------------------- -->
+## [Unreleased]
+
+#### Added
+- `infer_binning` utility to infer the coarsest compatible bin width from binned values.
+
+#### Changed
+- `binning_test` now distinguishes between compatibility with a bin width and the coarsest compatible binning, and exposes `atol` for controlling floating-point tolerance.
+
+#### Fixed
+- Binning validation now handles NaN-only and zero-only inputs more consistently and raises clearer errors for invalid tolerance or bin width values.
+
  ## [v1.0.1] - 2025-12-03
  #### Fixed
 - scipy is not restricted to <=1.15.1 aymore

@@ -8,6 +8,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from seismostats.utils._config import get_option, set_option
 from seismostats.utils.binning import (bin_to_precision, binning_test,
+                                       infer_binning,
                                        get_cum_fmd, get_fmd, normal_round)
 from seismostats.utils.coordinates import (CoordinateTransformer,
                                            bounding_box_to_polygon,
