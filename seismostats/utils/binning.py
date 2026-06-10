@@ -127,7 +127,7 @@ def infer_binning(
     scaled_integers = (np.round(quantized_x * scale)).astype(int)
 
     # Compute the greatest common divisor of the scaled integers
-    gcd_scaled = math.gcd(*scaled_integers)
+    gcd_scaled = int(np.gcd.reduce(scaled_integers))
 
     if gcd_scaled == 0:
         raise ValueError("Binning cannot be inferred from zero-only values.")
