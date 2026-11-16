@@ -13,6 +13,10 @@
 
 </h1>
 
+<p align="center">
+  English | <a href="README.zh-CN.md">简体中文</a>
+</p>
+
 Measure your seismicity with **SeismoStats**, a Python package for seismicity analysis. The full documentation of the package is available here: https://seismostats.readthedocs.io/latest/.
 
 >[!IMPORTANT]  
